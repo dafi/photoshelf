@@ -11,10 +11,15 @@ import android.view.Menu;
 import android.webkit.WebView;
 
 public class MainActivity extends Activity {
+	private WebView webView;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+
+		webView = new WebView(this);
+		setContentView(webView);
+		webView.setWebViewClient(new ImagePickerWebViewClient());
 
 		// Get intent, action and MIME type
 	    Intent intent = getIntent();
@@ -26,7 +31,7 @@ public class MainActivity extends Activity {
 	            handleSendText(intent);
 	        }
 	    } else {
-			beginPostToTumblr("aa http://kosty555.info/topic/214066-scarlett-johansson-films-a-new-commercial-for-dolce-gabbana-in-manhattan-new-york-city-jul-13-2013-x11/");
+			webView.loadUrl("file:///android_asset/index.html");
 	    }
 	}
 
@@ -43,14 +48,11 @@ public class MainActivity extends Activity {
 
 		if (m.find()) {
 			String url = m.group(1);
-			WebView view = (WebView) findViewById(R.id.webView);
-			view.setWebViewClient(new ImagePickerWebViewClient(this));
-			view.loadUrl(url);
+			webView.loadUrl(url);
 		} else {
-			String message = getResources().getString(R.string.url_not_found_description);
 			new AlertDialog.Builder(this)
 				.setTitle(R.string.url_not_found)
-				.setMessage(String.format(message, textWithUrl))
+				.setMessage(getResources().getString(R.string.url_not_found_description, textWithUrl))
 				.show();
 		}
 	}

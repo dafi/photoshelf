@@ -50,7 +50,7 @@ public class Tumblr {
 
     public static final int POST_PER_REQUEST = 50;
 
-    public static final String PREFS_NAME = "consolr";
+    public static final String PREFS_NAME = "tumblr";
 	public static final String PREF_OAUTH_SECRET = "oAuthSecret";
 	public static final String PREF_OAUTH_TOKEN = "oAuthToken";
 
@@ -265,7 +265,6 @@ public class Tumblr {
     	        try {
 
     	        	JSONObject json = postApiCall(apiUrl, nameValuePairs);
-        	        System.out.println("resul ceratePost + " + json.getJSONObject("response"));
         	        return json.getJSONObject("response").getLong("id");
 				} catch (Exception e) {
 					// TODO: handle exception

@@ -16,11 +16,6 @@ import com.ternaryop.phototumblrshare.parsers.TitleData;
 import com.ternaryop.phototumblrshare.parsers.TitleParser;
 
 public class ImagePickerWebViewClient extends WebViewClient {
-	/**
-	 * 
-	 */
-	private final Context context;
-
 	static HashMap<String, String> domainMap = new HashMap<String, String>();
 
 	static {
@@ -29,12 +24,10 @@ public class ImagePickerWebViewClient extends WebViewClient {
 		domainMap.put("http://www.imagebam.com", "[onclick*=scale]");
 	}
 
-	public ImagePickerWebViewClient(Context context) {
-		this.context = context;
-	}
-
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
+		Context context = view.getContext();
+		
 		for (String domain : domainMap.keySet()) {
 			if (url.startsWith(domain)) {
 				new ImageLinkRetrieverAsyncTask(context, view.getTitle()).execute(new String[]{url, domainMap.get(domain)});
