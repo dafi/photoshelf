@@ -4,15 +4,14 @@
     android:orientation="vertical" >
 
     <EditText
-        android:id="@+id/imageUrl"
+        android:id="@+id/imageUrls"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginTop="16dp"
-        android:hint="@string/imageurl"
-        android:inputType="textUri" />
+        android:hint="@string/imageurl" />
 
     <EditText
         android:id="@+id/title"

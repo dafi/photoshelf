@@ -17,5 +17,6 @@
     <string name="cancel">Cancel</string>
     <string name="creating_a_post_in_draft">Creating a post in draft...</string>
     <string name="publishing_post">Publishing post...</string>
+    <string name="go">go</string>
     
 </resources>

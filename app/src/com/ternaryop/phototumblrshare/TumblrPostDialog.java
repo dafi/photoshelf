@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -24,7 +25,7 @@ import com.ternaryop.utils.DialogUtils;
 public class TumblrPostDialog extends Dialog {
 
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
-	private TextView imageUrl;
+	private TextView imageUrls;
 	private TextView title;
 	private TextView tags;
 	private Tumblr tumblr;
@@ -38,7 +39,7 @@ public class TumblrPostDialog extends Dialog {
 		setContentView(R.layout.tumblr_post);
 		setTitle(R.string.tumblr_post_title);
 
-		imageUrl = (TextView)findViewById(R.id.imageUrl);
+		imageUrls = (TextView)findViewById(R.id.imageUrls);
 		title = (TextView)findViewById(R.id.title);
 		tags = (TextView)findViewById(R.id.tags);
 		blogList = (Spinner) findViewById(R.id.blog);
@@ -56,12 +57,13 @@ public class TumblrPostDialog extends Dialog {
 		});
 	}
 
-	public String getImageUrl() {
-		return imageUrl.getText().toString();
+	public String[] getImageUrls() {
+		return imageUrls.getText().toString().split("\n");
 	}
 
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl.setText(imageUrl);
+	public void setImageUrls(List<String> imageUrls) {
+		String lines = TextUtils.join("\n", imageUrls);
+		this.imageUrls.setText(lines);
 	}
 
 	public String getTitle() {
@@ -132,6 +134,12 @@ public class TumblrPostDialog extends Dialog {
 
 	private final class OnClickPublishListener implements View.OnClickListener {
 		private final class PostCallback implements Callback<Long> {
+			int max;
+			int current = 0;
+
+			public PostCallback (int max) {
+				this.max = max;
+			}
 			@Override
 			public void failure(Tumblr tumblr, Exception ex) {
 				progressDialog.dismiss();
@@ -140,7 +148,9 @@ public class TumblrPostDialog extends Dialog {
 
 			@Override
 			public void complete(Tumblr tumblr, Long postId) {
-				progressDialog.dismiss();
+				if (++current >= max) {
+					progressDialog.dismiss();
+				}
 			}
 		}
 
@@ -167,13 +177,20 @@ public class TumblrPostDialog extends Dialog {
 					edit.putString(PREF_SELECTED_BLOG, selectedBlogName);
 					edit.commit();
 
+					String[] urls = getImageUrls();
+					PostCallback callback = new PostCallback(urls.length);
 					if (publish) {
-						tumblr.publishPhotoPost(selectedBlogName,
-								getImageUrl(), getTitle(), getTags(),
-								new PostCallback());
+						for (String url : urls) {
+							tumblr.publishPhotoPost(selectedBlogName,
+									url, getTitle(), getTags(),
+									callback);
+						}
 					} else {
-						tumblr.draftPhotoPost(selectedBlogName, getImageUrl(),
-								getTitle(), getTags(), new PostCallback());
+						for (String url : urls) {
+							tumblr.draftPhotoPost(selectedBlogName,
+									url, getTitle(), getTags(),
+									callback);
+						}
 					}
 					dismiss();
 				}
