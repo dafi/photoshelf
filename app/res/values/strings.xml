@@ -18,5 +18,7 @@
     <string name="creating_a_post_in_draft">Creating a post in draft...</string>
     <string name="publishing_post">Publishing post...</string>
     <string name="go">go</string>
+    <string name="getting_image_urls">Getting image urls</string>
+    <string name="refresh">Refresh</string>
     
 </resources>

@@ -89,6 +89,7 @@ public class Tumblr {
 
     protected void createPhotoPost(final String tumblrName, final String url, final String caption, final String tags, final String state, final Callback<Long> callback) {
         new AsyncTask<Void, Void, Long>() {
+        	Exception error;
     		@Override
     		protected Long doInBackground(Void... params) {
     	        String apiUrl = getApiUrl(tumblrName, "/post");
@@ -104,15 +105,18 @@ public class Tumblr {
     	        	JSONObject json = consumer.jsonFromPost(apiUrl, nameValuePairs);
         	        return json.getJSONObject("response").getLong("id");
 				} catch (Exception e) {
-					// TODO: handle exception
-					Log.e("err", "list", e);
+					error = e;
 				}
     	        return null;
     		}
 
 			@Override
 			protected void onPostExecute(Long postId) {
-				callback.complete(instance, postId);
+				if (error == null) {
+					callback.complete(instance, postId);
+				} else {
+					callback.failure(instance, error);
+				}
 			}
         }.execute();
     }

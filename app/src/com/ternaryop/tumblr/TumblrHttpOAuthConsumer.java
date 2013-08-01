@@ -153,13 +153,13 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         			new Callback<Void>() {
 						@Override
 						public void complete(Tumblr t, Void result) {
-							//no longer necessary
-							loginTumblr = null;
-
 							Editor edit = activity.getSharedPreferences(PREFS_NAME, 0).edit();
 							edit.putString(PREF_OAUTH_TOKEN,  loginTumblr.oAuthAccessKey);
 							edit.putString(PREF_OAUTH_SECRET, loginTumblr.oAuthAccessSecret);
 							edit.commit();
+							//no longer necessary
+							loginTumblr = null;
+
 							callback.complete(t, null);
 						}
 

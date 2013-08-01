@@ -2,7 +2,9 @@ package com.ternaryop.phototumblrshare;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -14,6 +16,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -22,17 +25,18 @@ import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 
-public class TumblrPostDialog extends Dialog {
+public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
+	private static final String PREFS_NAME = "tumblrShareImage";
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
+	private static final String PREF_BLOG_NAMES = "blogNames";
+
 	private TextView imageUrls;
 	private TextView title;
 	private TextView tags;
 	private Tumblr tumblr;
-	private List<String> blogNames;
 	private Activity activity;
 	private Spinner blogList;
-	private String PREFS_NAME = "tumblrShareImage";
 
 	public TumblrPostDialog(Context context) {
 		super(context);
@@ -40,6 +44,9 @@ public class TumblrPostDialog extends Dialog {
 		setTitle(R.string.tumblr_post_title);
 
 		imageUrls = (TextView)findViewById(R.id.imageUrls);
+		// do not work in XML so we set explicitly here
+		imageUrls.setHorizontallyScrolling(true);
+
 		title = (TextView)findViewById(R.id.title);
 		tags = (TextView)findViewById(R.id.tags);
 		blogList = (Spinner) findViewById(R.id.blog);
@@ -47,22 +54,36 @@ public class TumblrPostDialog extends Dialog {
 		activity = (Activity)context;
 		((Button)findViewById(R.id.publishButton)).setOnClickListener(new OnClickPublishListener());
 		((Button)findViewById(R.id.draftButton)).setOnClickListener(new OnClickPublishListener());
-		((Button)findViewById(R.id.cancelButton)).setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				dismiss();
-			}
-			
-		});
+		((ImageButton)findViewById(R.id.refreshBlogList)).setOnClickListener(this);
+		((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
 	}
 
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+			case R.id.cancelButton:
+				dismiss();
+				return;
+			case R.id.refreshBlogList:
+				fetchBlogNames();
+				return;
+		}
+	}
+	
 	public String[] getImageUrls() {
 		return imageUrls.getText().toString().split("\n");
 	}
 
 	public void setImageUrls(List<String> imageUrls) {
 		String lines = TextUtils.join("\n", imageUrls);
+		this.imageUrls.setText(lines);
+	}
+
+	public void setImageUrlsFromImageInfo(List<ImageInfo> imageList) {
+		StringBuilder lines = new StringBuilder();
+		for (ImageInfo imageInfo : imageList) {
+			lines.append(imageInfo.imageURL).append("\n");
+		}
 		this.imageUrls.setText(lines);
 	}
 
@@ -87,6 +108,36 @@ public class TumblrPostDialog extends Dialog {
 		findViewById(R.id.publishButton).setEnabled(false);
 		findViewById(R.id.draftButton).setEnabled(false);
 
+		SharedPreferences preferences = activity.getSharedPreferences(PREFS_NAME, 0);
+		Set<String> blogSetNames = preferences.getStringSet(PREF_BLOG_NAMES, null);
+		if (blogSetNames == null) {
+			fetchBlogNames();
+		} else {
+			fillBlogList(new ArrayList<String>(blogSetNames));
+			findViewById(R.id.publishButton).setEnabled(true);
+			findViewById(R.id.draftButton).setEnabled(true);
+		}
+	}
+
+	private void fillBlogList(List<String> blogNames) {
+		Collections.sort(blogNames);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item, blogNames);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		blogList.setAdapter(adapter);
+
+		SharedPreferences preferences = activity.getSharedPreferences(PREFS_NAME, 0);
+		String selectedName = preferences.getString(PREF_SELECTED_BLOG, null);
+		if (selectedName != null) {
+			int position = adapter.getPosition(selectedName);
+			if (position >= 0) {
+				blogList.setSelection(position);
+			}
+		}
+	}
+	
+	private void fetchBlogNames() {
+		findViewById(R.id.publishButton).setEnabled(false);
+		findViewById(R.id.draftButton).setEnabled(false);
 		Tumblr.getTumblr(activity, new Callback<Void>() {
 			@Override
 			public void complete(Tumblr t, Void result) {
@@ -96,23 +147,14 @@ public class TumblrPostDialog extends Dialog {
 
 					@Override
 					public void complete(Tumblr tumblr, Blog[] result) {
-						blogNames = new ArrayList<String>(result.length);
+						List<String> blogNames = new ArrayList<String>(result.length);
 						for (int i = 0; i < result.length; i++) {
 							blogNames.add(result[i].getName());
 						}
-						Collections.sort(blogNames);
-						ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item, blogNames);
-						adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-						blogList.setAdapter(adapter);
-						SharedPreferences preferences = activity.getSharedPreferences(PREFS_NAME, 0);
-						String selectedBlog = preferences.getString(PREF_SELECTED_BLOG, null);
-						if (selectedBlog != null) {
-							int position = adapter.getPosition(selectedBlog);
-							if (position >= 0) {
-								blogList.setSelection(position);
-							}
-						}
-
+						Editor edit = activity.getSharedPreferences(PREFS_NAME, 0).edit();
+						edit.putStringSet(PREF_BLOG_NAMES, new HashSet<String>(blogNames));
+						edit.commit();
+						fillBlogList(blogNames);
 						findViewById(R.id.publishButton).setEnabled(true);
 						findViewById(R.id.draftButton).setEnabled(true);
 					}
