@@ -45,6 +45,7 @@
         </Spinner>
 
         <ImageButton
+            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/refreshBlogList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

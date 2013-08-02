@@ -25,38 +25,29 @@ import com.ternaryop.phototumblrshare.parsers.TitleData;
 import com.ternaryop.phototumblrshare.parsers.TitleParser;
 
 public class ImagePickerWebViewClient extends WebViewClient {
-	static HashMap<String, String> domainMap = new HashMap<String, String>();
-	
 	private Map<String, String> urlSelectorMap = new HashMap<String, String>();
 	private ActionMode actionMode;
 	private String title;
 	private Context context;
 	
-	static {
-		domainMap.put("http://images.bangtidy.net", "#theimage");
-		domainMap.put("http://x05.org", "#img_obj");
-		domainMap.put("http://www.imagebam.com", "[onclick*=scale]");
-	}
-
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
 		context = view.getContext();
-		
-		for (String domain : domainMap.keySet()) {
-			if (url.startsWith(domain)) {
-				if (urlSelectorMap.get(url) == null) {
-					urlSelectorMap.put(url, domainMap.get(domain));
-				} else {
-					urlSelectorMap.remove(url);
-				}
-				title = view.getTitle();
-				if (urlSelectorMap.size() == 0) {
-					getActionMode((Activity) context).finish();
-				} else {
-					getActionMode((Activity) context).invalidate();
-				}
-				return true;
+
+		String domSelector = new ImageDOMSelectorFinder(context).getSelectorFromUrl(url);
+		if (domSelector != null) {
+			if (urlSelectorMap.get(url) == null) {
+				urlSelectorMap.put(url, domSelector);
+			} else {
+				urlSelectorMap.remove(url);
 			}
+			title = view.getTitle();
+			if (urlSelectorMap.size() == 0) {
+				getActionMode((Activity) context).finish();
+			} else {
+				getActionMode((Activity) context).invalidate();
+			}
+			return true;
 		}
 		String message = context.getResources().getString(R.string.unable_to_find_domain_mapper_for_url);
 		Toast.makeText(context.getApplicationContext(),

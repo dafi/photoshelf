@@ -60,10 +60,10 @@ public class TumblrActionModeCallback implements ActionMode.Callback {
 
 	private Map<String, String> createUrlCSSSelectorMap() {
 		Map<String, String> urlCSSSelectorMap = new HashMap<String, String>();
-		ImageCSSSelectorFinder finder = new ImageCSSSelectorFinder();
+		ImageDOMSelectorFinder finder = new ImageDOMSelectorFinder(activity);
 		
 		for (ImageInfo imageInfo : imageAdapter.getSelectedItems()) {
-			String selector = finder.getCSSSelectorFromUrl(imageInfo.imageURL);
+			String selector = finder.getSelectorFromUrl(imageInfo.imageURL);
 			if (selector != null) {
 				urlCSSSelectorMap.put(imageInfo.imageURL, selector);
 			}

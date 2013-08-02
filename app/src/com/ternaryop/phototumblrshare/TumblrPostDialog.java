@@ -12,13 +12,14 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
@@ -31,9 +32,9 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
 	private static final String PREF_BLOG_NAMES = "blogNames";
 
-	private TextView imageUrls;
-	private TextView title;
-	private TextView tags;
+	private EditText imageUrls;
+	private EditText title;
+	private EditText tags;
 	private Tumblr tumblr;
 	private Activity activity;
 	private Spinner blogList;
@@ -43,12 +44,12 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		setContentView(R.layout.tumblr_post);
 		setTitle(R.string.tumblr_post_title);
 
-		imageUrls = (TextView)findViewById(R.id.imageUrls);
+		imageUrls = (EditText)findViewById(R.id.imageUrls);
 		// do not work in XML so we set explicitly here
 		imageUrls.setHorizontallyScrolling(true);
 
-		title = (TextView)findViewById(R.id.title);
-		tags = (TextView)findViewById(R.id.tags);
+		title = (EditText)findViewById(R.id.title);
+		tags = (EditText)findViewById(R.id.tags);
 		blogList = (Spinner) findViewById(R.id.blog);
 		
 		activity = (Activity)context;
@@ -88,11 +89,11 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	}
 
 	public String getTitle() {
-		return title.getText().toString();
+		return Html.toHtml(title.getText());
 	}
 
 	public void setTitle(String title) {
-		this.title.setText(title);
+		this.title.setText(Html.fromHtml(title));
 	}
 
 	public String getTags() {

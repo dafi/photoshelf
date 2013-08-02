@@ -56,13 +56,6 @@ public class MainActivity extends Activity {
 			});
 		}
 
-		
-		
-		
-		
-		
-		
-
 		// Get intent, action and MIME type
 	    Intent intent = getIntent();
 	    String action = intent.getAction();
