@@ -110,12 +110,7 @@ public class TitleParser {
     public TitleData parseTitle(String title) {
         TitleData titleData = new TitleData();
 
-        title = title.replaceAll("\u2013", "-")
-                    .replaceAll("\u2018", "'")
-                    .replaceAll("\u2019", "'")
-                    .replaceAll("\u201C", "\"")
-                    .replaceAll("\u201D", "\"")
-                    .replaceAll("’", "i");
+        title = cleanupText(title);
 
         Matcher m = titleRE.matcher(title);
         int start = 0;
@@ -156,6 +151,25 @@ public class TitleParser {
 
         return titleData;
     }
+
+	private String cleanupText(String title) {
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < title.length(); i++) {
+        	char ch = title.charAt(i);
+			int type = Character.getType(ch);
+        	if (type == Character.INITIAL_QUOTE_PUNCTUATION
+        			|| type == Character.FINAL_QUOTE_PUNCTUATION
+        			|| ('\u2032' <= ch && ch <= '\u2037')) {
+        		sb.append("\"");
+        	} else if (type == Character.DASH_PUNCTUATION) {
+        		sb.append("-");
+        	} else {
+        		sb.append(ch);
+        	}
+        }
+		return sb.toString();
+	}
 
     public static TitleParser instance() {
     	return instance;
