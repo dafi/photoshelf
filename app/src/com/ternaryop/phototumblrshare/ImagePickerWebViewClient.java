@@ -159,7 +159,7 @@ public class ImagePickerWebViewClient extends WebViewClient {
 			} catch (Exception e) {
 				new AlertDialog.Builder(context)
 				.setTitle(R.string.parsing_error)
-				.setMessage(e.getLocalizedMessage())
+				.setMessage(title + "\n" + e.getLocalizedMessage())
 				.show();
 			}
 		}

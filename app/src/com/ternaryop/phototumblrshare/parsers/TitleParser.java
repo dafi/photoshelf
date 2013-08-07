@@ -120,7 +120,19 @@ public class TitleParser {
         }
         Map<String, Object> dateComponents = parseDate(title);
         Matcher dateMatcher = (Matcher) dateComponents.get("matched");
-        String loc = dateMatcher != null ? title.substring(start, dateMatcher.start()) : title.substring(start);
+        String loc;
+        if (dateMatcher == null) {
+        	// no date found so use all substring as location
+        	loc = title.substring(start);
+        } else {
+        	if (start < dateMatcher.start()) {
+        		loc = title.substring(start, dateMatcher.start());
+        	} else {
+        		// we are unable to find a valid position for 'loc' and maybe for 'who'
+        		// so consider 'loc' all string until date
+        		loc = title.substring(0, dateMatcher.start());
+        	}
+        }
         // city names can be multi words so allow whitespaces
         m = Pattern.compile("\\s*(.*?)\\s+in\\s+([a-z. ]*)", Pattern.CASE_INSENSITIVE).matcher(loc);
         if (m.find() && m.groupCount() > 1) {
