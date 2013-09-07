@@ -15,8 +15,8 @@
     <string name="unable_to_find_domain_mapper_for_url">Unable to find domain mapper for url \'%1$s\'</string>
     <string name="draft">Draft</string>
     <string name="cancel">Cancel</string>
-    <string name="creating_a_post_in_draft">Creating a post in draft...</string>
-    <string name="publishing_post">Publishing post...</string>
+    <string name="creating_a_post_in_draft">Creating post(s) in draft...</string>
+    <string name="publishing_post">Publishing post(s)...</string>
     <string name="go">go</string>
     <string name="getting_image_urls">Getting image urls</string>
     <string name="refresh">Refresh</string>
