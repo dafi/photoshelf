@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.AdapterView;
@@ -62,6 +63,8 @@ public class MainActivity extends Activity {
 	    String type = intent.getType();
 
 	    if (Intent.ACTION_SEND.equals(action) && type != null) {
+	    	// Allow to click the actionbar to return to caller
+		    getActionBar().setDisplayHomeAsUpEnabled(true);
 	        if ("text/plain".equals(type)) {
 	            handleSendText(intent);
 	        }
@@ -115,6 +118,19 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	        case android.R.id.home:
+	        	// clicked the actionbar
+	        	// close and return to caller
+	        	finish();
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
+	
 	class ImageUrlExtractor extends AsyncTask<String, Void, List<ImageInfo>> {
 
 		@Override

@@ -77,7 +77,7 @@ public class ImageLinkScraper extends AsyncTask<Object, Integer, List<String>> {
 			TumblrPostDialog dialog = new TumblrPostDialog(context);
 			dialog.setImageUrls(imageUrls);
 			dialog.setTitle(titleData.toString());
-			dialog.setTags(titleData.tags);
+			dialog.setTags(titleData.getTags());
 			
 			dialog.show();
 			// TODO unselect also if cancel is pressed on dialog, it's wrong

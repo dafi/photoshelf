@@ -152,7 +152,7 @@ public class ImagePickerWebViewClient extends WebViewClient {
 				TumblrPostDialog dialog = new TumblrPostDialog(context);
 				dialog.setImageUrls(imageUrls);
 				dialog.setTitle(titleData.toString());
-				dialog.setTags(titleData.tags);
+				dialog.setTags(titleData.getTags());
 				
 				dialog.show();
 				urlSelectorMap.clear();

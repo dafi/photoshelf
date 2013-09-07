@@ -39,19 +39,8 @@ public class TitleParser {
         monthsShort.put("dec", "December");
     }
 
-    private static HashMap<String, String> cities = new HashMap<String, String>();
-
 	private static TitleParser instance = new TitleParser();
     
-    static {
-        cities.put("LA", "Los Angeles");
-        cities.put("L.A", "Los Angeles");
-        cities.put("L.A.", "Los Angeles");
-        cities.put("NY", "New York");
-        cities.put("N.Y.", "New York");
-        cities.put("NYC", "New York City");
-    }
-
     /**
      * Fill parseInfo with day, month, year, matched
      */
@@ -115,7 +104,7 @@ public class TitleParser {
         Matcher m = titleRE.matcher(title);
         int start = 0;
         if (m.find() && m.groupCount() > 1) {
-          titleData.who = m.group(1);
+          titleData.setWho(m.group(1));
           start = m.regionStart() + m.group(0).length();
         }
         Map<String, Object> dateComponents = parseDate(title);
@@ -136,16 +125,12 @@ public class TitleParser {
         // city names can be multi words so allow whitespaces
         m = Pattern.compile("\\s*(.*?)\\s+in\\s+([a-z. ]*)", Pattern.CASE_INSENSITIVE).matcher(loc);
         if (m.find() && m.groupCount() > 1) {
-            titleData.location = m.group(1);
-            String city = m.group(2).trim();
-            titleData.city = cities.get(city.toUpperCase(Locale.getDefault()));
-            if (titleData.city == null) {
-                titleData.city = city;
-            }
+            titleData.setLocation(m.group(1));
+            titleData.setCity(m.group(2).trim());
         } else {
-            titleData.location = loc;
+            titleData.setLocation(loc);
         }
-        titleData.location = titleData.location.replaceAll("[^a-z]*$", "");
+//        titleData.location = titleData.location.replaceAll("[^a-z]*$", "");
 
         String when = "";
         if ((Integer)dateComponents.get("day") != 0) {
@@ -153,13 +138,8 @@ public class TitleParser {
         };
         when += dateComponents.get("month") + ", " + dateComponents.get("year");
 
-        titleData.who = titleData.who.trim();
-        titleData.location = titleData.location.trim();
-        titleData.city = titleData.city.trim();
-        titleData.when = when.trim();
-        titleData.tags = titleData.who + ", " + titleData.location.trim()
-        		.replace("[0-9]*(st|nd|rd|th)?", "")
-        		.replaceAll("\"|'", "");
+        titleData.setWhen(when);
+        titleData.setTags(new String[] {titleData.getWho(), titleData.getLocation()});
 
         return titleData;
     }
