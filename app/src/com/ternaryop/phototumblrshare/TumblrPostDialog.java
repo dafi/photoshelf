@@ -176,13 +176,17 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	}
 
 	private final class OnClickPublishListener implements View.OnClickListener {
-		private final class PostCallback implements Callback<Long> {
-			int max;
-			int current = 0;
+		private ProgressDialog progressDialog;
 
-			public PostCallback (int max) {
-				this.max = max;
+		private final class PostCallback implements Callback<Long> {
+			public PostCallback (int max, boolean publish) {
+				progressDialog = new ProgressDialog(activity);
+				progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+				progressDialog.setMessage(activity.getResources().getString(publish ? R.string.publishing_post : R.string.creating_a_post_in_draft));
+				progressDialog.setMax(max);
+				progressDialog.show();
 			}
+
 			@Override
 			public void failure(Tumblr tumblr, Exception ex) {
 				progressDialog.dismiss();
@@ -191,28 +195,21 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 			@Override
 			public void complete(Tumblr tumblr, Long postId) {
-				if (++current >= max) {
+				progressDialog.incrementProgressBy(1);
+				if ((progressDialog.getProgress()) >= progressDialog.getMax()) {
 					progressDialog.dismiss();
 				}
 			}
 		}
-
-		ProgressDialog progressDialog;
 
 		@Override
 		public void onClick(final View v) {
 			Tumblr.getTumblr(activity, new Callback<Void>() {
 
 				@Override
-				public void complete(Tumblr t, Void result) {
+				public void complete(final Tumblr t, Void result) {
 					boolean publish = v.getId() == R.id.publishButton;
 					tumblr = t;
-					progressDialog = new ProgressDialog(activity);
-					progressDialog
-							.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-					progressDialog.setMessage(activity.getResources().getString(publish ? R.string.publishing_post : R.string.creating_a_post_in_draft));
-					progressDialog.show();
-
 					String selectedBlogName = (String) blogList
 							.getSelectedItem();
 					Editor edit = activity.getSharedPreferences(PREFS_NAME, 0)
@@ -221,7 +218,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 					edit.commit();
 
 					String[] urls = getImageUrls();
-					PostCallback callback = new PostCallback(urls.length);
+					final PostCallback callback = new PostCallback(urls.length, publish);
 					if (publish) {
 						for (String url : urls) {
 							tumblr.publishPhotoPost(selectedBlogName,
