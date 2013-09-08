@@ -9,7 +9,7 @@ import org.jsoup.helper.StringUtil;
 
 public class TitleData {
 	private static String format = "<p><strong>$who</strong> <em>$where_loc, $where_city ($when)</em></p>";
-    private static String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives"};
+    private static String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives", "at the"};
 
     private static HashMap<String, String> cities = new HashMap<String, String>();
 
@@ -51,9 +51,10 @@ public class TitleData {
     			break;
     		}
     	}
-    	// lowercase the first character
-    	location = location.substring(0, 1).toLowerCase(Locale.ENGLISH) + location.substring(1);
-    	if (!hasLocationPrefix) {
+    	if (hasLocationPrefix) {
+        	// lowercase the first character
+        	location = location.substring(0, 1).toLowerCase(Locale.ENGLISH) + location.substring(1);
+    	} else {
     		location = "at the " + location; 
     	}
 		this.location = location;
@@ -103,22 +104,9 @@ public class TitleData {
 	}
 
     public String toString() {
-    	boolean hasLocationPrefix = false;
-    	for (int i = 0; i < locationPrefixes.length; i++) {
-    		if (location.toLowerCase(Locale.ENGLISH).startsWith(locationPrefixes[i])) {
-    			hasLocationPrefix = true;
-    			break;
-    		}
-    	}
-    	// lowercase the first character
-    	String locationText = location.substring(0, 1).toLowerCase(Locale.ENGLISH) + location.substring(1);
-    	if (!hasLocationPrefix) {
-    		locationText = "at the " + locationText; 
-    	}
-
     	return format
     			.replace("$who", who)
-    			.replace("$where_loc", locationText)
+    			.replace("$where_loc", location)
     			.replace("$where_city", city)
     			.replace("$when", when);
     }
