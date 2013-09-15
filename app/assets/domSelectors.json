@@ -1,5 +1,5 @@
 {
-	"http:\/\/images.bangtidy.net":"#theimage",
+	"http:\/\/images.bangtidy.net":"img[width][onclick]",
 	"http:\/\/x05.org":"#img_obj",
 	"http:\/\/www.imagebam.com":"[onclick*=scale]",
 	"http:\/\/www.imagesion.com":"#full_image"

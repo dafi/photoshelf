@@ -100,8 +100,9 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		return tags.getText().toString();
 	}
 
-	public void setTags(String tags) {
-		this.tags.setText(tags);
+	public void setTags(List<String> tags) {
+		// show only first tag
+		this.tags.setText(tags.isEmpty() ? "" : tags.get(0));
 	}
 	
 	@Override

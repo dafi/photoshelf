@@ -1,10 +1,10 @@
 package com.ternaryop.phototumblrshare.parsers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-
-import org.jsoup.helper.StringUtil;
 
 
 public class TitleData {
@@ -25,7 +25,7 @@ public class TitleData {
     private String who = "***";
     private String location = "***";
     private String city = "***";
-    private String tags = "***";
+    private List<String> tags = Collections.emptyList();
     private String when;
 
     public String getWho() {
@@ -73,7 +73,7 @@ public class TitleData {
 		}
 	}
 
-	public String getTags() {
+	public List<String> getTags() {
 		return tags;
 	}
 
@@ -92,7 +92,7 @@ public class TitleData {
 	    	}
 			
 		}
-		this.tags = StringUtil.join(list, ", ");
+		this.tags = list;
 	}
 
 	public String getWhen() {
