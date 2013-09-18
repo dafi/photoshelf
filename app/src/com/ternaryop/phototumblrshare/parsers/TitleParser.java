@@ -46,21 +46,18 @@ public class TitleParser {
      */
     protected Map<String, Object> parseDate(String title) {
     	int day = 0;
-    	String month = "";
+    	String monthStr = "";
     	int year = 0;
-    	String yearStr = "";
-
+    	
         // handle dates in the form Jan 10, 2010 or January 10 2010 or Jan 15
         Matcher m = Pattern.compile("[-,]\\s+\\(?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(title);
         if (m.find() && m.groupCount() > 1) {
             day = m.group(2).length() != 0 ? Integer.parseInt(m.group(2)) : 0;
-            month = monthsShort.get(m.group(1).toLowerCase(Locale.getDefault()));
-            if (m.groupCount() == 4 && m.group(3).length() > 0) {
+            monthStr = monthsShort.get(m.group(1).toLowerCase(Locale.getDefault()));
+            if (m.groupCount() == 3 && m.group(3).length() > 0) {
                 year = Integer.parseInt(m.group(3));
-                yearStr = m.group(3);
             } else {
                 year = Calendar.getInstance().get(Calendar.YEAR);
-                yearStr = "" + year;
             }
         } else {
             // handle dates in the form dd/dd/dd?? or (dd/dd/??)
@@ -69,22 +66,23 @@ public class TitleParser {
                 day = Integer.parseInt(m.group(1));
                 int monthInt = Integer.parseInt(m.group(2));
                 year = Integer.parseInt(m.group(3));
-                yearStr = m.group(3);
                 if (monthInt > 12) {
                     int tmp = monthInt;
                     monthInt = day;
                     day = tmp;
                 }
-                month = months[monthInt];
+                monthStr = months[monthInt];
             } else {
             	m = null;
             }
         }
-        // day can be not present for example "New York City, January 11"
         HashMap<String, Object> dateComponents = new HashMap<String, Object>();
-        dateComponents.put("day",  day);
-        dateComponents.put("month", month);
-        dateComponents.put("year", year < 2000 ? "20" + yearStr : yearStr);
+        // day could be not present for example "New York City, January 11"
+        if (day > 0) {
+        	dateComponents.put("day",  day + "");
+        }
+        dateComponents.put("month", monthStr);
+        dateComponents.put("year", (year < 2000 ? 2000 + year : year) + "");
         if (m != null) {
         	dateComponents.put("matched", m);
         }
@@ -133,7 +131,7 @@ public class TitleParser {
 //        titleData.location = titleData.location.replaceAll("[^a-z]*$", "");
 
         String when = "";
-        if ((Integer)dateComponents.get("day") != 0) {
+        if (dateComponents.get("day") != null) {
             when = dateComponents.get("day") + " ";
         };
         when += dateComponents.get("month") + ", " + dateComponents.get("year");
