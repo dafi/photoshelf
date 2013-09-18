@@ -3,6 +3,7 @@ package com.ternaryop.phototumblrshare;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 
@@ -38,9 +39,9 @@ public class ImageDOMSelectorFinder {
 	}
 
 	public String getSelectorFromUrl(String url) {
-		for (String domain : domainMap.keySet()) {
-			if (url.startsWith(domain)) {
-				return (String) domainMap.get(domain);
+		for (String domainRE : domainMap.keySet()) {
+			if (Pattern.compile(domainRE).matcher(url).find()) {
+				return (String) domainMap.get(domainRE);
 			}
 		}
 		return null;

@@ -96,6 +96,7 @@ public class ImagePickerWebViewClient extends WebViewClient {
 		private final Context context;
 		private String title;
 		ProgressDialog progressDialog;
+		Exception error = null;
 
 		public ImageLinkRetrieverAsyncTask(Context context, String title) {
 			this.context = context;
@@ -131,10 +132,8 @@ public class ImagePickerWebViewClient extends WebViewClient {
 					publishProgress(i++);
 				}
 			} catch (Exception e) {
-				new AlertDialog.Builder(context)
-				.setTitle(R.string.url_not_found)
-				.setMessage(e.getLocalizedMessage())
-				.show();
+				error = e;
+				return null;
 			}
 			return imageUrls;
 		}
@@ -148,14 +147,21 @@ public class ImagePickerWebViewClient extends WebViewClient {
 		protected void onPostExecute(List<String> imageUrls) {
 			try {
 				progressDialog.dismiss();
-				TitleData titleData = TitleParser.instance().parseTitle(title);
-				TumblrPostDialog dialog = new TumblrPostDialog(context);
-				dialog.setImageUrls(imageUrls);
-				dialog.setTitle(titleData.toString());
-				dialog.setTags(titleData.getTags());
-				
-				dialog.show();
-				urlSelectorMap.clear();
+				if (error == null) {
+					TitleData titleData = TitleParser.instance().parseTitle(title);
+					TumblrPostDialog dialog = new TumblrPostDialog(context);
+					dialog.setImageUrls(imageUrls);
+					dialog.setTitle(titleData.toString());
+					dialog.setTags(titleData.getTags());
+					
+					dialog.show();
+					urlSelectorMap.clear();
+				} else {
+					new AlertDialog.Builder(context)
+					.setTitle(R.string.url_not_found)
+					.setMessage(error.getLocalizedMessage())
+					.show();
+				}
 			} catch (Exception e) {
 				new AlertDialog.Builder(context)
 				.setTitle(R.string.parsing_error)

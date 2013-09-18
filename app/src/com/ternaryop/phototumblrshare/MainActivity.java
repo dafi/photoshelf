@@ -11,6 +11,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.ternaryop.utils.URLUtils;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -98,11 +100,23 @@ public class MainActivity extends Activity {
 
 		if (m.find()) {
 			String url = m.group(1);
-			if (useWebView) {
-				webView.loadUrl(url);
-			} else {
-				new ImageUrlExtractor().execute(new String[]{url});
-			}
+			// resolveShortenURL can't be called on main thread so we
+			// resolve into a separated thread
+			new AsyncTask<String, Void, String>() {
+				@Override
+				protected String doInBackground(String... params) {
+					return URLUtils.resolveShortenURL(params[0]);
+				}
+				
+				@Override
+				protected void onPostExecute(String url) {
+					if (useWebView) {
+						webView.loadUrl(url);
+					} else {
+						new ImageUrlExtractor().execute(new String[]{url});
+					}
+				}
+			}.execute(url);
 		} else {
 			new AlertDialog.Builder(this)
 				.setTitle(R.string.url_not_found)
@@ -132,7 +146,7 @@ public class MainActivity extends Activity {
 	}
 	
 	class ImageUrlExtractor extends AsyncTask<String, Void, List<ImageInfo>> {
-
+		Exception error = null;
 		@Override
 		protected List<ImageInfo> doInBackground(String... urls) {
 			List<ImageInfo> imageInfoList = new ArrayList<ImageInfo>();
@@ -148,19 +162,24 @@ public class MainActivity extends Activity {
 					imageInfoList.add(new ImageInfo(thumbnailURL, imageURL));
 				}
 			} catch (IOException e) {
-				new AlertDialog.Builder(MainActivity.this)
-				.setTitle(R.string.url_not_found)
-				.setMessage(e.getLocalizedMessage())
-				.show();
+				error = e;
+				return null;
 			}
 			return imageInfoList;
 		}
 
 		@Override
 		protected void onPostExecute(List<ImageInfo> result) {
-			imageAdapter.addAll(result);
-			imageAdapter.notifyDataSetChanged();
-			gridView.invalidateViews();
+			if (error == null) {
+				imageAdapter.addAll(result);
+				imageAdapter.notifyDataSetChanged();
+				gridView.invalidateViews();
+			} else {
+				new AlertDialog.Builder(MainActivity.this)
+				.setTitle(R.string.url_not_found)
+				.setMessage(error.getLocalizedMessage())
+				.show();
+			}
 		}
 	}
 }
