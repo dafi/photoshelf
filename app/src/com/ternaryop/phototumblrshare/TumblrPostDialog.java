@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.text.Html;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -32,24 +31,19 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
 	private static final String PREF_BLOG_NAMES = "blogNames";
 
-	private EditText imageUrls;
-	private EditText title;
-	private EditText tags;
+	private EditText postTitle;
+	private EditText postTags;
 	private Tumblr tumblr;
 	private Activity activity;
 	private Spinner blogList;
+	private String[] imageUrls;
 
 	public TumblrPostDialog(Context context) {
 		super(context);
 		setContentView(R.layout.tumblr_post);
-		setTitle(R.string.tumblr_post_title);
 
-		imageUrls = (EditText)findViewById(R.id.imageUrls);
-		// do not work in XML so we set explicitly here
-		imageUrls.setHorizontallyScrolling(true);
-
-		title = (EditText)findViewById(R.id.title);
-		tags = (EditText)findViewById(R.id.tags);
+		postTitle = (EditText)findViewById(R.id.post_title);
+		postTags = (EditText)findViewById(R.id.post_tags);
 		blogList = (Spinner) findViewById(R.id.blog);
 		
 		activity = (Activity)context;
@@ -71,38 +65,47 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		}
 	}
 	
+	@Override
+	public void show() {
+		if (imageUrls.length == 1) {
+			setTitle(R.string.tumblr_post_title);
+		} else {
+			setTitle(getContext().getResources().getString(R.string.tumblr_multiple_post_title, imageUrls.length));
+		}
+		super.show();
+	}
+	
 	public String[] getImageUrls() {
-		return imageUrls.getText().toString().split("\n");
+		return imageUrls;
 	}
 
 	public void setImageUrls(List<String> imageUrls) {
-		String lines = TextUtils.join("\n", imageUrls);
-		this.imageUrls.setText(lines);
+		this.imageUrls = imageUrls.toArray(new String[imageUrls.size()]);
 	}
 
 	public void setImageUrlsFromImageInfo(List<ImageInfo> imageList) {
-		StringBuilder lines = new StringBuilder();
-		for (ImageInfo imageInfo : imageList) {
-			lines.append(imageInfo.imageURL).append("\n");
+		this.imageUrls = new String[imageList.size()];
+
+		for (int i = 0; i < imageList.size(); i++) {
+			this.imageUrls[i] = imageList.get(0).imageURL;
 		}
-		this.imageUrls.setText(lines);
 	}
 
-	public String getTitle() {
-		return Html.toHtml(title.getText());
+	public String getPostTitle() {
+		return Html.toHtml(postTitle.getText());
 	}
 
-	public void setTitle(String title) {
-		this.title.setText(Html.fromHtml(title));
+	public void setPostTitle(String title) {
+		this.postTitle.setText(Html.fromHtml(title));
 	}
 
-	public String getTags() {
-		return tags.getText().toString();
+	public String getPostTags() {
+		return postTags.getText().toString();
 	}
 
-	public void setTags(List<String> tags) {
+	public void setPostTags(List<String> tags) {
 		// show only first tag
-		this.tags.setText(tags.isEmpty() ? "" : tags.get(0));
+		this.postTags.setText(tags.isEmpty() ? "" : tags.get(0));
 	}
 	
 	@Override
@@ -223,13 +226,13 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 					if (publish) {
 						for (String url : urls) {
 							tumblr.publishPhotoPost(selectedBlogName,
-									url, getTitle(), getTags(),
+									url, getPostTitle(), getPostTags(),
 									callback);
 						}
 					} else {
 						for (String url : urls) {
 							tumblr.draftPhotoPost(selectedBlogName,
-									url, getTitle(), getTags(),
+									url, getPostTitle(), getPostTags(),
 									callback);
 						}
 					}

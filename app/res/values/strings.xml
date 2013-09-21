@@ -9,6 +9,7 @@
     <string name="title">Title</string>
     <string name="imageurl">imageurl</string>
     <string name="tumblr_post_title">Post Image</string>
+    <string name="tumblr_multiple_post_title">Post %1$d Images</string>
     <string name="url_not_found">URL not found</string>
     <string name="url_not_found_description">Unable to find an URL in the text \'%1$s\'</string>
     <string name="parsing_error">Parsing error</string>
