@@ -121,14 +121,13 @@ public class TitleParser {
         	}
         }
         // city names can be multi words so allow whitespaces
-        m = Pattern.compile("\\s*(.*?)\\s+in\\s+([a-z. ]*)", Pattern.CASE_INSENSITIVE).matcher(loc);
+        m = Pattern.compile("\\s*(.*)\\s+in\\s+([a-z.\\s]*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
         if (m.find() && m.groupCount() > 1) {
             titleData.setLocation(m.group(1));
             titleData.setCity(m.group(2).trim());
         } else {
             titleData.setLocation(loc);
         }
-//        titleData.location = titleData.location.replaceAll("[^a-z]*$", "");
 
         String when = "";
         if (dateComponents.get("day") != null) {
