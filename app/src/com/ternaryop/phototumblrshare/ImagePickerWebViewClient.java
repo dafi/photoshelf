@@ -1,173 +1,24 @@
 package com.ternaryop.phototumblrshare;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.os.AsyncTask;
-import android.view.ActionMode;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.ternaryop.phototumblrshare.parsers.TitleData;
-import com.ternaryop.phototumblrshare.parsers.TitleParser;
-
 public class ImagePickerWebViewClient extends WebViewClient {
-	private Map<String, String> urlSelectorMap = new HashMap<String, String>();
-	private ActionMode actionMode;
-	private String title;
-	private Context context;
-	
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
-		context = view.getContext();
+		Activity activity = (Activity) view.getContext();
 
-		String domSelector = new ImageDOMSelectorFinder(context).getSelectorFromUrl(url);
+		String domSelector = new ImageDOMSelectorFinder(activity).getSelectorFromUrl(url);
 		if (domSelector != null) {
-			if (urlSelectorMap.get(url) == null) {
-				urlSelectorMap.put(url, domSelector);
-			} else {
-				urlSelectorMap.remove(url);
-			}
-			title = view.getTitle();
-			if (urlSelectorMap.size() == 0) {
-				getActionMode((Activity) context).finish();
-			} else {
-				getActionMode((Activity) context).invalidate();
-			}
+			ImageViewerActivity.startImageViewer(activity, url);
 			return true;
 		}
-		String message = context.getResources().getString(R.string.unable_to_find_domain_mapper_for_url);
-		Toast.makeText(context.getApplicationContext(),
+		String message = activity.getResources().getString(R.string.unable_to_find_domain_mapper_for_url);
+		Toast.makeText(activity.getApplicationContext(),
 				String.format(message, url),
 				Toast.LENGTH_LONG).show();
 		return false;
-	}
-
-	protected ActionMode getActionMode(Activity activity) {
-		if (actionMode == null) {
-			actionMode = activity.startActionMode(mActionModeCallback);
-		}
-		return actionMode;
-	}
-
-	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
-		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			MenuInflater inflater = mode.getMenuInflater();
-			inflater.inflate(R.menu.action_context, menu);
-			return true;
-		}
-
-		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			menu.findItem(R.id.counter).setTitle(urlSelectorMap.size() + " urls");
-			return true;
-		}
-
-		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			switch (item.getItemId()) {
-			case R.id.showDialog:
-				new ImageLinkRetrieverAsyncTask(context, title).execute(urlSelectorMap);
-				getActionMode((Activity) context).finish();
-				return true;
-			default:
-				return false;
-			}
-		}
-
-		// Called when the user exits the action mode
-		public void onDestroyActionMode(ActionMode mode) {
-			actionMode = null;
-		}
-	};
-
-	class ImageLinkRetrieverAsyncTask extends AsyncTask<Object, Integer, List<String>> {
-		private final Context context;
-		private String title;
-		ProgressDialog progressDialog;
-		Exception error = null;
-
-		public ImageLinkRetrieverAsyncTask(Context context, String title) {
-			this.context = context;
-			this.title = title;
-			progressDialog = new ProgressDialog(context);
-		}
-		
-		@Override
-		protected void onPreExecute() {
-			progressDialog.setMessage("Getting image urls");//context.getResources().getString(R.string.preparing));
-			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			progressDialog.setMax(urlSelectorMap.size());
-			progressDialog.show();
-		}
-
-		@Override
-		protected List<String> doInBackground(Object... params) {
-			ArrayList<String> imageUrls = new ArrayList<String>();
-			try {
-				@SuppressWarnings("unchecked")
-				Map<String, String> urls = (Map<String, String>) params[0];
-				int i = 1;
-				for (String url : urls.keySet()) {
-					String selector = urls.get(url);
-					Document htmlDocument = Jsoup.connect(url).get();
-					if (title == null) {
-						title = htmlDocument.title();
-					}
-					String link = htmlDocument.select(selector).attr("src");
-					if (!link.isEmpty()) {
-						imageUrls.add(link);
-					}
-					publishProgress(i++);
-				}
-			} catch (Exception e) {
-				error = e;
-				return null;
-			}
-			return imageUrls;
-		}
-
-		@Override
-		protected void onProgressUpdate(Integer... progress) {
-			progressDialog.setProgress(progress[0]);
-		}
-
-		@Override
-		protected void onPostExecute(List<String> imageUrls) {
-			try {
-				progressDialog.dismiss();
-				if (error == null) {
-					TitleData titleData = TitleParser.instance().parseTitle(title);
-					TumblrPostDialog dialog = new TumblrPostDialog(context);
-					dialog.setImageUrls(imageUrls);
-					dialog.setPostTitle(titleData.toString());
-					dialog.setPostTags(titleData.getTags());
-					
-					dialog.show();
-					urlSelectorMap.clear();
-				} else {
-					new AlertDialog.Builder(context)
-					.setTitle(R.string.url_not_found)
-					.setMessage(error.getLocalizedMessage())
-					.show();
-				}
-			} catch (Exception e) {
-				new AlertDialog.Builder(context)
-				.setTitle(R.string.parsing_error)
-				.setMessage(title + "\n" + e.getLocalizedMessage())
-				.show();
-			}
-		}
 	}
 }

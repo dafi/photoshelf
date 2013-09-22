@@ -21,5 +21,9 @@
     <string name="go">go</string>
     <string name="getting_image_urls">Getting image urls</string>
     <string name="refresh">Refresh</string>
+    <string name="action_copyurl">Copy URL</string>
+    <string name="show_image">Show Image</string>
+    <string name="url_copied_to_clipboard">Url copied to clipboard</string>
+    <string name="action_openurl">Open URL</string>
     
 </resources>
