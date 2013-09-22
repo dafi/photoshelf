@@ -18,9 +18,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.ternaryop.phototumblrshare.parsers.TitleData;
-import com.ternaryop.phototumblrshare.parsers.TitleParser;
-
 public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> {
 	private final Context context;
 	private String title;
@@ -28,9 +25,13 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 	private Exception error = null;
 	private Map<String, String> urlSelectorMap = new HashMap<String, String>();
 	private ActionMode actionMode;
+	private final OnImagesRetrieved callback;
+	private boolean useActionMode;
 
-	public ImageUrlRetriever(Context context) {
+	public ImageUrlRetriever(Context context, OnImagesRetrieved callback) {
 		this.context = context;
+		this.callback = callback;
+		useActionMode = true;
 	}
 
 	public void addOrRemoveUrl(String domSelector, String url) {
@@ -39,17 +40,19 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 		} else {
 			urlSelectorMap.remove(url);
 		}
-		if (urlSelectorMap.size() == 0) {
-			getActionMode((Activity) context).finish();
-		} else {
-			getActionMode((Activity) context).invalidate();
+		if (useActionMode) {
+			if (urlSelectorMap.size() == 0) {
+				getActionMode((Activity) context).finish();
+			} else {
+				getActionMode((Activity) context).invalidate();
+			}
 		}
 	}
 
 	@Override
 	protected void onPreExecute() {
 		progressDialog = new ProgressDialog(context);
-		progressDialog.setMessage("Getting image urls");//context.getResources().getString(R.string.preparing));
+		progressDialog.setMessage(context.getResources().getString(R.string.image_retriever_title));
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		progressDialog.setMax(urlSelectorMap.size());
 		progressDialog.show();
@@ -91,13 +94,7 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 		try {
 			progressDialog.dismiss();
 			if (error == null) {
-				TitleData titleData = TitleParser.instance().parseTitle(title);
-				TumblrPostDialog dialog = new TumblrPostDialog(context);
-				dialog.setImageUrls(imageUrls);
-				dialog.setPostTitle(titleData.toString());
-				dialog.setPostTags(titleData.getTags());
-				
-				dialog.show();
+				callback.onImagesRetrieved(title, imageUrls);
 				urlSelectorMap.clear();
 			} else {
 				new AlertDialog.Builder(context)
@@ -144,7 +141,7 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 			switch (item.getItemId()) {
 			case R.id.showDialog:
-				execute(urlSelectorMap);
+				retrieve();
 				getActionMode((Activity) context).finish();
 				return true;
 			default:
@@ -158,4 +155,20 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 		}
 	};
 
+	public void retrieve() {
+		execute(urlSelectorMap);
+	}
+
+	public boolean isUseActionMode() {
+		return useActionMode;
+	}
+
+	public void setUseActionMode(boolean useActionMode) {
+		this.useActionMode = useActionMode;
+	}
+
+	public interface OnImagesRetrieved {
+		public void onImagesRetrieved(String title, List<String> imageUrls);
+	}
+	
 }

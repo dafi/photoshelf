@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,9 +17,12 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.webkit.WebView;
 
+import com.ternaryop.phototumblrshare.ImageUrlRetriever.OnImagesRetrieved;
+import com.ternaryop.phototumblrshare.parsers.TitleData;
+import com.ternaryop.phototumblrshare.parsers.TitleParser;
 import com.ternaryop.utils.URLUtils;
 
-public class MainActivity extends Activity implements OnLongClickListener {
+public class MainActivity extends Activity implements OnLongClickListener, OnImagesRetrieved {
 	private WebView webView;
 	private ImageUrlRetriever imageUrlRetriever;
 
@@ -26,7 +30,7 @@ public class MainActivity extends Activity implements OnLongClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		imageUrlRetriever = new ImageUrlRetriever(this);
+		imageUrlRetriever = new ImageUrlRetriever(this, this);
 		webView = new WebView(this);
 		setContentView(webView);
 		webView.setWebViewClient(new ImagePickerWebViewClient());
@@ -127,5 +131,16 @@ public class MainActivity extends Activity implements OnLongClickListener {
 				activity.imageUrlRetriever.addOrRemoveUrl(domSelector, url);
 			}
 		}
+	}
+
+	@Override
+	public void onImagesRetrieved(String title, List<String> imageUrls) {
+		TitleData titleData = TitleParser.instance().parseTitle(title);
+		TumblrPostDialog dialog = new TumblrPostDialog(this);
+		dialog.setImageUrls(imageUrls);
+		dialog.setPostTitle(titleData.toString());
+		dialog.setPostTags(titleData.getTags());
+		
+		dialog.show();
 	}
 }

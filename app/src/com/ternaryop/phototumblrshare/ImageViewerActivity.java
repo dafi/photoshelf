@@ -19,7 +19,8 @@ public class ImageViewerActivity extends Activity {
 	    Bundle bundle = getIntent().getExtras();
 		String imageUrl = bundle.getString(IMAGE_URL);
 		WebView webView = (WebView) findViewById(R.id.imageViewer);
-		webView.loadUrl(imageUrl);
+    	String data = "<body><img src=\"" + imageUrl +"\"/></body>";
+    	webView.loadData(data, "text/html", "UTF-8");
 	}
 
 	@Override
