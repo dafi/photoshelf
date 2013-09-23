@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <ProgressBar
+        android:id="@+id/imageViewer_progressbar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp"
+        android:visibility="gone" />
+
     <WebView
         android:id="@+id/imageViewer"
         android:layout_width="fill_parent"

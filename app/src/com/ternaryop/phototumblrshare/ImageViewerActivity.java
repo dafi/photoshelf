@@ -2,9 +2,14 @@ package com.ternaryop.phototumblrshare;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 public class ImageViewerActivity extends Activity {
 	private static final String IMAGE_URL = "imageUrl";
@@ -16,11 +21,33 @@ public class ImageViewerActivity extends Activity {
 
 	    getActionBar().setDisplayHomeAsUpEnabled(true);
 
+	    ProgressBar progressBar = (ProgressBar) findViewById(R.id.imageViewer_progressbar);
+	    
 	    Bundle bundle = getIntent().getExtras();
 		String imageUrl = bundle.getString(IMAGE_URL);
-		WebView webView = (WebView) findViewById(R.id.imageViewer);
     	String data = "<body><img src=\"" + imageUrl +"\"/></body>";
-    	webView.loadData(data, "text/html", "UTF-8");
+    	prepareWebView(progressBar).loadData(data, "text/html", "UTF-8");
+	}
+
+	private WebView prepareWebView(final ProgressBar progressBar) {
+		WebView webView = (WebView) findViewById(R.id.imageViewer);
+		webView.setWebChromeClient(new WebChromeClient() {
+			@Override
+			public void onProgressChanged(WebView view, int newProgress) {
+				progressBar.setProgress(newProgress);
+			}
+		});
+		webView.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				progressBar.setVisibility(View.VISIBLE);
+			}
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				progressBar.setVisibility(View.GONE);
+			}
+		});
+		return webView;
 	}
 
 	@Override
