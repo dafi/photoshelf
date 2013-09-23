@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class TitleData {
 	private static String format = "<p><strong>$who</strong> <em>$where_loc, $where_city ($when)</em></p>";
-    private static String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives", "at the"};
+	private static String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives", "at the"};
 
     private static HashMap<String, String> cities = new HashMap<String, String>();
 
@@ -42,7 +42,7 @@ public class TitleData {
 
 	public void setLocation(String location) {
 		// remove all non alpha chars from the end
-        location = location.replaceAll("[^a-z]*$", "").trim();
+        location = location.replaceAll("[^\\p{Alpha}]*$", "").trim();
 
         boolean hasLocationPrefix = false;
     	for (int i = 0; i < locationPrefixes.length; i++) {
@@ -55,7 +55,7 @@ public class TitleData {
         	// lowercase the first character
         	location = location.substring(0, 1).toLowerCase(Locale.ENGLISH) + location.substring(1);
     	} else {
-    		location = "at the " + location; 
+    		location = "at the " + location;
     	}
 		this.location = location;
 	}

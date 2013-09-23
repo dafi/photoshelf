@@ -46,7 +46,7 @@ public class TitleParser {
      */
     protected Map<String, Object> parseDate(String title) {
     	int day = 0;
-    	String monthStr = "";
+    	String monthStr = null;
     	int year = 0;
     	
         // handle dates in the form Jan 10, 2010 or January 10 2010 or Jan 15
@@ -56,8 +56,6 @@ public class TitleParser {
             monthStr = monthsShort.get(m.group(1).toLowerCase(Locale.getDefault()));
             if (m.groupCount() == 3 && m.group(3).length() > 0) {
                 year = Integer.parseInt(m.group(3));
-            } else {
-                year = Calendar.getInstance().get(Calendar.YEAR);
             }
         } else {
             // handle dates in the form dd/dd/dd?? or (dd/dd/??)
@@ -81,8 +79,13 @@ public class TitleParser {
         if (day > 0) {
         	dateComponents.put("day",  day + "");
         }
-        dateComponents.put("month", monthStr);
-        dateComponents.put("year", (year < 2000 ? 2000 + year : year) + "");
+        if (monthStr != null) {
+        	dateComponents.put("month", monthStr);
+        }
+        if (year < 2000) {
+            year = Calendar.getInstance().get(Calendar.YEAR);
+        }
+        dateComponents.put("year", year + "");
         if (m != null) {
         	dateComponents.put("matched", m);
         }
@@ -133,7 +136,10 @@ public class TitleParser {
         if (dateComponents.get("day") != null) {
             when = dateComponents.get("day") + " ";
         };
-        when += dateComponents.get("month") + ", " + dateComponents.get("year");
+        if (dateComponents.get("month") != null) {
+        	when += dateComponents.get("month") + ", ";
+        }
+        when += dateComponents.get("year");
 
         titleData.setWhen(when);
         titleData.setTags(new String[] {titleData.getWho(), titleData.getLocation()});
