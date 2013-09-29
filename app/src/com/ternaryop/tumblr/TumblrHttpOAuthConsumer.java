@@ -1,9 +1,6 @@
 package com.ternaryop.tumblr;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -20,12 +17,12 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -36,6 +33,7 @@ import android.os.AsyncTask;
 
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.JSONUtils;
 
 public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 	/**
@@ -185,6 +183,13 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 	}
 
 	public HttpResponse getSignedGetResponse(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
+        if (params != null) {
+        	if(!url.endsWith("?")) {
+                url += "?";
+        	}
+        	String paramString = URLEncodedUtils.format(params, "UTF-8");
+            url += paramString;        	
+        }
         HttpContext context = new BasicHttpContext();
         HttpRequestBase request = new HttpGet(url);
 
@@ -195,20 +200,15 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
     }    
 	
     public JSONObject jsonFromGet(String url) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
-		return jsonFromInputStream(getSignedGetResponse(url, null).getEntity().getContent());
+		return JSONUtils.jsonFromInputStream(getSignedGetResponse(url, null).getEntity().getContent());
+    }    
+
+    public JSONObject jsonFromGet(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
+		return JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getEntity().getContent());
     }    
 
     public JSONObject jsonFromPost(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
-		return jsonFromInputStream(getSignedPostResponse(url, params).getEntity().getContent());
+		return JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getEntity().getContent());
     }    
 
-	public static JSONObject jsonFromInputStream(InputStream is) throws JSONException, IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        StringBuffer sb = new StringBuffer();
-        String line;
-        while ((line = in.readLine()) != null) {
-        	sb.append(line);
-        }
-		return (JSONObject) new JSONTokener(sb.toString()).nextValue();
-	}
 }

@@ -1,5 +1,9 @@
 package com.ternaryop.utils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,6 +13,7 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 public class JSONUtils {
 	public static Object toJSON(Object object) throws JSONException {
@@ -69,5 +74,15 @@ public class JSONUtils {
 		} else {
 			return json;
 		}
+	}
+
+	public static JSONObject jsonFromInputStream(InputStream is) throws JSONException, IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        StringBuffer sb = new StringBuffer();
+        String line;
+        while ((line = in.readLine()) != null) {
+        	sb.append(line);
+        }
+		return (JSONObject) new JSONTokener(sb.toString()).nextValue();
 	}
 }

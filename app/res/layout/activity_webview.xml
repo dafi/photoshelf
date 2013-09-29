@@ -5,14 +5,16 @@
     android:orientation="vertical" >
 
     <ProgressBar
-        android:id="@+id/imageViewer_progressbar"
+        android:id="@+id/webview_progressbar"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="20dp"
+        android:layout_height="@dimen/webview_progressbar_height"
+        android:maxHeight="@dimen/webview_progressbar_height"
+        android:minHeight="@dimen/webview_progressbar_height"
         android:visibility="gone" />
 
     <WebView
-        android:id="@+id/imageViewer"
+        android:id="@+id/webview_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 

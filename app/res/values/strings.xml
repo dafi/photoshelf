@@ -26,4 +26,10 @@
     <string name="url_copied_to_clipboard">Url copied to clipboard</string>
     <string name="action_openurl">Open URL</string>
     <string name="image_retriever_title">Getting image urls</string>
+    <string name="no_selected_blog">No selected blog</string>
+    <string name="action_draft_posts">Draft Posts</string>
+    <string name="posts_in_draft">%1$d post(s) in draft</string>
+    <string name="reading_draft_posts">Reading draft posts...</string>
+    <string name="reading_queued_posts">Reading queued posts...</string>
+    <string name="finding_last_published_posts">Finding last published posts...</string>
 </resources>

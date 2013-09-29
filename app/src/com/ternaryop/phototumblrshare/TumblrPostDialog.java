@@ -2,7 +2,6 @@ package com.ternaryop.phototumblrshare;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -10,8 +9,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.text.Html;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -27,16 +24,13 @@ import com.ternaryop.utils.DialogUtils;
 
 public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
-	private static final String PREFS_NAME = "tumblrShareImage";
-	private static final String PREF_SELECTED_BLOG = "selectedBlog";
-	private static final String PREF_BLOG_NAMES = "blogNames";
-
 	private EditText postTitle;
 	private EditText postTags;
 	private Tumblr tumblr;
 	private Activity activity;
 	private Spinner blogList;
 	private String[] imageUrls;
+	private AppSupport appSupport;
 
 	public TumblrPostDialog(Context context) {
 		super(context);
@@ -47,6 +41,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		blogList = (Spinner) findViewById(R.id.blog);
 		
 		activity = (Activity)context;
+		appSupport = new AppSupport(context);
 		((Button)findViewById(R.id.publishButton)).setOnClickListener(new OnClickPublishListener());
 		((Button)findViewById(R.id.draftButton)).setOnClickListener(new OnClickPublishListener());
 		((ImageButton)findViewById(R.id.refreshBlogList)).setOnClickListener(this);
@@ -113,8 +108,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		findViewById(R.id.publishButton).setEnabled(false);
 		findViewById(R.id.draftButton).setEnabled(false);
 
-		SharedPreferences preferences = activity.getSharedPreferences(PREFS_NAME, 0);
-		Set<String> blogSetNames = preferences.getStringSet(PREF_BLOG_NAMES, null);
+		Set<String> blogSetNames = appSupport.getBlogList();
 		if (blogSetNames == null) {
 			fetchBlogNames();
 		} else {
@@ -130,8 +124,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		blogList.setAdapter(adapter);
 
-		SharedPreferences preferences = activity.getSharedPreferences(PREFS_NAME, 0);
-		String selectedName = preferences.getString(PREF_SELECTED_BLOG, null);
+		String selectedName = appSupport.getSelectedBlogName();
 		if (selectedName != null) {
 			int position = adapter.getPosition(selectedName);
 			if (position >= 0) {
@@ -156,9 +149,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 						for (int i = 0; i < result.length; i++) {
 							blogNames.add(result[i].getName());
 						}
-						Editor edit = activity.getSharedPreferences(PREFS_NAME, 0).edit();
-						edit.putStringSet(PREF_BLOG_NAMES, new HashSet<String>(blogNames));
-						edit.commit();
+						appSupport.setBlogList(blogNames);
 						fillBlogList(blogNames);
 						findViewById(R.id.publishButton).setEnabled(true);
 						findViewById(R.id.draftButton).setEnabled(true);
@@ -216,10 +207,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 					tumblr = t;
 					String selectedBlogName = (String) blogList
 							.getSelectedItem();
-					Editor edit = activity.getSharedPreferences(PREFS_NAME, 0)
-							.edit();
-					edit.putString(PREF_SELECTED_BLOG, selectedBlogName);
-					edit.commit();
+					appSupport.setSelectedBlogName(selectedBlogName);
 
 					String[] urls = getImageUrls();
 					final PostCallback callback = new PostCallback(urls.length, publish);

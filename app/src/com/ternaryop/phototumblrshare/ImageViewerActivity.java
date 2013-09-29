@@ -17,11 +17,11 @@ public class ImageViewerActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.image_viewer);
+		setContentView(R.layout.activity_webview);
 
 	    getActionBar().setDisplayHomeAsUpEnabled(true);
 
-	    ProgressBar progressBar = (ProgressBar) findViewById(R.id.imageViewer_progressbar);
+	    ProgressBar progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
 	    
 	    Bundle bundle = getIntent().getExtras();
 		String imageUrl = bundle.getString(IMAGE_URL);
@@ -30,7 +30,7 @@ public class ImageViewerActivity extends Activity {
 	}
 
 	private WebView prepareWebView(final ProgressBar progressBar) {
-		WebView webView = (WebView) findViewById(R.id.imageViewer);
+		WebView webView = (WebView) findViewById(R.id.webview_view);
 		webView.setWebChromeClient(new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
@@ -40,6 +40,7 @@ public class ImageViewerActivity extends Activity {
 		webView.setWebViewClient(new WebViewClient() {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				progressBar.setProgress(0);
 				progressBar.setVisibility(View.VISIBLE);
 			}
 			@Override

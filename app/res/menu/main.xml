@@ -1,6 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/action_draft_posts"
+        android:orderInCategory="110"
+        android:title="@string/action_draft_posts"/>
+    
+    <item
         android:id="@+id/action_copyurl"
         android:orderInCategory="110"
         android:showAsAction="never"

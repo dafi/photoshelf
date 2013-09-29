@@ -15,25 +15,35 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnLongClickListener;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
 
 import com.ternaryop.phototumblrshare.ImageUrlRetriever.OnImagesRetrieved;
 import com.ternaryop.phototumblrshare.parsers.TitleData;
 import com.ternaryop.phototumblrshare.parsers.TitleParser;
 import com.ternaryop.utils.URLUtils;
 
-public class MainActivity extends Activity implements OnLongClickListener, OnImagesRetrieved {
+public class MainActivity extends PhotoTumblrActivity implements OnLongClickListener, OnImagesRetrieved {
 	private WebView webView;
 	private ImageUrlRetriever imageUrlRetriever;
+	private ProgressBar progressBar;
 
-	@Override
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setContentView(R.layout.activity_webview);
 		imageUrlRetriever = new ImageUrlRetriever(this, this);
-		webView = new WebView(this);
-		setContentView(webView);
-		webView.setWebViewClient(new ImagePickerWebViewClient());
+		webView = (WebView) findViewById(R.id.webview_view);
+		progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
+		webView.setWebViewClient(new ImagePickerWebViewClient(progressBar));
+		webView.setWebChromeClient(new WebChromeClient() {
+			@Override
+			public void onProgressChanged(WebView view, int newProgress) {
+				progressBar.setProgress(newProgress);
+			}
+		});
 		webView.setOnLongClickListener(this);
 
 		// Get intent, action and MIME type
@@ -42,12 +52,11 @@ public class MainActivity extends Activity implements OnLongClickListener, OnIma
 	    String type = intent.getType();
 
 	    if (Intent.ACTION_SEND.equals(action) && type != null) {
-	    	// Allow to click the actionbar to return to caller
-		    getActionBar().setDisplayHomeAsUpEnabled(true);
 	        if ("text/plain".equals(type)) {
 	            handleSendText(intent);
 	        }
 	    } else {
+		    getActionBar().setDisplayHomeAsUpEnabled(false);
 			webView.loadUrl("file:///android_asset/index.html");
 	    }
 	}
@@ -96,10 +105,8 @@ public class MainActivity extends Activity implements OnLongClickListener, OnIma
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
-	        case android.R.id.home:
-	        	// clicked the actionbar
-	        	// close and return to caller
-	        	finish();
+	        case R.id.action_draft_posts:
+	        	startDraftActivity(this);
 	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
@@ -142,5 +149,14 @@ public class MainActivity extends Activity implements OnLongClickListener, OnIma
 		dialog.setPostTags(titleData.getTags());
 		
 		dialog.show();
+	}
+
+	public static void startDraftActivity(Activity activity) {
+		Intent intent = new Intent(activity, DraftActivity.class);
+		Bundle bundle = new Bundle();
+
+		intent.putExtras(bundle);
+
+		activity.startActivity(intent);
 	}
 }
