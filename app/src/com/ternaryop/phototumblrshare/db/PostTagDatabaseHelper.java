@@ -51,6 +51,12 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 		return rows;
 	}
 
+	public void removeAll() {
+		SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("delete from " + PostTag.TABLE_NAME);
+		db.close();
+	}
+
 	public PostTag getPostByTag(String tag, String tumblrName) {
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(

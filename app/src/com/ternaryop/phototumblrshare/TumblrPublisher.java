@@ -157,9 +157,8 @@ public class TumblrPublisher {
 		}
 		// sort following order from top to bottom
 		// Never Published
-		// In Queue
 		// Older published
-		final long currentMS = System.currentTimeMillis();
+		// In Queue
 		Collections.sort(temp, new Comparator<TimestampPosts>() {
 
 			@Override
@@ -167,10 +166,10 @@ public class TumblrPublisher {
 			    long lhsTimestamp = lhs.timestamp;
 			    long rhsTimestamp = rhs.timestamp;
 
-			    if (lhsTimestamp > currentMS) {
+			    if (lhsTimestamp == Long.MAX_VALUE) {
 			    	return -1;
 			    }
-			    if (rhsTimestamp > currentMS) {
+			    if (rhsTimestamp == Long.MAX_VALUE) {
 			    	return 1;
 			    }
 			    long ldiff = lhsTimestamp - rhsTimestamp;
@@ -192,6 +191,8 @@ public class TumblrPublisher {
 			}
 		});
 		for (TimestampPosts tsp : temp) {
+	    	System.out
+					.println("TumblrPublisher.getDraftPostSortedByPublishDate()" + tsp.timestamp + " tag " + tsp.posts.get(0).getJSONArray("tags").getString(0));
 			list.addAll(tsp.posts);
 		}
 		return list;

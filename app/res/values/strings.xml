@@ -32,4 +32,11 @@
     <string name="reading_draft_posts">Reading draft posts...</string>
     <string name="reading_queued_posts">Reading queued posts...</string>
     <string name="finding_last_published_posts">Finding last published posts...</string>
+    <string name="schedule_post">Schedule Post</string>
+    <string name="schedule">Schedule</string>
+    <string name="publish_post">Publish Post</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="image_size">Image %1$dx%2$d</string>
+    
 </resources>

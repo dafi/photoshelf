@@ -1,6 +1,8 @@
 package com.ternaryop.phototumblrshare;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -24,6 +27,8 @@ import android.widget.Toast;
 
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
+import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
+import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.phototumblrshare.list.LazyAdapter;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -32,6 +37,8 @@ import com.ternaryop.utils.DialogUtils;
 public class DraftActivity extends PhotoTumblrActivity {
     private LazyAdapter adapter;
 	private AppSupport appSupport;
+	private Map<String, JSONObject> queuedPosts;
+	private Calendar lastScheduledDate;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,13 +51,13 @@ public class DraftActivity extends PhotoTumblrActivity {
         list.setAdapter(adapter);
         registerForContextMenu(list);
 
-        final String tumblrName = appSupport.getSelectedBlogName();
-		if (tumblrName == null) {
+		if (appSupport.getSelectedBlogName() == null) {
 			Toast.makeText(this.getApplicationContext(),
 					getResources().getString(R.string.no_selected_blog),
-					Toast.LENGTH_LONG).show();
+					Toast.LENGTH_LONG)
+					.show();
 		} else {
-			readDraftPosts(tumblrName, this);
+			readDraftPosts();
 		}
 	}
 
@@ -63,11 +70,19 @@ public class DraftActivity extends PhotoTumblrActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_draft_refresh:
-			readDraftPosts(appSupport.getSelectedBlogName(), this);
+			readDraftPosts();
+			return true;
+		case R.id.action_draft_clear_cache:
+			clearCache();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void clearCache() {
+		new PostTagDatabaseHelper(this).removeAll();
+		readDraftPosts();
 	}
 
 	@Override
@@ -79,13 +94,13 @@ public class DraftActivity extends PhotoTumblrActivity {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 		switch (item.getItemId()) {
 		case R.id.post_publish:
-			final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-			publishPost(info);
+			showPublishDialog(info.position);
 			break;
-		case R.id.post_queue:
-			System.out.println("queue");
+		case R.id.post_schedule:
+			showScheduleDialog(info.position);
 			break;
 		default:
 			break;
@@ -93,19 +108,84 @@ public class DraftActivity extends PhotoTumblrActivity {
 		return true;
 	}
 
-	private void publishPost(final AdapterView.AdapterContextMenuInfo info) {
+	private void showScheduleDialog(final int position) {
+		@SuppressWarnings("unchecked")
+		SchedulePostDialog dialog = new SchedulePostDialog(this,
+				appSupport.getSelectedBlogName(),
+				(Map<String, String>)adapter.getItem(position),
+				findScheduleTime(),
+				new onPostScheduleListener() {
+			@Override
+			public void onPostScheduled(long id, Calendar scheduledDateTime) {
+				lastScheduledDate = (Calendar) scheduledDateTime.clone();
+				adapter.remove(position);
+				adapter.notifyDataSetChanged();
+			}
+		});
+		dialog.show();
+	}
+
+	private Calendar findScheduleTime() {
+		Calendar cal;
+		
+		if (lastScheduledDate == null) {
+			cal = Calendar.getInstance();
+			long maxScheduledTime = System.currentTimeMillis();
+
+			try {
+				for (JSONObject post : queuedPosts.values()) {
+					long scheduledTime = post.getLong("scheduled_publish_time") * 1000;
+					if (scheduledTime > maxScheduledTime) {
+						maxScheduledTime = scheduledTime;
+					}
+				}
+			} catch (Exception e) {
+			}
+	    	cal.setTime(new Date(maxScheduledTime));
+			cal.set(Calendar.MINUTE, 0);
+	    	cal.set(Calendar.SECOND, 0);
+	    	cal.set(Calendar.MILLISECOND, 0);
+		} else {
+			cal = (Calendar) lastScheduledDate.clone();
+		}
+    	// set next queued post time
+		cal.add(Calendar.HOUR, appSupport.getDefaultScheduleHoursSpan());
+		
+		return cal;
+	}
+
+	private void showPublishDialog(final int position) {
+		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		        switch (which) {
+		        case DialogInterface.BUTTON_POSITIVE:
+		            publishPost(position);
+		            break;
+		        }
+		    }
+		};
+		
+		new AlertDialog.Builder(DraftActivity.this)
+		.setMessage(R.string.are_you_sure)
+		.setPositiveButton(android.R.string.yes, dialogClickListener)
+	    .setNegativeButton(android.R.string.no, dialogClickListener)
+	    .show();		
+	}
+	
+	private void publishPost(final int position) {
 		Tumblr.getTumblr(this, new Callback<Void>() {
 
 			@Override
 			public void complete(Tumblr tumblr, Void result) {
 				@SuppressWarnings("unchecked")
-				Map<String, String> item = (Map<String, String>)adapter.getItem(info.position);
+				Map<String, String> item = (Map<String, String>)adapter.getItem(position);
 				final long id = Long.valueOf(item.get(LazyAdapter.KEY_ID));
 				tumblr.publishPost(appSupport.getSelectedBlogName(), id, new Callback<JSONObject>() {
 
 					@Override
 					public void complete(Tumblr tumblr, JSONObject result) {
-						adapter.remove(info.position);
+						adapter.remove(position);
 						adapter.notifyDataSetChanged();
 					}
 
@@ -124,8 +204,9 @@ public class DraftActivity extends PhotoTumblrActivity {
 			}
 		});
 	}
-	
-	private void readDraftPosts(final String tumblrName, final Context context) {
+
+	private void readDraftPosts() {
+		final String tumblrName = appSupport.getSelectedBlogName();
 		adapter.clear();
 		Tumblr.getTumblr(this, new Callback<Void>() {
 			ProgressDialog progressDialog;
@@ -135,7 +216,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 				new AsyncTask<Void, String, Void>() {
 
 					protected void onPreExecute() {
-						progressDialog = new ProgressDialog(context);
+						progressDialog = new ProgressDialog(DraftActivity.this);
 						progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 						progressDialog.setMessage(getString(R.string.reading_draft_posts));
 						progressDialog.show();
@@ -164,7 +245,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 							
 							// get queued posts
 							this.publishProgress(context.getResources().getString(R.string.reading_queued_posts));
-							Map<String, JSONObject> queuedPosts = publisher.getTagsForQueuedPosts(t.getQueue(tumblrName));
+							queuedPosts = publisher.getTagsForQueuedPosts(t.getQueue(tumblrName));
 
 							// get last published
 							this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
@@ -181,8 +262,16 @@ public class DraftActivity extends PhotoTumblrActivity {
 					            JSONObject smallestImage = altSizes.getJSONObject(altSizes.length() - 1);
 					            map.put(LazyAdapter.KEY_ID, "" + post.getLong("id"));
 					            map.put(LazyAdapter.KEY_TITLE, post.getJSONArray("tags").getString(0));
-					            map.put(LazyAdapter.KEY_TIME, TumblrPublisher.formatPublishDaysAgo(post.getLong("photo-tumblr-share-timestamp")));
+					            long photoTimestamp = post.getLong("photo-tumblr-share-timestamp");
+								map.put(LazyAdapter.KEY_TIME, TumblrPublisher.formatPublishDaysAgo(photoTimestamp));
 					            map.put(LazyAdapter.KEY_THUMB_URL, smallestImage.getString("url"));
+					            if (photoTimestamp == Long.MAX_VALUE) {
+					            	map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_NEVER);
+					            } else if (photoTimestamp > System.currentTimeMillis()) {
+					            	map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_FUTURE);
+					            } else {
+					            	map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_PAST);
+					            }
 					 
 					            adapter.addItem(map);
 					        }

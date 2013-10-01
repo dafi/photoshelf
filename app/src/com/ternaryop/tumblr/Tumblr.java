@@ -1,9 +1,13 @@
 package com.ternaryop.tumblr;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import oauth.signpost.exception.OAuthException;
@@ -186,6 +190,40 @@ public class Tumblr {
     	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
     	        nameValuePairs.add(new BasicNameValuePair("id", id + ""));
     	        nameValuePairs.add(new BasicNameValuePair("state", "published"));
+
+    	        try {
+        	        JSONObject json = consumer.jsonFromPost(apiUrl, nameValuePairs);
+        	        return json.getJSONObject("response");
+				} catch (Exception e) {
+					error = e;
+				}
+    	        return null;
+    		}
+
+			@Override
+			protected void onPostExecute(JSONObject response) {
+				if (error == null) {
+					callback.complete(instance, response);
+				} else {
+					callback.failure(instance, error);
+				}
+			}
+        }.execute();
+    }
+
+    public void schedulePost(final String tumblrName, final long id, final long timestamp, final Callback<JSONObject> callback) {
+        new AsyncTask<Void, Void, JSONObject>() {
+        	Exception error;
+    		@Override
+    		protected JSONObject doInBackground(Void... params) {
+    	        String apiUrl = getApiUrl(tumblrName, "/post/edit");
+    	        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
+    	        String gmtDate = dateFormat.format(new Date(timestamp));
+    	    	
+    	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+    	        nameValuePairs.add(new BasicNameValuePair("id", id + ""));
+    	        nameValuePairs.add(new BasicNameValuePair("state", "queue"));
+    	        nameValuePairs.add(new BasicNameValuePair("publish_on", gmtDate));
 
     	        try {
         	        JSONObject json = consumer.jsonFromPost(apiUrl, nameValuePairs);

@@ -1,16 +1,19 @@
 package com.ternaryop.phototumblrshare;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
+@SuppressLint("SetJavaScriptEnabled")
 public class ImageViewerActivity extends Activity {
 	private static final String IMAGE_URL = "imageUrl";
 
@@ -31,6 +34,10 @@ public class ImageViewerActivity extends Activity {
 
 	private WebView prepareWebView(final ProgressBar progressBar) {
 		WebView webView = (WebView) findViewById(R.id.webview_view);
+		webView.getSettings().setJavaScriptEnabled(true);
+		webView.addJavascriptInterface(this, "dimRetriever");
+//	    webView.getSettings().setDomStorageEnabled(true);
+		
 		webView.setWebChromeClient(new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
@@ -46,6 +53,7 @@ public class ImageViewerActivity extends Activity {
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				progressBar.setVisibility(View.GONE);
+				view.loadUrl("javascript:var img = document.querySelector('img');dimRetriever.setDimensions(img.width, img.height)");
 			}
 		});
 		return webView;
@@ -72,5 +80,13 @@ public class ImageViewerActivity extends Activity {
 		intent.putExtras(bundle);
 
 		activity.startActivity(intent);
+	}
+
+	@JavascriptInterface
+	public void setDimensions(final int w, final int h) {
+		runOnUiThread(new Runnable() {
+		    public void run() {
+				setTitle(getResources().getString(R.string.image_size, w, h));		    }
+		  });
 	}
 }

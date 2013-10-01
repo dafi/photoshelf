@@ -21,6 +21,12 @@ public class LazyAdapter extends BaseAdapter {
     public static final String KEY_TITLE = "title";
     public static final String KEY_TIME = "time";
     public static final String KEY_THUMB_URL = "thumb_url";
+    public static final String KEY_LAST_PUBLISH = "last_publish";
+    
+    // possible values for KEY_LAST_PUBLISH
+    public static final String KEY_PUBLISH_NEVER = "never";
+    public static final String KEY_PUBLISH_PAST = "past";
+    public static final String KEY_PUBLISH_FUTURE = "future";
 
     private Activity activity;
     private ArrayList<HashMap<String, String>> items;
@@ -54,14 +60,22 @@ public class LazyAdapter extends BaseAdapter {
  
         TextView title = (TextView)vi.findViewById(R.id.title);
         TextView timeDesc = (TextView)vi.findViewById(R.id.time_desc);
-        ImageView thumb_image = (ImageView)vi.findViewById(R.id.list_image);
+        ImageView thumbImage = (ImageView)vi.findViewById(R.id.list_image);
  
-        HashMap<String, String> post = new HashMap<String, String>();
-        post = items.get(position);
- 
+        HashMap<String, String> post = items.get(position);
+        String lastPublish = post.get(KEY_LAST_PUBLISH);
+
+        if (KEY_PUBLISH_NEVER.equals(lastPublish)) {
+            vi.setBackgroundResource(R.drawable.published_never_gradient_bg);
+        } else if (KEY_PUBLISH_FUTURE.equals(lastPublish)) {
+            vi.setBackgroundResource(R.drawable.published_future_gradient_bg);
+        } else {
+            vi.setBackgroundResource(R.drawable.gradient_bg);
+        }
+
         title.setText(Html.fromHtml(post.get(KEY_TITLE)).toString().replaceAll("\n", ""));
         timeDesc.setText(post.get(KEY_TIME));
-        imageLoader.DisplayImage(post.get(KEY_THUMB_URL), thumb_image);
+        imageLoader.DisplayImage(post.get(KEY_THUMB_URL), thumbImage);
         return vi;
     }
     
