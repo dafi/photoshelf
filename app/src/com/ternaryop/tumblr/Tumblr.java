@@ -136,26 +136,18 @@ public class Tumblr {
 
 		JSONObject json = consumer.jsonFromGet(apiUrl);
 		JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
-//		long maxId = 0;
-//		for (int i = 0; i < arr.length(); i++) {
-//			System.out.println(i + ", id = " + arr.getJSONObject(i).getLong("id") + " tag " + arr.getJSONObject(i).getJSONArray("tags"));
-//			if (arr.getJSONObject(i).getLong("id") > maxId) {
-//				maxId = arr.getJSONObject(i).getLong("id");
-//			}
-//		}
-//		long sinceId = arr.getJSONObject(arr.length() - 1).getLong("id");
-//		
-//		while (sinceId > 0) {
-//			System.out.println("sinceId " + sinceId);
-//	        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-//	        params.add(new BasicNameValuePair("since_id", sinceId + ""));
-//
-//	        JSONArray nextPage = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts");
-//			for (int i = 0; i < nextPage.length(); i++) {
-//				System.out.println("next " + i + ", id = " + nextPage.getJSONObject(i).getLong("id") + " tag " + arr.getJSONObject(i).getJSONArray("tags"));
-//			}
-//			sinceId = nextPage.getJSONObject(nextPage.length() - 1).getLong("id");
-//		}
+		JSONArray nextPage = arr;
+		
+		while (nextPage.length() > 0) {
+			long beforeId = nextPage.getJSONObject(nextPage.length() - 1).getLong("id");
+	        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+	        params.add(new BasicNameValuePair("before_id", beforeId + ""));
+
+	        nextPage = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts");
+			for (int i = 0; i < nextPage.length(); i++) {
+				arr.put(nextPage.getJSONObject(i));
+			}
+		}
 		return arr;
     }
 
