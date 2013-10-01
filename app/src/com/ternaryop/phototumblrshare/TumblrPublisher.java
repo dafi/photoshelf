@@ -13,24 +13,14 @@ import java.util.Map;
 
 import oauth.signpost.exception.OAuthException;
 
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.helper.StringUtil;
 
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
 import com.ternaryop.tumblr.Tumblr;
-import com.ternaryop.utils.JSONUtils;
 
 public class TumblrPublisher {
 
@@ -73,27 +63,6 @@ public class TumblrPublisher {
 	    }
 
 	    return map;
-	}
-
-	public Map<String, JSONObject> getLastPublishedPhotoByTags(List<String> tags, final String tumblrName) throws JSONException, ClientProtocolException, IllegalStateException, IOException, OAuthException {
-		Map<String, JSONObject> lastPublish = new HashMap<String, JSONObject>();
-		String url = "http://localhost/consolr/api/tags/lastPublished.php?";
-
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("tags", StringUtil.join(tags, ",")));
-        params.add(new BasicNameValuePair("tumblrName", tumblrName));
-        params.add(new BasicNameValuePair("api_key", ""));
-		
-		String paramString = URLEncodedUtils.format(params, "UTF-8");
-        url += paramString;        	
-
-        HttpContext context = new BasicHttpContext();
-        HttpRequestBase request = new HttpGet(url);
-
-        JSONObject jsonObject = JSONUtils.jsonFromInputStream(new DefaultHttpClient().execute(request, context).getEntity().getContent());
-        System.out.println("TumblrPublisher.getLastPublishedPhotoByTags()" + jsonObject);
-
-		return lastPublish;
 	}
 
 	public Map<String, PostTag> getLastPublishedPhotoByTags(List<String> tags, Tumblr tumblr, final String tumblrName, PostTagDatabaseHelper dbHelper)
@@ -166,12 +135,6 @@ public class TumblrPublisher {
 			    long lhsTimestamp = lhs.timestamp;
 			    long rhsTimestamp = rhs.timestamp;
 
-			    if (lhsTimestamp == Long.MAX_VALUE) {
-			    	return -1;
-			    }
-			    if (rhsTimestamp == Long.MAX_VALUE) {
-			    	return 1;
-			    }
 			    long ldiff = lhsTimestamp - rhsTimestamp;
 			    int diff = ldiff == 0 ? 0 : ldiff < 0 ? -1 : 1;
 
@@ -185,14 +148,19 @@ public class TumblrPublisher {
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
+			    } else {
+				    if (lhsTimestamp == Long.MAX_VALUE) {
+				    	return -1;
+				    }
+				    if (rhsTimestamp == Long.MAX_VALUE) {
+				    	return 1;
+				    }
 			    }
 
 			    return diff;
 			}
 		});
 		for (TimestampPosts tsp : temp) {
-	    	System.out
-					.println("TumblrPublisher.getDraftPostSortedByPublishDate()" + tsp.timestamp + " tag " + tsp.posts.get(0).getJSONArray("tags").getString(0));
 			list.addAll(tsp.posts);
 		}
 		return list;
