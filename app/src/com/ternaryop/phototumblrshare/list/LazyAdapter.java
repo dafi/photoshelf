@@ -57,22 +57,21 @@ public class LazyAdapter extends BaseAdapter {
         if (convertView == null) {
             vi = inflater.inflate(R.layout.list_row, null);
         }
- 
-        TextView title = (TextView)vi.findViewById(R.id.title);
-        TextView timeDesc = (TextView)vi.findViewById(R.id.time_desc);
-        ImageView thumbImage = (ImageView)vi.findViewById(R.id.list_image);
- 
+
         HashMap<String, String> post = items.get(position);
         String lastPublish = post.get(KEY_LAST_PUBLISH);
 
         if (KEY_PUBLISH_NEVER.equals(lastPublish)) {
-            vi.setBackgroundResource(R.drawable.published_never_gradient_bg);
+            vi.setBackgroundResource(R.drawable.list_selector_post_never);
         } else if (KEY_PUBLISH_FUTURE.equals(lastPublish)) {
-            vi.setBackgroundResource(R.drawable.published_future_gradient_bg);
+            vi.setBackgroundResource(R.drawable.list_selector_post_future);
         } else {
-            vi.setBackgroundResource(R.drawable.gradient_bg);
+            vi.setBackgroundResource(R.drawable.list_selector);
         }
 
+        TextView title = (TextView)vi.findViewById(R.id.title);
+        TextView timeDesc = (TextView)vi.findViewById(R.id.time_desc);
+        ImageView thumbImage = (ImageView)vi.findViewById(R.id.list_image);
         title.setText(Html.fromHtml(post.get(KEY_TITLE)).toString().replaceAll("\n", ""));
         timeDesc.setText(post.get(KEY_TIME));
         imageLoader.DisplayImage(post.get(KEY_THUMB_URL), thumbImage);

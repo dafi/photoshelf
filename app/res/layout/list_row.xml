@@ -17,7 +17,6 @@
 
         <ImageView
             android:id="@+id/list_image"
-            android:contentDescription=" "
             android:layout_width="75dip"
             android:layout_height="75dip" />
     </LinearLayout>
