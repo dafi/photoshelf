@@ -208,6 +208,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 	private void readDraftPosts() {
 		final String tumblrName = appSupport.getSelectedBlogName();
 		adapter.clear();
+		adapter.notifyDataSetChanged();
 		Tumblr.getTumblr(this, new Callback<Void>() {
 			ProgressDialog progressDialog;
 
