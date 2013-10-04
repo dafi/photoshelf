@@ -20,8 +20,9 @@ public class LazyAdapter extends BaseAdapter {
     public static final String KEY_ID = "id";
     public static final String KEY_TITLE = "title";
     public static final String KEY_TIME = "time";
-    public static final String KEY_THUMB_URL = "thumb_url";
-    public static final String KEY_LAST_PUBLISH = "last_publish";
+    public static final String KEY_THUMB_URL = "thumbUrl";
+    public static final String KEY_IMAGE_URL = "imageUrl";
+    public static final String KEY_LAST_PUBLISH = "lastPublish";
     
     // possible values for KEY_LAST_PUBLISH
     public static final String KEY_PUBLISH_NEVER = "never";
