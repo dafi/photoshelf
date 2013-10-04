@@ -18,10 +18,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> {
+public class ImageUrlRetriever {
 	private final Context context;
 	private String title;
-	private ProgressDialog progressDialog;
 	private Exception error = null;
 	private Map<String, String> urlSelectorMap = new HashMap<String, String>();
 	private ActionMode actionMode;
@@ -46,67 +45,6 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 			} else {
 				getActionMode((Activity) context).invalidate();
 			}
-		}
-	}
-
-	@Override
-	protected void onPreExecute() {
-		progressDialog = new ProgressDialog(context);
-		progressDialog.setMessage(context.getResources().getString(R.string.image_retriever_title));
-		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		progressDialog.setMax(urlSelectorMap.size());
-		progressDialog.show();
-	}
-
-	@Override
-	protected List<String> doInBackground(Object... params) {
-		ArrayList<String> imageUrls = new ArrayList<String>();
-		try {
-			@SuppressWarnings("unchecked")
-			Map<String, String> urls = (Map<String, String>) params[0];
-			int i = 1;
-			for (String url : urls.keySet()) {
-				String selector = urls.get(url);
-				Document htmlDocument = Jsoup.connect(url).get();
-				if (title == null) {
-					title = htmlDocument.title();
-				}
-				String link = htmlDocument.select(selector).attr("src");
-				if (!link.isEmpty()) {
-					imageUrls.add(link);
-				}
-				publishProgress(i++);
-			}
-		} catch (Exception e) {
-			error = e;
-			return null;
-		}
-		return imageUrls;
-	}
-
-	@Override
-	protected void onProgressUpdate(Integer... progress) {
-		progressDialog.setProgress(progress[0]);
-	}
-
-	@Override
-	protected void onPostExecute(List<String> imageUrls) {
-		try {
-			progressDialog.dismiss();
-			if (error == null) {
-				callback.onImagesRetrieved(title, imageUrls);
-				urlSelectorMap.clear();
-			} else {
-				new AlertDialog.Builder(context)
-				.setTitle(R.string.url_not_found)
-				.setMessage(error.getLocalizedMessage())
-				.show();
-			}
-		} catch (Exception e) {
-			new AlertDialog.Builder(context)
-			.setTitle(R.string.parsing_error)
-			.setMessage(title + "\n" + e.getLocalizedMessage())
-			.show();
 		}
 	}
 
@@ -156,7 +94,7 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 	};
 
 	public void retrieve() {
-		execute(urlSelectorMap);
+		new UrlRetrieverAsyncTask().execute(urlSelectorMap);
 	}
 
 	public boolean isUseActionMode() {
@@ -170,5 +108,69 @@ public class ImageUrlRetriever extends AsyncTask<Object, Integer, List<String>> 
 	public interface OnImagesRetrieved {
 		public void onImagesRetrieved(String title, List<String> imageUrls);
 	}
-	
+
+	class UrlRetrieverAsyncTask extends AsyncTask<Object, Integer, List<String>> {
+		private ProgressDialog progressDialog;
+
+		@Override
+		protected void onPreExecute() {
+			progressDialog = new ProgressDialog(context);
+			progressDialog.setMessage(context.getResources().getString(R.string.image_retriever_title));
+			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			progressDialog.setMax(urlSelectorMap.size());
+			progressDialog.show();
+		}
+
+		@Override
+		protected List<String> doInBackground(Object... params) {
+			ArrayList<String> imageUrls = new ArrayList<String>();
+			try {
+				@SuppressWarnings("unchecked")
+				Map<String, String> urls = (Map<String, String>) params[0];
+				int i = 1;
+				for (String url : urls.keySet()) {
+					String selector = urls.get(url);
+					Document htmlDocument = Jsoup.connect(url).get();
+					if (title == null) {
+						title = htmlDocument.title();
+					}
+					String link = htmlDocument.select(selector).attr("src");
+					if (!link.isEmpty()) {
+						imageUrls.add(link);
+					}
+					publishProgress(i++);
+				}
+			} catch (Exception e) {
+				error = e;
+				return null;
+			}
+			return imageUrls;
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... progress) {
+			progressDialog.setProgress(progress[0]);
+		}
+
+		@Override
+		protected void onPostExecute(List<String> imageUrls) {
+			try {
+				progressDialog.dismiss();
+				if (error == null) {
+					callback.onImagesRetrieved(title, imageUrls);
+					urlSelectorMap.clear();
+				} else {
+					new AlertDialog.Builder(context)
+					.setTitle(R.string.url_not_found)
+					.setMessage(error.getLocalizedMessage())
+					.show();
+				}
+			} catch (Exception e) {
+				new AlertDialog.Builder(context)
+				.setTitle(R.string.parsing_error)
+				.setMessage(title + "\n" + e.getLocalizedMessage())
+				.show();
+			}
+		}
+	}
 }
