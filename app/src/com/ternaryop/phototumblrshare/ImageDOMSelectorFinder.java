@@ -39,9 +39,11 @@ public class ImageDOMSelectorFinder {
 	}
 
 	public String getSelectorFromUrl(String url) {
-		for (String domainRE : domainMap.keySet()) {
-			if (Pattern.compile(domainRE).matcher(url).find()) {
-				return (String) domainMap.get(domainRE);
+		if (url != null) {
+			for (String domainRE : domainMap.keySet()) {
+				if (Pattern.compile(domainRE).matcher(url).find()) {
+					return (String) domainMap.get(domainRE);
+				}
 			}
 		}
 		return null;
