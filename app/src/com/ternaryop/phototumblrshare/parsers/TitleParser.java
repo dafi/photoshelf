@@ -64,6 +64,10 @@ public class TitleParser {
                 day = Integer.parseInt(m.group(1));
                 int monthInt = Integer.parseInt(m.group(2));
                 year = Integer.parseInt(m.group(3));
+                // we have a two-digits year
+                if (year < 100) {
+                	year += 2000;
+                }
                 if (monthInt > 12) {
                     int tmp = monthInt;
                     monthInt = day;
@@ -103,25 +107,19 @@ public class TitleParser {
         title = cleanupText(title);
 
         Matcher m = titleRE.matcher(title);
-        int start = 0;
         if (m.find() && m.groupCount() > 1) {
           titleData.setWho(m.group(1));
-          start = m.regionStart() + m.group(0).length();
+          // remove the 'who' chunk
+          title = title.substring(m.regionStart() + m.group(0).length());
         }
         Map<String, Object> dateComponents = parseDate(title);
         Matcher dateMatcher = (Matcher) dateComponents.get("matched");
         String loc;
         if (dateMatcher == null) {
         	// no date found so use all substring as location
-        	loc = title.substring(start);
+        	loc = title;
         } else {
-        	if (start < dateMatcher.start()) {
-        		loc = title.substring(start, dateMatcher.start());
-        	} else {
-        		// we are unable to find a valid position for 'loc' and maybe for 'who'
-        		// so consider 'loc' all string until date
-        		loc = title.substring(0, dateMatcher.start());
-        	}
+    		loc = title.substring(0, dateMatcher.start());
         }
         // city names can be multi words so allow whitespaces
         m = Pattern.compile("\\s*(.*)\\s+in\\s+([a-z.\\s]*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
