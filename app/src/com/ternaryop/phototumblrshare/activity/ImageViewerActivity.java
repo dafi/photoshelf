@@ -1,4 +1,4 @@
-package com.ternaryop.phototumblrshare;
+package com.ternaryop.phototumblrshare.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -12,6 +12,8 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+
+import com.ternaryop.phototumblrshare.R;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class ImageViewerActivity extends Activity {
@@ -36,7 +38,6 @@ public class ImageViewerActivity extends Activity {
 		WebView webView = (WebView) findViewById(R.id.webview_view);
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.addJavascriptInterface(this, "dimRetriever");
-//	    webView.getSettings().setDomStorageEnabled(true);
 		
 		webView.setWebChromeClient(new WebChromeClient() {
 			@Override

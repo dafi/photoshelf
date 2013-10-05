@@ -14,11 +14,29 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 	private static final String DB_NAME = "phototumblrshare.db";
  	private static final int SCHEMA_VERSION = 1;
- 
-	public PostTagDatabaseHelper(Context context) {
-		super(context, DB_NAME, null, SCHEMA_VERSION);
+
+ 	private static PostTagDatabaseHelper instance = null;
+ 	 
+	public static PostTagDatabaseHelper getInstance(Context context) {
+
+		// Use the application context, which will ensure that you
+		// don't accidentally leak an Activity's context.
+		// See this article for more information: http://bit.ly/6LRzfx
+		if (instance == null) {
+			instance = new PostTagDatabaseHelper(
+					context.getApplicationContext());
+		}
+		return instance;
 	}
 
+	/**
+	 * Constructor should be private to prevent direct instantiation. make call
+	 * to static factory method "getInstance()" instead.
+	 */
+	private PostTagDatabaseHelper(Context context) {
+		super(context, DB_NAME, null, SCHEMA_VERSION);
+	}
+ 	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		String sql = "CREATE TABLE {0} ("
@@ -46,7 +64,6 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 	public long insert(PostTag postTag) {
 		SQLiteDatabase db = getWritableDatabase();
 		long rows = db.insert(PostTag.TABLE_NAME, null, postTag.getContentValues());
-		db.close();
 		
 		return rows;
 	}
@@ -54,7 +71,6 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 	public void removeAll() {
 		SQLiteDatabase db = getWritableDatabase();
         db.execSQL("delete from " + PostTag.TABLE_NAME);
-		db.close();
 	}
 
 	public PostTag getPostByTag(String tag, String tumblrName) {
@@ -70,7 +86,6 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 
 		ArrayList<PostTag> list = cursorToPostTagList(c);
 		PostTag postTag = list.isEmpty() ? null : list.get(0);
-		db.close();
 		
 		return postTag;
 	}
@@ -100,7 +115,6 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 			null);
 
 		Map<String, PostTag> map = cursorToPostTagMap(c);
-		db.close();
 		
 		return map;
 	}

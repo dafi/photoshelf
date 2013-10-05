@@ -1,10 +1,12 @@
-package com.ternaryop.phototumblrshare;
+package com.ternaryop.phototumblrshare.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-public class PhotoTumblrActivity extends Activity {
+@SuppressLint("Registered")
+public abstract class PhotoTumblrActivity extends Activity {
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

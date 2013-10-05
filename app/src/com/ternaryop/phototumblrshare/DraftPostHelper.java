@@ -1,6 +1,5 @@
 package com.ternaryop.phototumblrshare;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -10,10 +9,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import oauth.signpost.exception.OAuthException;
-
-import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +22,7 @@ import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
 import com.ternaryop.tumblr.Tumblr;
 
-public class TumblrPublisher {
+public class DraftPostHelper {
 
 	/**
 	 * Return map where key is the first tag and value is the post
@@ -65,33 +65,55 @@ public class TumblrPublisher {
 	    return map;
 	}
 
-	public Map<String, PostTag> getLastPublishedPhotoByTags(List<String> tags, Tumblr tumblr, final String tumblrName, PostTagDatabaseHelper dbHelper)
-			throws JSONException, ClientProtocolException, IllegalStateException, IOException, OAuthException {
-		HashMap<String, String> params = new HashMap<String, String>();
-		params.put("type", "photo");
-		params.put("limit", "1");
-
-		Map<String, PostTag> lastPublish = new HashMap<String, PostTag>();
+	public Map<String, PostTag> getLastPublishedPhotoByTags(final Tumblr tumblr,
+			final String tumblrName,
+			final List<String> tags,
+			final PostTagDatabaseHelper dbHelper)
+			throws Exception {
+		final Map<String, PostTag> lastPublish = new HashMap<String, PostTag>();
 		Map<String, PostTag> postByTags = dbHelper.getPostByTags(tags, tumblrName);
 
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
+		
 		for (Iterator<String> itr = tags.iterator(); itr.hasNext();) {
-			String tag = itr.next();
+			final String tag = itr.next();
 			PostTag postTag = postByTags.get(tag);
 			
 			if (postTag == null) {
+				// every thread receives its own parameters map
+				final HashMap<String, String> params = new HashMap<String, String>();
+				params.put("type", "photo");
+				params.put("limit", "1");
 				params.put("tag", tag);
-				JSONArray posts = tumblr.getPosts(tumblrName, params);
-			    if (posts.length() > 0) {
-			    	JSONObject post = posts.getJSONObject(0);
-			    	PostTag newPostTag = new PostTag(post.getLong("id"), tumblrName, tag, post.getLong("timestamp"), 1);
-			    	dbHelper.insert(newPostTag);
-			    	lastPublish.put(tag, newPostTag);
-			    }
+				callables.add(new Callable<Exception>() {
+
+					@Override
+					public Exception call() {
+						try {
+							JSONArray posts = tumblr.getPosts(tumblrName, params);
+						    if (posts.length() > 0) {
+						    	JSONObject post = posts.getJSONObject(0);
+						    	PostTag newPostTag = new PostTag(post.getLong("id"), tumblrName, tag, post.getLong("timestamp"), 1);
+						    	dbHelper.insert(newPostTag);
+						    	lastPublish.put(tag, newPostTag);
+						    }
+						} catch (Exception e) {
+							return e;
+						}
+						return null;
+					}
+				});
 			} else {
 		    	lastPublish.put(tag, postTag);
 			}
 		}
-		
+		for (Future<Exception> result : executorService.invokeAll(callables)) {
+        	Exception error = result.get();
+        	if (error != null) {
+        		throw error;
+        	}
+		}
 		return lastPublish;
 	}
 	
@@ -118,6 +140,16 @@ public class TumblrPublisher {
 		    	timestampToSave = queuedTimestamp;
 		    } else {
 		    	timestampToSave = lastPublishedTimestamp;
+		    }
+		    if (timestampToSave != Long.MAX_VALUE) {
+			    // remove time to allow sort only on date
+	        	Calendar cal = Calendar.getInstance();
+	        	cal.setTime(new Date(timestampToSave));
+	        	cal.set(Calendar.HOUR_OF_DAY, 0);
+	        	cal.set(Calendar.MINUTE, 0);
+	        	cal.set(Calendar.SECOND, 0);
+	        	cal.set(Calendar.MILLISECOND, 0);
+	        	timestampToSave = cal.getTimeInMillis();
 		    }
 	    	for (JSONObject post : draftPostList) {
 		    	post.put("photo-tumblr-share-timestamp", timestampToSave);
@@ -166,7 +198,15 @@ public class TumblrPublisher {
 		return list;
 	}
 
-    public static String formatPublishDaysAgo(long timestamp) {
+	/**
+	 * Determine days difference since timestamp
+	 * if timestamp is equal to Long.MAX_VALUE then return Long.MAX_VALUE
+	 * 
+	 * @param timestamp
+	 * @return numbers of days, if negative indicates days in the future beyond 
+	 * passed timestamp
+	 */
+    public static long daysSinceTimestamp(long timestamp) {
     	Calendar cal = Calendar.getInstance();
     	cal.set(Calendar.HOUR_OF_DAY, 0);
     	cal.set(Calendar.MINUTE, 0);
@@ -174,10 +214,10 @@ public class TumblrPublisher {
     	cal.set(Calendar.MILLISECOND, 0);
     	long nowTime = cal.getTimeInMillis();
         long dayTime = 24 * 60 * 60 * 1000;
-        String dayString = null;
+        long days;
 
         if (timestamp == Long.MAX_VALUE) {
-            dayString = "Never Published";
+            days = Long.MAX_VALUE;
         } else {
         	cal = Calendar.getInstance();
         	cal.setTime(new Date(timestamp));
@@ -188,7 +228,18 @@ public class TumblrPublisher {
 
             long tsWithoutTime = cal.getTimeInMillis();
             long spanTime = nowTime - tsWithoutTime;
-            long days = spanTime / dayTime;
+            days = spanTime / dayTime;
+        }
+        return days;
+    }
+	
+    public static String formatPublishDaysAgo(long timestamp) {
+    	long days = daysSinceTimestamp(timestamp);
+        String dayString;
+
+        if (days == Long.MAX_VALUE) {
+            dayString = "Never Published";
+        } else {
             if (days < 0) {
             	dayString = "In " + (-days) + " days";
             } else if (days == 0) {
@@ -210,5 +261,54 @@ public class TumblrPublisher {
 			this.timestamp = timestamp;
 			this.posts = posts;
 		}
+    }
+   
+    /**
+     * Get in parallel tagsForDraftPosts and tagsForQueuedPosts, wait until all is retrieved
+     * @param tagsForDraftPosts on return contains value
+     * @param queuedPosts on return contains value
+     * @throws Exception 
+     */
+    public void getDraftAndQueueTags(
+    		final Tumblr tumblr,
+			final String tumblrName,
+			final HashMap<String, List<JSONObject> > tagsForDraftPosts,
+    		final Map<String, JSONObject> queuedPosts) throws Exception {
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
+
+        callables.add(new Callable<Exception>() {
+
+			@Override
+			public Exception call() throws Exception {
+				try {
+					tagsForDraftPosts.putAll(getTagsForDraftPosts(tumblr.getDraftPosts(tumblrName)));
+				} catch (Exception e) {
+					return e;
+				}
+				return null;
+			}
+		});
+        
+        callables.add(new Callable<Exception>() {
+
+			@Override
+			public Exception call() throws Exception {
+				try {
+					queuedPosts.putAll(getTagsForQueuedPosts(tumblr.getQueue(tumblrName)));
+				} catch (Exception e) {
+					return e;
+				}
+				return null;
+			}
+		});
+
+        // throw the first exception found
+        for (Future<Exception> result : executorService.invokeAll(callables)) {
+        	Exception error = result.get();
+        	if (error != null) {
+        		throw error;
+        	}
+        }
     }
 }

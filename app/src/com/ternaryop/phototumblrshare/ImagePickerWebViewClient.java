@@ -2,6 +2,8 @@ package com.ternaryop.phototumblrshare;
 
 import java.util.List;
 
+import com.ternaryop.phototumblrshare.activity.ImageViewerActivity;
+
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.view.View;

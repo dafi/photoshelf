@@ -1,4 +1,4 @@
-package com.ternaryop.phototumblrshare;
+package com.ternaryop.phototumblrshare.dialogs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +17,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 
+import com.ternaryop.phototumblrshare.AppSupport;
+import com.ternaryop.phototumblrshare.ImageInfo;
+import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -34,7 +37,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 	public TumblrPostDialog(Context context) {
 		super(context);
-		setContentView(R.layout.tumblr_post);
+		setContentView(R.layout.dialog_publish_post);
 
 		postTitle = (EditText)findViewById(R.id.post_title);
 		postTags = (EditText)findViewById(R.id.post_tags);

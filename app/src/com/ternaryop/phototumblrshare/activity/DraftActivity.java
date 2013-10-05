@@ -1,13 +1,16 @@
-package com.ternaryop.phototumblrshare;
+package com.ternaryop.phototumblrshare.activity;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
@@ -22,9 +25,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.ternaryop.phototumblrshare.AppSupport;
+import com.ternaryop.phototumblrshare.DraftPostHelper;
+import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
@@ -34,10 +41,12 @@ import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 
+@SuppressWarnings("unchecked")
 public class DraftActivity extends PhotoTumblrActivity {
-    private LazyAdapter adapter;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+	private LazyAdapter adapter;
 	private AppSupport appSupport;
-	private Map<String, JSONObject> queuedPosts;
+	private HashMap<String, JSONObject> queuedPosts;
 	private Calendar lastScheduledDate;
 
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +59,13 @@ public class DraftActivity extends PhotoTumblrActivity {
         ListView list = (ListView)findViewById(R.id.list);
         list.setAdapter(adapter);
         registerForContextMenu(list);
+        list.setOnItemClickListener(new OnItemClickListener() {
+
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+        		Map<String, String> item = (Map<String, String>) parent.getItemAtPosition(position);
+        		ImageViewerActivity.startImageViewer(DraftActivity.this, item.get(LazyAdapter.KEY_IMAGE_URL));
+        	}
+		});
 
 		if (appSupport.getSelectedBlogName() == null) {
 			Toast.makeText(this.getApplicationContext(),
@@ -81,7 +97,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 	}
 
 	private void clearCache() {
-		new PostTagDatabaseHelper(this).removeAll();
+		PostTagDatabaseHelper.getInstance(this).removeAll();
 		readDraftPosts();
 	}
 
@@ -109,7 +125,6 @@ public class DraftActivity extends PhotoTumblrActivity {
 	}
 
 	private void showScheduleDialog(final int position) {
-		@SuppressWarnings("unchecked")
 		SchedulePostDialog dialog = new SchedulePostDialog(this,
 				appSupport.getSelectedBlogName(),
 				(Map<String, String>)adapter.getItem(position),
@@ -119,7 +134,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 			public void onPostScheduled(long id, Calendar scheduledDateTime) {
 				lastScheduledDate = (Calendar) scheduledDateTime.clone();
 				adapter.remove(position);
-				adapter.notifyDataSetChanged();
+				refreshUI();
 			}
 		});
 		dialog.show();
@@ -178,7 +193,6 @@ public class DraftActivity extends PhotoTumblrActivity {
 
 			@Override
 			public void complete(Tumblr tumblr, Void result) {
-				@SuppressWarnings("unchecked")
 				Map<String, String> item = (Map<String, String>)adapter.getItem(position);
 				final long id = Long.valueOf(item.get(LazyAdapter.KEY_ID));
 				tumblr.publishPost(appSupport.getSelectedBlogName(), id, new Callback<JSONObject>() {
@@ -186,7 +200,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 					@Override
 					public void complete(Tumblr tumblr, JSONObject result) {
 						adapter.remove(position);
-						adapter.notifyDataSetChanged();
+						refreshUI();
 					}
 
 					@Override
@@ -205,16 +219,23 @@ public class DraftActivity extends PhotoTumblrActivity {
 		});
 	}
 
+	private void refreshUI() {
+		setTitle(getResources().getString(R.string.posts_in_draft, adapter.getCount()));
+		adapter.notifyDataSetChanged();
+	}
+
 	private void readDraftPosts() {
 		final String tumblrName = appSupport.getSelectedBlogName();
 		adapter.clear();
-		adapter.notifyDataSetChanged();
+		refreshUI();
+		
 		Tumblr.getTumblr(this, new Callback<Void>() {
 			ProgressDialog progressDialog;
 
 			@Override
 			public void complete(final Tumblr t, Void result) {
 				new AsyncTask<Void, String, Void>() {
+					Exception error;
 
 					protected void onPreExecute() {
 						progressDialog = new ProgressDialog(DraftActivity.this);
@@ -230,57 +251,80 @@ public class DraftActivity extends PhotoTumblrActivity {
 					
 					@Override
 					protected void onPostExecute(Void result) {
-						setTitle(getResources().getString(R.string.posts_in_draft, adapter.getCount()));
 						progressDialog.dismiss();
-						adapter.notifyDataSetChanged();
+						
+						if (error == null) {
+							refreshUI();
+						} else {
+							DialogUtils.showErrorDialog(DraftActivity.this, error);
+						}
 					}
 
 					@Override
 					protected Void doInBackground(Void... params) {
 						try {
 							Context context = DraftActivity.this;
-							TumblrPublisher publisher = new TumblrPublisher();
-							// get daft posts
-							Map<String, List<JSONObject> > tagsForDraftPosts = publisher.getTagsForDraftPosts(t.getDraftPosts(tumblrName));
+
+							HashMap<String, List<JSONObject> > tagsForDraftPosts = new HashMap<String, List<JSONObject>>();
+							queuedPosts = new HashMap<String, JSONObject>();
+							DraftPostHelper publisher = new DraftPostHelper();
+							publisher.getDraftAndQueueTags(t, tumblrName, tagsForDraftPosts, queuedPosts);
+
 							ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
 							
-							// get queued posts
-							this.publishProgress(context.getResources().getString(R.string.reading_queued_posts));
-							queuedPosts = publisher.getTagsForQueuedPosts(t.getQueue(tumblrName));
-
 							// get last published
 							this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
-							Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(tags, t, tumblrName, new PostTagDatabaseHelper(context));
+							Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
+									t,
+									tumblrName,
+									tags,
+									PostTagDatabaseHelper.getInstance(context));
 							
-							List<JSONObject> posts = publisher.getDraftPostSortedByPublishDate(tagsForDraftPosts, queuedPosts, lastPublishedPhotoByTags);
+							List<JSONObject> posts = publisher.getDraftPostSortedByPublishDate(
+									tagsForDraftPosts,
+									queuedPosts,
+									lastPublishedPhotoByTags);
 
 							for (JSONObject post : posts) {
-					            HashMap<String, String> map = new HashMap<String, String>();
-					            
-					            JSONObject photos = post.getJSONArray("photos").getJSONObject(0);
-					            JSONArray altSizes = photos.getJSONArray("alt_sizes");
-					            // TODO find 75x75 image url
-					            JSONObject smallestImage = altSizes.getJSONObject(altSizes.length() - 1);
-					            map.put(LazyAdapter.KEY_ID, "" + post.getLong("id"));
-					            map.put(LazyAdapter.KEY_TITLE, post.getJSONArray("tags").getString(0));
-					            long photoTimestamp = post.getLong("photo-tumblr-share-timestamp");
-								map.put(LazyAdapter.KEY_TIME, TumblrPublisher.formatPublishDaysAgo(photoTimestamp));
-					            map.put(LazyAdapter.KEY_THUMB_URL, smallestImage.getString("url"));
-					            if (photoTimestamp == Long.MAX_VALUE) {
-					            	map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_NEVER);
-					            } else if (photoTimestamp > System.currentTimeMillis()) {
-					            	map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_FUTURE);
-					            } else {
-					            	map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_PAST);
-					            }
-					 
-					            adapter.addItem(map);
+					            adapter.addItem(createListItem(post));
 					        }
 						} catch (Exception e) {
-							// TODO: handle exception
 							e.printStackTrace();
+							error = e;
 						}
 						return null;
+					}
+
+					private HashMap<String, String> createListItem(JSONObject post)
+							throws JSONException {
+						HashMap<String, String> map = new HashMap<String, String>();
+						
+						JSONObject photos = post.getJSONArray("photos").getJSONObject(0);
+						JSONArray altSizes = photos.getJSONArray("alt_sizes");
+						// TODO find 75x75 image url
+						JSONObject smallestImage = altSizes.getJSONObject(altSizes.length() - 1);
+						JSONObject originalImage = altSizes.getJSONObject(0);
+
+						map.put(LazyAdapter.KEY_ID, "" + post.getLong("id"));
+						map.put(LazyAdapter.KEY_TITLE, post.getJSONArray("tags").getString(0));
+						long photoTimestamp = post.getLong("photo-tumblr-share-timestamp");
+						long days = DraftPostHelper.daysSinceTimestamp(photoTimestamp);
+						String daysString = DraftPostHelper.formatPublishDaysAgo(photoTimestamp);
+						if (days != Long.MAX_VALUE && days > 0) {
+							String string = DATE_FORMAT.format(new Date(photoTimestamp));
+				        	daysString += " (" + string + ")";
+						}
+						map.put(LazyAdapter.KEY_TIME, daysString);
+						map.put(LazyAdapter.KEY_THUMB_URL, smallestImage.getString("url"));
+						map.put(LazyAdapter.KEY_IMAGE_URL, originalImage.getString("url"));
+						if (photoTimestamp == Long.MAX_VALUE) {
+							map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_NEVER);
+						} else if (photoTimestamp > System.currentTimeMillis()) {
+							map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_FUTURE);
+						} else {
+							map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_PAST);
+						}
+						return map;
 					}
 					
 				}.execute();

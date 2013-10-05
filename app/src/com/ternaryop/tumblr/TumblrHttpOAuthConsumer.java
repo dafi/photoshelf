@@ -171,13 +171,13 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         }
 	}
 
-	public HttpResponse getSignedPostResponse(String url, List<NameValuePair> params) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, ClientProtocolException, IOException {
+	public synchronized HttpResponse getSignedPostResponse(String url, List<NameValuePair> params) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, ClientProtocolException, IOException {
         HttpPost request = new HttpPost(url);
 
         request.setEntity(new UrlEncodedFormEntity(params));
-        
-        setTokenWithSecret(oAuthAccessKey, oAuthAccessSecret);
-        sign(request);
+        CommonsHttpOAuthConsumer consumer = new CommonsHttpOAuthConsumer(getConsumerKey(), getConsumerSecret());
+        consumer.setTokenWithSecret(oAuthAccessKey, oAuthAccessSecret);
+        consumer.sign(request);
 
         return new DefaultHttpClient().execute(request, new BasicHttpContext());
 	}
@@ -193,8 +193,10 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         HttpContext context = new BasicHttpContext();
         HttpRequestBase request = new HttpGet(url);
 
-        setTokenWithSecret(oAuthAccessKey, oAuthAccessSecret);
-        sign(request);
+        // to be thread safe create a new consumer
+        CommonsHttpOAuthConsumer consumer = new CommonsHttpOAuthConsumer(getConsumerKey(), getConsumerSecret());
+        consumer.setTokenWithSecret(oAuthAccessKey, oAuthAccessSecret);
+        consumer.sign(request);
 
         return new DefaultHttpClient().execute(request, context);
     }    

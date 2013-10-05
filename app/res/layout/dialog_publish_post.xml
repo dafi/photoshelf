@@ -36,8 +36,8 @@
         </Spinner>
 
         <ImageButton
-            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/refreshBlogList"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/refresh"
@@ -51,17 +51,17 @@
         android:orientation="horizontal" >
 
         <Button
+            android:id="@+id/cancelButton"
             style="?android:attr/buttonBarButtonStyle"
-            android:id="@+id/publishButton"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/publish" />
+            android:text="@string/cancel" />
 
         <Button
-            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/draftButton"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -69,13 +69,13 @@
             android:text="@string/draft" />
 
         <Button
+            android:id="@+id/publishButton"
             style="?android:attr/buttonBarButtonStyle"
-            android:id="@+id/cancelButton"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/cancel" />
+            android:text="@string/publish" />
     </LinearLayout>
 
 </LinearLayout>

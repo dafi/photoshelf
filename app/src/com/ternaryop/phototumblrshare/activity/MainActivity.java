@@ -1,4 +1,4 @@
-package com.ternaryop.phototumblrshare;
+package com.ternaryop.phototumblrshare.activity;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,7 +19,12 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
+import com.ternaryop.phototumblrshare.ImageDOMSelectorFinder;
+import com.ternaryop.phototumblrshare.ImagePickerWebViewClient;
+import com.ternaryop.phototumblrshare.ImageUrlRetriever;
 import com.ternaryop.phototumblrshare.ImageUrlRetriever.OnImagesRetrieved;
+import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.dialogs.TumblrPostDialog;
 import com.ternaryop.phototumblrshare.parsers.TitleData;
 import com.ternaryop.phototumblrshare.parsers.TitleParser;
 import com.ternaryop.utils.URLUtils;

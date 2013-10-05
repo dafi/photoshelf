@@ -5,25 +5,23 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="16" />
+        android:minSdkVersion="16"
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name="com.ternaryop.phototumblrshare.ImageViewerActivity">
+        <activity android:name="com.ternaryop.phototumblrshare.activity.ImageViewerActivity" >
+        </activity>
+        <activity android:name="com.ternaryop.phototumblrshare.activity.DraftActivity" >
         </activity>
         <activity
-            android:name="com.ternaryop.phototumblrshare.DraftActivity">
-        </activity>
-        <activity
-            android:name="com.ternaryop.phototumblrshare.MainActivity"
+            android:name="com.ternaryop.phototumblrshare.activity.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
