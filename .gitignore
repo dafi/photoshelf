@@ -18,3 +18,4 @@ local.properties
 .DS_Store
 
 app/res/values/tumblr.xml
+app/build-keystore.properties

@@ -1,16 +1,23 @@
 package com.ternaryop.phototumblrshare;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.preference.PreferenceManager;
+
+import com.ternaryop.tumblr.Blog;
+import com.ternaryop.tumblr.Callback;
+import com.ternaryop.tumblr.Tumblr;
 
 public class AppSupport {
 	private final Context context;
-	private static final String PREFS_NAME = "tumblrShareImage";
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
 	private static final String PREF_BLOG_NAMES = "blogNames";
 	private static final String PREF_SCHEDULE_TIME_SPAN = "scheduleTimeSpan";
@@ -18,7 +25,7 @@ public class AppSupport {
 
 	public AppSupport(Context context) {
 		this.context = context;
-		preferences = context.getSharedPreferences(PREFS_NAME, 0);
+		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 	
 	public String getSelectedBlogName() {
@@ -31,13 +38,23 @@ public class AppSupport {
 		edit.commit();
 	}
 	
-	public Set<String> getBlogList() {
-		return preferences.getStringSet(PREF_BLOG_NAMES, null);
+	public List<String> getBlogList() {
+		Set<String> blogSet = preferences.getStringSet(PREF_BLOG_NAMES, null);
+		if (blogSet == null) {
+			return null;
+		}
+		ArrayList<String> list = new ArrayList<String>(blogSet);
+		Collections.sort(list);
+		return list;
 	}
 	
 	public void setBlogList(List<String> blogNames) {
+		setBlogList(new HashSet<String>(blogNames));
+	}
+
+	public void setBlogList(Set<String> blogNames) {
 		Editor edit = preferences.edit();
-		edit.putStringSet(PREF_BLOG_NAMES, new HashSet<String>(blogNames));
+		edit.putStringSet(PREF_BLOG_NAMES, blogNames);
 		edit.commit();
 	}
 
@@ -47,5 +64,55 @@ public class AppSupport {
 
 	public Context getContext() {
 		return context;
+	}
+
+	public void fetchBlogNames(final Activity activity, final AppSupportCallback callback) {
+		List<String> blogList = getBlogList();
+		if (blogList != null) {
+			callback.onComplete(this, null);
+			return;
+		}
+		Tumblr.getTumblr(activity, new Callback<Void>() {
+			@Override
+			public void complete(Tumblr tumblr, Void result) {
+				tumblr.getBlogList(new Callback<Blog[]>() {
+
+					@Override
+					public void complete(Tumblr tumblr, Blog[] blogs) {
+						HashSet<String> blogNames = new HashSet<String>(blogs.length);
+						String primaryBlog = null;
+						for (int i = 0; i < blogs.length; i++) {
+							blogNames.add(blogs[i].getName());
+							if (blogs[i].isPrimary()) {
+								primaryBlog = blogs[i].getName();
+							}
+						}
+						setBlogList(blogNames);
+						if (primaryBlog != null) {
+							setSelectedBlogName(primaryBlog);
+						}
+						if (callback != null) {
+							callback.onComplete(AppSupport.this, null);
+						}
+					}
+
+					@Override
+					public void failure(Tumblr tumblr, Exception e) {
+						if (callback != null) {
+							callback.onComplete(AppSupport.this, e);
+						}
+					} 
+				});
+			}
+
+			@Override
+			public void failure(Tumblr tumblr, Exception e) {
+				callback.onComplete(AppSupport.this, e);
+			}
+		});
+	}
+	
+	public interface AppSupportCallback {
+		public void onComplete(AppSupport appSupport, Exception error);
 	}
 }

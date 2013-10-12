@@ -3,7 +3,6 @@ package com.ternaryop.phototumblrshare.dialogs;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -18,8 +17,8 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.ternaryop.phototumblrshare.PhotoSharePost;
 import com.ternaryop.phototumblrshare.R;
-import com.ternaryop.phototumblrshare.list.LazyAdapter;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 
@@ -30,12 +29,12 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 	private Button chooseTimeButton;
 	private SimpleDateFormat timeFormat;
 	private SimpleDateFormat dateFormat;
-	private final Map<String, String> item;
+	private final PhotoSharePost item;
 	private final String blogName;
 	private final onPostScheduleListener onPostSchedule;
 	private final Activity activity;
 
-	public SchedulePostDialog(Activity context, String blogName, Map<String, String> item, Calendar scheduleDateTime, onPostScheduleListener onPostSchedule) {
+	public SchedulePostDialog(Activity context, String blogName, PhotoSharePost item, Calendar scheduleDateTime, onPostScheduleListener onPostSchedule) {
 		super(context);
 		this.activity = context;
 		this.blogName = blogName;
@@ -45,7 +44,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 		setContentView(R.layout.dialog_schedule_post);
 		
 		setTitle(R.string.schedule_post);
-		((TextView)findViewById(R.id.post_title)).setText(item.get(LazyAdapter.KEY_TITLE));
+		((TextView)findViewById(R.id.post_title_textview)).setText(item.getTags().get(0));
 		((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
 		((Button)findViewById(R.id.schedule_button)).setOnClickListener(this);
 
@@ -93,13 +92,12 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 
 				@Override
 				public void complete(Tumblr tumblr, Void result) {
-					final long id = Long.valueOf(item.get(LazyAdapter.KEY_ID));
-					tumblr.schedulePost(blogName, id, scheduleDateTime.getTimeInMillis(), new Callback<JSONObject>() {
+					tumblr.schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new Callback<JSONObject>() {
 
 						@Override
 						public void complete(Tumblr tumblr, JSONObject result) {
 							if (onPostSchedule != null) {
-								onPostSchedule.onPostScheduled(id, scheduleDateTime);
+								onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime);
 							}
 							dismiss();
 						}

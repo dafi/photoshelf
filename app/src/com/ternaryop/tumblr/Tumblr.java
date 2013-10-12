@@ -1,6 +1,5 @@
 package com.ternaryop.tumblr;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,10 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import oauth.signpost.exception.OAuthException;
-
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +22,8 @@ import android.util.Log;
 import com.ternaryop.utils.DialogUtils;
 
 public class Tumblr {
-	private final String API_PREFIX = "http://api.tumblr.com/v2";
+	public final static int MAX_POST_PER_REQUEST = 20;
+	private final static String API_PREFIX = "http://api.tumblr.com/v2";
 
 	private static Tumblr instance;
 	
@@ -130,46 +127,77 @@ public class Tumblr {
 			}
         }.execute();
     }
-    
-    public JSONArray getDraftPosts(final String tumblrName) throws JSONException, ClientProtocolException, IllegalStateException, IOException, OAuthException {
-        String apiUrl = getApiUrl(tumblrName, "/posts/draft");
 
-		JSONObject json = consumer.jsonFromGet(apiUrl);
-		JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
-		JSONArray nextPage = arr;
-		
-		while (nextPage.length() > 0) {
-			long beforeId = nextPage.getJSONObject(nextPage.length() - 1).getLong("id");
-	        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-	        params.add(new BasicNameValuePair("before_id", beforeId + ""));
-
-	        nextPage = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts");
-			for (int i = 0; i < nextPage.length(); i++) {
-				arr.put(nextPage.getJSONObject(i));
-			}
+    private void addPostsToList(ArrayList<TumblrPost> list, JSONArray arr) throws JSONException {
+		for (int i = 0; i < arr.length(); i++) {
+			list.add(build(arr.getJSONObject(i)));
 		}
-		return arr;
-    }
-
-    public JSONArray getQueue(final String tumblrName) throws JSONException, ClientProtocolException, IllegalStateException, IOException, OAuthException {
-        String apiUrl = getApiUrl(tumblrName, "/posts/queue");
-		JSONObject json = consumer.jsonFromGet(apiUrl);
-		return json.getJSONObject("response").getJSONArray("posts");
     }
     
-    public JSONArray getPosts(final String tumblrName, Map<String, String> params) throws JSONException, ClientProtocolException, IllegalStateException, IOException, OAuthException {
+    public List<TumblrPost> getDraftPosts(final String tumblrName) {
+        String apiUrl = getApiUrl(tumblrName, "/posts/draft");
+		ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+
+		try {
+    		JSONObject json = consumer.jsonFromGet(apiUrl);
+    		JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
+    		
+    		while (arr.length() > 0) {
+    			addPostsToList(list, arr);
+    			long beforeId = arr.getJSONObject(arr.length() - 1).getLong("id");
+    	        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+    	        params.add(new BasicNameValuePair("before_id", beforeId + ""));
+
+    	        arr = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts");
+    		}
+		} catch (Exception e) {
+			throw new TumblrException(e);
+		}
+		return list;
+    }
+
+    public List<TumblrPost> getQueue(final String tumblrName) {
+        String apiUrl = getApiUrl(tumblrName, "/posts/queue");
+		ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+
+		try {
+			JSONObject json = consumer.jsonFromGet(apiUrl);
+			JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
+			addPostsToList(list, arr);
+		} catch (Exception e) {
+			throw new TumblrException(e);
+		}
+		return list;
+    }
+    
+    public List<TumblrPhotoPost> getPhotoPosts(final String tumblrName, Map<String, String> params) {
         String apiUrl = getApiUrl(tumblrName, "/posts/photo");
+		ArrayList<TumblrPhotoPost> list = new ArrayList<TumblrPhotoPost>();
 
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-        Iterator<String> itr = params.keySet().iterator();
-        while (itr.hasNext()) {
-        	String key = itr.next();
-            nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
-        }
-        nameValuePairs.add(new BasicNameValuePair("api_key", consumer.getConsumerKey()));
+		try {
+	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+	        Iterator<String> itr = params.keySet().iterator();
+	        while (itr.hasNext()) {
+	        	String key = itr.next();
+	            nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
+	        }
+	        nameValuePairs.add(new BasicNameValuePair("api_key", consumer.getConsumerKey()));
 
-        JSONObject json = consumer.jsonFromGet(apiUrl, nameValuePairs);
-        return json.getJSONObject("response").getJSONArray("posts");
+	        JSONObject json = consumer.jsonFromGet(apiUrl, nameValuePairs);
+			JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
+			long totalPosts = json.getJSONObject("response").has("total_posts") ? json.getJSONObject("response").getLong("total_posts") : -1; 
+			for (int i = 0; i < arr.length(); i++) {
+				TumblrPhotoPost post = (TumblrPhotoPost)build(arr.getJSONObject(i));
+				if (totalPosts != -1) {
+					post.setTotalPosts(totalPosts);
+				}
+				list.add(post);
+			}
+		} catch (Exception e) {
+			throw new TumblrException(e);
+		}
+
+		return list;
     }
     
     public void publishPost(final String tumblrName, final long id, final Callback<JSONObject> callback) {
@@ -236,4 +264,13 @@ public class Tumblr {
 			}
         }.execute();
     }
+
+	public static TumblrPost build(JSONObject json) throws JSONException {
+		String type = json.getString("type");
+		
+		if (type.equals("photo")) {
+			return new TumblrPhotoPost(json);
+		}
+		throw new IllegalArgumentException("Unable to build post for type " + type);
+	}
 }

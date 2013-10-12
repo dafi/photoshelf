@@ -22,7 +22,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/title_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/thumbnail"
@@ -36,10 +36,19 @@
         android:id="@+id/time_desc"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/title"
+        android:layout_below="@id/title_textview"
         android:layout_marginTop="1dip"
         android:layout_toRightOf="@+id/thumbnail"
         android:textColor="#343434"
         android:textSize="12sp" />
+
+    <ImageView
+        android:id="@+id/browse_images"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="15sp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/arrow" />
 
 </RelativeLayout>

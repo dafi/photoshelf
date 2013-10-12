@@ -38,6 +38,10 @@ public class ImageViewerActivity extends Activity {
 		WebView webView = (WebView) findViewById(R.id.webview_view);
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.addJavascriptInterface(this, "dimRetriever");
+
+//		webView.setInitialScale(1);
+//		webView.getSettings().setLoadWithOverviewMode(true);
+		webView.getSettings().setUseWideViewPort(true);		
 		
 		webView.setWebChromeClient(new WebChromeClient() {
 			@Override

@@ -10,9 +10,6 @@ public class Blog implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -7241228948040188270L;
-	private int totalBlogPosts;
-	private Posts posts = new Posts();
-	private int postsCount;
 	
 	private String name;
 	private String url;
@@ -28,27 +25,6 @@ public class Blog implements Serializable {
         url = jsonResponse.getString("url");
 		title = jsonResponse.getString("title");
 		primary = jsonResponse.getBoolean("primary");
-	}
-	
-	public Posts updateFromJSON(JSONObject jsonResponse) throws JSONException {
-		postsCount = jsonResponse.getInt("total_posts");
-		totalBlogPosts = jsonResponse.getJSONObject("blog").getInt("posts");
-		Posts postsInResponse = new Posts(jsonResponse.getJSONArray("posts"));
-		posts.addAll(postsInResponse);
-		
-		return postsInResponse;
-	}
-
-	public int getTotalBlogPosts() {
-		return totalBlogPosts;
-	}
-
-	public Posts getPosts() {
-		return posts;
-	}
-
-	public int getPostsCount() {
-		return postsCount;
 	}
 
 	public String getName() {
@@ -67,6 +43,14 @@ public class Blog implements Serializable {
 		return primary;
 	}
 	
+	public String getAvatarUrlBySize(int size) {
+		return getAvatarUrlBySize(getName(), size);
+	}
+
+	public static String getAvatarUrlBySize(CharSequence baseHost, int size) {
+		return "http://api.tumblr.com/v2/blog/" + baseHost + ".tumblr.com/avatar/" + size;
+	}
+
 	@Override
 	public String toString() {
 		return name;

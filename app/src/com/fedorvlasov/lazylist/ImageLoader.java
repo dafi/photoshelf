@@ -18,26 +18,29 @@ import java.util.concurrent.Executors;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.view.MenuItem;
 import android.widget.ImageView;
 
 import com.ternaryop.phototumblrshare.R;
 
 public class ImageLoader {
     
-    MemoryCache memoryCache=new MemoryCache();
-    FileCache fileCache;
-    private Map<ImageView, String> imageViews=Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-    ExecutorService executorService;
-    Handler handler=new Handler();//handler to display images in UI thread
-    
-    public ImageLoader(Context context){
-        fileCache=new FileCache(context);
-        executorService=Executors.newFixedThreadPool(5);
+	private MemoryCache memoryCache = new MemoryCache();
+	private FileCache fileCache;
+    private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
+    private ExecutorService executorService;
+    private Handler handler = new Handler(); // handler to display images in UI thread
+    private final int stub_id = R.drawable.stub;
+
+    public ImageLoader(Context context, String prefix) {
+		this.fileCache = new FileCache(context, prefix);    		
+        executorService = Executors.newFixedThreadPool(5);
     }
     
-    final int stub_id=R.drawable.stub;
-    public void DisplayImage(String url, ImageView imageView)
+    public void displayImage(String url, ImageView imageView)
     {
         imageViews.put(imageView, url);
         Bitmap bitmap=memoryCache.get(url);
@@ -48,6 +51,24 @@ public class ImageLoader {
             queuePhoto(url, imageView);
             imageView.setImageResource(stub_id);
         }
+    }
+    
+    public void displayIcon(final MenuItem menuItem, final String url) {
+        executorService.submit(new Runnable() {
+			
+			@Override
+			public void run() {
+				final Drawable icon = drawableFromUrl(url);
+				if (icon != null) {
+					handler.post(new Runnable() {
+						@Override
+						public void run() {
+							menuItem.setIcon(icon);
+						}
+					});
+				}
+			}
+		});
     }
         
     private void queuePhoto(String url, ImageView imageView)
@@ -188,4 +209,30 @@ public class ImageLoader {
         fileCache.clear();
     }
 
+
+	protected Drawable drawableFromUrl(String url) {
+		HttpURLConnection conn = null;
+		OutputStream os = null;
+		try {
+			File f = fileCache.getFile(url);
+			Bitmap bitmap = Utils.decodeFile(f);
+			
+			if (bitmap == null) {
+			    conn = (HttpURLConnection) new URL(url).openConnection();
+	            conn.setInstanceFollowRedirects(true);
+			    conn.connect();
+	            os = new FileOutputStream(f);
+	            Utils.CopyStream(conn.getInputStream(), os);
+	            
+	            bitmap = Utils.decodeFile(f);
+			}
+			return new BitmapDrawable(null, bitmap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try { if (os != null) os.close(); } catch (Exception ex) {}
+			try { if (conn != null) conn.disconnect(); } catch (Exception ex) {}
+		}
+		return null;
+	}	
 }

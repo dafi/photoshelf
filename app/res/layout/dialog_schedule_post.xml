@@ -4,7 +4,7 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/post_title"
+        android:id="@+id/post_title_textview"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
 
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/cancel" />
+            android:text="@string/cancel_title" />
 
         <Button
             android:id="@+id/schedule_button"
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/schedule" />
+            android:text="@string/schedule_title" />
         </LinearLayout>
 
 </LinearLayout>

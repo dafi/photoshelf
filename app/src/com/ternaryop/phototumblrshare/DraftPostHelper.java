@@ -14,13 +14,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
 import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.tumblr.TumblrPhotoPost;
+import com.ternaryop.tumblr.TumblrPost;
 
 public class DraftPostHelper {
 
@@ -28,21 +26,21 @@ public class DraftPostHelper {
 	 * Return map where key is the first tag and value is the post
 	 * @param draftPosts
 	 * @return
-	 * @throws JSONException
 	 */
-	public Map<String, List<JSONObject> > getTagsForDraftPosts(JSONArray draftPosts) throws JSONException {
-	    HashMap<String, List<JSONObject> > map = new HashMap<String, List<JSONObject> >();
+	public Map<String, List<TumblrPost> > getTagsForDraftPosts(List<TumblrPost> draftPosts) {
+	    HashMap<String, List<TumblrPost> > map = new HashMap<String, List<TumblrPost> >();
 
-	    for (int i = 0; i < draftPosts.length(); i++) {
-	    	JSONObject post = draftPosts.getJSONObject(i);
-	    	String tag = post.getJSONArray("tags").getString(0);
-	    	List<JSONObject> list = map.get(tag);
-	    	if (list == null) {
-	    		list = new ArrayList<JSONObject>();
-	    		map.put(tag, list);
+	    for (TumblrPost post : draftPosts) {
+	    	if (post.getType().equals("photo")) {
+		    	String tag = post.getTags().get(0);
+		    	List<TumblrPost> list = map.get(tag);
+		    	if (list == null) {
+		    		list = new ArrayList<TumblrPost>();
+		    		map.put(tag, list);
+		    	}
+		    	list.add(post);
 	    	}
-	    	list.add(post);
-	    }
+		}
 
 	    return map;
 	}
@@ -51,16 +49,17 @@ public class DraftPostHelper {
 	 * Return map where key is the first tag and value the post
 	 * @param queuedPosts
 	 * @return
-	 * @throws JSONException
+	 * @throws TumblrPost
 	 */
-	public Map<String, JSONObject> getTagsForQueuedPosts(JSONArray queuedPosts) throws JSONException {
-	    HashMap<String, JSONObject> map = new HashMap<String, JSONObject>();
+	public Map<String, TumblrPost> getTagsForQueuedPosts(List<TumblrPost> queuedPosts) {
+	    HashMap<String, TumblrPost> map = new HashMap<String, TumblrPost>();
 
-	    for (int i = 0; i < queuedPosts.length(); i++) {
-	    	JSONObject post = queuedPosts.getJSONObject(i);
-	    	String tag = post.getJSONArray("tags").getString(0);
-	    	map.put(tag, post);
-	    }
+	    for (TumblrPost post : queuedPosts) {
+	    	if (post.getType().equals("photo")) {
+		    	String tag = post.getTags().get(0);
+		    	map.put(tag, post);
+	    	}
+		}
 
 	    return map;
 	}
@@ -91,13 +90,18 @@ public class DraftPostHelper {
 					@Override
 					public Exception call() {
 						try {
-							JSONArray posts = tumblr.getPosts(tumblrName, params);
-						    if (posts.length() > 0) {
-						    	JSONObject post = posts.getJSONObject(0);
-						    	PostTag newPostTag = new PostTag(post.getLong("id"), tumblrName, tag, post.getLong("timestamp"), 1);
+							List<TumblrPhotoPost> posts = tumblr.getPhotoPosts(tumblrName, params);
+							for (TumblrPhotoPost post : posts) {
+						    	PostTag newPostTag = new PostTag(
+						    			post.getPostId(),
+						    			tumblrName,
+						    			tag,
+						    			post.getTimestamp(),
+						    			1,
+						    			PostTag.POST_TYPE_PUBLISHED);
 						    	dbHelper.insert(newPostTag);
 						    	lastPublish.put(tag, newPostTag);
-						    }
+							}
 						} catch (Exception e) {
 							return e;
 						}
@@ -117,20 +121,19 @@ public class DraftPostHelper {
 		return lastPublish;
 	}
 	
-	public List<JSONObject> getDraftPostSortedByPublishDate(
-			Map<String, List<JSONObject> > draftPosts,
-			Map<String, JSONObject> queuedPosts,
-			Map<String, PostTag> lastPublished) throws JSONException {
-		ArrayList<JSONObject> list = new ArrayList<JSONObject>();
+	public List<PhotoSharePost> getDraftPostSortedByPublishDate(
+			Map<String, List<TumblrPost> > draftPosts,
+			Map<String, TumblrPost> queuedPosts,
+			Map<String, PostTag> lastPublished) {
 		ArrayList<TimestampPosts> temp = new ArrayList<TimestampPosts>();
 
 		for (String tag : draftPosts.keySet()) {
-			List<JSONObject> draftPostList = draftPosts.get(tag);
+			List<TumblrPost> draftPostList = draftPosts.get(tag);
 		    long lastPublishedTimestamp = Long.MAX_VALUE;
 		    long queuedTimestamp = 0;
 		    
 		    if (queuedPosts.get(tag) != null) {
-		    	queuedTimestamp = queuedPosts.get(tag).getLong("scheduled_publish_time") * 1000; 
+		    	queuedTimestamp = queuedPosts.get(tag).getScheduledPublishTime() * 1000; 
 		    }
 		    if (lastPublished.get(tag) != null) {
 		    	lastPublishedTimestamp = lastPublished.get(tag).getPublishTimestamp() * 1000;
@@ -151,10 +154,11 @@ public class DraftPostHelper {
 	        	cal.set(Calendar.MILLISECOND, 0);
 	        	timestampToSave = cal.getTimeInMillis();
 		    }
-	    	for (JSONObject post : draftPostList) {
-		    	post.put("photo-tumblr-share-timestamp", timestampToSave);
+		    List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
+	    	for (TumblrPost post : draftPostList) {
+	    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost) post, timestampToSave));
 			}
-	    	temp.add(new TimestampPosts(timestampToSave, draftPostList));
+	    	temp.add(new TimestampPosts(timestampToSave, photoShareList));
 		}
 		// sort following order from top to bottom
 		// Never Published
@@ -171,15 +175,11 @@ public class DraftPostHelper {
 			    int diff = ldiff == 0 ? 0 : ldiff < 0 ? -1 : 1;
 
 			    if (diff == 0) {
-					try {
-						JSONObject lhsPost = lhs.posts.get(0);
-						JSONObject rhsPost = rhs.posts.get(0);
-						String lhsTag = lhsPost.getJSONArray("tags").getString(0);
-				    	String rhsTag = rhsPost.getJSONArray("tags").getString(0);
-				        diff = lhsTag.compareToIgnoreCase(rhsTag);
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
+					TumblrPost lhsPost = lhs.posts.get(0);
+					TumblrPost rhsPost = rhs.posts.get(0);
+					String lhsTag = lhsPost.getTags().get(0);
+			    	String rhsTag = rhsPost.getTags().get(0);
+			        diff = lhsTag.compareToIgnoreCase(rhsTag);
 			    } else {
 				    if (lhsTimestamp == Long.MAX_VALUE) {
 				    	return -1;
@@ -192,6 +192,7 @@ public class DraftPostHelper {
 			    return diff;
 			}
 		});
+		ArrayList<PhotoSharePost> list = new ArrayList<PhotoSharePost>();
 		for (TimestampPosts tsp : temp) {
 			list.addAll(tsp.posts);
 		}
@@ -253,10 +254,10 @@ public class DraftPostHelper {
         return dayString;
     }
     
-    private class TimestampPosts {
+    public class TimestampPosts {
 		long timestamp;
-    	List<JSONObject> posts;
-    	public TimestampPosts(long timestamp, List<JSONObject> posts) {
+    	List<PhotoSharePost> posts;
+    	public TimestampPosts(long timestamp, List<PhotoSharePost> posts) {
 			super();
 			this.timestamp = timestamp;
 			this.posts = posts;
@@ -265,6 +266,7 @@ public class DraftPostHelper {
    
     /**
      * Get in parallel tagsForDraftPosts and tagsForQueuedPosts, wait until all is retrieved
+     * Expired scheduled posts are removed
      * @param tagsForDraftPosts on return contains value
      * @param queuedPosts on return contains value
      * @throws Exception 
@@ -272,8 +274,9 @@ public class DraftPostHelper {
     public void getDraftAndQueueTags(
     		final Tumblr tumblr,
 			final String tumblrName,
-			final HashMap<String, List<JSONObject> > tagsForDraftPosts,
-    		final Map<String, JSONObject> queuedPosts) throws Exception {
+			final HashMap<String, List<TumblrPost> > tagsForDraftPosts,
+    		final Map<String, TumblrPost> queuedPosts,
+    		final PostTagDatabaseHelper dbHelper) throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
 
@@ -295,7 +298,23 @@ public class DraftPostHelper {
 			@Override
 			public Exception call() throws Exception {
 				try {
-					queuedPosts.putAll(getTagsForQueuedPosts(tumblr.getQueue(tumblrName)));
+					dbHelper.removeExpiredScheduledPosts(System.currentTimeMillis());
+					List<TumblrPost> posts = tumblr.getQueue(tumblrName);
+					for (TumblrPost post : posts) {
+				    	if (post.getType().equals("photo")) {
+							for (String tag : post.getTags()) {
+						    	PostTag newPostTag = new PostTag(
+						    			post.getPostId(),
+						    			tumblrName,
+						    			tag,
+						    			post.getScheduledPublishTime(),
+						    			1,
+						    			PostTag.POST_TYPE_SCHEDULED);
+						    	dbHelper.insertOrIgnore(newPostTag);
+							}
+				    	}
+					}
+					queuedPosts.putAll(getTagsForQueuedPosts(posts));
 				} catch (Exception e) {
 					return e;
 				}

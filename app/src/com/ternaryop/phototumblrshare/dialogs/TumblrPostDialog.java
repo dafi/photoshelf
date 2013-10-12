@@ -1,9 +1,7 @@
 package com.ternaryop.phototumblrshare.dialogs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -45,8 +43,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		
 		activity = (Activity)context;
 		appSupport = new AppSupport(context);
-		((Button)findViewById(R.id.publishButton)).setOnClickListener(new OnClickPublishListener());
-		((Button)findViewById(R.id.draftButton)).setOnClickListener(new OnClickPublishListener());
+		((Button)findViewById(R.id.publish_button)).setOnClickListener(new OnClickPublishListener());
+		((Button)findViewById(R.id.draft_button)).setOnClickListener(new OnClickPublishListener());
 		((ImageButton)findViewById(R.id.refreshBlogList)).setOnClickListener(this);
 		((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
 	}
@@ -108,21 +106,20 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	
 	@Override
 	protected void onStart() {
-		findViewById(R.id.publishButton).setEnabled(false);
-		findViewById(R.id.draftButton).setEnabled(false);
+		findViewById(R.id.publish_button).setEnabled(false);
+		findViewById(R.id.draft_button).setEnabled(false);
 
-		Set<String> blogSetNames = appSupport.getBlogList();
+		List<String> blogSetNames = appSupport.getBlogList();
 		if (blogSetNames == null) {
 			fetchBlogNames();
 		} else {
-			fillBlogList(new ArrayList<String>(blogSetNames));
-			findViewById(R.id.publishButton).setEnabled(true);
-			findViewById(R.id.draftButton).setEnabled(true);
+			fillBlogList(blogSetNames);
+			findViewById(R.id.publish_button).setEnabled(true);
+			findViewById(R.id.draft_button).setEnabled(true);
 		}
 	}
 
 	private void fillBlogList(List<String> blogNames) {
-		Collections.sort(blogNames);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item, blogNames);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		blogList.setAdapter(adapter);
@@ -137,8 +134,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	}
 	
 	private void fetchBlogNames() {
-		findViewById(R.id.publishButton).setEnabled(false);
-		findViewById(R.id.draftButton).setEnabled(false);
+		findViewById(R.id.publish_button).setEnabled(false);
+		findViewById(R.id.draft_button).setEnabled(false);
 		Tumblr.getTumblr(activity, new Callback<Void>() {
 			@Override
 			public void complete(Tumblr t, Void result) {
@@ -154,8 +151,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 						}
 						appSupport.setBlogList(blogNames);
 						fillBlogList(blogNames);
-						findViewById(R.id.publishButton).setEnabled(true);
-						findViewById(R.id.draftButton).setEnabled(true);
+						findViewById(R.id.publish_button).setEnabled(true);
+						findViewById(R.id.draft_button).setEnabled(true);
 					}
 
 					@Override
@@ -206,7 +203,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 				@Override
 				public void complete(final Tumblr t, Void result) {
-					boolean publish = v.getId() == R.id.publishButton;
+					boolean publish = v.getId() == R.id.publish_button;
 					tumblr = t;
 					String selectedBlogName = (String) blogList
 							.getSelectedItem();

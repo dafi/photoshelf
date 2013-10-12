@@ -45,6 +45,7 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 				+ "{3} TEXT NOT NULL," 
 				+ "{4} INTEGER NOT NULL,"
 				+ "{5} INTEGER NOT NULL,"
+				+ "{6} TEXT NOT NULL," 
 				+ "PRIMARY KEY ({1}, {3}))";
 			db.execSQL(MessageFormat.format(sql,
 					PostTag.TABLE_NAME,
@@ -52,7 +53,8 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 					PostTag.TUMBLR_NAME,
 					PostTag.TAG,
 					PostTag.PUBLISH_TIMESTAMP,
-					PostTag.SHOW_ORDER));
+					PostTag.SHOW_ORDER,
+					PostTag.POST_ID_TYPE));
 	}
 
 	@Override
@@ -68,9 +70,28 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 		return rows;
 	}
 
+	public long insertOrIgnore(PostTag postTag) {
+		SQLiteDatabase db = getWritableDatabase();
+		return db.insertWithOnConflict(
+				PostTag.TABLE_NAME,
+				null,
+				postTag.getContentValues(),
+				SQLiteDatabase.CONFLICT_IGNORE);
+	}
+
 	public void removeAll() {
 		SQLiteDatabase db = getWritableDatabase();
         db.execSQL("delete from " + PostTag.TABLE_NAME);
+	}
+
+	public int removeExpiredScheduledPosts(long expireTime) {
+		SQLiteDatabase db = getWritableDatabase();
+        String whereClause = MessageFormat.format("{0} = ? and {1} < ?",
+        		PostTag.POST_ID_TYPE,
+        		PostTag.PUBLISH_TIMESTAMP);
+        return db.delete(PostTag.TABLE_NAME,
+        		whereClause,
+				new String[] { PostTag.POST_TYPE_SCHEDULED, "" + expireTime });
 	}
 
 	public PostTag getPostByTag(String tag, String tumblrName) {
@@ -128,7 +149,8 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 						c.getString(1),
 						c.getString(2),
 						c.getLong(3),
-						c.getLong(4));
+						c.getLong(4),
+						c.getString(5));
 				list.add(postTag);
 			}
 		} finally {
@@ -146,7 +168,8 @@ public class PostTagDatabaseHelper extends SQLiteOpenHelper {
 						c.getString(1),
 						c.getString(2),
 						c.getLong(3),
-						c.getLong(4));
+						c.getLong(4),
+						c.getString(5));
 				map.put(postTag.getTag(), postTag);
 			}
 		} finally {

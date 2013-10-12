@@ -1,19 +1,41 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:layout_gravity="center_vertical|center_horizontal"
+    android:columnCount="2"
+    android:orientation="vertical"
+    android:rowCount="2" >
 
-    <GridView
-        android:id="@+id/gridview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="bottom"
-        android:layout_marginTop="8dp"
-        android:columnWidth="150dp"
-        android:horizontalSpacing="4dp"
-        android:numColumns="auto_fit"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="10dp" />
+    <Button
+        android:id="@+id/draft_button"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="left|top"
+        android:text="@string/draft_title"
+        android:textSize="16sp" />
 
-</LinearLayout>
+    <Button
+        android:id="@+id/test_page_button"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="left|top"
+        android:text="@string/test_page_title"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/birthdays_button"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="left|top"
+        android:text="@string/birthdays_title"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/tumblr_login_button"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="left|top"
+        android:text="@string/tumblr_login_title"
+        android:textSize="16sp" />
+</GridLayout>

@@ -7,7 +7,7 @@
     
     <item
         android:id="@+id/showDialog"
-        android:title="@string/go">
+        android:title="@string/go_title">
     </item>
 
 </menu> 

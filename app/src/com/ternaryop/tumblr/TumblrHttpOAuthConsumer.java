@@ -182,7 +182,7 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         return new DefaultHttpClient().execute(request, new BasicHttpContext());
 	}
 
-	public HttpResponse getSignedGetResponse(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
+	public HttpResponse getSignedGetResponse(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException {
         if (params != null) {
         	if(!url.endsWith("?")) {
                 url += "?";
@@ -201,16 +201,38 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         return new DefaultHttpClient().execute(request, context);
     }    
 	
-    public JSONObject jsonFromGet(String url) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
-		return JSONUtils.jsonFromInputStream(getSignedGetResponse(url, null).getEntity().getContent());
+    public JSONObject jsonFromGet(String url) {
+		return jsonFromGet(url, null);
     }    
 
-    public JSONObject jsonFromGet(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
-		return JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getEntity().getContent());
+    public JSONObject jsonFromGet(String url, List<NameValuePair> params) {
+    	try {
+    		JSONObject json = JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getEntity().getContent());
+    		checkResult(json);
+    		return json;
+		} catch (Exception e) {
+			throw new TumblrException(e);
+		}
     }    
 
-    public JSONObject jsonFromPost(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException, JSONException {
-		return JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getEntity().getContent());
-    }    
+    public JSONObject jsonFromPost(String url, List<NameValuePair> params) {
+    	try {
+        	JSONObject json = JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getEntity().getContent());
+    		checkResult(json);
+    		return json;
+		} catch (Exception e) {
+			throw new TumblrException(e);
+		}
+    }
+
+	private void checkResult(JSONObject json) throws JSONException {
+		if (!json.has("meta")) {
+			throw new JSONException("Invalid tumblr response, meta not found");
+		}
+		int status = json.getJSONObject("meta").getInt("status");
+		if (status != 200 && status != 201) {
+			throw new JSONException(json.getJSONObject("meta").getString("msg"));
+		}
+	}    
 
 }

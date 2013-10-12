@@ -2,20 +2,20 @@
 <resources>
 
     <string name="app_name">Photo Tumblr Share</string>
-    <string name="publish">Publish</string>
-    <string name="tags">Tags</string>
-    <string name="title">Title</string>
+    <string name="publish_title">Publish</string>
+    <string name="post_tags_hint">Tags</string>
+    <string name="post_title_hint">Title</string>
     <string name="tumblr_post_title">Post Image</string>
     <string name="tumblr_multiple_post_title">Post %1$d Images</string>
     <string name="url_not_found">URL not found</string>
     <string name="url_not_found_description">Unable to find an URL in the text \'%1$s\'</string>
     <string name="parsing_error">Parsing error</string>
     <string name="unable_to_find_domain_mapper_for_url">Unable to find domain mapper for url \'%1$s\'</string>
-    <string name="draft">Draft</string>
-    <string name="cancel">Cancel</string>
+    <string name="draft_title">Draft</string>
+    <string name="cancel_title">Cancel</string>
     <string name="creating_a_post_in_draft">Creating post(s) in draft&#8230;</string>
     <string name="publishing_post">Publishing post(s)&#8230;</string>
-    <string name="go">go</string>
+    <string name="go_title">go</string>
     <string name="refresh">Refresh</string>
     <string name="action_copyurl">Copy URL</string>
     <string name="url_copied_to_clipboard">Url copied to clipboard</string>
@@ -27,10 +27,19 @@
     <string name="reading_draft_posts">Reading draft posts&#8230;</string>
     <string name="finding_last_published_posts">Finding last published posts&#8230;</string>
     <string name="schedule_post">Schedule Post</string>
-    <string name="schedule">Schedule</string>
+    <string name="schedule_title">Schedule</string>
     <string name="publish_post">Publish Post</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="clear_cache">Clear Cache</string>
     <string name="image_size">Image %1$dx%2$d</string>
-    
+    <string name="menu_show_image">Show image</string>
+    <string name="menu_image_dimension">%1$dx%2$d</string>
+    <string name="menu_header_show_image">Image for %1s</string>
+    <string name="test_page_title">Test Page</string>
+    <string name="birthdays_title">Birthdays</string>
+
+    <string name="image_picker_activity_title">Pick Images</string>
+
+    <string name="tumblr_login_title">Tumblr Login</string>
+    <string name="browser_image_title">%1$s %2$d/%3$d post(s)</string>
 </resources>

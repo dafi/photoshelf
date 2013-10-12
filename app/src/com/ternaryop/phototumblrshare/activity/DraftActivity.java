@@ -1,89 +1,110 @@
 package com.ternaryop.phototumblrshare.activity;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.Toast;
 
+import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.DraftPostHelper;
+import com.ternaryop.phototumblrshare.PhotoSharePost;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
-import com.ternaryop.phototumblrshare.list.LazyAdapter;
+import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
+import com.ternaryop.phototumblrshare.list.PhotoAdapter;
+import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.tumblr.TumblrAltSize;
+import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.DialogUtils;
 
-@SuppressWarnings("unchecked")
-public class DraftActivity extends PhotoTumblrActivity {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
-	private LazyAdapter adapter;
+public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick {
+	private static final String LOADER_PREFIX_AVATAR = "avatar";
+	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
+
+	private PhotoAdapter adapter;
+	
 	private AppSupport appSupport;
-	private HashMap<String, JSONObject> queuedPosts;
+	private HashMap<String, TumblrPost> queuedPosts;
 	private Calendar lastScheduledDate;
+	// The menuInfo is null for submenus so store parent one
+	// http://code.google.com/p/android/issues/detail?id=7139
+	private AdapterView.AdapterContextMenuInfo subMenuContextMenuInfo;
+	
+	private String blogName;
+	private ImageLoader blogAvatarImageLoader;
+	private MenuItem blogNameMenuItem;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draft);
         
         appSupport = new AppSupport(this);
+		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
+        adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
+        adapter.setOnPhotoBrowseClick(this);
 
-        adapter = new LazyAdapter(this);
         ListView list = (ListView)findViewById(R.id.list);
         list.setAdapter(adapter);
         registerForContextMenu(list);
         list.setOnItemClickListener(new OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        		Map<String, String> item = (Map<String, String>) parent.getItemAtPosition(position);
-        		ImageViewerActivity.startImageViewer(DraftActivity.this, item.get(LazyAdapter.KEY_IMAGE_URL));
+        		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
+        		ImageViewerActivity.startImageViewer(DraftActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
         	}
 		});
-
-		if (appSupport.getSelectedBlogName() == null) {
-			Toast.makeText(this.getApplicationContext(),
-					getResources().getString(R.string.no_selected_blog),
-					Toast.LENGTH_LONG)
-					.show();
-		} else {
-			readDraftPosts();
-		}
+        blogName = appSupport.getSelectedBlogName();
+        readDraftPosts();
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.draft, menu);
+		// strangely isn't accessing from onOptionsItemSelected
+		// so we store here
+		blogNameMenuItem = menu.findItem(R.id.action_blogname);
+		// set icon to currect avatar blog 
+		blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(blogName, 32));
 		return true;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getGroupId()) {
+		case R.id.group_menu_actionbar_blog:
+			blogName = item.getTitle().toString();
+			appSupport.setSelectedBlogName(blogName);
+			blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(blogName, 32));
+			readDraftPosts();
+			return true;
+		}
+		
 		switch (item.getItemId()) {
 		case R.id.action_draft_refresh:
 			readDraftPosts();
@@ -105,12 +126,39 @@ public class DraftActivity extends PhotoTumblrActivity {
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		if (v.getId() == R.id.list) {
 			getMenuInflater().inflate(R.menu.draft_context, menu);
+			AdapterView.AdapterContextMenuInfo contextMenuInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
+			PhotoSharePost post = (PhotoSharePost)adapter.getItem(contextMenuInfo.position);
+			int index = 0;
+			SubMenu subMenu = menu.addSubMenu(R.id.group_menu_image_dimension, Menu.NONE, Menu.NONE, getResources().getString(R.string.menu_show_image));
+			subMenu.setHeaderTitle(getResources().getString(R.string.menu_header_show_image, post.getTags().get(0)));
+			for(TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
+				// the item id is set to the image index into array
+				subMenu.add(R.id.group_menu_item_image_dimension, index++, Menu.NONE, 
+						getResources().getString(R.string.menu_image_dimension, altSize.getWidth(), altSize.getHeight()));
+			}
 		}
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+
+		switch (item.getGroupId()) {
+		case R.id.group_menu_image_dimension:
+			// allow submenus to receive the menuInfo
+			subMenuContextMenuInfo = info;
+			return true;
+		case R.id.group_menu_item_image_dimension:
+			info = subMenuContextMenuInfo;
+			PhotoSharePost post = (PhotoSharePost)adapter.getItem(info.position);
+			String url = post.getFirstPhotoAltSize().get(item.getItemId()).getUrl();
+    		ImageViewerActivity.startImageViewer(DraftActivity.this, url);
+
+    		// no longer needed, free up
+			subMenuContextMenuInfo = null;
+			return true;
+		}
+
 		switch (item.getItemId()) {
 		case R.id.post_publish:
 			showPublishDialog(info.position);
@@ -119,7 +167,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 			showScheduleDialog(info.position);
 			break;
 		default:
-			break;
+			return false;
 		}
 		return true;
 	}
@@ -127,7 +175,7 @@ public class DraftActivity extends PhotoTumblrActivity {
 	private void showScheduleDialog(final int position) {
 		SchedulePostDialog dialog = new SchedulePostDialog(this,
 				appSupport.getSelectedBlogName(),
-				(Map<String, String>)adapter.getItem(position),
+				(PhotoSharePost)adapter.getItem(position),
 				findScheduleTime(),
 				new onPostScheduleListener() {
 			@Override
@@ -148,8 +196,8 @@ public class DraftActivity extends PhotoTumblrActivity {
 			long maxScheduledTime = System.currentTimeMillis();
 
 			try {
-				for (JSONObject post : queuedPosts.values()) {
-					long scheduledTime = post.getLong("scheduled_publish_time") * 1000;
+				for (TumblrPost post : queuedPosts.values()) {
+					long scheduledTime = post.getScheduledPublishTime() * 1000;
 					if (scheduledTime > maxScheduledTime) {
 						maxScheduledTime = scheduledTime;
 					}
@@ -193,9 +241,8 @@ public class DraftActivity extends PhotoTumblrActivity {
 
 			@Override
 			public void complete(Tumblr tumblr, Void result) {
-				Map<String, String> item = (Map<String, String>)adapter.getItem(position);
-				final long id = Long.valueOf(item.get(LazyAdapter.KEY_ID));
-				tumblr.publishPost(appSupport.getSelectedBlogName(), id, new Callback<JSONObject>() {
+				PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+				tumblr.publishPost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
 
 					@Override
 					public void complete(Tumblr tumblr, JSONObject result) {
@@ -225,7 +272,6 @@ public class DraftActivity extends PhotoTumblrActivity {
 	}
 
 	private void readDraftPosts() {
-		final String tumblrName = appSupport.getSelectedBlogName();
 		adapter.clear();
 		refreshUI();
 		
@@ -265,10 +311,11 @@ public class DraftActivity extends PhotoTumblrActivity {
 						try {
 							Context context = DraftActivity.this;
 
-							HashMap<String, List<JSONObject> > tagsForDraftPosts = new HashMap<String, List<JSONObject>>();
-							queuedPosts = new HashMap<String, JSONObject>();
+							HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
+							queuedPosts = new HashMap<String, TumblrPost>();
 							DraftPostHelper publisher = new DraftPostHelper();
-							publisher.getDraftAndQueueTags(t, tumblrName, tagsForDraftPosts, queuedPosts);
+							publisher.getDraftAndQueueTags(t, blogName, tagsForDraftPosts, queuedPosts,
+									PostTagDatabaseHelper.getInstance(context));
 
 							ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
 							
@@ -276,57 +323,21 @@ public class DraftActivity extends PhotoTumblrActivity {
 							this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
 							Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
 									t,
-									tumblrName,
+									blogName,
 									tags,
 									PostTagDatabaseHelper.getInstance(context));
 							
-							List<JSONObject> posts = publisher.getDraftPostSortedByPublishDate(
+							List<PhotoSharePost> posts = publisher.getDraftPostSortedByPublishDate(
 									tagsForDraftPosts,
 									queuedPosts,
 									lastPublishedPhotoByTags);
-
-							for (JSONObject post : posts) {
-					            adapter.addItem(createListItem(post));
-					        }
+							adapter.setItems(posts);
 						} catch (Exception e) {
 							e.printStackTrace();
 							error = e;
 						}
 						return null;
 					}
-
-					private HashMap<String, String> createListItem(JSONObject post)
-							throws JSONException {
-						HashMap<String, String> map = new HashMap<String, String>();
-						
-						JSONObject photos = post.getJSONArray("photos").getJSONObject(0);
-						JSONArray altSizes = photos.getJSONArray("alt_sizes");
-						// TODO find 75x75 image url
-						JSONObject smallestImage = altSizes.getJSONObject(altSizes.length() - 1);
-						JSONObject originalImage = altSizes.getJSONObject(0);
-
-						map.put(LazyAdapter.KEY_ID, "" + post.getLong("id"));
-						map.put(LazyAdapter.KEY_TITLE, post.getJSONArray("tags").getString(0));
-						long photoTimestamp = post.getLong("photo-tumblr-share-timestamp");
-						long days = DraftPostHelper.daysSinceTimestamp(photoTimestamp);
-						String daysString = DraftPostHelper.formatPublishDaysAgo(photoTimestamp);
-						if (days != Long.MAX_VALUE && days > 0) {
-							String string = DATE_FORMAT.format(new Date(photoTimestamp));
-				        	daysString += " (" + string + ")";
-						}
-						map.put(LazyAdapter.KEY_TIME, daysString);
-						map.put(LazyAdapter.KEY_THUMB_URL, smallestImage.getString("url"));
-						map.put(LazyAdapter.KEY_IMAGE_URL, originalImage.getString("url"));
-						if (photoTimestamp == Long.MAX_VALUE) {
-							map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_NEVER);
-						} else if (photoTimestamp > System.currentTimeMillis()) {
-							map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_FUTURE);
-						} else {
-							map.put(LazyAdapter.KEY_LAST_PUBLISH, LazyAdapter.KEY_PUBLISH_PAST);
-						}
-						return map;
-					}
-					
 				}.execute();
 			}
 
@@ -335,5 +346,19 @@ public class DraftActivity extends PhotoTumblrActivity {
 				DialogUtils.showErrorDialog(DraftActivity.this, ex);
 			}
 		});
+	}
+
+	public static void startDraftActivity(Context context) {
+		Intent intent = new Intent(context, DraftActivity.class);
+		Bundle bundle = new Bundle();
+
+		intent.putExtras(bundle);
+
+		context.startActivity(intent);
+	}
+
+	@Override
+	public void onClick(String blogName, String tag) {
+		TagPhotoBrowserActivity.startPhotoBrowser(this, blogName, tag);
 	}
 }

@@ -10,7 +10,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginTop="4dp"
-        android:hint="@string/title"
+        android:hint="@string/post_title_hint"
         android:maxLines="3" />
 
     <EditText
@@ -20,7 +20,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginTop="4dp"
-        android:hint="@string/tags"
+        android:hint="@string/post_tags_hint"
         android:inputType="text" />
 
     <LinearLayout
@@ -57,25 +57,25 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/cancel" />
+            android:text="@string/cancel_title" />
 
         <Button
-            android:id="@+id/draftButton"
+            android:id="@+id/draft_button"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/draft" />
+            android:text="@string/draft_title" />
 
         <Button
-            android:id="@+id/publishButton"
+            android:id="@+id/publish_button"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
-            android:text="@string/publish" />
+            android:text="@string/publish_title" />
     </LinearLayout>
 
 </LinearLayout>
