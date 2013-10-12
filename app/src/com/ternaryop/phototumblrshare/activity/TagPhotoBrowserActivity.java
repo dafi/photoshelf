@@ -17,9 +17,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
-import com.ternaryop.phototumblrshare.PhotoSharePost;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
+import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;

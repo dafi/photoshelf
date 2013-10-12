@@ -14,11 +14,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.fedorvlasov.lazylist.ImageLoader;
-import com.ternaryop.phototumblrshare.PhotoSharePost;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.tumblr.TumblrAltSize;
  
-public class PhotoAdapter extends BaseAdapter {
+public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     private Activity activity;
     private static LayoutInflater inflater = null;
     public ImageLoader imageLoader;
@@ -75,15 +74,12 @@ public class PhotoAdapter extends BaseAdapter {
         timeDesc.setText(post.getLastPublishedTimestampAsString());
 
         ImageView browseImage = (ImageView)vi.findViewById(R.id.browse_images);
+        browseImage.setTag(post);
+        browseImage.setOnClickListener(this);
         if (onPhotoBrowseClick == null) {
         	browseImage.setVisibility(View.GONE);
         } else {
-            browseImage.setOnClickListener(new View.OnClickListener() {
-    			@Override
-    			public void onClick(View v) {
-    				onPhotoBrowseClick.onClick(post.getBlogName(), post.getTags().get(0));
-    			}
-    		});
+        	browseImage.setVisibility(View.VISIBLE);
         }
         
 		// TODO find 75x75 image url
@@ -111,5 +107,9 @@ public class PhotoAdapter extends BaseAdapter {
 	
 	public void setItems(List<PhotoSharePost> items) {
 		this.items = items;
+	}
+
+	public void onClick(View v) {
+		onPhotoBrowseClick.onClick((PhotoSharePost)v.getTag());
 	}
 }

@@ -1,9 +1,10 @@
-package com.ternaryop.phototumblrshare;
+package com.ternaryop.phototumblrshare.list;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import com.ternaryop.phototumblrshare.DraftPostHelper;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 
 public class PhotoSharePost extends TumblrPhotoPost {

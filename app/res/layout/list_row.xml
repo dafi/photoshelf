@@ -42,13 +42,17 @@
         android:textColor="#343434"
         android:textSize="12sp" />
 
+    <!-- On Nexus 7 the click area is too small so we use a fixed width, paddingBottom and paddingTop -->
+
     <ImageView
         android:id="@+id/browse_images"
-        android:layout_width="wrap_content"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:layout_marginRight="15sp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_marginRight="15sp"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
         android:src="@drawable/arrow" />
 
 </RelativeLayout>

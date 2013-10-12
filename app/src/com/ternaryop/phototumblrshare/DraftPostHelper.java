@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
+import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;

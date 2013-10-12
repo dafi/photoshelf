@@ -29,7 +29,6 @@ import android.widget.ListView;
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.DraftPostHelper;
-import com.ternaryop.phototumblrshare.PhotoSharePost;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
@@ -37,6 +36,7 @@ import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
+import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -358,7 +358,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 	}
 
 	@Override
-	public void onClick(String blogName, String tag) {
-		TagPhotoBrowserActivity.startPhotoBrowser(this, blogName, tag);
+	public void onClick(PhotoSharePost post) {
+		TagPhotoBrowserActivity.startPhotoBrowser(this, blogName, post.getTags().get(0));
 	}
 }

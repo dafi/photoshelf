@@ -17,8 +17,8 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.ternaryop.phototumblrshare.PhotoSharePost;
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 
