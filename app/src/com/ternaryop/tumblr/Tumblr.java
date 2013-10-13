@@ -3,6 +3,7 @@ package com.ternaryop.tumblr;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -156,12 +157,13 @@ public class Tumblr {
 		return list;
     }
 
-    public List<TumblrPost> getQueue(final String tumblrName) {
+    public List<TumblrPost> getQueue(final String tumblrName, Map<String, String> params) {
         String apiUrl = getApiUrl(tumblrName, "/posts/queue");
 		ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
 
 		try {
-			JSONObject json = consumer.jsonFromGet(apiUrl);
+	        List<NameValuePair> nameValuePairs = mapToNameValuePair(params);
+			JSONObject json = consumer.jsonFromGet(apiUrl, nameValuePairs);
 			JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
 			addPostsToList(list, arr);
 		} catch (Exception e) {
@@ -175,12 +177,7 @@ public class Tumblr {
 		ArrayList<TumblrPhotoPost> list = new ArrayList<TumblrPhotoPost>();
 
 		try {
-	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-	        Iterator<String> itr = params.keySet().iterator();
-	        while (itr.hasNext()) {
-	        	String key = itr.next();
-	            nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
-	        }
+	        List<NameValuePair> nameValuePairs = mapToNameValuePair(params);
 	        nameValuePairs.add(new BasicNameValuePair("api_key", consumer.getConsumerKey()));
 
 	        JSONObject json = consumer.jsonFromGet(apiUrl, nameValuePairs);
@@ -199,6 +196,19 @@ public class Tumblr {
 
 		return list;
     }
+
+	private List<NameValuePair> mapToNameValuePair(Map<String, String> params) {
+		if (params == null || params.size() == 0) {
+			return Collections.emptyList();
+		}
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+		Iterator<String> itr = params.keySet().iterator();
+		while (itr.hasNext()) {
+			String key = itr.next();
+		    nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
+		}
+		return nameValuePairs;
+	}
     
     public void publishPost(final String tumblrName, final long id, final Callback<JSONObject> callback) {
         new AsyncTask<Void, Void, JSONObject>() {

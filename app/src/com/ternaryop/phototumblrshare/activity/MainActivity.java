@@ -12,14 +12,21 @@ import com.ternaryop.phototumblrshare.R;
 
 public class MainActivity extends PhotoTumblrActivity implements OnClickListener {
 
+	private AppSupport appSupport;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_main);
-		for (int buttonId : new int[] {R.id.draft_button, R.id.test_page_button, R.id.tumblr_login_button}) {
+		for (int buttonId : new int[] {
+				R.id.draft_button,
+				R.id.scheduled_button,
+				R.id.test_page_button,
+				R.id.tumblr_login_button}) {
 			((Button)findViewById(buttonId)).setOnClickListener(this);
 		}
+        appSupport = new AppSupport(this);
 	}
 
 	@Override
@@ -33,7 +40,7 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
 	        case R.id.action_draft_posts:
-	        	DraftActivity.startDraftActivity(this);
+	        	DraftListActivity.startDraftListActivity(this);
 	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
@@ -44,7 +51,10 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	public void onClick(View view) {
 		switch (view.getId()) {
 		case R.id.draft_button:
-			DraftActivity.startDraftActivity(this);
+			DraftListActivity.startDraftListActivity(this);
+			break;
+		case R.id.scheduled_button:
+			ScheduledListActivity.startScheduledListActivity(this, appSupport.getSelectedBlogName());
 			break;
 		case R.id.test_page_button:
 	    	ImagePickerActivity.startImagePicker(this,

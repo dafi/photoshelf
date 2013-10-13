@@ -26,13 +26,11 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.DialogUtils;
 
-public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnScrollListener {
+public class ScheduledListActivity extends PhotoTumblrActivity implements OnScrollListener {
  	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
-	private static final String POST_TAG = "postTag";
 	private static final String BLOG_NAME = "blogName";
 	private PhotoAdapter adapter;
 	private String blogName;
-	private String postTag;
 	private int offset;
 	private boolean hasMorePosts;
 	private boolean isScrolling;
@@ -49,15 +47,14 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
         list.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
         		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
-        		ImageViewerActivity.startImageViewer(TagPhotoBrowserActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
+        		ImageViewerActivity.startImageViewer(ScheduledListActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
         	}
 		});
         list.setOnScrollListener(this);
         
-	    Bundle bundle = getIntent().getExtras();
+        Bundle bundle = getIntent().getExtras();
 		blogName = bundle.getString(BLOG_NAME);
-		postTag = bundle.getString(POST_TAG);
-		if (blogName != null && postTag != null) {
+		if (blogName != null) {
 			offset = 0;
 			hasMorePosts = true;
 			readPhotoPosts();
@@ -65,7 +62,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 	}
 
 	private void refreshUI() {
-		setTitle(getResources().getString(R.string.browser_image_title, postTag, adapter.getCount(), totalPosts));
+		setTitle(getResources().getString(R.string.browser_sheduled_images_title, adapter.getCount(), totalPosts));
 		adapter.notifyDataSetChanged();
 	}
 	
@@ -114,14 +111,15 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 					protected Void doInBackground(Void... voidParams) {
 						try {
 							HashMap<String, String> params = new HashMap<String, String>();
-							params.put("tag", postTag);
 							params.put("offset", String.valueOf(offset));
-							List<TumblrPhotoPost> photoPosts = t.getPhotoPosts(blogName, params);
+							List<TumblrPost> photoPosts = t.getQueue(blogName, params);
 
 							List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
 					    	for (TumblrPost post : photoPosts) {
-					    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost)post,
-					    				post.getTimestamp() * 1000));
+						    	if (post.getType().equals("photo")) {
+						    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost)post,
+						    				post.getScheduledPublishTime() * 1000));
+						    	}
 							}
 					    	if (offset == 0) {
 					    		adapter.setItems(photoShareList);
@@ -151,12 +149,11 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		});
 	}
 
-	public static void startPhotoBrowserActivity(Activity activity, String blogName, String postTag) {
-		Intent intent = new Intent(activity, TagPhotoBrowserActivity.class);
+	public static void startScheduledListActivity(Activity activity, String blogName) {
+		Intent intent = new Intent(activity, ScheduledListActivity.class);
 		Bundle bundle = new Bundle();
 
 		bundle.putString(BLOG_NAME, blogName);
-		bundle.putString(POST_TAG, postTag);
 		intent.putExtras(bundle);
 
 		activity.startActivity(intent);

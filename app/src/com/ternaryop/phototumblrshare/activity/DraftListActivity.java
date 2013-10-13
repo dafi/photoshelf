@@ -44,7 +44,7 @@ import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.DialogUtils;
 
-public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick {
+public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick {
 	private static final String LOADER_PREFIX_AVATAR = "avatar";
 	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 
@@ -63,7 +63,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_draft);
+        setContentView(R.layout.activity_photo_list);
         
         appSupport = new AppSupport(this);
 		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
@@ -77,7 +77,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
         		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
-        		ImageViewerActivity.startImageViewer(DraftActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
+        		ImageViewerActivity.startImageViewer(DraftListActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
         	}
 		});
         blogName = appSupport.getSelectedBlogName();
@@ -152,7 +152,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 			info = subMenuContextMenuInfo;
 			PhotoSharePost post = (PhotoSharePost)adapter.getItem(info.position);
 			String url = post.getFirstPhotoAltSize().get(item.getItemId()).getUrl();
-    		ImageViewerActivity.startImageViewer(DraftActivity.this, url);
+    		ImageViewerActivity.startImageViewer(DraftListActivity.this, url);
 
     		// no longer needed, free up
 			subMenuContextMenuInfo = null;
@@ -229,7 +229,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 		    }
 		};
 		
-		new AlertDialog.Builder(DraftActivity.this)
+		new AlertDialog.Builder(DraftListActivity.this)
 		.setMessage(R.string.are_you_sure)
 		.setPositiveButton(android.R.string.yes, dialogClickListener)
 	    .setNegativeButton(android.R.string.no, dialogClickListener)
@@ -252,7 +252,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 
 					@Override
 					public void failure(Tumblr tumblr, Exception e) {
-						new AlertDialog.Builder(DraftActivity.this)
+						new AlertDialog.Builder(DraftListActivity.this)
 						.setTitle(R.string.parsing_error)
 						.setMessage(e.getLocalizedMessage())
 						.show();
@@ -284,7 +284,7 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 					Exception error;
 
 					protected void onPreExecute() {
-						progressDialog = new ProgressDialog(DraftActivity.this);
+						progressDialog = new ProgressDialog(DraftListActivity.this);
 						progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 						progressDialog.setMessage(getString(R.string.reading_draft_posts));
 						progressDialog.show();
@@ -302,14 +302,14 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 						if (error == null) {
 							refreshUI();
 						} else {
-							DialogUtils.showErrorDialog(DraftActivity.this, error);
+							DialogUtils.showErrorDialog(DraftListActivity.this, error);
 						}
 					}
 
 					@Override
 					protected Void doInBackground(Void... params) {
 						try {
-							Context context = DraftActivity.this;
+							Context context = DraftListActivity.this;
 
 							HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
 							queuedPosts = new HashMap<String, TumblrPost>();
@@ -343,13 +343,13 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 
 			@Override
 			public void failure(Tumblr tumblr, Exception ex) {
-				DialogUtils.showErrorDialog(DraftActivity.this, ex);
+				DialogUtils.showErrorDialog(DraftListActivity.this, ex);
 			}
 		});
 	}
 
-	public static void startDraftActivity(Context context) {
-		Intent intent = new Intent(context, DraftActivity.class);
+	public static void startDraftListActivity(Context context) {
+		Intent intent = new Intent(context, DraftListActivity.class);
 		Bundle bundle = new Bundle();
 
 		intent.putExtras(bundle);
@@ -359,6 +359,6 @@ public class DraftActivity extends PhotoTumblrActivity implements OnPhotoBrowseC
 
 	@Override
 	public void onClick(PhotoSharePost post) {
-		TagPhotoBrowserActivity.startPhotoBrowser(this, blogName, post.getTags().get(0));
+		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, blogName, post.getTags().get(0));
 	}
 }

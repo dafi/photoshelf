@@ -37,9 +37,9 @@
     <string name="menu_header_show_image">Image for %1s</string>
     <string name="test_page_title">Test Page</string>
     <string name="birthdays_title">Birthdays</string>
-
     <string name="image_picker_activity_title">Pick Images</string>
-
     <string name="tumblr_login_title">Tumblr Login</string>
     <string name="browser_image_title">%1$s %2$d/%3$d post(s)</string>
+    <string name="browser_sheduled_images_title">Scheduled %1$d/%2$d post(s)</string>
+    <string name="scheduled_title">Scheduled</string>
 </resources>

@@ -300,7 +300,7 @@ public class DraftPostHelper {
 			public Exception call() throws Exception {
 				try {
 					dbHelper.removeExpiredScheduledPosts(System.currentTimeMillis());
-					List<TumblrPost> posts = tumblr.getQueue(tumblrName);
+					List<TumblrPost> posts = tumblr.getQueue(tumblrName, null);
 					for (TumblrPost post : posts) {
 				    	if (post.getType().equals("photo")) {
 							for (String tag : post.getTags()) {

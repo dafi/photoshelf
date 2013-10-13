@@ -126,7 +126,7 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
 	        case R.id.action_draft_posts:
-	        	DraftActivity.startDraftActivity(this);
+	        	DraftListActivity.startDraftListActivity(this);
 	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
