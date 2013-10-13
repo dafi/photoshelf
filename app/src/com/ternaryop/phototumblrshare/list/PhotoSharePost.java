@@ -45,10 +45,11 @@ public class PhotoSharePost extends TumblrPhotoPost {
 	}
 	
 	public String getLastPublishedTimestampAsString() {
-		long days = DraftPostHelper.daysSinceTimestamp(lastPublishedTimestamp);
-		String daysString = DraftPostHelper.formatPublishDaysAgo(lastPublishedTimestamp);
+		long tt = getScheduledPublishTime() > 0 ? getScheduledPublishTime() * 1000 : lastPublishedTimestamp;
+		long days = DraftPostHelper.daysSinceTimestamp(tt);
+		String daysString = DraftPostHelper.formatPublishDaysAgo(tt);
 		if (days != Long.MAX_VALUE && days > 0) {
-			String string = DATE_FORMAT.format(new Date(lastPublishedTimestamp));
+			String string = DATE_FORMAT.format(new Date(tt));
         	daysString += " (" + string + ")";
 		}
 		return daysString;

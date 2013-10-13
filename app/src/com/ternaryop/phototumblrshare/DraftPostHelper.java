@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -157,6 +159,8 @@ public class DraftPostHelper {
 		    }
 		    List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
 	    	for (TumblrPost post : draftPostList) {
+	    		// preserve schedule time when present
+	    		post.setScheduledPublishTime(queuedTimestamp / 1000);
 	    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost) post, timestampToSave));
 			}
 	    	temp.add(new TimestampPosts(timestampToSave, photoShareList));
@@ -243,9 +247,13 @@ public class DraftPostHelper {
             dayString = "Never Published";
         } else {
             if (days < 0) {
-            	dayString = "In " + (-days) + " days";
+            	if (days == -1) {
+            		dayString = new SimpleDateFormat("'Tomorrow at' HH:mm", Locale.US).format(new Date(timestamp));
+            	} else {
+            		dayString = new SimpleDateFormat("'In " + (-days) + " days at' HH:mm", Locale.US).format(new Date(timestamp));
+            	}
             } else if (days == 0) {
-                dayString = "Today";
+        		dayString = new SimpleDateFormat("'Today at' HH:mm", Locale.US).format(new Date(timestamp));
             } else if (days == 1) {
                 dayString = "Yesterday";
             } else {
