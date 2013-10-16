@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -66,49 +65,39 @@ public class AppSupport {
 		return context;
 	}
 
-	public void fetchBlogNames(final Activity activity, final AppSupportCallback callback) {
+	public void fetchBlogNames(final Context context, final AppSupportCallback callback) {
 		List<String> blogList = getBlogList();
 		if (blogList != null) {
 			callback.onComplete(this, null);
 			return;
 		}
-		Tumblr.getTumblr(activity, new Callback<Void>() {
+		Tumblr.getSharedTumblr(context).getBlogList(new Callback<Blog[]>() {
+
 			@Override
-			public void complete(Tumblr tumblr, Void result) {
-				tumblr.getBlogList(new Callback<Blog[]>() {
-
-					@Override
-					public void complete(Tumblr tumblr, Blog[] blogs) {
-						HashSet<String> blogNames = new HashSet<String>(blogs.length);
-						String primaryBlog = null;
-						for (int i = 0; i < blogs.length; i++) {
-							blogNames.add(blogs[i].getName());
-							if (blogs[i].isPrimary()) {
-								primaryBlog = blogs[i].getName();
-							}
-						}
-						setBlogList(blogNames);
-						if (primaryBlog != null) {
-							setSelectedBlogName(primaryBlog);
-						}
-						if (callback != null) {
-							callback.onComplete(AppSupport.this, null);
-						}
+			public void complete(Tumblr tumblr, Blog[] blogs) {
+				HashSet<String> blogNames = new HashSet<String>(blogs.length);
+				String primaryBlog = null;
+				for (int i = 0; i < blogs.length; i++) {
+					blogNames.add(blogs[i].getName());
+					if (blogs[i].isPrimary()) {
+						primaryBlog = blogs[i].getName();
 					}
-
-					@Override
-					public void failure(Tumblr tumblr, Exception e) {
-						if (callback != null) {
-							callback.onComplete(AppSupport.this, e);
-						}
-					} 
-				});
+				}
+				setBlogList(blogNames);
+				if (primaryBlog != null) {
+					setSelectedBlogName(primaryBlog);
+				}
+				if (callback != null) {
+					callback.onComplete(AppSupport.this, null);
+				}
 			}
 
 			@Override
 			public void failure(Tumblr tumblr, Exception e) {
-				callback.onComplete(AppSupport.this, e);
-			}
+				if (callback != null) {
+					callback.onComplete(AppSupport.this, e);
+				}
+			} 
 		});
 	}
 	

@@ -237,31 +237,21 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 	
 	private void publishPost(final int position) {
-		Tumblr.getTumblr(this, new Callback<Void>() {
+		PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		Tumblr.getSharedTumblr(this).publishPost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
 
 			@Override
-			public void complete(Tumblr tumblr, Void result) {
-				PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
-				tumblr.publishPost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
-
-					@Override
-					public void complete(Tumblr tumblr, JSONObject result) {
-						adapter.remove(position);
-						refreshUI();
-					}
-
-					@Override
-					public void failure(Tumblr tumblr, Exception e) {
-						new AlertDialog.Builder(DraftListActivity.this)
-						.setTitle(R.string.parsing_error)
-						.setMessage(e.getLocalizedMessage())
-						.show();
-					}
-				});
+			public void complete(Tumblr tumblr, JSONObject result) {
+				adapter.remove(position);
+				refreshUI();
 			}
 
 			@Override
 			public void failure(Tumblr tumblr, Exception e) {
+				new AlertDialog.Builder(DraftListActivity.this)
+				.setTitle(R.string.parsing_error)
+				.setMessage(e.getLocalizedMessage())
+				.show();
 			}
 		});
 	}
@@ -275,77 +265,66 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		adapter.clear();
 		refreshUI();
 		
-		Tumblr.getTumblr(this, new Callback<Void>() {
+		new AsyncTask<Void, String, Void>() {
+			Exception error;
 			ProgressDialog progressDialog;
 
+			protected void onPreExecute() {
+				progressDialog = new ProgressDialog(DraftListActivity.this);
+				progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+				progressDialog.setMessage(getString(R.string.reading_draft_posts));
+				progressDialog.show();
+			}
+			
 			@Override
-			public void complete(final Tumblr t, Void result) {
-				new AsyncTask<Void, String, Void>() {
-					Exception error;
-
-					protected void onPreExecute() {
-						progressDialog = new ProgressDialog(DraftListActivity.this);
-						progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-						progressDialog.setMessage(getString(R.string.reading_draft_posts));
-						progressDialog.show();
-					}
-					
-					@Override
-					protected void onProgressUpdate(String... values) {
-						progressDialog.setMessage(values[0]);
-					}
-					
-					@Override
-					protected void onPostExecute(Void result) {
-						progressDialog.dismiss();
-						
-						if (error == null) {
-							refreshUI();
-						} else {
-							DialogUtils.showErrorDialog(DraftListActivity.this, error);
-						}
-					}
-
-					@Override
-					protected Void doInBackground(Void... params) {
-						try {
-							Context context = DraftListActivity.this;
-
-							HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
-							queuedPosts = new HashMap<String, TumblrPost>();
-							DraftPostHelper publisher = new DraftPostHelper();
-							publisher.getDraftAndQueueTags(t, blogName, tagsForDraftPosts, queuedPosts,
-									PostTagDatabaseHelper.getInstance(context));
-
-							ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
-							
-							// get last published
-							this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
-							Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
-									t,
-									blogName,
-									tags,
-									PostTagDatabaseHelper.getInstance(context));
-							
-							List<PhotoSharePost> posts = publisher.getDraftPostSortedByPublishDate(
-									tagsForDraftPosts,
-									queuedPosts,
-									lastPublishedPhotoByTags);
-							adapter.setItems(posts);
-						} catch (Exception e) {
-							e.printStackTrace();
-							error = e;
-						}
-						return null;
-					}
-				}.execute();
+			protected void onProgressUpdate(String... values) {
+				progressDialog.setMessage(values[0]);
+			}
+			
+			@Override
+			protected void onPostExecute(Void result) {
+				progressDialog.dismiss();
+				
+				if (error == null) {
+					refreshUI();
+				} else {
+					DialogUtils.showErrorDialog(DraftListActivity.this, error);
+				}
 			}
 
 			@Override
-			public void failure(Tumblr tumblr, Exception ex) {
-				DialogUtils.showErrorDialog(DraftListActivity.this, ex);
+			protected Void doInBackground(Void... params) {
+				try {
+					Context context = DraftListActivity.this;
+
+					HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
+					queuedPosts = new HashMap<String, TumblrPost>();
+					DraftPostHelper publisher = new DraftPostHelper();
+					publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(context), blogName, tagsForDraftPosts, queuedPosts,
+							PostTagDatabaseHelper.getInstance(context));
+
+					ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
+					
+					// get last published
+					this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
+					Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
+							Tumblr.getSharedTumblr(context),
+							blogName,
+							tags,
+							PostTagDatabaseHelper.getInstance(context));
+					
+					List<PhotoSharePost> posts = publisher.getDraftPostSortedByPublishDate(
+							tagsForDraftPosts,
+							queuedPosts,
+							lastPublishedPhotoByTags);
+					adapter.setItems(posts);
+				} catch (Exception e) {
+					e.printStackTrace();
+					error = e;
+				}
+				return null;
 			}
-		});
+		}.execute();
 	}
 
 	public static void startDraftListActivity(Context context) {

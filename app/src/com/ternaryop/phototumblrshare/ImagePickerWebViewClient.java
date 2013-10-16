@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.ternaryop.phototumblrshare.activity.ImageViewerActivity;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.webkit.WebView;
@@ -22,15 +22,15 @@ public class ImagePickerWebViewClient extends WebViewClient {
 	
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
-		final Activity activity = (Activity) view.getContext();
+		final Context context = view.getContext();
 
-		String domSelector = new ImageDOMSelectorFinder(activity).getSelectorFromUrl(url);
+		String domSelector = new ImageDOMSelectorFinder(context).getSelectorFromUrl(url);
 		if (domSelector != null) {
 
-			ImageUrlRetriever imageUrlRetriever = new ImageUrlRetriever(activity, new ImageUrlRetriever.OnImagesRetrieved() {
+			ImageUrlRetriever imageUrlRetriever = new ImageUrlRetriever(context, new ImageUrlRetriever.OnImagesRetrieved() {
 				@Override
 				public void onImagesRetrieved(String title, List<String> imageUrls) {
-					ImageViewerActivity.startImageViewer(activity, imageUrls.get(0));
+					ImageViewerActivity.startImageViewer(context, imageUrls.get(0));
 				}
 			});
 			imageUrlRetriever.setUseActionMode(false);
@@ -38,8 +38,8 @@ public class ImagePickerWebViewClient extends WebViewClient {
 			imageUrlRetriever.retrieve();
 			return true;
 		}
-		String message = activity.getResources().getString(R.string.unable_to_find_domain_mapper_for_url);
-		Toast.makeText(activity.getApplicationContext(),
+		String message = context.getResources().getString(R.string.unable_to_find_domain_mapper_for_url);
+		Toast.makeText(context.getApplicationContext(),
 				String.format(message, url),
 				Toast.LENGTH_LONG).show();
 		return false;

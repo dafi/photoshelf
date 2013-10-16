@@ -3,7 +3,6 @@ package com.ternaryop.phototumblrshare.list;
 import java.util.Collections;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -18,16 +17,14 @@ import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.tumblr.TumblrAltSize;
  
 public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
-    private Activity activity;
     private static LayoutInflater inflater = null;
     public ImageLoader imageLoader;
     private List<PhotoSharePost> items = Collections.emptyList();
 	private OnPhotoBrowseClick onPhotoBrowseClick;
  
-    public PhotoAdapter(Activity a, String prefix) {
-        activity = a;
-        inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        imageLoader = new ImageLoader(activity.getApplicationContext(), prefix);
+    public PhotoAdapter(Context context, String prefix) {
+        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
     }
  
     public int getCount() {

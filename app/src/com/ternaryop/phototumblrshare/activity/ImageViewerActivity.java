@@ -1,11 +1,10 @@
 package com.ternaryop.phototumblrshare.activity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -16,15 +15,13 @@ import android.widget.ProgressBar;
 import com.ternaryop.phototumblrshare.R;
 
 @SuppressLint("SetJavaScriptEnabled")
-public class ImageViewerActivity extends Activity {
+public class ImageViewerActivity extends PhotoTumblrActivity {
 	private static final String IMAGE_URL = "imageUrl";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_webview);
-
-	    getActionBar().setDisplayHomeAsUpEnabled(true);
 
 	    ProgressBar progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
 	    
@@ -64,27 +61,14 @@ public class ImageViewerActivity extends Activity {
 		return webView;
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-	    switch (item.getItemId()) {
-	        case android.R.id.home:
-	        	// clicked the actionbar
-	        	// close and return to caller
-	        	finish();
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
-	}
-	
-	public static void startImageViewer(Activity activity, String url) {
-		Intent intent = new Intent(activity, ImageViewerActivity.class);
+	public static void startImageViewer(Context context, String url) {
+		Intent intent = new Intent(context, ImageViewerActivity.class);
 		Bundle bundle = new Bundle();
 
 		bundle.putString(IMAGE_URL, url);
 		intent.putExtras(bundle);
 
-		activity.startActivity(intent);
+		context.startActivity(intent);
 	}
 
 	@JavascriptInterface

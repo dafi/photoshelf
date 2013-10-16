@@ -25,6 +25,7 @@
     <string name="action_draft_posts">Draft Posts</string>
     <string name="posts_in_draft">%1$d post(s) in draft</string>
     <string name="reading_draft_posts">Reading draft posts&#8230;</string>
+    <string name="reading_scheduled_posts">Reading scheduled posts&#8230;</string>
     <string name="finding_last_published_posts">Finding last published posts&#8230;</string>
     <string name="schedule_post">Schedule Post</string>
     <string name="schedule_title">Schedule</string>
@@ -42,4 +43,5 @@
     <string name="browser_image_title">%1$s %2$d/%3$d post(s)</string>
     <string name="browser_sheduled_images_title">Scheduled %1$d/%2$d post(s)</string>
     <string name="scheduled_title">Scheduled</string>
+    <string name="authentication_success_title">Authentication success, caching blogs</string>
 </resources>

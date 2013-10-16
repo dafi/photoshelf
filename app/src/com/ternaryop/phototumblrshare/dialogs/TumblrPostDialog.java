@@ -3,7 +3,6 @@ package com.ternaryop.phototumblrshare.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -27,8 +26,6 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 	private EditText postTitle;
 	private EditText postTags;
-	private Tumblr tumblr;
-	private Activity activity;
 	private Spinner blogList;
 	private String[] imageUrls;
 	private AppSupport appSupport;
@@ -41,7 +38,6 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		postTags = (EditText)findViewById(R.id.post_tags);
 		blogList = (Spinner) findViewById(R.id.blog);
 		
-		activity = (Activity)context;
 		appSupport = new AppSupport(context);
 		((Button)findViewById(R.id.publish_button)).setOnClickListener(new OnClickPublishListener());
 		((Button)findViewById(R.id.draft_button)).setOnClickListener(new OnClickPublishListener());
@@ -120,7 +116,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	}
 
 	private void fillBlogList(List<String> blogNames) {
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item, blogNames);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, blogNames);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		blogList.setAdapter(adapter);
 
@@ -136,37 +132,26 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	private void fetchBlogNames() {
 		findViewById(R.id.publish_button).setEnabled(false);
 		findViewById(R.id.draft_button).setEnabled(false);
-		Tumblr.getTumblr(activity, new Callback<Void>() {
+
+		Tumblr.getSharedTumblr(getContext()).getBlogList(new Callback<Blog[]>() {
+
 			@Override
-			public void complete(Tumblr t, Void result) {
-				tumblr = t;
-
-				tumblr.getBlogList(new Callback<Blog[]>() {
-
-					@Override
-					public void complete(Tumblr tumblr, Blog[] result) {
-						List<String> blogNames = new ArrayList<String>(result.length);
-						for (int i = 0; i < result.length; i++) {
-							blogNames.add(result[i].getName());
-						}
-						appSupport.setBlogList(blogNames);
-						fillBlogList(blogNames);
-						findViewById(R.id.publish_button).setEnabled(true);
-						findViewById(R.id.draft_button).setEnabled(true);
-					}
-
-					@Override
-					public void failure(Tumblr tumblr, Exception e) {
-						DialogUtils.showErrorDialog(activity, e);
-						dismiss();
-					} 
-				});
+			public void complete(Tumblr tumblr, Blog[] result) {
+				List<String> blogNames = new ArrayList<String>(result.length);
+				for (int i = 0; i < result.length; i++) {
+					blogNames.add(result[i].getName());
+				}
+				appSupport.setBlogList(blogNames);
+				fillBlogList(blogNames);
+				findViewById(R.id.publish_button).setEnabled(true);
+				findViewById(R.id.draft_button).setEnabled(true);
 			}
 
 			@Override
-			public void failure(Tumblr tumblr, Exception ex) {
-				DialogUtils.showErrorDialog(activity, ex);
-			}
+			public void failure(Tumblr tumblr, Exception e) {
+				dismiss();
+				DialogUtils.showErrorDialog(getContext(), e);
+			} 
 		});
 	}
 
@@ -175,9 +160,9 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 		private final class PostCallback implements Callback<Long> {
 			public PostCallback (int max, boolean publish) {
-				progressDialog = new ProgressDialog(activity);
+				progressDialog = new ProgressDialog(getContext());
 				progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-				progressDialog.setMessage(activity.getResources().getString(publish ? R.string.publishing_post : R.string.creating_a_post_in_draft));
+				progressDialog.setMessage(getContext().getResources().getString(publish ? R.string.publishing_post : R.string.creating_a_post_in_draft));
 				progressDialog.setMax(max);
 				progressDialog.show();
 			}
@@ -185,7 +170,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 			@Override
 			public void failure(Tumblr tumblr, Exception ex) {
 				progressDialog.dismiss();
-				DialogUtils.showErrorDialog(activity, ex);
+				DialogUtils.showErrorDialog(getContext(), ex);
 			}
 
 			@Override
@@ -199,39 +184,27 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 		@Override
 		public void onClick(final View v) {
-			Tumblr.getTumblr(activity, new Callback<Void>() {
+			boolean publish = v.getId() == R.id.publish_button;
+			String selectedBlogName = (String) blogList
+					.getSelectedItem();
+			appSupport.setSelectedBlogName(selectedBlogName);
 
-				@Override
-				public void complete(final Tumblr t, Void result) {
-					boolean publish = v.getId() == R.id.publish_button;
-					tumblr = t;
-					String selectedBlogName = (String) blogList
-							.getSelectedItem();
-					appSupport.setSelectedBlogName(selectedBlogName);
-
-					String[] urls = getImageUrls();
-					final PostCallback callback = new PostCallback(urls.length, publish);
-					if (publish) {
-						for (String url : urls) {
-							tumblr.publishPhotoPost(selectedBlogName,
-									url, getPostTitle(), getPostTags(),
-									callback);
-						}
-					} else {
-						for (String url : urls) {
-							tumblr.draftPhotoPost(selectedBlogName,
-									url, getPostTitle(), getPostTags(),
-									callback);
-						}
-					}
-					dismiss();
+			String[] urls = getImageUrls();
+			final PostCallback callback = new PostCallback(urls.length, publish);
+			if (publish) {
+				for (String url : urls) {
+					Tumblr.getSharedTumblr(getContext()).publishPhotoPost(selectedBlogName,
+							url, getPostTitle(), getPostTags(),
+							callback);
 				}
-
-				@Override
-				public void failure(Tumblr tumblr, Exception ex) {
-					DialogUtils.showErrorDialog(activity, ex);
+			} else {
+				for (String url : urls) {
+					Tumblr.getSharedTumblr(getContext()).draftPhotoPost(selectedBlogName,
+							url, getPostTitle(), getPostTags(),
+							callback);
 				}
-			});
+			}
+			dismiss();
 		}
 	}
 

@@ -6,11 +6,11 @@ import java.util.Locale;
 
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -32,11 +32,9 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 	private final PhotoSharePost item;
 	private final String blogName;
 	private final onPostScheduleListener onPostSchedule;
-	private final Activity activity;
 
-	public SchedulePostDialog(Activity context, String blogName, PhotoSharePost item, Calendar scheduleDateTime, onPostScheduleListener onPostSchedule) {
+	public SchedulePostDialog(Context context, String blogName, PhotoSharePost item, Calendar scheduleDateTime, onPostScheduleListener onPostSchedule) {
 		super(context);
-		this.activity = context;
 		this.blogName = blogName;
 		this.item = item;
 		this.scheduleDateTime = scheduleDateTime;
@@ -87,42 +85,25 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 	}
 
 	private void schedulePost() {
-		try {
-			Tumblr.getTumblr(activity, new Callback<Void>() {
+		Tumblr.getSharedTumblr(getContext())
+		.schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new Callback<JSONObject>() {
 
-				@Override
-				public void complete(Tumblr tumblr, Void result) {
-					tumblr.schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new Callback<JSONObject>() {
-
-						@Override
-						public void complete(Tumblr tumblr, JSONObject result) {
-							if (onPostSchedule != null) {
-								onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime);
-							}
-							dismiss();
-						}
-
-						@Override
-						public void failure(Tumblr tumblr, Exception e) {
-							new AlertDialog.Builder(getContext())
-							.setTitle(R.string.parsing_error)
-							.setMessage(e.getLocalizedMessage())
-							.show();
-						}
-					});
+			@Override
+			public void complete(Tumblr tumblr, JSONObject result) {
+				if (onPostSchedule != null) {
+					onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime);
 				}
+				dismiss();
+			}
 
-				@Override
-				public void failure(Tumblr tumblr, Exception e) {
-				}
-			});
-		
-		
-		
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			@Override
+			public void failure(Tumblr tumblr, Exception e) {
+				new AlertDialog.Builder(getContext())
+				.setTitle(R.string.parsing_error)
+				.setMessage(e.getLocalizedMessage())
+				.show();
+			}
+		});
 	}
 
 	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {

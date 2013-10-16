@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +19,6 @@ import android.widget.ListView;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
@@ -73,90 +71,78 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 		refreshUI();
 
 		final Context activityContext = this;
-		
-		Tumblr.getTumblr(this, new Callback<Void>() {
+		new AsyncTask<Void, String, Void>() {
 			ProgressDialog progressDialog;
+			Exception error;
 
+			protected void onPreExecute() {
+				progressDialog = new ProgressDialog(activityContext);
+				progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+				progressDialog.setMessage(getString(R.string.reading_draft_posts));
+				progressDialog.show();
+				isScrolling = true;
+			}
+			
 			@Override
-			public void complete(final Tumblr t, Void result) {
-				new AsyncTask<Void, String, Void>() {
-					Exception error;
-
-					protected void onPreExecute() {
-						progressDialog = new ProgressDialog(activityContext);
-						progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-						progressDialog.setMessage(getString(R.string.reading_draft_posts));
-						progressDialog.show();
-						isScrolling = true;
-					}
-					
-					@Override
-					protected void onProgressUpdate(String... values) {
-						progressDialog.setMessage(values[0]);
-					}
-					
-					@Override
-					protected void onPostExecute(Void result) {
-						progressDialog.dismiss();
-						
-						if (error == null) {
-							refreshUI();
-						} else {
-							DialogUtils.showErrorDialog(activityContext, error);
-						}
-						isScrolling = false;
-					}
-
-					@Override
-					protected Void doInBackground(Void... voidParams) {
-						try {
-							HashMap<String, String> params = new HashMap<String, String>();
-							params.put("offset", String.valueOf(offset));
-							List<TumblrPost> photoPosts = t.getQueue(blogName, params);
-
-							List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
-					    	for (TumblrPost post : photoPosts) {
-						    	if (post.getType().equals("photo")) {
-						    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost)post,
-						    				post.getScheduledPublishTime() * 1000));
-						    	}
-							}
-					    	if (offset == 0) {
-					    		adapter.setItems(photoShareList);
-					    	} else {
-					    		adapter.addItems(photoShareList);
-					    	}
-					    	if (photoPosts.size() > 0) {
-					    		totalPosts = photoPosts.get(0).getTotalPosts();
-					    		hasMorePosts = true;
-					    	} else {
-					    		totalPosts = adapter.getCount();
-					    		hasMorePosts = false;
-					    	}
-						} catch (Exception e) {
-							e.printStackTrace();
-							error = e;
-						}
-						return null;
-					}
-				}.execute();
+			protected void onProgressUpdate(String... values) {
+				progressDialog.setMessage(values[0]);
+			}
+			
+			@Override
+			protected void onPostExecute(Void result) {
+				progressDialog.dismiss();
+				
+				if (error == null) {
+					refreshUI();
+				} else {
+					DialogUtils.showErrorDialog(activityContext, error);
+				}
+				isScrolling = false;
 			}
 
 			@Override
-			public void failure(Tumblr tumblr, Exception ex) {
-				DialogUtils.showErrorDialog(activityContext, ex);
+			protected Void doInBackground(Void... voidParams) {
+				try {
+					HashMap<String, String> params = new HashMap<String, String>();
+					params.put("offset", String.valueOf(offset));
+					List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(activityContext).getQueue(blogName, params);
+
+					List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
+			    	for (TumblrPost post : photoPosts) {
+				    	if (post.getType().equals("photo")) {
+				    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost)post,
+				    				post.getScheduledPublishTime() * 1000));
+				    	}
+					}
+			    	if (offset == 0) {
+			    		adapter.setItems(photoShareList);
+			    	} else {
+			    		adapter.addItems(photoShareList);
+			    	}
+			    	if (photoPosts.size() > 0) {
+			    		totalPosts = photoPosts.get(0).getTotalPosts();
+			    		hasMorePosts = true;
+			    	} else {
+			    		totalPosts = adapter.getCount();
+			    		hasMorePosts = false;
+			    	}
+				} catch (Exception e) {
+					e.printStackTrace();
+					error = e;
+				}
+				return null;
 			}
-		});
+		}.execute();
 	}
 
-	public static void startScheduledListActivity(Activity activity, String blogName) {
-		Intent intent = new Intent(activity, ScheduledListActivity.class);
+	public static void startScheduledListActivity(Context context, String blogName) {
+		Intent intent = new Intent(context, ScheduledListActivity.class);
 		Bundle bundle = new Bundle();
 
 		bundle.putString(BLOG_NAME, blogName);
 		intent.putExtras(bundle);
 
-		activity.startActivity(intent);
+		context.startActivity(intent);
 	}
 
 	@Override
