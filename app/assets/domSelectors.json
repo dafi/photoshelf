@@ -3,5 +3,6 @@
 	"http:\/\/x05.org":"#img_obj",
 	"http:\/\/www.imagebam.com":"[onclick*=scale]",
 	"http:\/\/www.pixtreat.com":"#img_obj",
-	"http:\/\/www.imagesion.com":"#full_image"
+	"http:\/\/www.imagesion.com":"#full_image",
+	"http:\/\/www.picturesion.com":"#full_image"
 }
