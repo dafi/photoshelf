@@ -24,15 +24,14 @@ import org.apache.http.protocol.HttpContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 
 import com.ternaryop.phototumblrshare.R;
-import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.JSONUtils;
 
 public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
@@ -69,37 +68,7 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 		this.oAuthAccessSecret = oAuthAccessSecret;
 	}
 
-	public static void login(Activity activity, Callback<Void> callback) {
-		SharedPreferences settings = activity.getSharedPreferences(PREFS_NAME, 0);
-		String authToken = settings.getString(PREF_OAUTH_TOKEN, null);
-		String authTokenSecret = settings.getString(PREF_OAUTH_SECRET, null);
-		
-		if (authToken != null && authTokenSecret != null) {
-			TumblrHttpOAuthConsumer consumer = new TumblrHttpOAuthConsumer(activity.getString(R.string.CONSUMER_KEY),
-					activity.getString(R.string.CONSUMER_SECRET),
-					authToken,
-					authTokenSecret);
-			callback.complete(new Tumblr(consumer), null);
-		} else {
-			if (loginTumblr == null) {
-				loginTumblr = new TumblrHttpOAuthConsumer(activity.getString(R.string.CONSUMER_KEY),
-						activity.getString(R.string.CONSUMER_SECRET));
-			}
-	       loginWithActivity(activity, callback);
-		}
-	}
-	
-	public void login(final Activity activity) {
-        new AsyncTask<Void, Void, Object>() {
-    		@Override
-    		protected Object doInBackground(Void... params) {
-    			authorize(activity, getConsumerKey(), getConsumerSecret());
-    			return null;
-    		}
-        }.execute();
-    }
-
-    public void authorize(Activity activity, String consumerKey, String consumerSecret) {
+    public void authorize(Context context, String consumerKey, String consumerSecret) {
     	provider = new CommonsHttpOAuthProvider(
 		        REQUEST_TOKEN_URL,
 		        ACCESS_TOKEN_URL,
@@ -109,68 +78,63 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 		String authUrl;
 		try {
 		    // Callback url scheme is defined into manifest
-		    authUrl = provider.retrieveRequestToken(this, activity.getString(R.string.CALLBACK_URL));
+		    authUrl = provider.retrieveRequestToken(this, context.getString(R.string.CALLBACK_URL));
 		    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
 		    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-			activity.startActivity(intent);
+			context.startActivity(intent);
 		} catch (OAuthException e) {
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
 		}
 	}
 
-    public void access(final String token, final String verifier, final Callback<Void> callback) {
-    	final TumblrHttpOAuthConsumer consumer = this;
-		new AsyncTask<Void, Void, Object>() {
+    public void access(final Context context, final String token, final String verifier, final AuthenticationCallback callback) {
+		new AsyncTask<Void, Void, Exception>() {
 			@Override
-			protected Object doInBackground(Void... params) {
+			protected Exception doInBackground(Void... params) {
 				try {
-					provider.retrieveAccessToken(consumer, verifier);
-					oAuthAccessKey = getToken();
-					oAuthAccessSecret = getTokenSecret();
+					provider.retrieveAccessToken(TumblrHttpOAuthConsumer.this, verifier);
 				} catch (OAuthException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					return e;
 				}
 				return null;
 			}
-
-			@Override
-			protected void onPostExecute(Object result) {
-				callback.complete(new Tumblr(consumer), null);
+			protected void onPostExecute(Exception error) {
+				Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+				edit.putString(PREF_OAUTH_TOKEN,  getToken());
+				edit.putString(PREF_OAUTH_SECRET, getTokenSecret());
+				edit.commit();
+				callback.authenticated(getToken(), getTokenSecret(), error);
 			}
-			
 		}.execute();
 	}
 
-	private static void loginWithActivity(final Activity activity, final Callback<Void> callback) {
-        Uri uri = activity.getIntent().getData();
-        if (uri != null) {
-        	loginTumblr.access(uri.getQueryParameter("oauth_token"),
+	public static void loginWithActivity(final Context context) {
+		if (loginTumblr == null) {
+			loginTumblr = new TumblrHttpOAuthConsumer(
+					context.getString(R.string.CONSUMER_KEY),
+					context.getString(R.string.CONSUMER_SECRET));
+		}
+        new AsyncTask<Void, Void, Void>() {
+    		@Override
+    		protected Void doInBackground(Void... params) {
+    			loginTumblr.authorize(context, loginTumblr.getConsumerKey(), loginTumblr.getConsumerSecret());
+    			return null;
+    		}
+        }.execute();
+	}
+	
+	public static void handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
+		String callbackUrl = context.getString(R.string.CALLBACK_URL);
+        if (uri != null && callbackUrl.startsWith(uri.getScheme())) {
+        	loginTumblr.access(
+        			context,
+        			uri.getQueryParameter("oauth_token"),
         			uri.getQueryParameter("oauth_verifier"),
-        			new Callback<Void>() {
-						@Override
-						public void complete(Tumblr t, Void result) {
-							Editor edit = activity.getSharedPreferences(PREFS_NAME, 0).edit();
-							edit.putString(PREF_OAUTH_TOKEN,  loginTumblr.oAuthAccessKey);
-							edit.putString(PREF_OAUTH_SECRET, loginTumblr.oAuthAccessSecret);
-							edit.commit();
-							//no longer necessary
-							loginTumblr = null;
-
-							callback.complete(t, null);
-						}
-
-						@Override
-						public void failure(Tumblr tumblr, Exception ex) {
-							DialogUtils.showErrorDialog(activity, ex);
-						}
-					});
-        } else {
-        	loginTumblr.login(activity);
+        			callback);
         }
 	}
-
+	
 	public synchronized HttpResponse getSignedPostResponse(String url, List<NameValuePair> params) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, ClientProtocolException, IOException {
         HttpPost request = new HttpPost(url);
 

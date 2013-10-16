@@ -16,11 +16,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.phototumblrshare.R;
 
 public class Tumblr {
 	public final static int MAX_POST_PER_REQUEST = 20;
@@ -30,29 +33,35 @@ public class Tumblr {
 	
 	private TumblrHttpOAuthConsumer consumer;
 
-	public Tumblr(TumblrHttpOAuthConsumer consumer) {
+	private Tumblr(TumblrHttpOAuthConsumer consumer) {
 		this.consumer = consumer;
 	}
 
-	public static void getTumblr(final Activity activity, final Callback<Void> callback) {
-		if (instance != null) {
-			callback.complete(instance, null);
-			return;
+	public static Tumblr getSharedTumblr(Context context) {
+		if (instance == null) {
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+			instance = new Tumblr(new TumblrHttpOAuthConsumer(
+					context.getResources().getString(R.string.CONSUMER_KEY),
+					context.getResources().getString(R.string.CONSUMER_SECRET),
+					preferences.getString(TumblrHttpOAuthConsumer.PREF_OAUTH_TOKEN, null),
+					preferences.getString(TumblrHttpOAuthConsumer.PREF_OAUTH_SECRET, null)));
 		}
-		TumblrHttpOAuthConsumer.login(activity, new Callback<Void>() {
-			@Override
-			public void failure(Tumblr tumblr, Exception e) {
-				DialogUtils.showErrorDialog(activity, e);
-			}
-			
-			@Override
-			public void complete(Tumblr tumblr, Void result) {
-				Tumblr.instance = tumblr;
-				callback.complete(tumblr, result);
-			}
-		});
+		return instance;
+	}
+	
+	public static boolean isLogged(Context context) {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		return preferences.getString(TumblrHttpOAuthConsumer.PREF_OAUTH_TOKEN, null) != null;
 	}
 
+	public static void login(Context context) {
+		TumblrHttpOAuthConsumer.loginWithActivity(context);
+	}
+
+	public static void handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
+		TumblrHttpOAuthConsumer.handleOpenURI(context, uri, callback);
+	}
+	
     public void getBlogList(final Callback<Blog[]> callback) {
         new AsyncTask<Void, Void, Blog[]>() {
 
