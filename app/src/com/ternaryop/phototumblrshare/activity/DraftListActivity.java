@@ -27,7 +27,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 import com.fedorvlasov.lazylist.ImageLoader;
-import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.DraftPostHelper;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.PostTag;
@@ -44,13 +43,12 @@ import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.DialogUtils;
 
-public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick {
+public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick, OnItemClickListener {
 	private static final String LOADER_PREFIX_AVATAR = "avatar";
 	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 
 	private PhotoAdapter adapter;
 	
-	private AppSupport appSupport;
 	private HashMap<String, TumblrPost> queuedPosts;
 	private Calendar lastScheduledDate;
 	// The menuInfo is null for submenus so store parent one
@@ -65,7 +63,6 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_list);
         
-        appSupport = new AppSupport(this);
 		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
         adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
         adapter.setOnPhotoBrowseClick(this);
@@ -73,13 +70,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
         ListView list = (ListView)findViewById(R.id.list);
         list.setAdapter(adapter);
         registerForContextMenu(list);
-        list.setOnItemClickListener(new OnItemClickListener() {
-
-			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
-        		ImageViewerActivity.startImageViewer(DraftListActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
-        	}
-		});
+        list.setOnItemClickListener(this);
         blogName = appSupport.getSelectedBlogName();
         readDraftPosts();
 	}
@@ -129,7 +120,10 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 			AdapterView.AdapterContextMenuInfo contextMenuInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
 			PhotoSharePost post = (PhotoSharePost)adapter.getItem(contextMenuInfo.position);
 			int index = 0;
-			SubMenu subMenu = menu.addSubMenu(R.id.group_menu_image_dimension, Menu.NONE, Menu.NONE, getResources().getString(R.string.menu_show_image));
+			SubMenu subMenu = menu.addSubMenu(R.id.group_menu_image_dimension,
+					Menu.NONE,
+					Menu.NONE,
+					getResources().getString(R.string.menu_show_image));
 			subMenu.setHeaderTitle(getResources().getString(R.string.menu_header_show_image, post.getTags().get(0)));
 			for(TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
 				// the item id is set to the image index into array
@@ -173,15 +167,16 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 
 	private void showScheduleDialog(final int position) {
+		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
 		SchedulePostDialog dialog = new SchedulePostDialog(this,
 				appSupport.getSelectedBlogName(),
-				(PhotoSharePost)adapter.getItem(position),
+				item,
 				findScheduleTime(),
 				new onPostScheduleListener() {
 			@Override
 			public void onPostScheduled(long id, Calendar scheduledDateTime) {
 				lastScheduledDate = (Calendar) scheduledDateTime.clone();
-				adapter.remove(position);
+				adapter.remove(item);
 				refreshUI();
 			}
 		});
@@ -237,12 +232,12 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 	
 	private void publishPost(final int position) {
-		PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
 		Tumblr.getSharedTumblr(this).publishPost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
 
 			@Override
 			public void complete(Tumblr tumblr, JSONObject result) {
-				adapter.remove(position);
+				adapter.remove(item);
 				refreshUI();
 			}
 
@@ -317,7 +312,9 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 							tagsForDraftPosts,
 							queuedPosts,
 							lastPublishedPhotoByTags);
-					adapter.setItems(posts);
+			        // we must reset the flag every time before an add operation
+			        adapter.setNotifyOnChange(false);
+					adapter.addAll(posts);
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = e;
@@ -337,7 +334,13 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 
 	@Override
-	public void onClick(PhotoSharePost post) {
+	public void onPhotoBrowseClick(PhotoSharePost post) {
 		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, blogName, post.getTags().get(0));
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
+		ImageViewerActivity.startImageViewer(this, item.getFirstPhotoAltSize().get(0).getUrl());
 	}
 }

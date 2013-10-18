@@ -250,6 +250,37 @@ public class Tumblr {
         }.execute();
     }
 
+    public void saveDraft(final String tumblrName, final long id, final Callback<JSONObject> callback) {
+        new AsyncTask<Void, Void, JSONObject>() {
+        	Exception error;
+    		@Override
+    		protected JSONObject doInBackground(Void... params) {
+    	        String apiUrl = getApiUrl(tumblrName, "/post/edit");
+    	    	
+    	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+    	        nameValuePairs.add(new BasicNameValuePair("id", id + ""));
+    	        nameValuePairs.add(new BasicNameValuePair("state", "draft"));
+
+    	        try {
+        	        JSONObject json = consumer.jsonFromPost(apiUrl, nameValuePairs);
+        	        return json.getJSONObject("response");
+				} catch (Exception e) {
+					error = e;
+				}
+    	        return null;
+    		}
+
+			@Override
+			protected void onPostExecute(JSONObject response) {
+				if (error == null) {
+					callback.complete(instance, response);
+				} else {
+					callback.failure(instance, error);
+				}
+			}
+        }.execute();
+    }
+
     public void schedulePost(final String tumblrName, final long id, final long timestamp, final Callback<JSONObject> callback) {
         new AsyncTask<Void, Void, JSONObject>() {
         	Exception error;

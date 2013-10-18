@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/post_publish"
+        android:title="@string/publish_post">
+    </item>
+    
+    <item
+        android:id="@+id/post_save_draft"
+        android:title="@string/save_draft_post">
+    </item>
+
+</menu> 

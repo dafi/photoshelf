@@ -117,11 +117,9 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 			    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost)post,
 			    				post.getTimestamp() * 1000));
 					}
-			    	if (offset == 0) {
-			    		adapter.setItems(photoShareList);
-			    	} else {
-			    		adapter.addItems(photoShareList);
-			    	}
+			        // we must reset the flag every time before an add operation
+			        adapter.setNotifyOnChange(false);
+		    		adapter.addAll(photoShareList);
 			    	if (photoPosts.size() > 0) {
 			    		totalPosts = photoPosts.get(0).getTotalPosts();
 			    		hasMorePosts = true;

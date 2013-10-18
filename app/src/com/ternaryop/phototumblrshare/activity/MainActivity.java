@@ -17,8 +17,6 @@ import com.ternaryop.utils.DialogUtils;
 
 public class MainActivity extends PhotoTumblrActivity implements OnClickListener {
 
-	private AppSupport appSupport;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,8 +25,6 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 		boolean enabled = Tumblr.isLogged(this);
 		enableUI(enabled);
 		
-        appSupport = new AppSupport(this);
-
         // if we are returning from authentication then enable the UI
 	    Tumblr.handleOpenURI(this, getIntent().getData(), new AuthenticationCallback() {
 			@Override

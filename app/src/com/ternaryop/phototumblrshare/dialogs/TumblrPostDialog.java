@@ -79,7 +79,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		this.imageUrls = new String[imageList.size()];
 
 		for (int i = 0; i < imageList.size(); i++) {
-			this.imageUrls[i] = imageList.get(0).imageURL;
+			this.imageUrls[i] = imageList.get(0).getDestinationDocumentURL();
 		}
 	}
 

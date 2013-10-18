@@ -1,6 +1,5 @@
 package com.ternaryop.phototumblrshare.list;
 
-import java.util.Collections;
 import java.util.List;
 
 import android.content.Context;
@@ -8,7 +7,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,27 +15,15 @@ import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.tumblr.TumblrAltSize;
  
-public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
+public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.OnClickListener {
     private static LayoutInflater inflater = null;
     public ImageLoader imageLoader;
-    private List<PhotoSharePost> items = Collections.emptyList();
 	private OnPhotoBrowseClick onPhotoBrowseClick;
  
     public PhotoAdapter(Context context, String prefix) {
+		super(context, 0);
         inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
-    }
- 
-    public int getCount() {
-        return items.size();
-    }
- 
-    public Object getItem(int position) {
-        return items.get(position);
-    }
- 
-    public long getItemId(int position) {
-        return position;
     }
  
     public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
@@ -49,7 +36,7 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
             vi = inflater.inflate(R.layout.list_row, null);
         }
 
-        final PhotoSharePost post = items.get(position);
+        final PhotoSharePost post = getItem(position);
 
         switch (post.getScheduleTimeType()) {
         	case POST_PUBLISH_NEVER:
@@ -86,27 +73,7 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
         return vi;
     }
     
-    public void remove(int position) {
-    	items.remove(position);
-    }
-    
-    public void clear() {
-    	items.clear();
-    }
-
-	public List<PhotoSharePost> getItems() {
-		return items;
-	}
-
-	public void addItems(List<PhotoSharePost> items) {
-		this.items.addAll(items);
-	}
-	
-	public void setItems(List<PhotoSharePost> items) {
-		this.items = items;
-	}
-
 	public void onClick(View v) {
-		onPhotoBrowseClick.onClick((PhotoSharePost)v.getTag());
+		onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
 	}
 }

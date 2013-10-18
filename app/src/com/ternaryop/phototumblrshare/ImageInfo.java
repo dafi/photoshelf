@@ -1,56 +1,71 @@
 package com.ternaryop.phototumblrshare;
 
-import android.graphics.Bitmap;
-import android.widget.ImageView;
-
 public class ImageInfo {
-	public String thumbnailURL;
-	public String imageURL;
-	public ImageView imageView;
-	public int position;
-	public boolean selected;
-	public Bitmap bitmap;
+	private String thumbnailURL;
+	private String destinationDocumentURL;
+	private String imageURL;
+	private String selector;
 
-	public ImageInfo(String thumbnailURL, String imageURL) {
+	public ImageInfo(String thumbnailURL, String destinationDocumentURL, String selector) {
 		this.thumbnailURL = thumbnailURL;
+		this.destinationDocumentURL = destinationDocumentURL;
+		this.selector = selector;
+	}
+
+	/**
+	 * The thumbnail image url.
+	 * This is present on the HTML document from which pick images  
+	 * @return
+	 */
+	public String getThumbnailURL() {
+		return thumbnailURL;
+	}
+
+	public void setThumbnailURL(String thumbnailURL) {
+		this.thumbnailURL = thumbnailURL;
+	}
+
+	/**
+	 * The destination document containing the image url
+	 * @return
+	 */
+	public String getDestinationDocumentURL() {
+		return destinationDocumentURL;
+	}
+
+	public void setDestinationDocumentURL(String imageURL) {
+		this.destinationDocumentURL = imageURL;
+	}
+
+	/**
+	 * The CSS selector to use to find the imageUrl contained into destination document
+	 * Should be null if the destination document is unknown by selector finder
+	 * @return
+	 */
+	public String getSelector() {
+		return selector;
+	}
+
+	public void setSelector(String selector) {
+		this.selector = selector;
+	}
+
+	/**
+	 * The image url present inside the destination document url.
+	 * If null must be retrieved from destination document
+	 * @return
+	 */
+	public String getImageURL() {
+		return imageURL;
+	}
+
+	public void setImageURL(String imageURL) {
 		this.imageURL = imageURL;
 	}
 
 	@Override
 	public String toString() {
-		return thumbnailURL + " pos " + position;
+		return "thumb " + thumbnailURL + " doc " + destinationDocumentURL;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((imageURL == null) ? 0 : imageURL.hashCode());
-		result = prime * result
-				+ ((thumbnailURL == null) ? 0 : thumbnailURL.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ImageInfo other = (ImageInfo) obj;
-		if (imageURL == null) {
-			if (other.imageURL != null)
-				return false;
-		} else if (!imageURL.equals(other.imageURL))
-			return false;
-		if (thumbnailURL == null) {
-			if (other.thumbnailURL != null)
-				return false;
-		} else if (!thumbnailURL.equals(other.thumbnailURL))
-			return false;
-		return true;
-	}
 }

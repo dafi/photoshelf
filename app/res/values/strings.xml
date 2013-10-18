@@ -44,4 +44,5 @@
     <string name="browser_sheduled_images_title">Scheduled %1$d/%2$d post(s)</string>
     <string name="scheduled_title">Scheduled</string>
     <string name="authentication_success_title">Authentication success, caching blogs</string>
+    <string name="save_draft_post">Save as Draft</string>
 </resources>

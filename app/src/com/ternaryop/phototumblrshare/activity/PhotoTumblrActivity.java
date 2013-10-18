@@ -1,5 +1,7 @@
 package com.ternaryop.phototumblrshare.activity;
 
+import com.ternaryop.phototumblrshare.AppSupport;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,10 +9,13 @@ import android.view.MenuItem;
 
 @SuppressLint("Registered")
 public abstract class PhotoTumblrActivity extends Activity {
-    @Override
+	protected AppSupport appSupport;
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	    getActionBar().setDisplayHomeAsUpEnabled(true);
+	    appSupport = new AppSupport(this);
 	}
 
 	@Override
