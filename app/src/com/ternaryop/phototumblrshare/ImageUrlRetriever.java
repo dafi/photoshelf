@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -72,7 +70,8 @@ public class ImageUrlRetriever {
 		}
 
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			menu.findItem(R.id.counter).setTitle(urlSelectorMap.size() + " urls");
+			int resId = urlSelectorMap.size() == 1 ? R.string.selected_image_singular : R.string.selected_image_plural;
+			mode.setTitle(context.getResources().getString(resId, urlSelectorMap.size()));
 			return true;
 		}
 
@@ -80,7 +79,7 @@ public class ImageUrlRetriever {
 			switch (item.getItemId()) {
 			case R.id.showDialog:
 				retrieve();
-				getActionMode((Activity) context).finish();
+				mode.finish();
 				return true;
 			default:
 				return false;
