@@ -15,51 +15,37 @@ import com.ternaryop.tumblr.AuthenticationCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 
-public class MainActivity extends PhotoTumblrActivity implements OnClickListener {
+public class MainActivity extends PhotoTumblrActivity implements OnClickListener, AuthenticationCallback {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_main);
-		boolean enabled = Tumblr.isLogged(this);
-		enableUI(enabled);
-		
+		enableUI(Tumblr.isLogged(this));
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+
         // if we are returning from authentication then enable the UI
-	    Tumblr.handleOpenURI(this, getIntent().getData(), new AuthenticationCallback() {
-			@Override
-			public void authenticated(final String token, final String tokenSecret, final Exception error) {
-				if (error == null) {
-					Toast.makeText(getApplicationContext(),
-							getResources().getString(R.string.authentication_success_title),
-							Toast.LENGTH_LONG)
-							.show();
-					// after authentication cache blog names
-					appSupport.fetchBlogNames(MainActivity.this, new AppSupportCallback() {
-						@Override
-						public void onComplete(AppSupport appSupport, Exception error) {
-							enableUI(token != null && tokenSecret != null);
-						}
-					});
-				} else {
-					DialogUtils.showErrorDialog(MainActivity.this, error);
-				}
-			}
-		});
+	    boolean handled = Tumblr.handleOpenURI(this, getIntent().getData(), this);
+		
+	    // show the preference only if we aren't in the middle of URI handling and not already logged in
+		if (!Tumblr.isLogged(this) && !handled) {
+	    	PhotoPreferencesActivity.startPreferencesActivityForResult(this);
+		}
 	}
 
 	private void enableUI(boolean enabled) {
 		for (int buttonId : new int[] {
 				R.id.draft_button,
 				R.id.scheduled_button,
-				R.id.test_page_button,
-				R.id.tumblr_login_button}) {
+				R.id.test_page_button}) {
 			Button button = (Button)findViewById(buttonId);
 			button.setOnClickListener(this);
-			// tumblr login button is always enabled
-			if (buttonId != R.id.tumblr_login_button) {
-				button.setEnabled(enabled);
-			}
+			button.setEnabled(enabled);
 		}
 	}
 
@@ -75,6 +61,9 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	    switch (item.getItemId()) {
 	        case R.id.action_draft_posts:
 	        	DraftListActivity.startDraftListActivity(this);
+	            return true;
+	        case R.id.action_settings:
+	        	PhotoPreferencesActivity.startPreferencesActivityForResult(this);
 	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
@@ -94,9 +83,25 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	    	ImagePickerActivity.startImagePicker(this,
 	    			getResources().getString(R.string.test_page_url));
 			break;
-		case R.id.tumblr_login_button:
-			Tumblr.login(this);
-			break;
+		}
+	}
+
+	@Override
+	public void tumblrAuthenticated(final String token, final String tokenSecret, final Exception error) {
+		if (error == null) {
+			Toast.makeText(this,
+					getString(R.string.authentication_success_title),
+					Toast.LENGTH_LONG)
+					.show();
+			// after authentication cache blog names
+			appSupport.fetchBlogNames(this, new AppSupportCallback() {
+				@Override
+				public void onComplete(AppSupport appSupport, Exception error) {
+					enableUI(token != null && tokenSecret != null);
+				}
+			});
+		} else {
+			DialogUtils.showErrorDialog(this, error);
 		}
 	}
 }

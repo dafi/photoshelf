@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/settings" >
+
+    <Preference
+        android:key="tumblr_login"
+        android:persistent="false"
+        android:title="@string/tumblr_login_title" />
+
+</PreferenceScreen>

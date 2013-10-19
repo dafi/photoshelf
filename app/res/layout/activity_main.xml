@@ -39,11 +39,4 @@
         android:text="@string/birthdays_title"
         android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/tumblr_login_button"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="left|top"
-        android:text="@string/tumblr_login_title"
-        android:textSize="16sp" />
 </GridLayout>

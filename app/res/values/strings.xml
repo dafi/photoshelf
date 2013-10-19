@@ -47,4 +47,5 @@
     <string name="save_draft_post">Save as Draft</string>
     <string name="selected_image_singular">%1$d image selected</string>
     <string name="selected_image_plural">%1$d images selected</string>
+    <string name="settings">Settings</string>
 </resources>

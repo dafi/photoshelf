@@ -105,7 +105,7 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 				edit.putString(PREF_OAUTH_SECRET, getTokenSecret());
 				edit.commit();
 				if (callback != null) {
-					callback.authenticated(getToken(), getTokenSecret(), error);
+					callback.tumblrAuthenticated(getToken(), getTokenSecret(), error);
 				}
 			}
 		}.execute();
