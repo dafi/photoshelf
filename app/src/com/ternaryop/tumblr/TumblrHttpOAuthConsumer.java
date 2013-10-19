@@ -104,7 +104,9 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 				edit.putString(PREF_OAUTH_TOKEN,  getToken());
 				edit.putString(PREF_OAUTH_SECRET, getTokenSecret());
 				edit.commit();
-				callback.authenticated(getToken(), getTokenSecret(), error);
+				if (callback != null) {
+					callback.authenticated(getToken(), getTokenSecret(), error);
+				}
 			}
 		}.execute();
 	}
@@ -124,15 +126,27 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         }.execute();
 	}
 	
-	public static void handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
+	/**
+	 * Return true if the uri scheme can be handled, false otherwise
+	 * The returned value indicated only the scheme can be handled, the method complete the access asynchronously
+	 * @param context
+	 * @param uri
+	 * @param callback can be null
+	 * @return
+	 */
+	public static boolean handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
 		String callbackUrl = context.getString(R.string.CALLBACK_URL);
-        if (uri != null && callbackUrl.startsWith(uri.getScheme())) {
+        boolean canHandleURI = uri != null && callbackUrl.startsWith(uri.getScheme());
+
+        if (canHandleURI) {
         	loginTumblr.access(
         			context,
         			uri.getQueryParameter("oauth_token"),
         			uri.getQueryParameter("oauth_verifier"),
         			callback);
         }
+        
+        return canHandleURI;
 	}
 	
 	public synchronized HttpResponse getSignedPostResponse(String url, List<NameValuePair> params) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, ClientProtocolException, IOException {

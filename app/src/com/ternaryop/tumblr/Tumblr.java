@@ -58,8 +58,8 @@ public class Tumblr {
 		TumblrHttpOAuthConsumer.loginWithActivity(context);
 	}
 
-	public static void handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
-		TumblrHttpOAuthConsumer.handleOpenURI(context, uri, callback);
+	public static boolean handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
+		return TumblrHttpOAuthConsumer.handleOpenURI(context, uri, callback);
 	}
 	
     public void getBlogList(final Callback<Blog[]> callback) {
