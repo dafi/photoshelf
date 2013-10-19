@@ -66,6 +66,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
         adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
         adapter.setOnPhotoBrowseClick(this);
+        adapter.setRecomputeGroupIds(true);
 
         ListView list = (ListView)findViewById(R.id.list);
         list.setAdapter(adapter);

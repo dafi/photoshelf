@@ -10,6 +10,7 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 public class PhotoSharePost extends TumblrPhotoPost {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
 	private long lastPublishedTimestamp;
+	private int groupId;
 
 	public enum ScheduleTime {
 		POST_PUBLISH_NEVER,
@@ -53,5 +54,18 @@ public class PhotoSharePost extends TumblrPhotoPost {
         	daysString += " (" + string + ")";
 		}
 		return daysString;
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	/**
+	 * This post belongs to the passed groupId.
+	 * If groupId is set to 0 the post doesn't belong to a group
+	 * @param groupId
+	 */
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 }

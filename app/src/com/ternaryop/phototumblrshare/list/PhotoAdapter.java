@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare.list;
 
+import java.util.Collection;
 import java.util.List;
 
 import android.content.Context;
@@ -17,8 +18,9 @@ import com.ternaryop.tumblr.TumblrAltSize;
  
 public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.OnClickListener {
     private static LayoutInflater inflater = null;
-    public ImageLoader imageLoader;
+    private ImageLoader imageLoader;
 	private OnPhotoBrowseClick onPhotoBrowseClick;
+	private boolean recomputeGroupIds;
  
     public PhotoAdapter(Context context, String prefix) {
 		super(context, 0);
@@ -40,14 +42,19 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 
         switch (post.getScheduleTimeType()) {
         	case POST_PUBLISH_NEVER:
-                vi.setBackgroundResource(R.drawable.list_selector_post_never);
+        		vi.setBackgroundResource(R.drawable.list_selector_post_never);
                 break;
         	case POST_PUBLISH_FUTURE:
         		vi.setBackgroundResource(R.drawable.list_selector_post_future);
         		break;
         	default:
+			int groupId = post.getGroupId();
+			if (groupId > 0) {
+                vi.setBackgroundResource((groupId % 2) == 0 ? R.drawable.list_selector_post_group_even : R.drawable.list_selector_post_group_odd);
+			} else {
                 vi.setBackgroundResource(R.drawable.list_selector);
-                break;
+			}
+			break;
         }
 
         TextView title = (TextView)vi.findViewById(R.id.title_textview);
@@ -75,5 +82,76 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
     
 	public void onClick(View v) {
 		onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
+	}
+	
+	public void computeGroupIds() {
+		if (getCount() == 0) {
+			return;
+		}
+		PhotoSharePost post = getItem(0);
+		String last = post.getTags().get(0);
+		int groupId = 1;
+		
+		for (int i = 1; i < getCount(); i++) {
+	        post = getItem(i);
+	        String tag = post.getTags().get(0);
+			if (tag.equals(last)) {
+				getItem(i - 1).setGroupId(groupId);
+				post.setGroupId(groupId);
+				++i;
+				for (; i < getCount(); i++) {
+					tag = getItem(i).getTags().get(0);
+					if (last.equals(tag)) {
+						getItem(i).setGroupId(groupId);
+					} else {
+						last = tag;
+						break;
+					}
+				}
+				++groupId;
+			} else {
+				last = tag;
+			}
+		}
+	}
+
+	public boolean isRecomputeGroupIds() {
+		return recomputeGroupIds;
+	}
+
+	public void setRecomputeGroupIds(boolean recomputeGroupIds) {
+		this.recomputeGroupIds = recomputeGroupIds;
+	}
+
+	@Override
+	public void add(PhotoSharePost object) {
+		super.add(object);
+		if (isRecomputeGroupIds()) {
+			computeGroupIds();
+		}
+	}
+
+	@Override
+	public void addAll(Collection<? extends PhotoSharePost> collection) {
+		super.addAll(collection);
+		if (isRecomputeGroupIds()) {
+			computeGroupIds();
+		}
+	}
+
+	@Override
+	public void addAll(PhotoSharePost... items) {
+		super.addAll(items);
+		if (isRecomputeGroupIds()) {
+			computeGroupIds();
+		}
+	}
+
+	@Override
+	public void insert(PhotoSharePost object, int index) {
+		super.insert(object, index);
+		if (isRecomputeGroupIds()) {
+			computeGroupIds();
+		}
 	}
 }
