@@ -125,7 +125,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 					Menu.NONE,
 					Menu.NONE,
 					getResources().getString(R.string.menu_show_image));
-			subMenu.setHeaderTitle(getResources().getString(R.string.menu_header_show_image, post.getTags().get(0)));
+			subMenu.setHeaderTitle(getResources().getString(R.string.menu_header_show_image, post.getFirstTag()));
 			for(TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
 				// the item id is set to the image index into array
 				subMenu.add(R.id.group_menu_item_image_dimension, index++, Menu.NONE, 
@@ -336,7 +336,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 	@Override
 	public void onPhotoBrowseClick(PhotoSharePost post) {
-		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, blogName, post.getTags().get(0));
+		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, blogName, post.getFirstTag());
 	}
 
 	@Override

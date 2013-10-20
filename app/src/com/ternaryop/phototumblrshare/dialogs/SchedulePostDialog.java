@@ -42,7 +42,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 		setContentView(R.layout.dialog_schedule_post);
 		
 		setTitle(R.string.schedule_post);
-		((TextView)findViewById(R.id.post_title_textview)).setText(item.getTags().get(0));
+		((TextView)findViewById(R.id.post_title_textview)).setText(item.getFirstTag());
 		((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
 		((Button)findViewById(R.id.schedule_button)).setOnClickListener(this);
 

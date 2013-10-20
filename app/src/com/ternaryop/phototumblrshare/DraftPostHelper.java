@@ -34,7 +34,7 @@ public class DraftPostHelper {
 	    HashMap<String, List<TumblrPost> > map = new HashMap<String, List<TumblrPost> >();
 
 	    for (TumblrPost post : draftPosts) {
-	    	if (post.getType().equals("photo")) {
+	    	if (post.getType().equals("photo") && post.getTags().size() > 0) {
 		    	String tag = post.getTags().get(0);
 		    	List<TumblrPost> list = map.get(tag);
 		    	if (list == null) {
@@ -58,7 +58,7 @@ public class DraftPostHelper {
 	    HashMap<String, TumblrPost> map = new HashMap<String, TumblrPost>();
 
 	    for (TumblrPost post : queuedPosts) {
-	    	if (post.getType().equals("photo")) {
+	    	if (post.getType().equals("photo") && post.getTags().size() > 0) {
 		    	String tag = post.getTags().get(0);
 		    	map.put(tag, post);
 	    	}
