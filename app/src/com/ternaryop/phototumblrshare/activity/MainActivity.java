@@ -1,9 +1,5 @@
 package com.ternaryop.phototumblrshare.activity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,37 +31,7 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 
         // if we are returning from authentication then enable the UI
 	    boolean handled = Tumblr.handleOpenURI(this, getIntent().getData(), this);
-		
 
-	    List<String> colors = new ArrayList<String>();
-	    colors.add("#ffe11616");
-	    colors.add("#ffda6d1c");
-	    colors.add("#ffd4b821");
-	    colors.add("#ffa0cd27");
-	    colors.add("#ff5bc62b");
-	    colors.add("#ff2fbf40");
-	    colors.add("#ff33b87b");
-	    colors.add("#ff37b2ad");
-	    colors.add("#ff3a7fab");
-	    colors.add("#ff3c50a4");
-
-	    for (String color : colors) {
-	    	int startColor = Color.parseColor(color);
-			float hsv[] = new float[3];
-			Color.colorToHSV(startColor, hsv);
-			// create the end color
-			hsv[2] *= 0.7;
-			int endColor = Color.HSVToColor(hsv);
-
-			String s = "<gradient android:angle=\"270\""
-					+ " android:endColor=\"#%1$s\""
-	        		+ " android:startColor=\"#%2$s\""
-	        		+ " android:type=\"linear\" />\n\n";
-			
-			System.out.println(String.format(s, Integer.toHexString(startColor), Integer.toHexString(endColor)));
-		}
-	    
-	    
 	    // show the preference only if we aren't in the middle of URI handling and not already logged in
 		if (!Tumblr.isLogged(this) && !handled) {
 	    	PhotoPreferencesActivity.startPreferencesActivityForResult(this);
