@@ -40,6 +40,9 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 
         final PhotoSharePost post = getItem(position);
 
+        TextView title = (TextView)vi.findViewById(R.id.title_textview);
+        TextView timeDesc = (TextView)vi.findViewById(R.id.time_desc);
+
         switch (post.getScheduleTimeType()) {
         	case POST_PUBLISH_NEVER:
         		vi.setBackgroundResource(R.drawable.list_selector_post_never);
@@ -49,18 +52,12 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
         		break;
         	default:
 			int groupId = post.getGroupId();
-			if (groupId > 0) {
-                vi.setBackgroundResource((groupId % 2) == 0 ? R.drawable.list_selector_post_group_even : R.drawable.list_selector_post_group_odd);
-			} else {
-                vi.setBackgroundResource(R.drawable.list_selector);
-			}
+            vi.setBackgroundResource((groupId % 2) == 0 ? R.drawable.list_selector_post_group_even : R.drawable.list_selector_post_group_odd);
 			break;
         }
 
-        TextView title = (TextView)vi.findViewById(R.id.title_textview);
-        TextView timeDesc = (TextView)vi.findViewById(R.id.time_desc);
         ImageView thumbImage = (ImageView)vi.findViewById(R.id.list_image);
-        String titleString = post.getTags().get(0);
+        String titleString = post.getFirstTag();
         title.setText(Html.fromHtml(titleString).toString().replaceAll("\n", ""));
         timeDesc.setText(post.getLastPublishedTimestampAsString());
 
@@ -84,37 +81,29 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 		onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
 	}
 	
-	public void computeGroupIds() {
-		if (getCount() == 0) {
-			return;
-		}
-		PhotoSharePost post = getItem(0);
-		String last = post.getTags().get(0);
-		int groupId = 1;
+	public void calcGroupIds() {
+		int count = getCount();
 		
-		for (int i = 1; i < getCount(); i++) {
-	        post = getItem(i);
-	        String tag = post.getTags().get(0);
-			if (tag.equals(last)) {
-				getItem(i - 1).setGroupId(groupId);
-				post.setGroupId(groupId);
-				++i;
-				for (; i < getCount(); i++) {
-					tag = getItem(i).getTags().get(0);
-					if (last.equals(tag)) {
-						getItem(i).setGroupId(groupId);
-					} else {
-						last = tag;
-						break;
-					}
+		if (count > 0) {
+			int groupId = 0;
+			
+			String last = getItem(0).getFirstTag();
+			getItem(0).setGroupId(groupId);
+			
+			for (int i = 1; i < count; i++) {
+				// set same groupId for all identical tags
+				while (i < count && getItem(i).getFirstTag().equals(last)) {
+					getItem(i++).setGroupId(groupId);
 				}
-				++groupId;
-			} else {
-				last = tag;
+				if (i < count) {
+					++groupId;
+					getItem(i).setGroupId(groupId);
+					last = getItem(i).getFirstTag();
+				}
 			}
 		}
 	}
-
+	
 	public boolean isRecomputeGroupIds() {
 		return recomputeGroupIds;
 	}
@@ -127,7 +116,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 	public void add(PhotoSharePost object) {
 		super.add(object);
 		if (isRecomputeGroupIds()) {
-			computeGroupIds();
+			calcGroupIds();
 		}
 	}
 
@@ -135,7 +124,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 	public void addAll(Collection<? extends PhotoSharePost> collection) {
 		super.addAll(collection);
 		if (isRecomputeGroupIds()) {
-			computeGroupIds();
+			calcGroupIds();
 		}
 	}
 
@@ -143,7 +132,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 	public void addAll(PhotoSharePost... items) {
 		super.addAll(items);
 		if (isRecomputeGroupIds()) {
-			computeGroupIds();
+			calcGroupIds();
 		}
 	}
 
@@ -151,7 +140,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 	public void insert(PhotoSharePost object, int index) {
 		super.insert(object, index);
 		if (isRecomputeGroupIds()) {
-			computeGroupIds();
+			calcGroupIds();
 		}
 	}
 }
