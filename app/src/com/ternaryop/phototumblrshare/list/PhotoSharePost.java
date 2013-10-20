@@ -60,12 +60,15 @@ public class PhotoSharePost extends TumblrPhotoPost {
 		return groupId;
 	}
 
-	/**
-	 * This post belongs to the passed groupId.
-	 * If groupId is set to 0 the post doesn't belong to a group
-	 * @param groupId
-	 */
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
+	}
+	
+	/**
+	 * Protect against IndexOutOfBoundsException returning an empty string
+	 * @return
+	 */
+	public String getFirstTag() {
+		return getTags().size() > 0 ? getTags().get(0) : "";
 	}
 }
