@@ -48,4 +48,6 @@
     <string name="selected_image_singular">%1$d image selected</string>
     <string name="selected_image_plural">%1$d images selected</string>
     <string name="settings">Settings</string>
+    <string name="edit_post_title">Edit Post</string>
+    <string name="parse_title">Parse Title</string>
 </resources>

@@ -315,6 +315,42 @@ public class Tumblr {
         }.execute();
     }
 
+    public void editPost(final String tumblrName, final Map<String, String> params, final Callback<JSONObject> callback) {
+    	if (!params.containsKey("id")) {
+    		callback.failure(this, new TumblrException("The id is mandatory to edit post"));
+    		return;
+    	}
+        new AsyncTask<Void, Void, JSONObject>() {
+        	Exception error;
+    		@Override
+    		protected JSONObject doInBackground(Void... voidParams) {
+    	        String apiUrl = getApiUrl(tumblrName, "/post/edit");
+    	    	
+    	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+    	        for (String key : params.keySet()) {
+        	        nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
+    	        }
+
+    	        try {
+        	        JSONObject json = consumer.jsonFromPost(apiUrl, nameValuePairs);
+        	        return json.getJSONObject("response");
+				} catch (Exception e) {
+					error = e;
+				}
+    	        return null;
+    		}
+
+			@Override
+			protected void onPostExecute(JSONObject response) {
+				if (error == null) {
+					callback.complete(instance, response);
+				} else {
+					callback.failure(instance, error);
+				}
+			}
+        }.execute();
+    }
+    
 	public static TumblrPost build(JSONObject json) throws JSONException {
 		String type = json.getString("type");
 		

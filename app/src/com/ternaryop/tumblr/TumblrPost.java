@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.ternaryop.utils.StringUtils;
+
 public class TumblrPost {
 	private String blogName;
 	private long postId;
@@ -152,6 +154,14 @@ public class TumblrPost {
 		this.tags = tags;
 	}
 
+	public void setTags(String tags) {
+		ArrayList<String> list = new ArrayList<String>();
+		for (String s : tags.split(",")) {
+			list.add(s.trim());
+		}
+		setTags(list);
+	}
+	
 	public boolean isBookmarklet() {
 		return bookmarklet;
 	}
@@ -214,5 +224,12 @@ public class TumblrPost {
 
 	public void setScheduledPublishTime(long scheduledPublishTime) {
 		this.scheduledPublishTime = scheduledPublishTime;
+	}
+	
+	public String getTagsAsString() {
+		if (tags == null || tags.size() == 0) {
+			return "";
+		}
+		return StringUtils.join(tags.iterator(), ",");
 	}
 }

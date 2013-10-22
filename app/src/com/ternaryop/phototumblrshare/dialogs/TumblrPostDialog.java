@@ -1,7 +1,10 @@
 package com.ternaryop.phototumblrshare.dialogs;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import org.json.JSONObject;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -17,6 +20,8 @@ import android.widget.Spinner;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.ImageInfo;
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.parsers.TitleData;
+import com.ternaryop.phototumblrshare.parsers.TitleParser;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -29,20 +34,43 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	private Spinner blogList;
 	private String[] imageUrls;
 	private AppSupport appSupport;
+	private long postId;
+	private OnClickListener dialogClickListener;
 
 	public TumblrPostDialog(Context context) {
+		this(context, 0);
+	}
+	
+	/**
+	 * If posdtId is greater that 0 that edit the post
+	 * @param context
+	 * @param postId
+	 */
+	public TumblrPostDialog(Context context, long postId) {
 		super(context);
 		setContentView(R.layout.dialog_publish_post);
+
+		this.postId = postId;
 
 		postTitle = (EditText)findViewById(R.id.post_title);
 		postTags = (EditText)findViewById(R.id.post_tags);
 		blogList = (Spinner) findViewById(R.id.blog);
 		
 		appSupport = new AppSupport(context);
-		((Button)findViewById(R.id.publish_button)).setOnClickListener(new OnClickPublishListener());
-		((Button)findViewById(R.id.draft_button)).setOnClickListener(new OnClickPublishListener());
-		((ImageButton)findViewById(R.id.refreshBlogList)).setOnClickListener(this);
 		((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
+		((Button)findViewById(R.id.parse_title_button)).setOnClickListener(this);
+		
+		if (postId > 0) {
+			findViewById(R.id.publish_button).setVisibility(View.GONE);
+			findViewById(R.id.draft_button).setVisibility(View.GONE);
+			findViewById(R.id.blog_list).setVisibility(View.GONE);
+			findViewById(R.id.edit_button).setVisibility(View.VISIBLE);
+			((Button)findViewById(R.id.edit_button)).setOnClickListener(this);
+		} else {
+			((Button)findViewById(R.id.publish_button)).setOnClickListener(new OnClickPublishListener());
+			((Button)findViewById(R.id.draft_button)).setOnClickListener(new OnClickPublishListener());
+			((ImageButton)findViewById(R.id.refreshBlogList)).setOnClickListener(this);
+		}
 	}
 
 	@Override
@@ -54,15 +82,25 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 			case R.id.refreshBlogList:
 				fetchBlogNames();
 				return;
+			case R.id.edit_button:
+	            editPost();
+	            return;
+			case R.id.parse_title_button:
+	            parseTitle();
+	            return;
 		}
 	}
 	
 	@Override
 	public void show() {
-		if (imageUrls.length == 1) {
-			setTitle(R.string.tumblr_post_title);
+		if (postId > 0) {
+			setTitle(R.string.edit_post_title);
 		} else {
-			setTitle(getContext().getResources().getString(R.string.tumblr_multiple_post_title, imageUrls.length));
+			if (imageUrls.length == 1) {
+				setTitle(R.string.tumblr_post_title);
+			} else {
+				setTitle(getContext().getResources().getString(R.string.tumblr_multiple_post_title, imageUrls.length));
+			}
 		}
 		super.show();
 	}
@@ -102,16 +140,18 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	
 	@Override
 	protected void onStart() {
-		findViewById(R.id.publish_button).setEnabled(false);
-		findViewById(R.id.draft_button).setEnabled(false);
+		if (postId <= 0) {
+			findViewById(R.id.publish_button).setEnabled(false);
+			findViewById(R.id.draft_button).setEnabled(false);
 
-		List<String> blogSetNames = appSupport.getBlogList();
-		if (blogSetNames == null) {
-			fetchBlogNames();
-		} else {
-			fillBlogList(blogSetNames);
-			findViewById(R.id.publish_button).setEnabled(true);
-			findViewById(R.id.draft_button).setEnabled(true);
+			List<String> blogSetNames = appSupport.getBlogList();
+			if (blogSetNames == null) {
+				fetchBlogNames();
+			} else {
+				fillBlogList(blogSetNames);
+				findViewById(R.id.publish_button).setEnabled(true);
+				findViewById(R.id.draft_button).setEnabled(true);
+			}
 		}
 	}
 
@@ -208,4 +248,37 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		}
 	}
 
+	private void editPost() {
+		final HashMap<String, String> newValues = new HashMap<String, String>();
+		newValues.put("id", String.valueOf(postId));
+		newValues.put("caption", getPostTitle());
+		newValues.put("tags", getPostTags());
+
+		Tumblr.getSharedTumblr(getContext()).editPost(appSupport.getSelectedBlogName(), newValues, new Callback<JSONObject>() {
+
+			@Override
+			public void complete(Tumblr tumblr, JSONObject result) {
+				dismiss();
+				if (dialogClickListener != null) {
+					dialogClickListener.onClick(TumblrPostDialog.this, BUTTON_POSITIVE);
+				}
+			}
+
+			@Override
+			public void failure(Tumblr tumblr, Exception ex) {
+				dismiss();
+				DialogUtils.showErrorDialog(getContext(), ex);
+			}
+		});
+	}
+
+	public void setEditButton(OnClickListener dialogClickListener) {
+		this.dialogClickListener = dialogClickListener;
+	}
+
+	private void parseTitle() {
+		TitleData titleData = TitleParser.instance().parseTitle(postTitle.getText().toString());
+		setPostTitle(titleData.toString());
+		setPostTags(titleData.getTags());
+	}
 }

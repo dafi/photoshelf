@@ -6,9 +6,13 @@ import java.util.List;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
@@ -17,6 +21,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.dialogs.TumblrPostDialog;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Tumblr;
@@ -51,6 +56,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
         	}
 		});
         list.setOnScrollListener(this);
+        registerForContextMenu(list);
         
 	    Bundle bundle = getIntent().getExtras();
 		blogName = bundle.getString(BLOG_NAME);
@@ -161,5 +167,51 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		if (v.getId() == R.id.list) {
+			getMenuInflater().inflate(R.menu.tag_browser_context, menu);
+		}
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+
+		switch (item.getItemId()) {
+		case R.id.post_edit:
+			showEditDialog(info.position);
+			break;
+		default:
+			return false;
+		}
+		return true;
+	}
+
+	private void showEditDialog(final int position) {
+		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		TumblrPostDialog editDialog = new TumblrPostDialog(this, item.getPostId());
+
+		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		        switch (which) {
+		        case DialogInterface.BUTTON_POSITIVE:
+		        	System.out
+							.println("TagPhotoBrowserActivity.showEditDialog(...).new OnClickListener() {...}.onClick()");
+		        	item.setTags(((TumblrPostDialog)dialog).getPostTags());
+		        	item.setCaption(((TumblrPostDialog)dialog).getPostTitle());
+		        	refreshUI();
+		            break;
+		        }
+		    }
+		};
+		editDialog.setPostTitle(item.getCaption());
+		editDialog.setPostTags(item.getTags());
+		editDialog.setEditButton(dialogClickListener);
+		
+		editDialog.show();
 	}
 }

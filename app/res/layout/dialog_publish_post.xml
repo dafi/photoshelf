@@ -24,6 +24,7 @@
         android:inputType="text" />
 
     <LinearLayout
+        android:id="@+id/blog_list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
@@ -69,6 +70,16 @@
             android:text="@string/draft_title" />
 
         <Button
+            android:id="@+id/edit_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/edit_post_title"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/publish_button"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
@@ -76,6 +87,16 @@
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/publish_title" />
+
+        <Button
+            android:id="@+id/parse_title_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/parse_title" />
+        
     </LinearLayout>
 
 </LinearLayout>
