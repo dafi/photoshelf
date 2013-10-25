@@ -67,6 +67,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		if (v.getId() == R.id.list) {
 			getMenuInflater().inflate(R.menu.scheduled_context, menu);
+			menu.setHeaderTitle(R.string.post_actions_menu_header);
 		}
 	}
 	

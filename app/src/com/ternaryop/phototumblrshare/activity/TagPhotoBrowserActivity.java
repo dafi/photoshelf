@@ -173,6 +173,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		if (v.getId() == R.id.list) {
 			getMenuInflater().inflate(R.menu.tag_browser_context, menu);
+			menu.setHeaderTitle(R.string.post_actions_menu_header);
 		}
 	}
 

@@ -118,6 +118,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		if (v.getId() == R.id.list) {
 			getMenuInflater().inflate(R.menu.draft_context, menu);
+			menu.setHeaderTitle(R.string.post_actions_menu_header);
 			AdapterView.AdapterContextMenuInfo contextMenuInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
 			PhotoSharePost post = (PhotoSharePost)adapter.getItem(contextMenuInfo.position);
 			int index = 0;
@@ -253,7 +254,8 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 
 	private void refreshUI() {
-		setTitle(getResources().getString(R.string.posts_in_draft, adapter.getCount()));
+		int resId = adapter.getCount() == 1 ? R.string.posts_in_draft_singular : R.string.posts_in_draft_plural;
+		setTitle(getResources().getString(resId, adapter.getCount()));
 		adapter.notifyDataSetChanged();
 	}
 

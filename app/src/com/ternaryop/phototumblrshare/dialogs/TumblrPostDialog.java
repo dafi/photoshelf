@@ -202,7 +202,12 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 			public PostCallback (int max, boolean publish) {
 				progressDialog = new ProgressDialog(getContext());
 				progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-				progressDialog.setMessage(getContext().getResources().getString(publish ? R.string.publishing_post : R.string.creating_a_post_in_draft));
+				if (publish) {
+					progressDialog.setMessage(getContext().getResources().getString(R.string.publishing_post));
+				} else {
+					int resId = max == 1 ? R.string.creating_a_post_in_draft_singular : R.string.creating_a_post_in_draft_plural;
+					progressDialog.setMessage(getContext().getResources().getString(resId, max));
+				}
 				progressDialog.setMax(max);
 				progressDialog.show();
 			}
