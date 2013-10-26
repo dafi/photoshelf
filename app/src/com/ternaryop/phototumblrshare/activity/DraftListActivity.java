@@ -46,6 +46,11 @@ import com.ternaryop.utils.DialogUtils;
 public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick, OnItemClickListener {
 	private static final String LOADER_PREFIX_AVATAR = "avatar";
 	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
+	
+	private enum POST_ACTION {
+		PUBLISH,
+		DELETE
+	};
 
 	private PhotoAdapter adapter;
 	
@@ -121,12 +126,11 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 			menu.setHeaderTitle(R.string.post_actions_menu_header);
 			AdapterView.AdapterContextMenuInfo contextMenuInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
 			PhotoSharePost post = (PhotoSharePost)adapter.getItem(contextMenuInfo.position);
-			int index = 0;
-			SubMenu subMenu = menu.addSubMenu(R.id.group_menu_image_dimension,
-					Menu.NONE,
-					Menu.NONE,
-					getResources().getString(R.string.menu_show_image));
+
+			// fill the image size submenu
+			SubMenu subMenu = menu.findItem(R.id.group_menu_image_dimension).getSubMenu();
 			subMenu.setHeaderTitle(getResources().getString(R.string.menu_header_show_image, post.getFirstTag()));
+			int index = 0;
 			for(TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
 				// the item id is set to the image index into array
 				subMenu.add(R.id.group_menu_item_image_dimension, index++, Menu.NONE, 
@@ -140,10 +144,6 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 
 		switch (item.getGroupId()) {
-		case R.id.group_menu_image_dimension:
-			// allow submenus to receive the menuInfo
-			subMenuContextMenuInfo = info;
-			return true;
 		case R.id.group_menu_item_image_dimension:
 			info = subMenuContextMenuInfo;
 			PhotoSharePost post = (PhotoSharePost)adapter.getItem(info.position);
@@ -157,15 +157,42 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 		switch (item.getItemId()) {
 		case R.id.post_publish:
-			showPublishDialog(info.position);
+			showConfirmDialog(info.position, POST_ACTION.PUBLISH);
 			break;
 		case R.id.post_schedule:
 			showScheduleDialog(info.position);
 			break;
+		case R.id.group_menu_image_dimension:
+			// allow submenus to receive the menuInfo
+			subMenuContextMenuInfo = info;
+			return true;
+		case R.id.post_delete:
+			showConfirmDialog(info.position, POST_ACTION.DELETE);
+			return true;
 		default:
 			return false;
 		}
 		return true;
+	}
+
+	private void deletePost(int position) {
+		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		Tumblr.getSharedTumblr(this).deletePost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
+
+			@Override
+			public void complete(Tumblr tumblr, JSONObject result) {
+				adapter.remove(item);
+				refreshUI();
+			}
+
+			@Override
+			public void failure(Tumblr tumblr, Exception e) {
+				new AlertDialog.Builder(DraftListActivity.this)
+				.setTitle(R.string.parsing_error)
+				.setMessage(e.getLocalizedMessage())
+				.show();
+			}
+		});
 	}
 
 	private void showScheduleDialog(final int position) {
@@ -214,20 +241,38 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		return cal;
 	}
 
-	private void showPublishDialog(final int position) {
+	private void showConfirmDialog(final int position, final POST_ACTION postAction) {
 		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 		    @Override
 		    public void onClick(DialogInterface dialog, int which) {
 		        switch (which) {
 		        case DialogInterface.BUTTON_POSITIVE:
-		            publishPost(position);
+		        	switch (postAction) {
+					case PUBLISH:
+			            publishPost(position);
+						break;
+					case DELETE:
+						deletePost(position);
+						break;
+					}
 		            break;
 		        }
 		    }
 		};
+
+		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		String message = null;
+    	switch (postAction) {
+		case PUBLISH:
+			message = getString(R.string.publish_post_confirm, item.getFirstTag());
+			break;
+		case DELETE:
+			message = getString(R.string.delete_post_confirm, item.getFirstTag());
+			break;
+		}
 		
-		new AlertDialog.Builder(DraftListActivity.this)
-		.setMessage(R.string.are_you_sure)
+		new AlertDialog.Builder(this)
+		.setMessage(message)
 		.setPositiveButton(android.R.string.yes, dialogClickListener)
 	    .setNegativeButton(android.R.string.no, dialogClickListener)
 	    .show();		

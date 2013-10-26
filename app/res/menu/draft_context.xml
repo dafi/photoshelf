@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
     <item
         android:id="@+id/post_publish"
         android:title="@string/publish_post">
     </item>
-    
     <item
         android:id="@+id/post_schedule"
         android:title="@string/schedule_post">
     </item>
+    <item
+        android:id="@+id/group_menu_image_dimension"
+        android:title="@string/menu_show_image">
+        <menu />
+    </item>
+    <item
+        android:id="@+id/post_delete"
+        android:title="@string/delete_post">
+    </item>
 
-</menu> 
+</menu>

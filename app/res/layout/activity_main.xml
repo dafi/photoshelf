@@ -24,6 +24,14 @@
         android:textSize="16sp" />
 
     <Button
+        android:id="@+id/tag_browser_button"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="left|top"
+        android:text="@string/browse_tags_title"
+        android:textSize="16sp" />
+
+    <Button
         android:id="@+id/test_page_button"
         android:layout_width="100dp"
         android:layout_height="100dp"

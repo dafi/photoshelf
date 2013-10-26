@@ -118,7 +118,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 		};
 		
 		new AlertDialog.Builder(this)
-		.setMessage(R.string.are_you_sure)
+		.setMessage(getString(R.string.save_to_draft_confirm, item.getFirstTag()))
 		.setPositiveButton(android.R.string.yes, dialogClickListener)
 	    .setNegativeButton(android.R.string.no, dialogClickListener)
 	    .show();		
