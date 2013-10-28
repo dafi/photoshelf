@@ -1,11 +1,15 @@
 package com.ternaryop.phototumblrshare;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -135,7 +139,15 @@ public class ImageUrlRetriever {
 					}
 					String link = htmlDocument.select(selector).attr("src");
 					if (!link.isEmpty()) {
-						imageUrls.add(link);
+						// if necessary resolve relative urls
+						try {
+							URI uri = new URI(link);
+							if (!uri.isAbsolute()) {
+								link = new URI(url).resolve(uri).toString();
+							}
+							imageUrls.add(link);
+						} catch (URISyntaxException e) {
+						}
 					}
 					publishProgress(i++);
 				}
