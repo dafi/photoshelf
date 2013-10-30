@@ -7,4 +7,8 @@
         android:persistent="false"
         android:title="@string/tumblr_login_title" />
 
+    <Preference
+        android:key="import_posts"
+        android:persistent="false"
+        android:title="@string/import_posts_title" />
 </PreferenceScreen>

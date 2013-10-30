@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ternaryop.phototumblrshare"
-    android:versionCode="15"
+    android:versionCode="18"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -19,6 +19,7 @@
         <activity
             android:name="com.ternaryop.phototumblrshare.activity.PhotoPreferencesActivity"
             android:label="@string/settings" />
+        <activity android:name="com.ternaryop.phototumblrshare.activity.TagListActivity" />
         <activity android:name="com.ternaryop.phototumblrshare.activity.ScheduledListActivity" />
         <activity android:name="com.ternaryop.phototumblrshare.activity.TagPhotoBrowserActivity" />
         <activity android:name="com.ternaryop.phototumblrshare.activity.ImageViewerActivity" />

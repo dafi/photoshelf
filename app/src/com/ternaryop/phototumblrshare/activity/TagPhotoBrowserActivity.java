@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -22,8 +23,10 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.SearchView.OnSuggestionListener;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.db.TagCursorAdapter;
 import com.ternaryop.phototumblrshare.dialogs.TumblrPostDialog;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
@@ -32,11 +35,11 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.DialogUtils;
 
-public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnScrollListener, OnQueryTextListener {
+public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnScrollListener, OnQueryTextListener, OnSuggestionListener {
  	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 	private static final String POST_TAG = "postTag";
 	private static final String BLOG_NAME = "blogName";
-	private PhotoAdapter adapter;
+	private PhotoAdapter photoAdapter;
 	private String blogName;
 	private String postTag;
 	private int offset;
@@ -49,10 +52,10 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_list);
         
-        adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
+        photoAdapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
 
         ListView list = (ListView)findViewById(R.id.list);
-        list.setAdapter(adapter);
+        list.setAdapter(photoAdapter);
         list.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
         		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
@@ -66,10 +69,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		blogName = bundle.getString(BLOG_NAME);
 		postTag = bundle.getString(POST_TAG);
 		if (blogName != null && postTag != null && postTag.trim().length() > 0) {
-			postTag = postTag.trim();
-			offset = 0;
-			hasMorePosts = true;
-			readPhotoPosts();
+			onQueryTextSubmit(postTag.trim());
 		}
 	}
 
@@ -78,13 +78,26 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		getMenuInflater().inflate(R.menu.tag_browser, menu);
 		
 		searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-		searchView.setOnQueryTextListener(this);
+		setupSearchView();		
+		
 		return true;
+	}
+
+	private void setupSearchView() {
+		searchView.setQueryHint(getString(R.string.enter_tag_hint));
+		searchView.setOnQueryTextListener(this);
+		
+	    searchView.setOnSuggestionListener(this);
+		TagCursorAdapter adapter = new TagCursorAdapter(
+				getActionBar().getThemedContext(),
+				android.R.layout.simple_dropdown_item_1line,
+				appSupport.getSelectedBlogName());
+		searchView.setSuggestionsAdapter(adapter);
 	}
 	
 	private void refreshUI() {
-		setTitle(getResources().getString(R.string.browser_image_title, postTag, adapter.getCount(), totalPosts));
-		adapter.notifyDataSetChanged();
+		setTitle(getResources().getString(R.string.browser_image_title, postTag, photoAdapter.getCount(), totalPosts));
+		photoAdapter.notifyDataSetChanged();
 	}
 	
 	private void readPhotoPosts() {
@@ -101,7 +114,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 			protected void onPreExecute() {
 				progressDialog = new ProgressDialog(activityContext);
 				progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-				progressDialog.setMessage(getString(R.string.reading_scheduled_posts));
+				progressDialog.setMessage(getString(R.string.reading_tags_title, postTag));
 				progressDialog.show();
 				isScrolling = true;
 			}
@@ -138,13 +151,13 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 			    				post.getTimestamp() * 1000));
 					}
 			        // we must reset the flag every time before an add operation
-			        adapter.setNotifyOnChange(false);
-		    		adapter.addAll(photoShareList);
+			        photoAdapter.setNotifyOnChange(false);
+		    		photoAdapter.addAll(photoShareList);
 			    	if (photoPosts.size() > 0) {
 			    		totalPosts = photoPosts.get(0).getTotalPosts();
 			    		hasMorePosts = true;
 			    	} else {
-			    		totalPosts = adapter.getCount();
+			    		totalPosts = photoAdapter.getCount();
 			    		hasMorePosts = false;
 			    	}
 				} catch (Exception e) {
@@ -206,7 +219,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 	}
 
 	private void showEditDialog(final int position) {
-		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
 		TumblrPostDialog editDialog = new TumblrPostDialog(this, item.getPostId());
 
 		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -238,9 +251,21 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		postTag = query;
 		offset = 0;
 		hasMorePosts = true;
-		adapter.clear();
-		adapter.notifyDataSetChanged();
+		photoAdapter.clear();
+		photoAdapter.notifyDataSetChanged();
 		readPhotoPosts();
 		return false;
+	}
+
+	@Override
+	public boolean onSuggestionClick(int position) {
+		String query = ((Cursor)searchView.getSuggestionsAdapter().getItem(position)).getString(1);
+		searchView.setQuery(query, true);
+		return true;
+	}
+
+	@Override
+	public boolean onSuggestionSelect(int position) {
+		return true;
 	}
 }

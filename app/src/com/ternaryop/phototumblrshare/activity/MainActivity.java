@@ -43,7 +43,8 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 				R.id.draft_button,
 				R.id.scheduled_button,
 				R.id.test_page_button,
-				R.id.tag_browser_button}) {
+				R.id.browse_images_by_tags_button,
+				R.id.browse_tags_button}) {
 			Button button = (Button)findViewById(buttonId);
 			button.setOnClickListener(this);
 			button.setEnabled(enabled);
@@ -84,8 +85,12 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	    	ImagePickerActivity.startImagePicker(this,
 	    			getResources().getString(R.string.test_page_url));
 			break;
-		case R.id.tag_browser_button:
+		case R.id.browse_images_by_tags_button:
 			TagPhotoBrowserActivity.startPhotoBrowserActivity(this, appSupport.getSelectedBlogName(), null);
+			break;
+		case R.id.browse_tags_button:
+			TagListActivity.startTagListActivity(this, null, null);
+			break;
 		}
 	}
 

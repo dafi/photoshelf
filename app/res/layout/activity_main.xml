@@ -24,11 +24,11 @@
         android:textSize="16sp" />
 
     <Button
-        android:id="@+id/tag_browser_button"
+        android:id="@+id/browse_images_by_tags_button"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="left|top"
-        android:text="@string/browse_tags_title"
+        android:text="@string/browse_images_by_tags_title"
         android:textSize="16sp" />
 
     <Button
@@ -40,11 +40,11 @@
         android:textSize="16sp" />
 
     <Button
-        android:id="@+id/birthdays_button"
+        android:id="@+id/browse_tags_button"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="left|top"
-        android:text="@string/birthdays_title"
+        android:text="@string/browse_tags_title"
         android:textSize="16sp" />
 
 </GridLayout>

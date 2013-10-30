@@ -16,8 +16,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.ternaryop.phototumblrshare.db.PostTag;
-import com.ternaryop.phototumblrshare.db.PostTagDatabaseHelper;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.ternaryop.phototumblrshare.db.LastPublishedPostCache;
+import com.ternaryop.phototumblrshare.db.LastPublishedPostCacheDAO;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -67,20 +69,20 @@ public class DraftPostHelper {
 	    return map;
 	}
 
-	public Map<String, PostTag> getLastPublishedPhotoByTags(final Tumblr tumblr,
+	public Map<String, LastPublishedPostCache> getLastPublishedPhotoByTags(final Tumblr tumblr,
 			final String tumblrName,
 			final List<String> tags,
-			final PostTagDatabaseHelper dbHelper)
+			final LastPublishedPostCacheDAO dbHelper)
 			throws Exception {
-		final Map<String, PostTag> lastPublish = new HashMap<String, PostTag>();
-		Map<String, PostTag> postByTags = dbHelper.getPostByTags(tags, tumblrName);
+		final Map<String, LastPublishedPostCache> lastPublish = new HashMap<String, LastPublishedPostCache>();
+		Map<String, LastPublishedPostCache> postByTags = dbHelper.getPostByTags(tags, tumblrName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
 		
 		for (Iterator<String> itr = tags.iterator(); itr.hasNext();) {
 			final String tag = itr.next();
-			PostTag postTag = postByTags.get(tag);
+			LastPublishedPostCache postTag = postByTags.get(tag);
 			
 			if (postTag == null) {
 				// every thread receives its own parameters map
@@ -95,13 +97,13 @@ public class DraftPostHelper {
 						try {
 							List<TumblrPhotoPost> posts = tumblr.getPhotoPosts(tumblrName, params);
 							for (TumblrPhotoPost post : posts) {
-						    	PostTag newPostTag = new PostTag(
+						    	LastPublishedPostCache newPostTag = new LastPublishedPostCache(
 						    			post.getPostId(),
 						    			tumblrName,
 						    			tag,
 						    			post.getTimestamp(),
 						    			1,
-						    			PostTag.POST_TYPE_PUBLISHED);
+						    			LastPublishedPostCache.POST_TYPE_PUBLISHED);
 						    	dbHelper.insert(newPostTag);
 						    	lastPublish.put(tag, newPostTag);
 							}
@@ -127,7 +129,7 @@ public class DraftPostHelper {
 	public List<PhotoSharePost> getDraftPostSortedByPublishDate(
 			Map<String, List<TumblrPost> > draftPosts,
 			Map<String, TumblrPost> queuedPosts,
-			Map<String, PostTag> lastPublished) {
+			Map<String, LastPublishedPostCache> lastPublished) {
 		ArrayList<TimestampPosts> temp = new ArrayList<TimestampPosts>();
 
 		for (String tag : draftPosts.keySet()) {
@@ -285,7 +287,7 @@ public class DraftPostHelper {
 			final String tumblrName,
 			final HashMap<String, List<TumblrPost> > tagsForDraftPosts,
     		final Map<String, TumblrPost> queuedPosts,
-    		final PostTagDatabaseHelper dbHelper) throws Exception {
+    		final LastPublishedPostCacheDAO lastPublishedPostCacheDAO) throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
 
@@ -306,26 +308,31 @@ public class DraftPostHelper {
 
 			@Override
 			public Exception call() throws Exception {
+				SQLiteDatabase db = lastPublishedPostCacheDAO.getDbHelper().getWritableDatabase();
 				try {
-					dbHelper.removeExpiredScheduledPosts(System.currentTimeMillis());
+					db.beginTransaction();
+					lastPublishedPostCacheDAO.removeExpiredScheduledPosts(System.currentTimeMillis());
 					List<TumblrPost> posts = tumblr.getQueue(tumblrName, null);
 					for (TumblrPost post : posts) {
 				    	if (post.getType().equals("photo")) {
 							for (String tag : post.getTags()) {
-						    	PostTag newPostTag = new PostTag(
+						    	LastPublishedPostCache newPostTag = new LastPublishedPostCache(
 						    			post.getPostId(),
 						    			tumblrName,
 						    			tag,
 						    			post.getScheduledPublishTime(),
 						    			1,
-						    			PostTag.POST_TYPE_SCHEDULED);
-						    	dbHelper.insertOrIgnore(newPostTag);
+						    			LastPublishedPostCache.POST_TYPE_SCHEDULED);
+						    	lastPublishedPostCacheDAO.insertOrIgnore(newPostTag);
 							}
 				    	}
 					}
+					db.setTransactionSuccessful();
 					queuedPosts.putAll(getTagsForQueuedPosts(posts));
 				} catch (Exception e) {
 					return e;
+				} finally {
+					db.endTransaction();
 				}
 				return null;
 			}
