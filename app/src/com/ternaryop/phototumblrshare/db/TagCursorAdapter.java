@@ -28,7 +28,7 @@ public class TagCursorAdapter extends SimpleCursorAdapter implements FilterQuery
 		super(context,
 				resId,
 				null,
-				new String[] { PostTag.TAG },
+				new String[] { PostTagDAO.TAG },
 				new int[] { android.R.id.text1 },
 				0);
 		this.context = context;
@@ -46,7 +46,7 @@ public class TagCursorAdapter extends SimpleCursorAdapter implements FilterQuery
 	}
 
 	public String convertToString(final Cursor cursor) {
-		final int columnIndex = cursor.getColumnIndexOrThrow(PostTag.TAG);
+		final int columnIndex = cursor.getColumnIndexOrThrow(PostTagDAO.TAG);
 		return cursor.getString(columnIndex);
 	}
 

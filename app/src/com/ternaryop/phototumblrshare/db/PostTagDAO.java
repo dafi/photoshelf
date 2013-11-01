@@ -2,11 +2,21 @@ package com.ternaryop.phototumblrshare.db;
 
 import java.text.MessageFormat;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 
-public class PostTagDAO {
+public class PostTagDAO implements BaseColumns {
+	public static final String TABLE_NAME = "POST_TAG";
+	
+	public static final String TAG = "TAG";
+	public static final String TUMBLR_NAME = "TUMBLR_NAME";
+	public static final String PUBLISH_TIMESTAMP = "PUBLISH_TIMESTAMP";
+	public static final String SHOW_ORDER = "SHOW_ORDER";
+	
+	public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
 
 	private SQLiteOpenHelper dbHelper;
 
@@ -26,29 +36,41 @@ public class PostTagDAO {
 				+ "{5} UNSIGNED NOT NULL,"
 				+ "PRIMARY KEY ( {1}, {2}));";
 		db.execSQL(MessageFormat.format(sql,
-				PostTag.TABLE_NAME,
-				PostTag._ID,
-				PostTag.TAG,
-				PostTag.TUMBLR_NAME,
-				PostTag.PUBLISH_TIMESTAMP,
-				PostTag.SHOW_ORDER));
+				TABLE_NAME,
+				_ID,
+				TAG,
+				TUMBLR_NAME,
+				PUBLISH_TIMESTAMP,
+				SHOW_ORDER));
 	}
 
 	void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + PostTag.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
 
+	public ContentValues getContentValues(PostTag postTag) {
+		ContentValues v = new ContentValues();
+
+		v.put(_ID,  postTag.getId());
+		v.put(TUMBLR_NAME, postTag.getTumblrName());
+		v.put(TAG, postTag.getTag());
+		v.put(PUBLISH_TIMESTAMP, postTag.getPublishTimestamp());
+		v.put(SHOW_ORDER, postTag.getShowOrder());
+		
+		return v;
+	}
+
 	public long insert(PostTag postTag) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-		long rows = db.insertOrThrow(PostTag.TABLE_NAME, null, postTag.getContentValues());
+		long rows = db.insertOrThrow(TABLE_NAME, null, getContentValues(postTag));
 		
 		return rows;
 	}
 
 	public void removeAll() {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.execSQL("delete from " + PostTag.TABLE_NAME);
+        db.execSQL("delete from " + TABLE_NAME);
 	}
 
 	public Cursor getCursorByTag(String tag, String tumblrName) {
@@ -56,10 +78,10 @@ public class PostTagDAO {
 
 		String sqlQuery = "SELECT %2$s, %3$s, count(*) as post_count FROM %1$s WHERE %3$s LIKE '%%%5$s%%' AND %4$s='%6$s' GROUP BY %3$s ORDER BY %3$s";
 		sqlQuery = String.format(sqlQuery,
-				PostTag.TABLE_NAME,
-				PostTag._ID,
-				PostTag.TAG,
-				PostTag.TUMBLR_NAME,
+				TABLE_NAME,
+				_ID,
+				TAG,
+				TUMBLR_NAME,
 				tag,
 				tumblrName);
 		 return db.rawQuery(sqlQuery, null);
@@ -69,10 +91,10 @@ public class PostTagDAO {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		String sqlQuery = "SELECT * FROM %1$s WHERE %2$s = '%3$s' ORDER BY %4$s DESC LIMIT 1";
 		sqlQuery = String.format(sqlQuery,
-				PostTag.TABLE_NAME,
-				PostTag.TUMBLR_NAME,
+				TABLE_NAME,
+				TUMBLR_NAME,
 				tumblrName,
-				PostTag.PUBLISH_TIMESTAMP);
+				PUBLISH_TIMESTAMP);
 		
 		System.out.println("PostTagDAO.findLastPublishedPost()" + sqlQuery);
 		Cursor c = db.rawQuery(sqlQuery, null);
@@ -80,11 +102,11 @@ public class PostTagDAO {
 		try {
 			if (c.moveToNext()) {
 				postTag = new PostTag(
-						c.getLong(c.getColumnIndex(PostTag._ID)),
-						c.getString(c.getColumnIndex(PostTag.TUMBLR_NAME)),
-						c.getString(c.getColumnIndex(PostTag.TAG)),
-						c.getLong(c.getColumnIndex(PostTag.PUBLISH_TIMESTAMP)),
-						c.getLong(c.getColumnIndex(PostTag.SHOW_ORDER))
+						c.getLong(c.getColumnIndex(_ID)),
+						c.getString(c.getColumnIndex(TUMBLR_NAME)),
+						c.getString(c.getColumnIndex(TAG)),
+						c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
+						c.getLong(c.getColumnIndex(SHOW_ORDER))
 						);
 			}
 		} finally {

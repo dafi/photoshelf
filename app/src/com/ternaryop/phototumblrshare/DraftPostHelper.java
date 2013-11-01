@@ -103,7 +103,7 @@ public class DraftPostHelper {
 						    			tag,
 						    			post.getTimestamp(),
 						    			1,
-						    			LastPublishedPostCache.POST_TYPE_PUBLISHED);
+						    			LastPublishedPostCacheDAO.POST_TYPE_PUBLISHED);
 						    	dbHelper.insert(newPostTag);
 						    	lastPublish.put(tag, newPostTag);
 							}
@@ -322,7 +322,7 @@ public class DraftPostHelper {
 						    			tag,
 						    			post.getScheduledPublishTime(),
 						    			1,
-						    			LastPublishedPostCache.POST_TYPE_SCHEDULED);
+						    			LastPublishedPostCacheDAO.POST_TYPE_SCHEDULED);
 						    	lastPublishedPostCacheDAO.insertOrIgnore(newPostTag);
 							}
 				    	}

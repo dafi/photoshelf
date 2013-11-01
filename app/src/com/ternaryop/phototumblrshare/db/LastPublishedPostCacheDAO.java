@@ -6,11 +6,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 
-public class LastPublishedPostCacheDAO {
+public class LastPublishedPostCacheDAO implements BaseColumns {
+	public static final String TABLE_NAME = "LAST_PUBLISHED_POSTS_CACHE";
+	
+	public static final String POST_ID = "POST_ID";
+	public static final String TUMBLR_NAME = "TUMBLR_NAME";
+	public static final String TAG = "TAG";
+	public static final String PUBLISH_TIMESTAMP = "PUBLISH_TIMESTAMP";
+	public static final String SHOW_ORDER = "SHOW_ORDER";
+	public static final String POST_ID_TYPE = "POST_ID_TYPE";
+	
+	public static final String[] COLUMNS = new String[] { POST_ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER, POST_ID_TYPE };
+
+	public static final String POST_TYPE_PUBLISHED = "p";
+	public static final String POST_TYPE_SCHEDULED = "s";
+		
 	private SQLiteOpenHelper dbHelper;
 
 	/**
@@ -30,23 +46,35 @@ public class LastPublishedPostCacheDAO {
 				+ "{6} TEXT NOT NULL," 
 				+ "PRIMARY KEY ({1}, {3}))";
 			db.execSQL(MessageFormat.format(sql,
-					LastPublishedPostCache.TABLE_NAME,
-					LastPublishedPostCache.POST_ID,
-					LastPublishedPostCache.TUMBLR_NAME,
-					LastPublishedPostCache.TAG,
-					LastPublishedPostCache.PUBLISH_TIMESTAMP,
-					LastPublishedPostCache.SHOW_ORDER,
-					LastPublishedPostCache.POST_ID_TYPE));
+					TABLE_NAME,
+					POST_ID,
+					TUMBLR_NAME,
+					TAG,
+					PUBLISH_TIMESTAMP,
+					SHOW_ORDER,
+					POST_ID_TYPE));
 	}
 
 	void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + LastPublishedPostCache.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
 
+	public ContentValues getContentValues(LastPublishedPostCache postTag) {
+		ContentValues v = new ContentValues();
+
+		v.put(POST_ID, postTag.getPostId());
+		v.put(TUMBLR_NAME, postTag.getTumblrName());
+		v.put(TAG, postTag.getTag());
+		v.put(PUBLISH_TIMESTAMP, postTag.getPublishTimestamp());
+		v.put(SHOW_ORDER, postTag.getShowOrder());
+		v.put(POST_ID_TYPE, postTag.getPostIdType());
+		
+		return v;
+	}
 	public long insert(LastPublishedPostCache postTag) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-		long rows = db.insert(LastPublishedPostCache.TABLE_NAME, null, postTag.getContentValues());
+		long rows = db.insert(TABLE_NAME, null, getContentValues(postTag));
 		
 		return rows;
 	}
@@ -54,33 +82,33 @@ public class LastPublishedPostCacheDAO {
 	public long insertOrIgnore(LastPublishedPostCache postTag) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		return db.insertWithOnConflict(
-				LastPublishedPostCache.TABLE_NAME,
+				TABLE_NAME,
 				null,
-				postTag.getContentValues(),
+				getContentValues(postTag),
 				SQLiteDatabase.CONFLICT_IGNORE);
 	}
 
 	public void removeAll() {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.execSQL("delete from " + LastPublishedPostCache.TABLE_NAME);
+        db.execSQL("delete from " + TABLE_NAME);
 	}
 
 	public int removeExpiredScheduledPosts(long expireTime) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
         String whereClause = MessageFormat.format("{0} = ? and {1} < ?",
-        		LastPublishedPostCache.POST_ID_TYPE,
-        		LastPublishedPostCache.PUBLISH_TIMESTAMP);
-        return db.delete(LastPublishedPostCache.TABLE_NAME,
+        		POST_ID_TYPE,
+        		PUBLISH_TIMESTAMP);
+        return db.delete(TABLE_NAME,
         		whereClause,
-				new String[] { LastPublishedPostCache.POST_TYPE_SCHEDULED, "" + expireTime });
+				new String[] { POST_TYPE_SCHEDULED, "" + expireTime });
 	}
 
 	public LastPublishedPostCache getPostByTag(String tag, String tumblrName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		Cursor c = db.query(
-				LastPublishedPostCache.TABLE_NAME,
-				LastPublishedPostCache.COLUMNS, 
-				LastPublishedPostCache.TAG + " = ? and " + LastPublishedPostCache.TUMBLR_NAME + " = ?",
+				TABLE_NAME,
+				COLUMNS, 
+				TAG + " = ? and " + TUMBLR_NAME + " = ?",
 				new String[] { tag, tumblrName },
 			null, 
 			null, 
@@ -108,9 +136,9 @@ public class LastPublishedPostCacheDAO {
 		
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		Cursor c = db.query(
-				LastPublishedPostCache.TABLE_NAME,
-				LastPublishedPostCache.COLUMNS, 
-				LastPublishedPostCache.TAG + " in (" + inClause + ") and (" + LastPublishedPostCache.TUMBLR_NAME + " = ?)",
+				TABLE_NAME,
+				COLUMNS, 
+				TAG + " in (" + inClause + ") and (" + TUMBLR_NAME + " = ?)",
 				args,
 			null, 
 			null, 

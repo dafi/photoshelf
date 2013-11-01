@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.ternaryop.phototumblrshare.R;
-import com.ternaryop.phototumblrshare.db.PostTag;
+import com.ternaryop.phototumblrshare.db.PostTagDAO;
 import com.ternaryop.phototumblrshare.db.TagCursorAdapter;
 
 public class TagListActivity extends PhotoTumblrActivity implements OnItemClickListener {
@@ -58,7 +58,7 @@ public class TagListActivity extends PhotoTumblrActivity implements OnItemClickL
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		Cursor cursor = (Cursor)parent.getItemAtPosition(position);
-		String tag = cursor.getString(cursor.getColumnIndex(PostTag.TAG));
+		String tag = cursor.getString(cursor.getColumnIndex(PostTagDAO.TAG));
 		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, appSupport.getSelectedBlogName(), tag);
 	}
 }
