@@ -1,5 +1,7 @@
 package com.ternaryop.tumblr;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -138,7 +140,7 @@ public class Tumblr {
         }.execute();
     }
 
-    private void addPostsToList(ArrayList<TumblrPost> list, JSONArray arr) throws JSONException {
+    public static void addPostsToList(ArrayList<TumblrPost> list, JSONArray arr) throws JSONException {
 		for (int i = 0; i < arr.length(); i++) {
 			list.add(build(arr.getJSONObject(i)));
 		}
@@ -388,5 +390,21 @@ public class Tumblr {
 			return new TumblrPhotoPost(json);
 		}
 		throw new IllegalArgumentException("Unable to build post for type " + type);
+	}
+
+	public void readPublicPhotoPosts(String tumblrName, String tag, PostRetriever postRetriever) {
+    	try {
+	        String blogUrl = tumblrName + ".tumblr.com";
+
+			String apiUrl = "http://api.tumblr.com/v2/blog/" + blogUrl + "/posts/photo?limit=" + MAX_POST_PER_REQUEST;
+			apiUrl += "&api_key=" + consumer.getConsumerKey();
+			if (tag != null && tag.trim().length() > 0) {
+				apiUrl += "&tag=" + URLEncoder.encode(tag, "UTF-8");
+			}
+			postRetriever.setApiUrl(apiUrl);
+			postRetriever.execute();
+		} catch (UnsupportedEncodingException e) {
+			throw new TumblrException(e);
+		}
 	}
 }

@@ -11,19 +11,23 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.view.MenuItem;
 
+import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.Importer;
 import com.ternaryop.tumblr.Tumblr;
 
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesActivity extends PreferenceActivity {
-    private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
-	private static final String KEY_IMPORT_POSTS = "import_posts";
+    private static final String CSV_FILE_NAME = "tags.csv";
+	private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
+	private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
+	private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
 
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
     private Preference preferenceTumblrLogin;
-	private Preference preferenceImportPosts;
+	private Preference preferenceImportPostsFromCSV;
+	private Preference preferenceImportPostsFromTumblr;
     
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +38,9 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         preferenceTumblrLogin = preferenceScreen.findPreference(KEY_TUMBLR_LOGIN);
-        preferenceImportPosts = preferenceScreen.findPreference(KEY_IMPORT_POSTS);
-        preferenceImportPosts.setSummary(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + "tags.csv");
+        preferenceImportPostsFromCSV = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_CSV);
+        preferenceImportPostsFromCSV.setSummary(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME);
+        preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
     }
 
 
@@ -57,9 +62,12 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         if (preference == preferenceTumblrLogin) {
 			Tumblr.login(this);
             return true;
-        } else if (preference == preferenceImportPosts) {
-	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + "tags.csv";
-        	Importer.importPosts(this, importPath);
+        } else if (preference == preferenceImportPostsFromCSV) {
+	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
+        	Importer.importPostsFromCSV(this, importPath);
+            return true;
+        } else if (preference == preferenceImportPostsFromTumblr) {
+			Importer.importFromTumblr(this, new AppSupport(this).getSelectedBlogName());
             return true;
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);

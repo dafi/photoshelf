@@ -60,10 +60,12 @@
     <string name="browse_images_by_tags_title">Browse Image by Tags</string>
     <string name="browse_tags_title">Browse Tags</string>
     <string name="reading_tags_title">Reading posts tagged with \'%1$s\'&#8230;</string>
-    <string name="import_posts_title">Import Posts</string>
+    <string name="import_posts_from_csv_title">Import Posts From CSV File</string>
+    <string name="import_posts_from_tumblr_title">Import Posts From Tumblr</string>
     <string name="start_import_title">Start Import&#8230;</string>
     <string name="import_progress_title">Imported %1$d posts</string>
     <string name="enter_tag_hint">Enter tag to search</string>
     <string name="tag_with_post_count">%1$s (%2$d)</string>
+    <string name="posts_read_count_title">%1$d posts read&#8230;</string>
     
 </resources>

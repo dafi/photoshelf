@@ -89,7 +89,7 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 			TagPhotoBrowserActivity.startPhotoBrowserActivity(this, appSupport.getSelectedBlogName(), null);
 			break;
 		case R.id.browse_tags_button:
-			TagListActivity.startTagListActivity(this, null, null);
+			TagListActivity.startTagListActivity(this, appSupport.getSelectedBlogName(), null);
 			break;
 		}
 	}
