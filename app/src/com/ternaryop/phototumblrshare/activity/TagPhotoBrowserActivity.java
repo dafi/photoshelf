@@ -1,6 +1,7 @@
 package com.ternaryop.phototumblrshare.activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -107,7 +108,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		refreshUI();
 
 		final Context activityContext = this;
-		new AsyncTask<Void, String, Void>() {
+		new AsyncTask<Void, String, List<PhotoSharePost> >() {
 			ProgressDialog progressDialog;
 			Exception error;
 
@@ -125,10 +126,11 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 			}
 			
 			@Override
-			protected void onPostExecute(Void result) {
+			protected void onPostExecute(List<PhotoSharePost> posts) {
 				progressDialog.dismiss();
 				
 				if (error == null) {
+		    		photoAdapter.addAll(posts);
 					refreshUI();
 				} else {
 					DialogUtils.showErrorDialog(activityContext, error);
@@ -137,7 +139,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 			}
 
 			@Override
-			protected Void doInBackground(Void... voidParams) {
+			protected List<PhotoSharePost> doInBackground(Void... voidParams) {
 				try {
 					HashMap<String, String> params = new HashMap<String, String>();
 					params.put("tag", postTag);
@@ -150,21 +152,19 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 			    		photoShareList.add(new PhotoSharePost((TumblrPhotoPost)post,
 			    				post.getTimestamp() * 1000));
 					}
-			        // we must reset the flag every time before an add operation
-			        photoAdapter.setNotifyOnChange(false);
-		    		photoAdapter.addAll(photoShareList);
 			    	if (photoPosts.size() > 0) {
 			    		totalPosts = photoPosts.get(0).getTotalPosts();
 			    		hasMorePosts = true;
 			    	} else {
-			    		totalPosts = photoAdapter.getCount();
+			    		totalPosts = photoAdapter.getCount() + photoShareList.size();
 			    		hasMorePosts = false;
 			    	}
+			    	return photoShareList;
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = e;
 				}
-				return null;
+				return Collections.emptyList();
 			}
 		}.execute();
 	}

@@ -1,6 +1,7 @@
 package com.ternaryop.phototumblrshare.activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,7 +36,7 @@ import com.ternaryop.utils.DialogUtils;
 public class ScheduledListActivity extends PhotoTumblrActivity implements OnScrollListener, OnItemClickListener {
  	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 	private static final String BLOG_NAME = "blogName";
-	private PhotoAdapter adapter;
+	private PhotoAdapter photoAdapter;
 	private String blogName;
 	private int offset;
 	private boolean hasMorePosts;
@@ -46,10 +47,10 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_list);
         
-        adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
+        photoAdapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
 
         ListView list = (ListView)findViewById(R.id.list);
-        list.setAdapter(adapter);
+        list.setAdapter(photoAdapter);
         list.setOnItemClickListener(this);
         list.setOnScrollListener(this);
         registerForContextMenu(list);
@@ -87,7 +88,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 	}
 	
 	private void saveDraft(int position) {
-		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
 		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 		    @Override
 		    public void onClick(DialogInterface dialog, int which) {
@@ -100,7 +101,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 
 		    			@Override
 		    			public void complete(Tumblr tumblr, JSONObject result) {
-		    				adapter.remove(item);
+		    				photoAdapter.remove(item);
 		    				refreshUI();
 		    			}
 
@@ -125,8 +126,8 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 	}
 
 	private void refreshUI() {
-		setTitle(getResources().getString(R.string.browser_sheduled_images_title, adapter.getCount(), totalPosts));
-		adapter.notifyDataSetChanged();
+		setTitle(getResources().getString(R.string.browser_sheduled_images_title, photoAdapter.getCount(), totalPosts));
+		photoAdapter.notifyDataSetChanged();
 	}
 	
 	private void readPhotoPosts() {
@@ -136,7 +137,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 		refreshUI();
 
 		final Context activityContext = this;
-		new AsyncTask<Void, String, Void>() {
+		new AsyncTask<Void, String, List<PhotoSharePost> >() {
 			ProgressDialog progressDialog;
 			Exception error;
 
@@ -154,10 +155,11 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 			}
 			
 			@Override
-			protected void onPostExecute(Void result) {
+			protected void onPostExecute(List<PhotoSharePost> posts) {
 				progressDialog.dismiss();
 				
 				if (error == null) {
+			    	photoAdapter.addAll(posts);
 					refreshUI();
 				} else {
 					DialogUtils.showErrorDialog(activityContext, error);
@@ -166,7 +168,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 			}
 
 			@Override
-			protected Void doInBackground(Void... voidParams) {
+			protected List<PhotoSharePost> doInBackground(Void... voidParams) {
 				try {
 					HashMap<String, String> params = new HashMap<String, String>();
 					params.put("offset", String.valueOf(offset));
@@ -179,21 +181,19 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 				    				post.getScheduledPublishTime() * 1000));
 				    	}
 					}
-			        // we must reset the flag every time before an add operation
-			        adapter.setNotifyOnChange(false);
-			    	adapter.addAll(photoShareList);
 			    	if (photoPosts.size() > 0) {
 			    		totalPosts = photoPosts.get(0).getTotalPosts();
 			    		hasMorePosts = true;
 			    	} else {
-			    		totalPosts = adapter.getCount();
+			    		totalPosts = photoAdapter.getCount() + photoShareList.size();
 			    		hasMorePosts = false;
 			    	}
+			    	return photoShareList;
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = e;
 				}
-				return null;
+				return Collections.emptyList();
 			}
 		}.execute();
 	}

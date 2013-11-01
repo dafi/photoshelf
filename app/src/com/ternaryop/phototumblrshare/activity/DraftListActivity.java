@@ -2,6 +2,7 @@ package com.ternaryop.phototumblrshare.activity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -308,7 +309,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		adapter.clear();
 		refreshUI();
 		
-		new AsyncTask<Void, String, Void>() {
+		new AsyncTask<Void, String, List<PhotoSharePost> >() {
 			Exception error;
 			ProgressDialog progressDialog;
 
@@ -325,10 +326,11 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 			}
 			
 			@Override
-			protected void onPostExecute(Void result) {
+			protected void onPostExecute(List<PhotoSharePost> posts) {
 				progressDialog.dismiss();
 				
 				if (error == null) {
+					adapter.addAll(posts);
 					refreshUI();
 				} else {
 					DialogUtils.showErrorDialog(DraftListActivity.this, error);
@@ -336,7 +338,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 			}
 
 			@Override
-			protected Void doInBackground(Void... params) {
+			protected List<PhotoSharePost> doInBackground(Void... params) {
 				try {
 					Context context = DraftListActivity.this;
 
@@ -356,18 +358,15 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 							tags,
 							DBHelper.getInstance(context).getLastPublishedPostCacheDAO());
 					
-					List<PhotoSharePost> posts = publisher.getDraftPostSortedByPublishDate(
+					return publisher.getDraftPostSortedByPublishDate(
 							tagsForDraftPosts,
 							queuedPosts,
 							lastPublishedPhotoByTags);
-			        // we must reset the flag every time before an add operation
-			        adapter.setNotifyOnChange(false);
-					adapter.addAll(posts);
 				} catch (Exception e) {
 					e.printStackTrace();
 					error = e;
 				}
-				return null;
+				return Collections.emptyList();
 			}
 		}.execute();
 	}
