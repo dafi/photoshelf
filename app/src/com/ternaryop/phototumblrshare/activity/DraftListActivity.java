@@ -37,8 +37,8 @@ import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleL
 import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
+import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Blog;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPost;
@@ -61,7 +61,6 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	// http://code.google.com/p/android/issues/detail?id=7139
 	private AdapterView.AdapterContextMenuInfo subMenuContextMenuInfo;
 	
-	private String blogName;
 	private ImageLoader blogAvatarImageLoader;
 	private MenuItem blogNameMenuItem;
 
@@ -78,7 +77,6 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
         list.setAdapter(adapter);
         registerForContextMenu(list);
         list.setOnItemClickListener(this);
-        blogName = appSupport.getSelectedBlogName();
         readDraftPosts();
 	}
 
@@ -89,14 +87,14 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		// so we store here
 		blogNameMenuItem = menu.findItem(R.id.action_blogname);
 		// set icon to currect avatar blog 
-		blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(blogName, 32));
+		blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(getBlogName(), 32));
 		return true;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getGroupId()) {
 		case R.id.group_menu_actionbar_blog:
-			blogName = item.getTitle().toString();
+			String blogName = item.getTitle().toString();
 			appSupport.setSelectedBlogName(blogName);
 			blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(blogName, 32));
 			readDraftPosts();
@@ -178,20 +176,12 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 	private void deletePost(int position) {
 		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
-		Tumblr.getSharedTumblr(this).deletePost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
+		Tumblr.getSharedTumblr(this).deletePost(getBlogName(), item.getPostId(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
 			public void complete(Tumblr tumblr, JSONObject result) {
 				adapter.remove(item);
 				refreshUI();
-			}
-
-			@Override
-			public void failure(Tumblr tumblr, Exception e) {
-				new AlertDialog.Builder(DraftListActivity.this)
-				.setTitle(R.string.parsing_error)
-				.setMessage(e.getLocalizedMessage())
-				.show();
 			}
 		});
 	}
@@ -199,7 +189,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	private void showScheduleDialog(final int position) {
 		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
 		SchedulePostDialog dialog = new SchedulePostDialog(this,
-				appSupport.getSelectedBlogName(),
+				getBlogName(),
 				item,
 				findScheduleTime(),
 				new onPostScheduleListener() {
@@ -281,20 +271,12 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	
 	private void publishPost(final int position) {
 		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
-		Tumblr.getSharedTumblr(this).publishPost(appSupport.getSelectedBlogName(), item.getPostId(), new Callback<JSONObject>() {
+		Tumblr.getSharedTumblr(this).publishPost(getBlogName(), item.getPostId(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
 			public void complete(Tumblr tumblr, JSONObject result) {
 				adapter.remove(item);
 				refreshUI();
-			}
-
-			@Override
-			public void failure(Tumblr tumblr, Exception e) {
-				new AlertDialog.Builder(DraftListActivity.this)
-				.setTitle(R.string.parsing_error)
-				.setMessage(e.getLocalizedMessage())
-				.show();
 			}
 		});
 	}
@@ -345,7 +327,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 					HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
 					queuedPosts = new HashMap<String, TumblrPost>();
 					DraftPostHelper publisher = new DraftPostHelper();
-					publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(context), blogName, tagsForDraftPosts, queuedPosts,
+					publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(context), getBlogName(), tagsForDraftPosts, queuedPosts,
 							DBHelper.getInstance(context).getLastPublishedPostCacheDAO());
 
 					ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
@@ -354,7 +336,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 					this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
 					Map<String, LastPublishedPostCache> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
 							Tumblr.getSharedTumblr(context),
-							blogName,
+							getBlogName(),
 							tags,
 							DBHelper.getInstance(context).getLastPublishedPostCacheDAO());
 					
@@ -382,7 +364,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 	@Override
 	public void onPhotoBrowseClick(PhotoSharePost post) {
-		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, blogName, post.getFirstTag());
+		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), post.getFirstTag());
 	}
 
 	@Override

@@ -9,13 +9,20 @@ import android.view.MenuItem;
 
 @SuppressLint("Registered")
 public abstract class PhotoTumblrActivity extends Activity {
+	protected static final String BLOG_NAME = "blogName";
 	protected AppSupport appSupport;
+	private String blogName;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	    getActionBar().setDisplayHomeAsUpEnabled(true);
 	    appSupport = new AppSupport(this);
+
+	    Bundle bundle = getIntent().getExtras();
+	    if (bundle != null) {
+			blogName = bundle.getString(BLOG_NAME);
+	    }
 	}
 
 	@Override
@@ -31,4 +38,7 @@ public abstract class PhotoTumblrActivity extends Activity {
 	    }
 	}
 
+	public String getBlogName() {
+		return blogName == null ? appSupport.getSelectedBlogName() : blogName;
+	}
 }

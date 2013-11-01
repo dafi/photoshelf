@@ -7,9 +7,13 @@ import android.content.DialogInterface;
 public class DialogUtils {
 
 	public static void showErrorDialog(Context context, Exception e) {
+		showErrorDialog(context, "Error", e);
+	}
+
+	public static void showErrorDialog(Context context, String title, Exception e) {
 		new AlertDialog.Builder(context)
 		.setCancelable(false) // This blocks the 'BACK' button
-	    .setTitle("Error")
+	    .setTitle(title)
 	    .setMessage(e.getLocalizedMessage())
 	    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
@@ -19,4 +23,16 @@ public class DialogUtils {
 	    .show();
 	}
 
+	public static void showErrorDialog(Context context, int resId, Exception e) {
+		new AlertDialog.Builder(context)
+		.setCancelable(false) // This blocks the 'BACK' button
+	    .setTitle(resId)
+	    .setMessage(e.getLocalizedMessage())
+	    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int whichButton) {
+		        dialog.dismiss();                    
+	        }
+		})
+	    .show();
+	}
 }

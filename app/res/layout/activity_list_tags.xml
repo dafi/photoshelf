@@ -5,14 +5,15 @@
     android:paddingLeft="3dip"
     android:paddingRight="3dip" >
 
-    <EditText
-        android:id="@+id/text1"
+    <SearchView 
+        android:id="@+id/searchView1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:hint="@string/enter_tag_hint"
-        android:maxLines="1" />
-
+        android:iconifiedByDefault="false"
+        android:queryHint="@string/enter_tag_hint"
+        ></SearchView>
+    
     <ListView
         android:id="@+id/list"
         android:layout_width="fill_parent"

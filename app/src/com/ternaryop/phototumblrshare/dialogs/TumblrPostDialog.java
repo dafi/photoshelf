@@ -22,6 +22,7 @@ import com.ternaryop.phototumblrshare.ImageInfo;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.parsers.TitleData;
 import com.ternaryop.phototumblrshare.parsers.TitleParser;
+import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -259,7 +260,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		newValues.put("caption", getPostTitle());
 		newValues.put("tags", getPostTags());
 
-		Tumblr.getSharedTumblr(getContext()).editPost(appSupport.getSelectedBlogName(), newValues, new Callback<JSONObject>() {
+		Tumblr.getSharedTumblr(getContext()).editPost(appSupport.getSelectedBlogName(), newValues, new AbsCallback(this, R.string.generic_error) {
 
 			@Override
 			public void complete(Tumblr tumblr, JSONObject result) {
@@ -267,12 +268,6 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 				if (dialogClickListener != null) {
 					dialogClickListener.onClick(TumblrPostDialog.this, BUTTON_POSITIVE);
 				}
-			}
-
-			@Override
-			public void failure(Tumblr tumblr, Exception ex) {
-				dismiss();
-				DialogUtils.showErrorDialog(getContext(), ex);
 			}
 		});
 	}

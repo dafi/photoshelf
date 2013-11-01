@@ -4,13 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.PostTagDAO;
@@ -26,7 +25,7 @@ public class TagListActivity extends PhotoTumblrActivity implements OnItemClickL
 		final TagCursorAdapter adapter = new TagCursorAdapter(
 				this,
 				android.R.layout.simple_list_item_1,
-				appSupport.getSelectedBlogName());
+				getBlogName());
 		
 		listView = (ListView) findViewById(R.id.list);
 		listView.setAdapter(adapter);
@@ -34,16 +33,19 @@ public class TagListActivity extends PhotoTumblrActivity implements OnItemClickL
         listView.setTextFilterEnabled(true);
         // start with list filled
         adapter.getFilter().filter("");
-        ((EditText)findViewById(R.id.text1)).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                adapter.getFilter().filter(s.toString());                           
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        ((SearchView) findViewById(R.id.searchView1)).setOnQueryTextListener(new OnQueryTextListener() {
+			
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				return false;
+			}
+			
+			@Override
+			public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);                           
+				return true;
+			}
+		});
 	}
 
 	public static void startTagListActivity(Context context, String blogName, String postTag) {
@@ -59,6 +61,6 @@ public class TagListActivity extends PhotoTumblrActivity implements OnItemClickL
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		Cursor cursor = (Cursor)parent.getItemAtPosition(position);
 		String tag = cursor.getString(cursor.getColumnIndex(PostTagDAO.TAG));
-		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, appSupport.getSelectedBlogName(), tag);
+		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), tag);
 	}
 }

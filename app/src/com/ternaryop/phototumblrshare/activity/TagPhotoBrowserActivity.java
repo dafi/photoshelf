@@ -39,9 +39,7 @@ import com.ternaryop.utils.DialogUtils;
 public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnScrollListener, OnQueryTextListener, OnSuggestionListener {
  	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 	private static final String POST_TAG = "postTag";
-	private static final String BLOG_NAME = "blogName";
 	private PhotoAdapter photoAdapter;
-	private String blogName;
 	private String postTag;
 	private int offset;
 	private boolean hasMorePosts;
@@ -67,9 +65,9 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
         registerForContextMenu(list);
         
 	    Bundle bundle = getIntent().getExtras();
-		blogName = bundle.getString(BLOG_NAME);
 		postTag = bundle.getString(POST_TAG);
-		if (blogName != null && postTag != null && postTag.trim().length() > 0) {
+		System.out.println("TagPhotoBrowserActivity.onCreate()" + getBlogName());
+		if (getBlogName() != null && postTag != null && postTag.trim().length() > 0) {
 			onQueryTextSubmit(postTag.trim());
 		}
 	}
@@ -92,7 +90,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		TagCursorAdapter adapter = new TagCursorAdapter(
 				getActionBar().getThemedContext(),
 				android.R.layout.simple_dropdown_item_1line,
-				appSupport.getSelectedBlogName());
+				getBlogName());
 		searchView.setSuggestionsAdapter(adapter);
 	}
 	
@@ -145,7 +143,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 					params.put("tag", postTag);
 					params.put("offset", String.valueOf(offset));
 					List<TumblrPhotoPost> photoPosts = Tumblr.getSharedTumblr(activityContext)
-							.getPhotoPosts(blogName, params);
+							.getPhotoPosts(getBlogName(), params);
 
 					List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
 			    	for (TumblrPost post : photoPosts) {

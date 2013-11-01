@@ -27,7 +27,7 @@ import android.widget.ListView;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
-import com.ternaryop.tumblr.Callback;
+import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
@@ -37,7 +37,6 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
  	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 	private static final String BLOG_NAME = "blogName";
 	private PhotoAdapter photoAdapter;
-	private String blogName;
 	private int offset;
 	private boolean hasMorePosts;
 	private boolean isScrolling;
@@ -55,9 +54,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
         list.setOnScrollListener(this);
         registerForContextMenu(list);
 
-        Bundle bundle = getIntent().getExtras();
-		blogName = bundle.getString(BLOG_NAME);
-		if (blogName != null) {
+		if (getBlogName() != null) {
 			offset = 0;
 			hasMorePosts = true;
 			readPhotoPosts();
@@ -95,24 +92,16 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 		        switch (which) {
 		        case DialogInterface.BUTTON_POSITIVE:
 		    		Tumblr.getSharedTumblr(ScheduledListActivity.this).saveDraft(
-		    				blogName,
+		    				getBlogName(),
 		    				item.getPostId(),
-		    				new Callback<JSONObject>() {
-
-		    			@Override
-		    			public void complete(Tumblr tumblr, JSONObject result) {
-		    				photoAdapter.remove(item);
-		    				refreshUI();
-		    			}
-
-		    			@Override
-		    			public void failure(Tumblr tumblr, Exception e) {
-		    				new AlertDialog.Builder(ScheduledListActivity.this)
-		    				.setTitle(R.string.parsing_error)
-		    				.setMessage(e.getLocalizedMessage())
-		    				.show();
-		    			}
-		    		});
+		    				new AbsCallback(ScheduledListActivity.this, R.string.parsing_error) {
+		
+				    			@Override
+				    			public void complete(Tumblr tumblr, JSONObject result) {
+				    				photoAdapter.remove(item);
+				    				refreshUI();
+				    			}
+		    				});
 		            break;
 		        }
 		    }
@@ -172,7 +161,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 				try {
 					HashMap<String, String> params = new HashMap<String, String>();
 					params.put("offset", String.valueOf(offset));
-					List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(activityContext).getQueue(blogName, params);
+					List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(activityContext).getQueue(getBlogName(), params);
 
 					List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
 			    	for (TumblrPost post : photoPosts) {

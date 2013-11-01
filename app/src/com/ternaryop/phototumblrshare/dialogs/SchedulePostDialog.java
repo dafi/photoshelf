@@ -6,7 +6,6 @@ import java.util.Locale;
 
 import org.json.JSONObject;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -19,7 +18,7 @@ import android.widget.TimePicker;
 
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
-import com.ternaryop.tumblr.Callback;
+import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
 
 public class SchedulePostDialog extends Dialog implements View.OnClickListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
@@ -86,7 +85,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 
 	private void schedulePost() {
 		Tumblr.getSharedTumblr(getContext())
-		.schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new Callback<JSONObject>() {
+		.schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
 			public void complete(Tumblr tumblr, JSONObject result) {
@@ -94,14 +93,6 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 					onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime);
 				}
 				dismiss();
-			}
-
-			@Override
-			public void failure(Tumblr tumblr, Exception e) {
-				new AlertDialog.Builder(getContext())
-				.setTitle(R.string.parsing_error)
-				.setMessage(e.getLocalizedMessage())
-				.show();
 			}
 		});
 	}
