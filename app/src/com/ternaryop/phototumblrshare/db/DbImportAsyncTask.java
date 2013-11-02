@@ -25,7 +25,7 @@ public class DbImportAsyncTask extends AsyncTask<Void, Integer, Void> {
 
 	protected void onPreExecute() {
 		progressDialog = new ProgressDialog(context);
-		progressDialog.setMessage(context.getResources().getString(R.string.start_import_title));
+		progressDialog.setMessage(context.getString(R.string.start_import_title));
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		progressDialog.show();
 	}

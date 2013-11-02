@@ -38,7 +38,7 @@ public class ImagePickerWebViewClient extends WebViewClient {
 			imageUrlRetriever.retrieve();
 			return true;
 		}
-		String message = context.getResources().getString(R.string.unable_to_find_domain_mapper_for_url);
+		String message = context.getString(R.string.unable_to_find_domain_mapper_for_url);
 		Toast.makeText(context.getApplicationContext(),
 				String.format(message, url),
 				Toast.LENGTH_LONG).show();

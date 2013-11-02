@@ -9,35 +9,22 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.JSONUtils;
 
-public class PostRetriever extends AsyncTask<Void, List<TumblrPost>, List<TumblrPost> > {
+public class PostRetriever extends AbsProgressBarAsyncTask<Void, List<TumblrPost>, List<TumblrPost> > {
 	private String apiUrl;
 	private final Callback<List<TumblrPost>> callback;
-	private Exception exception;
 	private long lastPublishTimestamp;
-	private ProgressDialog progressDialog;
-	private Context context;
 
 	public PostRetriever(Context context, long publishTimestamp, Callback<List<TumblrPost>> callback) {
-		this.context = context;
+		super(context, context.getString(R.string.start_import_title));
 		this.callback = callback;
 		this.lastPublishTimestamp = publishTimestamp;
 	}
-
-	@Override
-	protected void onPreExecute() {
-		progressDialog = new ProgressDialog(context);
-		progressDialog.setMessage(context.getResources().getString(R.string.start_import_title));
-		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progressDialog.show();
-	}
-	
 
 	protected JSONArray readPostsFromOffset(int offset) throws Exception {
     	HttpClient client = new DefaultHttpClient();
@@ -75,24 +62,25 @@ public class PostRetriever extends AsyncTask<Void, List<TumblrPost>, List<Tumblr
 				publishProgress(allPostList);
 			} while (loadNext);
 		} catch (Exception e) {
-			exception = e;
 			e.printStackTrace();
+			setError(e);
 		}
 		return allPostList;
 	}
 
 	@Override
 	protected void onPostExecute(List<TumblrPost> allPosts) {
-		progressDialog.dismiss();
-		if (exception == null) {
+		// do not call super.onPostExecute() because it shows the alert message
+		getProgressDialog().dismiss();
+		if (getError() == null) {
 			callback.complete(null, allPosts);
 		} else {
-			callback.failure(null, exception);
+			callback.failure(null, getError());
 		}
 	}
 
 	protected void onProgressUpdate(List<TumblrPost>... values) {
-		progressDialog.setMessage(context.getString(R.string.posts_read_count_title, values[0].size()));
+		getProgressDialog().setMessage(getContext().getString(R.string.posts_read_count_title, values[0].size()));
 	}
 
 	public String getApiUrl() {

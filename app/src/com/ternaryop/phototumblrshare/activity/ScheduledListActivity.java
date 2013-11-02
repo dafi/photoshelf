@@ -8,11 +8,9 @@ import java.util.List;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -31,7 +29,7 @@ import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
 public class ScheduledListActivity extends PhotoTumblrActivity implements OnScrollListener, OnItemClickListener {
  	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
@@ -45,6 +43,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_list);
+	    setActionBarIcon();
         
         photoAdapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
 
@@ -115,7 +114,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 	}
 
 	private void refreshUI() {
-		setTitle(getResources().getString(R.string.browser_sheduled_images_title, photoAdapter.getCount(), totalPosts));
+		setTitle(getString(R.string.browser_sheduled_images_title, photoAdapter.getCount(), totalPosts));
 		photoAdapter.notifyDataSetChanged();
 	}
 	
@@ -124,34 +123,21 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 			return;
 		}
 		refreshUI();
+		isScrolling = true;
 
-		final Context activityContext = this;
-		new AsyncTask<Void, String, List<PhotoSharePost> >() {
-			ProgressDialog progressDialog;
-			Exception error;
-
-			protected void onPreExecute() {
-				progressDialog = new ProgressDialog(activityContext);
-				progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-				progressDialog.setMessage(getString(R.string.reading_draft_posts));
-				progressDialog.show();
-				isScrolling = true;
-			}
-			
+		new AbsProgressBarAsyncTask<Void, String, List<PhotoSharePost> >(this, getString(R.string.reading_draft_posts)) {
 			@Override
 			protected void onProgressUpdate(String... values) {
-				progressDialog.setMessage(values[0]);
+				getProgressDialog().setMessage(values[0]);
 			}
 			
 			@Override
 			protected void onPostExecute(List<PhotoSharePost> posts) {
-				progressDialog.dismiss();
+				super.onPostExecute(posts);
 				
-				if (error == null) {
+				if (getError() == null) {
 			    	photoAdapter.addAll(posts);
 					refreshUI();
-				} else {
-					DialogUtils.showErrorDialog(activityContext, error);
 				}
 				isScrolling = false;
 			}
@@ -161,7 +147,8 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 				try {
 					HashMap<String, String> params = new HashMap<String, String>();
 					params.put("offset", String.valueOf(offset));
-					List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(activityContext).getQueue(getBlogName(), params);
+					List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(getContext())
+							.getQueue(getBlogName(), params);
 
 					List<PhotoSharePost> photoShareList = new ArrayList<PhotoSharePost>(); 
 			    	for (TumblrPost post : photoPosts) {
@@ -171,7 +158,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 				    	}
 					}
 			    	if (photoPosts.size() > 0) {
-			    		totalPosts = photoPosts.get(0).getTotalPosts();
+			    		totalPosts =  photoShareList.size();
 			    		hasMorePosts = true;
 			    	} else {
 			    		totalPosts = photoAdapter.getCount() + photoShareList.size();
@@ -180,7 +167,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 			    	return photoShareList;
 				} catch (Exception e) {
 					e.printStackTrace();
-					error = e;
+					setError(e);
 				}
 				return Collections.emptyList();
 			}

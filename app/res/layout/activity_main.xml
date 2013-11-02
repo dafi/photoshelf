@@ -1,50 +1,66 @@
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="center_vertical|center_horizontal"
-    android:columnCount="2"
-    android:orientation="vertical"
-    android:rowCount="2" >
+    android:layout_gravity="center_vertical|center_horizontal" >
 
-    <Button
-        android:id="@+id/draft_button"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="left|top"
-        android:text="@string/draft_title"
-        android:textSize="16sp" />
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:columnCount="2"
+        android:orientation="vertical"
+        android:rowCount="2" >
 
-    <Button
-        android:id="@+id/scheduled_button"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="left|top"
-        android:text="@string/scheduled_title"
-        android:textSize="16sp" />
+        <Button
+            android:id="@+id/draft_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left|top"
+            android:text="@string/draft_title"
+            android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/browse_images_by_tags_button"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="left|top"
-        android:text="@string/browse_images_by_tags_title"
-        android:textSize="16sp" />
+        <Button
+            android:id="@+id/scheduled_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left|top"
+            android:text="@string/scheduled_title"
+            android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/test_page_button"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="left|top"
-        android:text="@string/test_page_title"
-        android:textSize="16sp" />
+        <Button
+            android:id="@+id/browse_images_by_tags_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left|top"
+            android:text="@string/browse_images_by_tags_title"
+            android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/browse_tags_button"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="left|top"
-        android:text="@string/browse_tags_title"
-        android:textSize="16sp" />
+        <Button
+            android:id="@+id/test_page_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left|top"
+            android:text="@string/test_page_title"
+            android:textSize="16sp" />
 
-</GridLayout>
+        <Button
+            android:id="@+id/browse_tags_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left|top"
+            android:text="@string/browse_tags_title"
+            android:textSize="16sp" />
+    </GridLayout>
+
+    <TextView
+        android:id="@+id/version_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:paddingBottom="5dp"
+        android:paddingRight="5dp" />
+
+</RelativeLayout>

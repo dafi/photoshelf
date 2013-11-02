@@ -43,9 +43,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	}
 	
 	/**
-	 * If posdtId is greater that 0 that edit the post
 	 * @param context
-	 * @param postId
+	 * @param postId, 0 to enable publish and draft otherwise edit the post
 	 */
 	public TumblrPostDialog(Context context, long postId) {
 		super(context);
@@ -100,7 +99,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 			if (imageUrls.length == 1) {
 				setTitle(R.string.tumblr_post_title);
 			} else {
-				setTitle(getContext().getResources().getString(R.string.tumblr_multiple_post_title, imageUrls.length));
+				setTitle(getContext().getString(R.string.tumblr_multiple_post_title, imageUrls.length));
 			}
 		}
 		super.show();
@@ -204,10 +203,10 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 				progressDialog = new ProgressDialog(getContext());
 				progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 				if (publish) {
-					progressDialog.setMessage(getContext().getResources().getString(R.string.publishing_post));
+					progressDialog.setMessage(getContext().getString(R.string.publishing_post));
 				} else {
 					int resId = max == 1 ? R.string.saving_post_in_draft_singular : R.string.saving_post_in_draft_plural;
-					progressDialog.setMessage(getContext().getResources().getString(resId, max));
+					progressDialog.setMessage(getContext().getString(resId, max));
 				}
 				progressDialog.setMax(max);
 				progressDialog.show();

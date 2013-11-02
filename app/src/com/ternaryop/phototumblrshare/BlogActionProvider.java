@@ -46,7 +46,7 @@ public class BlogActionProvider extends ActionProvider {
 			// set an initial icon otherwise the icon loaded in displayIcon doesn't appear
 			final MenuItem menuItem = subMenu.add(R.id.group_menu_actionbar_blog, index++, Menu.NONE, blogName)
 			.setIcon(drawable);
-			imageLoader.displayIcon(menuItem, Blog.getAvatarUrlBySize(blogName, 32));
+			imageLoader.displayIcon(Blog.getAvatarUrlBySize(blogName, 32), menuItem);
 		}
 	}
 }

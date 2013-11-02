@@ -43,8 +43,8 @@ public class Tumblr {
 		if (instance == null) {
 			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 			instance = new Tumblr(new TumblrHttpOAuthConsumer(
-					context.getResources().getString(R.string.CONSUMER_KEY),
-					context.getResources().getString(R.string.CONSUMER_SECRET),
+					context.getString(R.string.CONSUMER_KEY),
+					context.getString(R.string.CONSUMER_SECRET),
 					preferences.getString(TumblrHttpOAuthConsumer.PREF_OAUTH_TOKEN, null),
 					preferences.getString(TumblrHttpOAuthConsumer.PREF_OAUTH_SECRET, null)));
 		}

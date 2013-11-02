@@ -6,6 +6,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ternaryop.phototumblrshare.AppSupport;
@@ -23,6 +24,18 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 
 		setContentView(R.layout.activity_main);
 		enableUI(Tumblr.isLogged(this));
+		
+		((TextView)findViewById(R.id.version_number)).setText(getVersion());
+	}
+	
+	public String getVersion() {
+	    try {
+	        String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+	        int versionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+			return String.valueOf("v" + versionName + " build " + versionCode);
+	    } catch (Exception e) {
+	    }
+	    return "N/A";
 	}
 	
 	@Override
@@ -82,8 +95,7 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 			ScheduledListActivity.startScheduledListActivity(this, getBlogName());
 			break;
 		case R.id.test_page_button:
-	    	ImagePickerActivity.startImagePicker(this,
-	    			getResources().getString(R.string.test_page_url));
+	    	ImagePickerActivity.startImagePicker(this, getString(R.string.test_page_url));
 			break;
 		case R.id.browse_images_by_tags_button:
 			TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), null);

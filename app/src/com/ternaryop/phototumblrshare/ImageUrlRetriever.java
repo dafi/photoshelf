@@ -75,7 +75,7 @@ public class ImageUrlRetriever {
 
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
 			int resId = urlSelectorMap.size() == 1 ? R.string.selected_image_singular : R.string.selected_image_plural;
-			mode.setTitle(context.getResources().getString(resId, urlSelectorMap.size()));
+			mode.setTitle(context.getString(resId, urlSelectorMap.size()));
 			return true;
 		}
 
@@ -118,7 +118,7 @@ public class ImageUrlRetriever {
 		@Override
 		protected void onPreExecute() {
 			progressDialog = new ProgressDialog(context);
-			progressDialog.setMessage(context.getResources().getString(R.string.image_retriever_title));
+			progressDialog.setMessage(context.getString(R.string.image_retriever_title));
 			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			progressDialog.setMax(urlSelectorMap.size());
 			progressDialog.show();

@@ -11,11 +11,9 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -42,7 +40,7 @@ import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
 public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBrowseClick, OnItemClickListener {
 	private static final String LOADER_PREFIX_AVATAR = "avatar";
@@ -66,7 +64,8 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_photo_list);
+		setContentView(R.layout.activity_photo_list);
+	    setActionBarIcon();
         
 		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
         adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
@@ -87,7 +86,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		// so we store here
 		blogNameMenuItem = menu.findItem(R.id.action_blogname);
 		// set icon to currect avatar blog 
-		blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(getBlogName(), 32));
+		blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(getBlogName(), 32), blogNameMenuItem);
 		return true;
 	}
 	
@@ -96,7 +95,8 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		case R.id.group_menu_actionbar_blog:
 			String blogName = item.getTitle().toString();
 			appSupport.setSelectedBlogName(blogName);
-			blogAvatarImageLoader.displayIcon(blogNameMenuItem, Blog.getAvatarUrlBySize(blogName, 32));
+			setActionBarIcon();
+			blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(blogName, 32), blogNameMenuItem);
 			readDraftPosts();
 			return true;
 		}
@@ -128,12 +128,12 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 			// fill the image size submenu
 			SubMenu subMenu = menu.findItem(R.id.group_menu_image_dimension).getSubMenu();
-			subMenu.setHeaderTitle(getResources().getString(R.string.menu_header_show_image, post.getFirstTag()));
+			subMenu.setHeaderTitle(getString(R.string.menu_header_show_image, post.getFirstTag()));
 			int index = 0;
 			for(TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
 				// the item id is set to the image index into array
 				subMenu.add(R.id.group_menu_item_image_dimension, index++, Menu.NONE, 
-						getResources().getString(R.string.menu_image_dimension, altSize.getWidth(), altSize.getHeight()));
+						getString(R.string.menu_image_dimension, altSize.getWidth(), altSize.getHeight()));
 			}
 		}
 	}
@@ -283,7 +283,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 
 	private void refreshUI() {
 		int resId = adapter.getCount() == 1 ? R.string.posts_in_draft_singular : R.string.posts_in_draft_plural;
-		setTitle(getResources().getString(resId, adapter.getCount()));
+		setTitle(getString(resId, adapter.getCount()));
 		adapter.notifyDataSetChanged();
 	}
 
@@ -291,54 +291,40 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		adapter.clear();
 		refreshUI();
 		
-		new AsyncTask<Void, String, List<PhotoSharePost> >() {
-			Exception error;
-			ProgressDialog progressDialog;
-
-			protected void onPreExecute() {
-				progressDialog = new ProgressDialog(DraftListActivity.this);
-				progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-				progressDialog.setMessage(getString(R.string.reading_draft_posts));
-				progressDialog.show();
-			}
-			
+		new AbsProgressBarAsyncTask<Void, String, List<PhotoSharePost> >(this, getString(R.string.reading_draft_posts)) {
 			@Override
 			protected void onProgressUpdate(String... values) {
-				progressDialog.setMessage(values[0]);
+				getProgressDialog().setMessage(values[0]);
 			}
 			
 			@Override
 			protected void onPostExecute(List<PhotoSharePost> posts) {
-				progressDialog.dismiss();
+				super.onPostExecute(posts);
 				
-				if (error == null) {
+				if (getError() == null) {
 					adapter.addAll(posts);
 					refreshUI();
-				} else {
-					DialogUtils.showErrorDialog(DraftListActivity.this, error);
 				}
 			}
 
 			@Override
 			protected List<PhotoSharePost> doInBackground(Void... params) {
 				try {
-					Context context = DraftListActivity.this;
-
 					HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
 					queuedPosts = new HashMap<String, TumblrPost>();
 					DraftPostHelper publisher = new DraftPostHelper();
-					publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(context), getBlogName(), tagsForDraftPosts, queuedPosts,
-							DBHelper.getInstance(context).getLastPublishedPostCacheDAO());
+					publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(getContext()), getBlogName(), tagsForDraftPosts, queuedPosts,
+							DBHelper.getInstance(getContext()).getLastPublishedPostCacheDAO());
 
 					ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
 					
 					// get last published
-					this.publishProgress(context.getResources().getString(R.string.finding_last_published_posts));
+					this.publishProgress(getContext().getString(R.string.finding_last_published_posts));
 					Map<String, LastPublishedPostCache> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
-							Tumblr.getSharedTumblr(context),
+							Tumblr.getSharedTumblr(getContext()),
 							getBlogName(),
 							tags,
-							DBHelper.getInstance(context).getLastPublishedPostCacheDAO());
+							DBHelper.getInstance(getContext()).getLastPublishedPostCacheDAO());
 					
 					return publisher.getDraftPostSortedByPublishDate(
 							tagsForDraftPosts,
@@ -346,7 +332,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 							lastPublishedPhotoByTags);
 				} catch (Exception e) {
 					e.printStackTrace();
-					error = e;
+					setError(e);
 				}
 				return Collections.emptyList();
 			}

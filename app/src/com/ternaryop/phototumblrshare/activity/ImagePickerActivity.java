@@ -39,9 +39,9 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		setContentView(R.layout.activity_webview);
 		setTitle(R.string.image_picker_activity_title);
+	    setActionBarIcon();
 
 		imageUrlRetriever = new ImageUrlRetriever(this, this);
 		progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
@@ -110,7 +110,7 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 		} else {
 			new AlertDialog.Builder(this)
 				.setTitle(R.string.url_not_found)
-				.setMessage(getResources().getString(R.string.url_not_found_description, textWithUrl))
+				.setMessage(getString(R.string.url_not_found_description, textWithUrl))
 				.show();
 		}
 	}

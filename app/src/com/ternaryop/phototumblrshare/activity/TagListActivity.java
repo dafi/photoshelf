@@ -22,7 +22,9 @@ public class TagListActivity extends PhotoTumblrActivity implements OnItemClickL
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_list_tags);
-		final TagCursorAdapter adapter = new TagCursorAdapter(
+	    setActionBarIcon();
+
+	    final TagCursorAdapter adapter = new TagCursorAdapter(
 				this,
 				android.R.layout.simple_list_item_1,
 				getBlogName());
