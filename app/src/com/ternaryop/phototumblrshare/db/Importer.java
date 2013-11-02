@@ -31,14 +31,14 @@ public class Importer {
 		PostRetriever postRetriever = new PostRetriever(context, post.getPublishTimestamp(), new Callback<List<TumblrPost>>() {
 			
 			@Override
-			public void failure(Tumblr tumblr, Exception error) {
+			public void failure(Exception error) {
 				if (error != null) {
 					DialogUtils.showErrorDialog(context, error);
 				}
 			}
 			
 			@Override
-			public void complete(Tumblr tumblr, List<TumblrPost> allPosts) {
+			public void complete(List<TumblrPost> allPosts) {
 				List<PostTag> allPostTags = new ArrayList<PostTag>();
 				for (TumblrPost tumblrPost : allPosts) {
 					allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));

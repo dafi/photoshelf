@@ -25,7 +25,7 @@ public abstract class AbsCallback implements Callback<JSONObject> {
 	}
 	
 	@Override
-	public void failure(Tumblr tumblr, Exception e) {
+	public void failure(Exception e) {
 		if (dialog != null) {
 			dialog.dismiss();
 		}

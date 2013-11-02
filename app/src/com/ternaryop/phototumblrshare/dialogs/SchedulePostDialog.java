@@ -88,7 +88,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 		.schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
-			public void complete(Tumblr tumblr, JSONObject result) {
+			public void complete(JSONObject result) {
 				if (onPostSchedule != null) {
 					onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime);
 				}

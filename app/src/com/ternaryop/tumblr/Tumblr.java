@@ -66,6 +66,7 @@ public class Tumblr {
 	
     public void getBlogList(final Callback<Blog[]> callback) {
         new AsyncTask<Void, Void, Blog[]>() {
+        	Exception error;
 
 			@Override
     		protected Blog[] doInBackground(Void... params) {
@@ -80,15 +81,18 @@ public class Tumblr {
 					}
         	        return blogs;
 				} catch (Exception e) {
-					// TODO: handle exception
-					Log.e("err", "list", e);
+					error = e;
 				}
     	        return null;
     		}
 
 			@Override
 			protected void onPostExecute(Blog[] blogs) {
-				callback.complete(instance, blogs);
+				if (error == null) {
+					callback.complete(blogs);
+				} else {
+					callback.failure(error);
+				}
 			}
         }.execute();
     }
@@ -132,9 +136,9 @@ public class Tumblr {
 			@Override
 			protected void onPostExecute(Long postId) {
 				if (error == null) {
-					callback.complete(instance, postId);
+					callback.complete(postId);
 				} else {
-					callback.failure(instance, error);
+					callback.failure(error);
 				}
 			}
         }.execute();
@@ -244,9 +248,9 @@ public class Tumblr {
 			@Override
 			protected void onPostExecute(JSONObject response) {
 				if (error == null) {
-					callback.complete(instance, response);
+					callback.complete(response);
 				} else {
-					callback.failure(instance, error);
+					callback.failure(error);
 				}
 			}
         }.execute();
@@ -274,9 +278,9 @@ public class Tumblr {
 			@Override
 			protected void onPostExecute(JSONObject response) {
 				if (error == null) {
-					callback.complete(instance, response);
+					callback.complete(response);
 				} else {
-					callback.failure(instance, error);
+					callback.failure(error);
 				}
 			}
         }.execute();
@@ -305,9 +309,9 @@ public class Tumblr {
 			@Override
 			protected void onPostExecute(JSONObject response) {
 				if (error == null) {
-					callback.complete(instance, response);
+					callback.complete(response);
 				} else {
-					callback.failure(instance, error);
+					callback.failure(error);
 				}
 			}
         }.execute();
@@ -339,9 +343,9 @@ public class Tumblr {
 			@Override
 			protected void onPostExecute(JSONObject response) {
 				if (error == null) {
-					callback.complete(instance, response);
+					callback.complete(response);
 				} else {
-					callback.failure(instance, error);
+					callback.failure(error);
 				}
 			}
         }.execute();
@@ -349,7 +353,7 @@ public class Tumblr {
 
     public void editPost(final String tumblrName, final Map<String, String> params, final Callback<JSONObject> callback) {
     	if (!params.containsKey("id")) {
-    		callback.failure(this, new TumblrException("The id is mandatory to edit post"));
+    		callback.failure(new TumblrException("The id is mandatory to edit post"));
     		return;
     	}
         new AsyncTask<Void, Void, JSONObject>() {
@@ -375,9 +379,9 @@ public class Tumblr {
 			@Override
 			protected void onPostExecute(JSONObject response) {
 				if (error == null) {
-					callback.complete(instance, response);
+					callback.complete(response);
 				} else {
-					callback.failure(instance, error);
+					callback.failure(error);
 				}
 			}
         }.execute();

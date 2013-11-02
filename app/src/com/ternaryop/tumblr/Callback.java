@@ -6,12 +6,12 @@ public interface Callback<T> {
 	 * @param tumblr
 	 * @param result some API can return data
 	 */
-	public void complete(Tumblr tumblr, T result);
+	public void complete(T result);
 	
 	/**
 	 * Called when some error stop execution, is always called on main thread
 	 * @param tumblr
 	 * @param e
 	 */
-	public void failure(Tumblr tumblr, Exception e);
+	public void failure(Exception e);
 }

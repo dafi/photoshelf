@@ -73,9 +73,9 @@ public class PostRetriever extends AbsProgressBarAsyncTask<Void, List<TumblrPost
 		// do not call super.onPostExecute() because it shows the alert message
 		getProgressDialog().dismiss();
 		if (getError() == null) {
-			callback.complete(null, allPosts);
+			callback.complete(allPosts);
 		} else {
-			callback.failure(null, getError());
+			callback.failure(getError());
 		}
 	}
 

@@ -96,7 +96,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 		    				new AbsCallback(ScheduledListActivity.this, R.string.parsing_error) {
 		
 				    			@Override
-				    			public void complete(Tumblr tumblr, JSONObject result) {
+				    			public void complete(JSONObject result) {
 				    				photoAdapter.remove(item);
 				    				refreshUI();
 				    			}

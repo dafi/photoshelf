@@ -176,7 +176,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		Tumblr.getSharedTumblr(getContext()).getBlogList(new Callback<Blog[]>() {
 
 			@Override
-			public void complete(Tumblr tumblr, Blog[] result) {
+			public void complete(Blog[] result) {
 				List<String> blogNames = new ArrayList<String>(result.length);
 				for (int i = 0; i < result.length; i++) {
 					blogNames.add(result[i].getName());
@@ -188,7 +188,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 			}
 
 			@Override
-			public void failure(Tumblr tumblr, Exception e) {
+			public void failure(Exception e) {
 				dismiss();
 				DialogUtils.showErrorDialog(getContext(), e);
 			} 
@@ -213,13 +213,13 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 			}
 
 			@Override
-			public void failure(Tumblr tumblr, Exception ex) {
+			public void failure(Exception ex) {
 				progressDialog.dismiss();
 				DialogUtils.showErrorDialog(getContext(), ex);
 			}
 
 			@Override
-			public void complete(Tumblr tumblr, Long postId) {
+			public void complete(Long postId) {
 				progressDialog.incrementProgressBy(1);
 				if ((progressDialog.getProgress()) >= progressDialog.getMax()) {
 					progressDialog.dismiss();
@@ -262,7 +262,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		Tumblr.getSharedTumblr(getContext()).editPost(appSupport.getSelectedBlogName(), newValues, new AbsCallback(this, R.string.generic_error) {
 
 			@Override
-			public void complete(Tumblr tumblr, JSONObject result) {
+			public void complete(JSONObject result) {
 				dismiss();
 				if (dialogClickListener != null) {
 					dialogClickListener.onClick(TumblrPostDialog.this, BUTTON_POSITIVE);

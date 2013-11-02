@@ -179,7 +179,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		Tumblr.getSharedTumblr(this).deletePost(getBlogName(), item.getPostId(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
-			public void complete(Tumblr tumblr, JSONObject result) {
+			public void complete(JSONObject result) {
 				adapter.remove(item);
 				refreshUI();
 			}
@@ -274,7 +274,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		Tumblr.getSharedTumblr(this).publishPost(getBlogName(), item.getPostId(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
-			public void complete(Tumblr tumblr, JSONObject result) {
+			public void complete(JSONObject result) {
 				adapter.remove(item);
 				refreshUI();
 			}

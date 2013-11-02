@@ -74,7 +74,7 @@ public class AppSupport {
 		Tumblr.getSharedTumblr(context).getBlogList(new Callback<Blog[]>() {
 
 			@Override
-			public void complete(Tumblr tumblr, Blog[] blogs) {
+			public void complete(Blog[] blogs) {
 				HashSet<String> blogNames = new HashSet<String>(blogs.length);
 				String primaryBlog = null;
 				for (int i = 0; i < blogs.length; i++) {
@@ -93,7 +93,7 @@ public class AppSupport {
 			}
 
 			@Override
-			public void failure(Tumblr tumblr, Exception e) {
+			public void failure(Exception e) {
 				if (callback != null) {
 					callback.onComplete(AppSupport.this, e);
 				}
