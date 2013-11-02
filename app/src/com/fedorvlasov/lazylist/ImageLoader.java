@@ -52,10 +52,9 @@ public class ImageLoader {
             imageView.setImageResource(stub_id);
         }
     }
-    
-    public void displayIcon(final MenuItem menuItem, final String url) {
+
+    public void displayDrawable(final String url, final ImageLoaderCallback callback) {
         executorService.submit(new Runnable() {
-			
 			@Override
 			public void run() {
 				final Drawable icon = drawableFromUrl(url);
@@ -63,10 +62,19 @@ public class ImageLoader {
 					handler.post(new Runnable() {
 						@Override
 						public void run() {
-							menuItem.setIcon(icon);
+							callback.display(icon);
 						}
 					});
 				}
+			}
+		});
+    }
+    
+    public void displayIcon(final String url, final MenuItem menuItem) {
+    	displayDrawable(url, new ImageLoaderCallback() {
+			@Override
+			public void display(Drawable drawable) {
+				menuItem.setIcon(drawable);
 			}
 		});
     }
@@ -234,5 +242,9 @@ public class ImageLoader {
 			try { if (conn != null) conn.disconnect(); } catch (Exception ex) {}
 		}
 		return null;
-	}	
+	}
+	
+	public interface ImageLoaderCallback {
+		public void display(Drawable drawable);
+	}
 }
