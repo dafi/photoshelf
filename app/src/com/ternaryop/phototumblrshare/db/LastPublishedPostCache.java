@@ -27,7 +27,7 @@ public class LastPublishedPostCache implements Serializable {
 		this.showOrder = showOrder;
 		this.postIdType = postIdType;
 	}
-	
+
 	public long getPostId() {
 		return postId;
 	}
