@@ -3,14 +3,18 @@ package com.ternaryop.phototumblrshare.db;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import android.content.Context;
+import android.widget.Toast;
 
+import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.PostRetriever;
 import com.ternaryop.tumblr.Tumblr;
@@ -83,6 +87,28 @@ public class Importer {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
+		}
+	}
+
+	public static void importDOMFilters(Context context, String importPath) {
+		InputStream in = null;
+		OutputStream out = null;
+
+		try {
+			in = new FileInputStream(importPath);
+		    out = context.openFileOutput("domSelectors.json", 0);
+
+		    byte[] buf = new byte[1024];
+		    int len;
+		    while ((len = in.read(buf)) > 0) {
+		        out.write(buf, 0, len);
+		    }
+			Toast.makeText(context, context.getString(R.string.importSuccess), Toast.LENGTH_LONG).show();
+		} catch (Exception e) {
+			Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+		} finally {
+			if (in != null) try { in.close(); } catch (Exception ex) {}
+			if (out != null) try { out.close(); } catch (Exception ex) {}
 		}
 	}
 }
