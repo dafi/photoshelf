@@ -16,4 +16,9 @@
         android:key="import_posts_from_tumblr"
         android:persistent="false"
         android:title="@string/import_posts_from_tumblr_title" />
+
+    <Preference
+        android:key="import_dom_filters"
+        android:persistent="false"
+        android:title="@string/import_dom_filters_title" />
 </PreferenceScreen>

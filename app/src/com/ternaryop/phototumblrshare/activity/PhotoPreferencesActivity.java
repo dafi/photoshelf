@@ -19,15 +19,18 @@ import com.ternaryop.tumblr.Tumblr;
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String CSV_FILE_NAME = "tags.csv";
+    private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
 	private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
 	private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
 	private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
-
+	private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
+	
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
     private Preference preferenceTumblrLogin;
 	private Preference preferenceImportPostsFromCSV;
 	private Preference preferenceImportPostsFromTumblr;
+	private Preference preferenceImportDOMFilters;
     
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +41,18 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         preferenceTumblrLogin = preferenceScreen.findPreference(KEY_TUMBLR_LOGIN);
+        
+        String csvPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
         preferenceImportPostsFromCSV = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_CSV);
-        preferenceImportPostsFromCSV.setSummary(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME);
+		preferenceImportPostsFromCSV.setSummary(csvPath);
+		preferenceImportPostsFromCSV.setEnabled(new File(csvPath).exists());
+        
         preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
+        
+        String domFiltersPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
+        preferenceImportDOMFilters = preferenceScreen.findPreference(KEY_IMPORT_DOM_FILTERS);
+		preferenceImportDOMFilters.setSummary(domFiltersPath);
+		preferenceImportDOMFilters.setEnabled(new File(domFiltersPath).exists());
     }
 
 
@@ -68,6 +80,10 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
             return true;
         } else if (preference == preferenceImportPostsFromTumblr) {
 			Importer.importFromTumblr(this, new AppSupport(this).getSelectedBlogName());
+            return true;
+        } else if (preference == preferenceImportDOMFilters) {
+	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
+			Importer.importDOMFilters(this, importPath);
             return true;
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
