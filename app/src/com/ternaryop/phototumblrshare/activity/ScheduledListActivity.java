@@ -113,7 +113,7 @@ public class ScheduledListActivity extends PhotoTumblrActivity implements OnScro
 	    .show();		
 	}
 
-	private void refreshUI() {
+	protected void refreshUI() {
 		setTitle(getString(R.string.browser_sheduled_images_title, photoAdapter.getCount(), totalPosts));
 		photoAdapter.notifyDataSetChanged();
 	}

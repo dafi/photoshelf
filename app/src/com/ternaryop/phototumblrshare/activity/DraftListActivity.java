@@ -51,7 +51,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		DELETE
 	};
 
-	private PhotoAdapter adapter;
+	private PhotoAdapter photoAdapter;
 	
 	private HashMap<String, TumblrPost> queuedPosts;
 	private Calendar lastScheduledDate;
@@ -68,12 +68,12 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	    setActionBarIcon();
         
 		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
-        adapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
-        adapter.setOnPhotoBrowseClick(this);
-        adapter.setRecomputeGroupIds(true);
+        photoAdapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
+        photoAdapter.setOnPhotoBrowseClick(this);
+        photoAdapter.setRecomputeGroupIds(true);
 
         ListView list = (ListView)findViewById(R.id.list);
-        list.setAdapter(adapter);
+        list.setAdapter(photoAdapter);
         registerForContextMenu(list);
         list.setOnItemClickListener(this);
         readDraftPosts();
@@ -124,13 +124,13 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 			getMenuInflater().inflate(R.menu.draft_context, menu);
 			menu.setHeaderTitle(R.string.post_actions_menu_header);
 			AdapterView.AdapterContextMenuInfo contextMenuInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
-			PhotoSharePost post = (PhotoSharePost)adapter.getItem(contextMenuInfo.position);
+			PhotoSharePost post = (PhotoSharePost)photoAdapter.getItem(contextMenuInfo.position);
 
 			// fill the image size submenu
 			SubMenu subMenu = menu.findItem(R.id.group_menu_image_dimension).getSubMenu();
 			subMenu.setHeaderTitle(getString(R.string.menu_header_show_image, post.getFirstTag()));
 			int index = 0;
-			for(TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
+			for (TumblrAltSize altSize : post.getFirstPhotoAltSize()) {
 				// the item id is set to the image index into array
 				subMenu.add(R.id.group_menu_item_image_dimension, index++, Menu.NONE, 
 						getString(R.string.menu_image_dimension, altSize.getWidth(), altSize.getHeight()));
@@ -145,7 +145,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		switch (item.getGroupId()) {
 		case R.id.group_menu_item_image_dimension:
 			info = subMenuContextMenuInfo;
-			PhotoSharePost post = (PhotoSharePost)adapter.getItem(info.position);
+			PhotoSharePost post = (PhotoSharePost)photoAdapter.getItem(info.position);
 			String url = post.getFirstPhotoAltSize().get(item.getItemId()).getUrl();
     		ImageViewerActivity.startImageViewer(DraftListActivity.this, url);
 
@@ -168,6 +168,9 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		case R.id.post_delete:
 			showConfirmDialog(info.position, POST_ACTION.DELETE);
 			return true;
+		case R.id.post_edit:
+			showEditDialog(photoAdapter.getItem(info.position));
+			break;
 		default:
 			return false;
 		}
@@ -175,19 +178,19 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 
 	private void deletePost(int position) {
-		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
 		Tumblr.getSharedTumblr(this).deletePost(getBlogName(), item.getPostId(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
 			public void complete(JSONObject result) {
-				adapter.remove(item);
+				photoAdapter.remove(item);
 				refreshUI();
 			}
 		});
 	}
 
 	private void showScheduleDialog(final int position) {
-		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
 		SchedulePostDialog dialog = new SchedulePostDialog(this,
 				getBlogName(),
 				item,
@@ -196,7 +199,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 			@Override
 			public void onPostScheduled(long id, Calendar scheduledDateTime) {
 				lastScheduledDate = (Calendar) scheduledDateTime.clone();
-				adapter.remove(item);
+				photoAdapter.remove(item);
 				refreshUI();
 			}
 		});
@@ -251,7 +254,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 		    }
 		};
 
-		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
 		String message = null;
     	switch (postAction) {
 		case PUBLISH:
@@ -270,25 +273,25 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 	}
 	
 	private void publishPost(final int position) {
-		final PhotoSharePost item = (PhotoSharePost)adapter.getItem(position);
+		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
 		Tumblr.getSharedTumblr(this).publishPost(getBlogName(), item.getPostId(), new AbsCallback(this, R.string.parsing_error) {
 
 			@Override
 			public void complete(JSONObject result) {
-				adapter.remove(item);
+				photoAdapter.remove(item);
 				refreshUI();
 			}
 		});
 	}
 
-	private void refreshUI() {
-		int resId = adapter.getCount() == 1 ? R.string.posts_in_draft_singular : R.string.posts_in_draft_plural;
-		setTitle(getString(resId, adapter.getCount()));
-		adapter.notifyDataSetChanged();
+	protected void refreshUI() {
+		int resId = photoAdapter.getCount() == 1 ? R.string.posts_in_draft_singular : R.string.posts_in_draft_plural;
+		setTitle(getString(resId, photoAdapter.getCount()));
+		photoAdapter.notifyDataSetChanged();
 	}
 
 	private void readDraftPosts() {
-		adapter.clear();
+		photoAdapter.clear();
 		refreshUI();
 		
 		new AbsProgressBarAsyncTask<Void, String, List<PhotoSharePost> >(this, getString(R.string.reading_draft_posts)) {
@@ -302,7 +305,7 @@ public class DraftListActivity extends PhotoTumblrActivity implements OnPhotoBro
 				super.onPostExecute(posts);
 				
 				if (getError() == null) {
-					adapter.addAll(posts);
+					photoAdapter.addAll(posts);
 					refreshUI();
 				}
 			}

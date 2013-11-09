@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ import android.widget.SearchView.OnSuggestionListener;
 
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.TagCursorAdapter;
-import com.ternaryop.phototumblrshare.dialogs.TumblrPostDialog;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Tumblr;
@@ -92,7 +90,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		searchView.setSuggestionsAdapter(adapter);
 	}
 	
-	private void refreshUI() {
+	protected void refreshUI() {
 		setTitle(getString(R.string.browser_image_title, postTag, photoAdapter.getCount(), totalPosts));
 		photoAdapter.notifyDataSetChanged();
 	}
@@ -193,35 +191,12 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 
 		switch (item.getItemId()) {
 		case R.id.post_edit:
-			showEditDialog(info.position);
+			showEditDialog(photoAdapter.getItem(info.position));
 			break;
 		default:
 			return false;
 		}
 		return true;
-	}
-
-	private void showEditDialog(final int position) {
-		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
-		TumblrPostDialog editDialog = new TumblrPostDialog(this, item.getPostId());
-
-		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-		    @Override
-		    public void onClick(DialogInterface dialog, int which) {
-		        switch (which) {
-		        case DialogInterface.BUTTON_POSITIVE:
-		        	item.setTags(((TumblrPostDialog)dialog).getPostTags());
-		        	item.setCaption(((TumblrPostDialog)dialog).getPostTitle());
-		        	refreshUI();
-		            break;
-		        }
-		    }
-		};
-		editDialog.setPostTitle(item.getCaption());
-		editDialog.setPostTags(item.getTags());
-		editDialog.setEditButton(dialogClickListener);
-		
-		editDialog.show();
 	}
 
 	@Override

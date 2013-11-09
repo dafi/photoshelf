@@ -5,12 +5,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import android.graphics.Bitmap;
-import android.util.Log;
 
 public class MemoryCache {
-
-    private static final String TAG = "MemoryCache";
     private Map<String, Bitmap> cache=Collections.synchronizedMap(
             new LinkedHashMap<String, Bitmap>(10,1.5f,true));//Last argument true for LRU ordering
     private long size=0;//current allocated size

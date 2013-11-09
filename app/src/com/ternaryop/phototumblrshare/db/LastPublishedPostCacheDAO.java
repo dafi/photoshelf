@@ -26,7 +26,7 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 
 	public static final String POST_TYPE_PUBLISHED = "p";
 	public static final String POST_TYPE_SCHEDULED = "s";
-		
+
 	private SQLiteOpenHelper dbHelper;
 
 	/**

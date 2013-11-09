@@ -14,7 +14,7 @@ public class LastPublishedPostCache implements Serializable {
 	private long publishTimestamp;
 	private long showOrder;
 	private String postIdType;
-	
+
 	public LastPublishedPostCache() {
 	}
 	

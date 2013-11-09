@@ -1,5 +1,8 @@
 package com.ternaryop.phototumblrshare.activity;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -30,6 +33,10 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 		String imageUrl = bundle.getString(IMAGE_URL);
     	String data = "<body><img src=\"" + imageUrl +"\"/></body>";
     	prepareWebView(progressBar).loadData(data, "text/html", "UTF-8");
+	    try {
+			getActionBar().setSubtitle(new URI(imageUrl).getHost());
+		} catch (URISyntaxException e) {
+		}
 	}
 
 	private WebView prepareWebView(final ProgressBar progressBar) {
