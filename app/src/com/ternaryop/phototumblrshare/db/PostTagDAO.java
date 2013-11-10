@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-public class PostTagDAO implements BaseColumns {
+public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 	public static final String TABLE_NAME = "POST_TAG";
 	
 	public static final String TAG = "TAG";
@@ -18,16 +18,14 @@ public class PostTagDAO implements BaseColumns {
 	
 	public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
 
-	private SQLiteOpenHelper dbHelper;
-
 	/**
 	 * Constructor is accessible only from package
 	 */
 	PostTagDAO(SQLiteOpenHelper dbHelper) {
-		this.dbHelper = dbHelper;
+		super(dbHelper);
 	}
 
-	void onCreate(SQLiteDatabase db) {
+	protected void onCreate(SQLiteDatabase db) {
 		String sql = "CREATE TABLE {0} ("
 				+ "{1} BIGINT UNSIGNED NOT NULL,"
 				+ "{2} TEXT NOT NULL,"
@@ -44,7 +42,7 @@ public class PostTagDAO implements BaseColumns {
 				SHOW_ORDER));
 	}
 
-	void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
@@ -62,19 +60,19 @@ public class PostTagDAO implements BaseColumns {
 	}
 
 	public long insert(PostTag postTag) {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = getDbHelper().getWritableDatabase();
 		long rows = db.insertOrThrow(TABLE_NAME, null, getContentValues(postTag));
 		
 		return rows;
 	}
 
 	public void removeAll() {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = getDbHelper().getWritableDatabase();
         db.execSQL("delete from " + TABLE_NAME);
 	}
 
 	public Cursor getCursorByTag(String tag, String tumblrName) {
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
 		String sqlQuery = "SELECT %2$s, %3$s, count(*) as post_count FROM %1$s WHERE %3$s LIKE '%%%5$s%%' AND %4$s='%6$s' GROUP BY %3$s ORDER BY %3$s";
 		sqlQuery = String.format(sqlQuery,
@@ -88,7 +86,7 @@ public class PostTagDAO implements BaseColumns {
 	}
 	
 	public PostTag findLastPublishedPost(String tumblrName) {
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		String sqlQuery = "SELECT * FROM %1$s WHERE %2$s = '%3$s' ORDER BY %4$s DESC LIMIT 1";
 		sqlQuery = String.format(sqlQuery,
 				TABLE_NAME,

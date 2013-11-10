@@ -20,10 +20,13 @@ import com.ternaryop.tumblr.Tumblr;
 public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String CSV_FILE_NAME = "tags.csv";
     private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
+	private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
+
 	private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
 	private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
 	private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
 	private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
+	private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
 	
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
@@ -31,6 +34,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private Preference preferenceImportPostsFromCSV;
 	private Preference preferenceImportPostsFromTumblr;
 	private Preference preferenceImportDOMFilters;
+	private Preference preferenceImportBirthdays;
     
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +57,12 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceImportDOMFilters = preferenceScreen.findPreference(KEY_IMPORT_DOM_FILTERS);
 		preferenceImportDOMFilters.setSummary(domFiltersPath);
 		preferenceImportDOMFilters.setEnabled(new File(domFiltersPath).exists());
-    }
 
+        String birthdaysPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+        preferenceImportBirthdays = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS);
+        preferenceImportBirthdays.setSummary(birthdaysPath);
+        preferenceImportBirthdays.setEnabled(new File(domFiltersPath).exists());
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -84,6 +92,10 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         } else if (preference == preferenceImportDOMFilters) {
 	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
 			Importer.importDOMFilters(this, importPath);
+            return true;
+        } else if (preference == preferenceImportBirthdays) {
+	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+			Importer.importBirtdays(this, importPath);
             return true;
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);

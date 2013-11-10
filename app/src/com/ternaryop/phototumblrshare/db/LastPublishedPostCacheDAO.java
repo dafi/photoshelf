@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-public class LastPublishedPostCacheDAO implements BaseColumns {
+public class LastPublishedPostCacheDAO extends AbsDAO<LastPublishedPostCache> implements BaseColumns {
 	public static final String TABLE_NAME = "LAST_PUBLISHED_POSTS_CACHE";
 	
 	public static final String POST_ID = "POST_ID";
@@ -27,16 +27,14 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 	public static final String POST_TYPE_PUBLISHED = "p";
 	public static final String POST_TYPE_SCHEDULED = "s";
 
-	private SQLiteOpenHelper dbHelper;
-
 	/**
 	 * Constructor is accessible only from package
 	 */
 	LastPublishedPostCacheDAO(SQLiteOpenHelper dbHelper) {
-		this.dbHelper = dbHelper;
+		super(dbHelper);
 	}
  	
-	void onCreate(SQLiteDatabase db) {
+	protected void onCreate(SQLiteDatabase db) {
 		String sql = "CREATE TABLE {0} ("
 				+ "{1} INTEGER NOT NULL,"
 				+ "{2} TEXT NOT NULL," 
@@ -55,7 +53,7 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 					POST_ID_TYPE));
 	}
 
-	void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
@@ -73,14 +71,14 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 		return v;
 	}
 	public long insert(LastPublishedPostCache postTag) {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = getDbHelper().getWritableDatabase();
 		long rows = db.insert(TABLE_NAME, null, getContentValues(postTag));
 		
 		return rows;
 	}
 
 	public long insertOrIgnore(LastPublishedPostCache postTag) {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = getDbHelper().getWritableDatabase();
 		return db.insertWithOnConflict(
 				TABLE_NAME,
 				null,
@@ -89,12 +87,12 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 	}
 
 	public void removeAll() {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = getDbHelper().getWritableDatabase();
         db.execSQL("delete from " + TABLE_NAME);
 	}
 
 	public int removeExpiredScheduledPosts(long expireTime) {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = getDbHelper().getWritableDatabase();
         String whereClause = MessageFormat.format("{0} = ? and {1} < ?",
         		POST_ID_TYPE,
         		PUBLISH_TIMESTAMP);
@@ -104,7 +102,7 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 	}
 
 	public LastPublishedPostCache getPostByTag(String tag, String tumblrName) {
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		Cursor c = db.query(
 				TABLE_NAME,
 				COLUMNS, 
@@ -134,7 +132,7 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 			}
 		}
 		
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		Cursor c = db.query(
 				TABLE_NAME,
 				COLUMNS, 
@@ -186,8 +184,4 @@ public class LastPublishedPostCacheDAO implements BaseColumns {
 		}
 		return map;
 	}
-
-	public SQLiteOpenHelper getDbHelper() {
-		return dbHelper;
-	}	
 }

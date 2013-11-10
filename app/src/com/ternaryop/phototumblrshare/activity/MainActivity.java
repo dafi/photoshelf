@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.AppSupport.AppSupportCallback;
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.service.BootService;
 import com.ternaryop.tumblr.AuthenticationCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
@@ -24,7 +26,10 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 
 		setContentView(R.layout.activity_main);
 		enableUI(Tumblr.isLogged(this));
-		
+
+		Intent serviceIntent = new Intent(this, BootService.class);
+		serviceIntent.setAction(BootService.BIRTHDAY_ACTION);
+		startService(serviceIntent);
 		((TextView)findViewById(R.id.version_number)).setText(getVersion());
 	}
 	

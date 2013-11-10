@@ -1,20 +1,18 @@
 package com.ternaryop.phototumblrshare.db;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import android.content.Context;
 import android.widget.Toast;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.importer.CSVIterator;
+import com.ternaryop.phototumblrshare.importer.CSVIterator.CSVBuilder;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.PostRetriever;
 import com.ternaryop.tumblr.Tumblr;
@@ -24,7 +22,10 @@ import com.ternaryop.utils.DialogUtils;
 public class Importer {
 	public static void importPostsFromCSV(final Context context, final String importPath) {
 		try {
-			new DbImportAsyncTask(context, new CSVIterator(importPath), true).execute();
+			new DbImportAsyncTask<PostTag>(context,
+					new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
+					DBHelper.getInstance(context).getPostTagDAO(),
+					true).execute();
 		} catch (Exception error) {
 			DialogUtils.showErrorDialog(context, error);
 		}
@@ -47,47 +48,13 @@ public class Importer {
 				for (TumblrPost tumblrPost : allPosts) {
 					allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));
 				}
-				new DbImportAsyncTask(context, allPostTags.iterator(), false).execute();
+				new DbImportAsyncTask<PostTag>(context,
+						allPostTags.iterator(),
+						DBHelper.getInstance(context).getPostTagDAO(),
+						false).execute();
 			}
 		});
 		Tumblr.getSharedTumblr(context).readPublicPhotoPosts(blogName, null, postRetriever);
-	}
-
-	static class CSVIterator implements Iterator<PostTag> {
-		private BufferedReader bufferedReader;
-		private String line;
-
-		public CSVIterator(String importPath) throws IOException {
-	        bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(importPath)));
-			line = bufferedReader.readLine();
-		}
-
-		@Override
-		public boolean hasNext() {
-			return line != null;
-		}
-
-		@Override
-		public PostTag next() {
-			try {
-	        	String[] args = line.split(";");
-				PostTag postTag = new PostTag(
-						Long.parseLong(args[0]),
-						args[1],
-						args[2],
-						Long.parseLong(args[3]),
-						Long.parseLong(args[4]));
-				line = bufferedReader.readLine();
-				return postTag;
-			} catch (IOException e) {
-				throw new NoSuchElementException(e.getMessage());
-			}
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
 	}
 
 	public static void importDOMFilters(Context context, String importPath) {
@@ -109,6 +76,36 @@ public class Importer {
 		} finally {
 			if (in != null) try { in.close(); } catch (Exception ex) {}
 			if (out != null) try { out.close(); } catch (Exception ex) {}
+		}
+	}
+
+	public static void importBirtdays(final Context context, final String importPath) {
+		try {
+			new DbImportAsyncTask<Birthday>(context,
+					new CSVIterator<Birthday>(importPath, new CSVBuilder<Birthday>() {
+
+						@Override
+						public Birthday parseCSVFields(String[] fields) throws ParseException {
+							// id is skipped
+							return new Birthday(fields[1], fields[2], fields[3]);
+						}
+					}),
+					DBHelper.getInstance(context).getBirthdayDAO(),
+					true).execute();
+		} catch (Exception error) {
+			DialogUtils.showErrorDialog(context, error);
+		}
+	}
+	
+	static class PostTagCSVBuilder implements CSVBuilder<PostTag> {
+		@Override
+		public PostTag parseCSVFields(String[] fields) {
+			return new PostTag(
+					Long.parseLong(fields[0]),
+					fields[1],
+					fields[2],
+					Long.parseLong(fields[3]),
+					Long.parseLong(fields[4]));
 		}
 	}
 }

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ternaryop.phototumblrshare"
-    android:versionCode="23"
+    android:versionCode="27"
     android:versionName="1.0" >
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -51,6 +52,19 @@
                 <data android:scheme="phototumblrshare" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.ternaryop.phototumblrshare.activity.BirthdaysActivity"
+            android:parentActivityName="com.ternaryop.phototumblrshare.activity.MainActivity" >
+        </activity>
+
+        <service android:name="com.ternaryop.phototumblrshare.service.BootService" >
+        </service>
+
+        <receiver android:name="com.ternaryop.phototumblrshare.service.BootServiceReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

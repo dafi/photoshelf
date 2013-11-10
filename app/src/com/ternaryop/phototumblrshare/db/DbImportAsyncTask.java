@@ -10,16 +10,18 @@ import android.os.AsyncTask;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.utils.DialogUtils;
 
-public class DbImportAsyncTask extends AsyncTask<Void, Integer, Void> {
+public class DbImportAsyncTask<Pojo> extends AsyncTask<Void, Integer, Void> {
 	private Exception error;
 	private ProgressDialog progressDialog;
 	private Context context;
-	private Iterator<PostTag> iterator;
+	private Iterator<Pojo> iterator;
 	private boolean removeAll;
+	private AbsDAO<Pojo> dao;
 	
-	public DbImportAsyncTask(Context context, Iterator<PostTag> iterator, boolean removeAll) {
+	public DbImportAsyncTask(Context context, Iterator<Pojo> iterator, AbsDAO<Pojo> dao, boolean removeAll) {
 		this.context = context;
 		this.iterator = iterator;
+		this.dao = dao;
 		this.removeAll = removeAll;
 	}
 
@@ -46,17 +48,15 @@ public class DbImportAsyncTask extends AsyncTask<Void, Integer, Void> {
 
 	@Override
 	protected Void doInBackground(Void... params) {
-		DBHelper dbHelper = DBHelper.getInstance(context);
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		SQLiteDatabase db = dao.getDbHelper().getWritableDatabase();
 		try {
 			db.beginTransaction();
-			PostTagDAO postTagDAO = dbHelper.getPostTagDAO();
 			if (removeAll) {
-				postTagDAO.removeAll();
+				dao.removeAll();
 			}
 	        int count = 1;
 	        while (iterator.hasNext()) {
-				postTagDAO.insert(iterator.next());
+				dao.insert(iterator.next());
 				publishProgress(count);
 				++count;
 	        }

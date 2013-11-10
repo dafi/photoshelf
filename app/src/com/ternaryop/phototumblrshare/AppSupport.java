@@ -20,6 +20,7 @@ public class AppSupport {
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
 	private static final String PREF_BLOG_NAMES = "blogNames";
 	private static final String PREF_SCHEDULE_TIME_SPAN = "scheduleTimeSpan";
+	private static final String LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime";
 	private SharedPreferences preferences;
 
 	public AppSupport(Context context) {
@@ -103,5 +104,15 @@ public class AppSupport {
 	
 	public interface AppSupportCallback {
 		public void onComplete(AppSupport appSupport, Exception error);
+	}
+	
+	public long getLastBirthdayShowTime() {
+		return preferences.getLong(LAST_BIRTHDAY_SHOW_TIME, 0);
+	}
+	
+	public void setLastBirthdayShowTime(long timems) {
+		Editor editor = preferences.edit();
+		editor.putLong(LAST_BIRTHDAY_SHOW_TIME, timems);
+		editor.commit();
 	}
 }

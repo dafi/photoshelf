@@ -21,4 +21,9 @@
         android:key="import_dom_filters"
         android:persistent="false"
         android:title="@string/import_dom_filters_title" />
+
+    <Preference
+        android:key="import_birthdays"
+        android:persistent="false"
+        android:title="@string/import_birthdays_title" />
 </PreferenceScreen>
