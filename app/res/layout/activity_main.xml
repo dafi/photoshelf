@@ -19,7 +19,7 @@
             android:layout_height="100dp"
             android:layout_gravity="left|top"
             android:text="@string/draft_title"
-            android:textSize="16sp" />
+            android:textSize="@dimen/main_button_title_size" />
 
         <Button
             android:id="@+id/scheduled_button"
@@ -27,7 +27,7 @@
             android:layout_height="100dp"
             android:layout_gravity="left|top"
             android:text="@string/scheduled_title"
-            android:textSize="16sp" />
+            android:textSize="@dimen/main_button_title_size" />
 
         <Button
             android:id="@+id/browse_images_by_tags_button"
@@ -35,7 +35,7 @@
             android:layout_height="100dp"
             android:layout_gravity="left|top"
             android:text="@string/browse_images_by_tags_title"
-            android:textSize="16sp" />
+            android:textSize="@dimen/main_button_title_size" />
 
         <Button
             android:id="@+id/test_page_button"
@@ -43,7 +43,7 @@
             android:layout_height="100dp"
             android:layout_gravity="left|top"
             android:text="@string/test_page_title"
-            android:textSize="16sp" />
+            android:textSize="@dimen/main_button_title_size" />
 
         <Button
             android:id="@+id/browse_tags_button"
@@ -51,7 +51,16 @@
             android:layout_height="100dp"
             android:layout_gravity="left|top"
             android:text="@string/browse_tags_title"
-            android:textSize="16sp" />
+            android:textSize="@dimen/main_button_title_size" />
+
+        <Button
+            android:id="@+id/birthdays"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left|top"
+            android:text="@string/birthdays_title"
+            android:textSize="@dimen/main_button_title_size"
+            android:visibility="gone" />
     </GridLayout>
 
     <TextView

@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -59,6 +60,7 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 	public List<Birthday> getBirthdayByDate(Date date, String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		// tumblrName is not used to filter rows
+		
 		String sqlQuery = "SELECT %2$s, %3$s, %4$s FROM %1$s WHERE strftime('%%m%%d', %3$s) = '%5$s' ORDER BY %2$s, strftime('%%d', %3$s)";
 		sqlQuery = String.format(sqlQuery,
 				TABLE_NAME,
@@ -73,6 +75,16 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 		return list;
 	}
 
+	public boolean hasBirthdaysInDate(Date date, String tumblrName) {
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
+		
+		return DatabaseUtils.queryNumEntries(db,
+				TABLE_NAME,
+				"strftime('%m%d', " + BIRTH_DATE + ") = ?"
+				+ " and " + TUMBLR_NAME + " = ?",
+				new String[] {MONTH_DAY_FORMAT.format(date), tumblrName}) > 0;
+	}
+	
 	private List<Birthday> cursorToBirtdayList(Cursor c) {
 		ArrayList<Birthday> list = new ArrayList<Birthday>();
 		try {

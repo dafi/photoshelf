@@ -3,6 +3,8 @@ package com.ternaryop.phototumblrshare.activity;
 import java.util.Date;
 import java.util.List;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -19,11 +21,21 @@ public class BirthdaysActivity extends PhotoTumblrActivity {
 		BirthdayDAO birthdayDatabaseHelper = DBHelper
 				.getInstance(this)
 				.getBirthdayDAO();
-		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(new Date(), null);
+		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(new Date(), getBlogName());
 		StringBuilder sb = new StringBuilder();
 		for (Birthday birthday : list) {
 			sb.append(birthday + "\n");
 		}
 		((TextView)findViewById(R.id.text)).setText(sb);
+	}
+
+	public static void startBirthdaysActivity(Context context, String blogName) {
+		Intent intent = new Intent(context, BirthdaysActivity.class);
+		Bundle bundle = new Bundle();
+
+		bundle.putString(BLOG_NAME, blogName);
+		intent.putExtras(bundle);
+
+		context.startActivity(intent);
 	}
 }

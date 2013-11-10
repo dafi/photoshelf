@@ -1,5 +1,7 @@
 package com.ternaryop.phototumblrshare.activity;
 
+import java.util.Date;
+
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.AppSupport.AppSupportCallback;
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.db.DBHelper;
 import com.ternaryop.tumblr.AuthenticationCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
@@ -57,10 +60,14 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 				R.id.scheduled_button,
 				R.id.test_page_button,
 				R.id.browse_images_by_tags_button,
-				R.id.browse_tags_button}) {
+				R.id.browse_tags_button,
+				R.id.birthdays}) {
 			Button button = (Button)findViewById(buttonId);
 			button.setOnClickListener(this);
 			button.setEnabled(enabled);
+		}
+		if (DBHelper.getInstance(this).getBirthdayDAO().hasBirthdaysInDate(new Date(), appSupport.getSelectedBlogName())) {
+			findViewById(R.id.birthdays).setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -102,6 +109,9 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 			break;
 		case R.id.browse_tags_button:
 			TagListActivity.startTagListActivity(this, getBlogName(), null);
+			break;
+		case R.id.birthdays:
+			BirthdaysActivity.startBirthdaysActivity(this, getBlogName());
 			break;
 		}
 	}
