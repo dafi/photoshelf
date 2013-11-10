@@ -61,7 +61,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         String birthdaysPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
         preferenceImportBirthdays = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS);
         preferenceImportBirthdays.setSummary(birthdaysPath);
-        preferenceImportBirthdays.setEnabled(new File(domFiltersPath).exists());
+        preferenceImportBirthdays.setEnabled(new File(birthdaysPath).exists());
 	}
 
 	@Override
