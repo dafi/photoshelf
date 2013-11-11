@@ -83,7 +83,8 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 	public void setDimensions(final int w, final int h) {
 		runOnUiThread(new Runnable() {
 		    public void run() {
-				setTitle(getString(R.string.image_size, w, h));		    }
+				setTitle(getString(R.string.image_size, w, h));
+				}
 		  });
 	}
 }
