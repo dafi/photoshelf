@@ -71,10 +71,24 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 				tumblrName);
 		Cursor c = db.rawQuery(sqlQuery, null);
 		List<Birthday> list = cursorToBirtdayList(c);
-			
+
 		return list;
 	}
 
+	public List<Birthday> getBirthdayByMonth(int month, String tumblrName) {
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
+		Cursor c = db.query(TABLE_NAME,
+				new String[] {NAME,	BIRTH_DATE,	TUMBLR_NAME},
+				String.format("strftime('%%m', %1$s) = ? and %2$s = ?", BIRTH_DATE, TUMBLR_NAME),
+				new String[] {month < 10 ? "0" + month : "" + month, tumblrName},
+				null,
+				null,
+				String.format("strftime('%%d', %1$s), %2$s", BIRTH_DATE, NAME));
+		List<Birthday> list = cursorToBirtdayList(c);
+
+		return list;
+	}
+	
 	public boolean hasBirthdaysInDate(Date date, String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		

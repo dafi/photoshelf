@@ -32,18 +32,22 @@ public class BirthdayUtils {
 			return false;
 		}
 
+		long currYear = now.get(Calendar.YEAR);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(
 				context.getApplicationContext())
 				.setContentIntent(createPendingIntent(context))
-				.setContentText(list.get(0).getName())
 				.setSmallIcon(R.drawable.stat_notify_bday);
 		if (list.size() == 1) {
+			Birthday birthday = list.get(0);
 			builder.setContentTitle(context.getString(R.string.birthday_title_singular));
+			Calendar cal = Calendar.getInstance(Locale.US);
+			cal.setTime(birthday.getBirthDate());
+			long years = currYear - cal.get(Calendar.YEAR);
+			builder.setContentText(context.getString(R.string.birthday_years_old, birthday.getName(), years));
 		} else {
 			builder.setContentTitle(context.getString(R.string.birthday_title_plural, list.size()));
 			NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 			inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title));
-			long currYear = now.get(Calendar.YEAR);
 			for (Birthday birthday : list) {
 				Calendar cal = Calendar.getInstance(Locale.US);
 				cal.setTime(birthday.getBirthDate());

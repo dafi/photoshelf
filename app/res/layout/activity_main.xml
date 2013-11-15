@@ -59,8 +59,7 @@
             android:layout_height="100dp"
             android:layout_gravity="left|top"
             android:text="@string/birthdays_title"
-            android:textSize="@dimen/main_button_title_size"
-            android:visibility="gone" />
+            android:textSize="@dimen/main_button_title_size" />
     </GridLayout>
 
     <TextView

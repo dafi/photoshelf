@@ -59,6 +59,6 @@ public class Birthday implements BaseColumns, Serializable {
 	
 	@Override
 	public String toString() {
-		return name + " " + ISO_DATE_FORMAT.format(birthDate);
+		return ISO_DATE_FORMAT.format(birthDate) + " " + name;
 	}
 }

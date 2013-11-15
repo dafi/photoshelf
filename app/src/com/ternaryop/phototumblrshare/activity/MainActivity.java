@@ -1,7 +1,5 @@
 package com.ternaryop.phototumblrshare.activity;
 
-import java.util.Date;
-
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,7 +12,6 @@ import android.widget.Toast;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.AppSupport.AppSupportCallback;
 import com.ternaryop.phototumblrshare.R;
-import com.ternaryop.phototumblrshare.db.DBHelper;
 import com.ternaryop.tumblr.AuthenticationCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
@@ -65,9 +62,6 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 			Button button = (Button)findViewById(buttonId);
 			button.setOnClickListener(this);
 			button.setEnabled(enabled);
-		}
-		if (DBHelper.getInstance(this).getBirthdayDAO().hasBirthdaysInDate(new Date(), appSupport.getSelectedBlogName())) {
-			findViewById(R.id.birthdays).setVisibility(View.VISIBLE);
 		}
 	}
 
