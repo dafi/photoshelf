@@ -6,5 +6,6 @@
 	"http:\/\/www.imagesion.com":"#full_image",
 	"http:\/\/www.picturesion.com":"#full_image",
     "http:\/\/.*.imagevenue.com":"#thepic",
-    "http:\/\/imagetwist.com":".pic"
+    "http:\/\/imagetwist.com":".pic",
+    "http:/\/\www.hotcelebshome.com":"#thepic"
 }
