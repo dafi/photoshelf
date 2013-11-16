@@ -2,28 +2,45 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/settings" >
 
-    <Preference
-        android:key="tumblr_login"
-        android:persistent="false"
-        android:title="@string/tumblr_login_title" />
+    <PreferenceCategory
+        android:key="pref_key_tumblr_settings"
+        android:title="@string/pref_tumblr_title" >
+        <Preference
+            android:key="tumblr_login"
+            android:persistent="false"
+            android:title="@string/tumblr_login_title" />
+    </PreferenceCategory>
 
-    <Preference
-        android:key="import_posts_from_csv"
+    <PreferenceScreen
+        android:key="import_category_key"
         android:persistent="false"
-        android:title="@string/import_posts_from_csv_title" />
+        android:title="@string/pref_import_category_title" >
+        <Preference
+            android:key="import_posts_from_csv"
+            android:persistent="false"
+            android:title="@string/import_posts_from_csv_title" />
+        <Preference
+            android:key="import_posts_from_tumblr"
+            android:persistent="false"
+            android:title="@string/import_posts_from_tumblr_title" />
+        <Preference
+            android:key="import_dom_filters"
+            android:persistent="false"
+            android:title="@string/import_dom_filters_title" />
+        <Preference
+            android:key="import_birthdays"
+            android:persistent="false"
+            android:title="@string/import_birthdays_title" />
+    </PreferenceScreen>
 
-    <Preference
-        android:key="import_posts_from_tumblr"
-        android:persistent="false"
-        android:title="@string/import_posts_from_tumblr_title" />
+    <PreferenceCategory
+        android:key="pref_key_schedule_settings"
+        android:title="@string/pref_schedule_title" >
+        <com.ternaryop.preference.IntegerEditTextPreference
+            android:defaultValue="@integer/schedule_time_span_default"
+            android:key="schedule_time_span"
+            android:maxLength="2"
+            android:title="Default Schedule Span Hours" />
+    </PreferenceCategory>
 
-    <Preference
-        android:key="import_dom_filters"
-        android:persistent="false"
-        android:title="@string/import_dom_filters_title" />
-
-    <Preference
-        android:key="import_birthdays"
-        android:persistent="false"
-        android:title="@string/import_birthdays_title" />
 </PreferenceScreen>

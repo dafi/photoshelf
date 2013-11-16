@@ -19,7 +19,7 @@ public class AppSupport {
 	private final Context context;
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
 	private static final String PREF_BLOG_NAMES = "blogNames";
-	private static final String PREF_SCHEDULE_TIME_SPAN = "scheduleTimeSpan";
+	private static final String PREF_SCHEDULE_TIME_SPAN = "schedule_time_span";
 	private static final String LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime";
 	private SharedPreferences preferences;
 
@@ -59,7 +59,8 @@ public class AppSupport {
 	}
 
 	public int getDefaultScheduleHoursSpan() {
-		return preferences.getInt(PREF_SCHEDULE_TIME_SPAN, 3);
+		return preferences.getInt(PREF_SCHEDULE_TIME_SPAN,
+				context.getResources().getInteger(R.integer.schedule_time_span_default));
 	}
 
 	public Context getContext() {
