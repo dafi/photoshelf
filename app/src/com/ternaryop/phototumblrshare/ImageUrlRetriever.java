@@ -74,8 +74,9 @@ public class ImageUrlRetriever {
 		}
 
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			int resId = urlSelectorMap.size() == 1 ? R.string.selected_image_singular : R.string.selected_image_plural;
-			mode.setTitle(context.getString(resId, urlSelectorMap.size()));
+			int resId = urlSelectorMap.size() == 1 ? R.string.selected_singular : R.string.selected_plural;
+			mode.setTitle(context.getString(R.string.select_images));
+			mode.setSubtitle(context.getString(resId, urlSelectorMap.size()));
 			return true;
 		}
 

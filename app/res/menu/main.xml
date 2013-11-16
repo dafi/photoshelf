@@ -1,10 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_draft_posts"
-        android:title="@string/action_draft_posts"/>
-
-    <item
         android:id="@+id/action_settings"
         android:title="@string/settings"/>
 </menu>

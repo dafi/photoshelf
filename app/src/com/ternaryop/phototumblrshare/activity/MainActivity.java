@@ -75,9 +75,6 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
-	        case R.id.action_draft_posts:
-	        	DraftListActivity.startDraftListActivity(this);
-	            return true;
 	        case R.id.action_settings:
 	        	PhotoPreferencesActivity.startPreferencesActivityForResult(this);
 	            return true;

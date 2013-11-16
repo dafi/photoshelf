@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.ActionMode;
 import android.view.MenuItem;
 
 import com.fedorvlasov.lazylist.ImageLoader;
@@ -61,8 +62,12 @@ public abstract class PhotoTumblrActivity extends Activity {
 	protected void refreshUI() {
 		
 	}
-	
+
 	protected void showEditDialog(final TumblrPhotoPost item) {
+		showEditDialog(item, null);
+	}
+	
+	protected void showEditDialog(final TumblrPhotoPost item, final ActionMode mode) {
 		TumblrPostDialog editDialog = new TumblrPostDialog(this, item.getPostId());
 
 		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -73,6 +78,9 @@ public abstract class PhotoTumblrActivity extends Activity {
 		        	item.setTags(((TumblrPostDialog)dialog).getPostTags());
 		        	item.setCaption(((TumblrPostDialog)dialog).getPostTitle());
 		        	refreshUI();
+		        	if (mode != null) {
+		        		mode.finish();
+		        	}
 		            break;
 		        }
 		    }
