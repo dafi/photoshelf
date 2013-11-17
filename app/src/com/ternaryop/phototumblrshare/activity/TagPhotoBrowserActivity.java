@@ -9,57 +9,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 import android.widget.SearchView.OnSuggestionListener;
 
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.TagCursorAdapter;
-import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
-public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnScrollListener, OnQueryTextListener, OnSuggestionListener {
- 	private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
+public class TagPhotoBrowserActivity extends PostsListActivity implements OnQueryTextListener, OnSuggestionListener {
 	private static final String POST_TAG = "postTag";
-	private PhotoAdapter photoAdapter;
 	private String postTag;
-	private int offset;
-	private boolean hasMorePosts;
-	private boolean isScrolling;
-	private long totalPosts;
 	private SearchView searchView;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_photo_list);
-	    setActionBarIcon();
-        
-        photoAdapter = new PhotoAdapter(this, LOADER_PREFIX_POSTS_THUMB);
-
-        ListView list = (ListView)findViewById(R.id.list);
-        list.setAdapter(photoAdapter);
-        list.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
-        		ImageViewerActivity.startImageViewer(TagPhotoBrowserActivity.this, item.getFirstPhotoAltSize().get(0).getUrl());
-        	}
-		});
-        list.setOnScrollListener(this);
-        registerForContextMenu(list);
         
 	    Bundle bundle = getIntent().getExtras();
 		postTag = bundle.getString(POST_TAG);
@@ -95,7 +64,7 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 		photoAdapter.notifyDataSetChanged();
 	}
 	
-	private void readPhotoPosts() {
+	protected void readPhotoPosts() {
 		if (isScrolling) {
 			return;
 		}
@@ -162,43 +131,10 @@ public class TagPhotoBrowserActivity extends PhotoTumblrActivity implements OnSc
 	}
 
 	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		boolean loadMore = totalItemCount > 0 &&
-	            (firstVisibleItem + visibleItemCount >= totalItemCount);
-
-		if (loadMore && hasMorePosts && !isScrolling) {
-			offset += Tumblr.MAX_POST_PER_REQUEST;
-			readPhotoPosts();
-		}
+	protected int getActionModeMenuId() {
+		return R.menu.tag_browser_context;
 	}
-
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-	}
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		if (v.getId() == R.id.list) {
-			getMenuInflater().inflate(R.menu.tag_browser_context, menu);
-			menu.setHeaderTitle(R.string.post_actions_menu_header);
-		}
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-
-		switch (item.getItemId()) {
-		case R.id.post_edit:
-			showEditDialog(photoAdapter.getItem(info.position));
-			break;
-		default:
-			return false;
-		}
-		return true;
-	}
-
+	
 	@Override
 	public boolean onQueryTextChange(String newText) {
 		return false;
