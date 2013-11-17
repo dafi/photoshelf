@@ -85,6 +85,7 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 			public void onPageFinished(WebView view, String url) {
 				webViewLoaded = true;
 				progressBar.setVisibility(View.GONE);
+				view.loadUrl("javascript:var img = document.querySelector('img');dimRetriever.setDimensions(img.width, img.height)");
 				// onPrepareOptionsMenu should be called after onPageFinished
 				if (optionsMenu != null) {
 					optionsMenu.findItem(R.id.action_image_viewer_wallpaper).setVisible(true);
