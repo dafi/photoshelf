@@ -30,7 +30,7 @@ public class ImagePickerWebViewClient extends WebViewClient {
 			ImageUrlRetriever imageUrlRetriever = new ImageUrlRetriever(context, new ImageUrlRetriever.OnImagesRetrieved() {
 				@Override
 				public void onImagesRetrieved(String title, List<String> imageUrls) {
-					ImageViewerActivity.startImageViewer(context, imageUrls.get(0));
+					ImageViewerActivity.startImageViewer(context, imageUrls.get(0), null);
 				}
 			});
 			imageUrlRetriever.setUseActionMode(false);

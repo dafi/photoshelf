@@ -77,5 +77,7 @@
     <string name="pref_tumblr_title">Tumblr Access</string>
     <string name="pref_import_category_title">Import and Export</string>
     <string name="pref_schedule_title">Schedule</string>
-
+    <string name="set_wallpaper_title">Set Wallpaper</string>
+    <string name="wallpaper_changed_title">Wallpaper changed</string>
+    <string name="share_title">Share</string>
 </resources>

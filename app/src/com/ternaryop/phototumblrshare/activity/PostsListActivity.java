@@ -131,7 +131,7 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
-		ImageViewerActivity.startImageViewer(this, item.getFirstPhotoAltSize().get(0).getUrl());
+		ImageViewerActivity.startImageViewer(this, item.getFirstPhotoAltSize().get(0).getUrl(), item.getCaption());
 	}
 
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -209,7 +209,7 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 		return singleSelectionMenuIds;
 	}
 
-	public void browseImageBySize(PhotoSharePost post) {
+	public void browseImageBySize(final PhotoSharePost post) {
         final ArrayAdapter<TumblrAltSize> arrayAdapter = new ArrayAdapter<TumblrAltSize>(
                 this,
                 android.R.layout.select_dialog_item,
@@ -228,7 +228,7 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	String url = arrayAdapter.getItem(which).getUrl();
-                		ImageViewerActivity.startImageViewer(PostsListActivity.this, url);
+                		ImageViewerActivity.startImageViewer(PostsListActivity.this, url, post.getCaption());
                     }
                 });
         builder.show();

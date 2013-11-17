@@ -7,6 +7,7 @@ import java.net.URL;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 public class ImageUtils {
 
@@ -22,4 +23,19 @@ public class ImageUtils {
 		return bitmap;
 	}
 
+	public static Bitmap getResizedBitmap(Bitmap bitmap, float newWidth, float newHeight) {
+	    int width = bitmap.getWidth();
+	    int height = bitmap.getHeight();
+
+	    float scaleWidth = newWidth / width;
+	    float scaleHeight = newHeight / height;
+
+	    // create a matrix for the manipulation
+	    Matrix matrix = new Matrix();
+	    // resize the bit map
+	    matrix.postScale(scaleWidth, scaleHeight);
+
+	    // recreate the new Bitmap
+	    return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+	}
 }
