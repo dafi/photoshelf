@@ -8,6 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class TumblrPhotoPost extends TumblrPost {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8910912231608271421L;
 	private List<TumblrPhoto> photos;
 	private String caption;
 

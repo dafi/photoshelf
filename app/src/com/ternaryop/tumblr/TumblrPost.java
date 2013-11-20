@@ -1,5 +1,6 @@
 package com.ternaryop.tumblr;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,11 @@ import org.json.JSONObject;
 
 import com.ternaryop.utils.StringUtils;
 
-public class TumblrPost {
+public class TumblrPost implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9136359874716067522L;
 	private String blogName;
 	private long postId;
 	private String postUrl;

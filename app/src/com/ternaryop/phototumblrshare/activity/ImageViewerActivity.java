@@ -1,6 +1,5 @@
 package com.ternaryop.phototumblrshare.activity;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,9 +14,7 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,7 +27,9 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.IOUtils;
 import com.ternaryop.utils.ImageUtils;
 import com.ternaryop.utils.ShareUtils;
 
@@ -151,46 +150,38 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 	private void shareImage() {
 		try {
 			final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
-			String path = new URI(imageUrl).getPath();
-			int index = path.lastIndexOf('/');
+			String fileName = new URI(imageUrl).getPath();
+			int index = fileName.lastIndexOf('/');
 			if (index != -1) {
-				path = path.substring(index + 1);
+				fileName = fileName.substring(index + 1);
 			}
 			// write to a public location otherwise the called app can't access to file
-			final File destFile = new File(Environment.getExternalStorageDirectory(), path);
-			new AsyncTask<Void, Void, Exception>() {
+			final File destFile = new File(ShareUtils.getSharedImageDirectory(), fileName);
+			new AbsProgressBarAsyncTask<Void, Void, Void>(this, getString(R.string.downloading_image)) {
 
 				@Override
-				protected Exception doInBackground(Void... voidParams) {
-					BufferedOutputStream bos = null;
+				protected Void doInBackground(Void... voidParams) {
+					FileOutputStream os = null;
 					InputStream is = null;
 			    	try {
 			    		URL url = new URL(imageUrl);
 			    		HttpURLConnection connection  = (HttpURLConnection) url.openConnection();
-			    	
-			    	    bos = new BufferedOutputStream(new FileOutputStream(destFile));
 			    		is = connection.getInputStream();
-			    		byte[] buff = new byte[100 * 1024];
-			    		int count;
-
-			    		while ((count = is.read(buff)) != -1) {
-			    			bos.write(buff, 0, count);
-			    		}
-
-			    	    bos.flush();
+						os = new FileOutputStream(destFile);
+						IOUtils.copy(is, os);
 			    	} catch (Exception e) {
-			    		return e;
+			    		setError(e);
 			    	} finally {
 						if (is != null) try { is.close(); } catch (Exception e) {}
-						if (bos != null) try { bos.close(); } catch (Exception e) {}
+						if (os != null) try { os.close(); } catch (Exception e) {}
 			    	}
 					return null;
 				}
 				
 				@Override
-				protected void onPostExecute(Exception error) {
-					if (error != null) {
-						DialogUtils.showErrorDialog(ImageViewerActivity.this, error);
+				protected void onPostExecute(Void result) {
+					super.onPostExecute(result);
+					if (getError() != null) {
 						return;
 					}
 				    String title = getIntent().getExtras().getString(IMAGE_TITLE);
@@ -200,11 +191,11 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 				    	title = Html.fromHtml(title).toString();
 				    }
 
-					ShareUtils.shareFile(ImageViewerActivity.this,
+					ShareUtils.shareImage(ImageViewerActivity.this,
 							destFile.getAbsolutePath(),
 							"image/jpeg",
 							title,
-							getString(R.string.share_title));
+							getString(R.string.share_image_title));
 				}
 			}.execute();
 		} catch (Exception e) {
@@ -214,14 +205,14 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 	}
 
 	private void setWallpaper() {
-		new AsyncTask<Void, Void, Bitmap>() {
-
+		new AbsProgressBarAsyncTask<Void, Void, Bitmap>(this, getString(R.string.downloading_image)) {
 			@Override
 			protected Bitmap doInBackground(Void... params) {
 				try {
 					final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
 					return ImageUtils.readImage(imageUrl);
 				} catch (Exception e) {
+					setError(e);
 				}
 				
 				return null;
@@ -229,6 +220,7 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 			
 			@Override
 			protected void onPostExecute(Bitmap bitmap) {
+				super.onPostExecute(null);
 				if (bitmap == null) {
 					return;
 				}

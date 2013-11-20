@@ -1,10 +1,16 @@
 package com.ternaryop.tumblr;
 
+import java.io.Serializable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TumblrAltSize {
-    private int width;
+public class TumblrAltSize implements Serializable {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7556335251472323825L;
+	private int width;
     private int height;
     private String url;
     

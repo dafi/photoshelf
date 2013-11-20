@@ -1,5 +1,6 @@
 package com.ternaryop.tumblr;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TumblrPhoto {
+public class TumblrPhoto implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5458693563884708164L;
 	private String caption;
 	private List<TumblrAltSize> altSizes;
 	

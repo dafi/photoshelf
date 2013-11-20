@@ -79,5 +79,6 @@
     <string name="pref_schedule_title">Schedule</string>
     <string name="set_wallpaper_title">Set Wallpaper</string>
     <string name="wallpaper_changed_title">Wallpaper changed</string>
-    <string name="share_title">Share</string>
+    <string name="share_image_title">Share Image</string>
+    <string name="downloading_image">Downloading image&#8230;</string>
 </resources>

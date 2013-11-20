@@ -6,5 +6,5 @@
 
     <item
         android:id="@+id/action_image_viewer_share"
-        android:title="@string/share_title"/>
+        android:title="@string/share_image_title"/>
 </menu>
