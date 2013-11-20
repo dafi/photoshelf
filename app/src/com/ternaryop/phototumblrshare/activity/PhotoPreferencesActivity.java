@@ -15,6 +15,7 @@ import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.Importer;
 import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.utils.IOUtils;
 
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesActivity extends PreferenceActivity {
@@ -24,17 +25,21 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
 	private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
 	private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
+	private static final String KEY_EXPORT_POSTS_FROM_CSV = "export_posts_csv";
 	private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
 	private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
 	private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
+	private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
 	
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
     private Preference preferenceTumblrLogin;
 	private Preference preferenceImportPostsFromCSV;
+	private Preference preferenceExportPostsToCSV;
 	private Preference preferenceImportPostsFromTumblr;
 	private Preference preferenceImportDOMFilters;
 	private Preference preferenceImportBirthdays;
+	private Preference preferenceExportBirthdays;
     
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +55,10 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceImportPostsFromCSV = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_CSV);
 		preferenceImportPostsFromCSV.setSummary(csvPath);
 		preferenceImportPostsFromCSV.setEnabled(new File(csvPath).exists());
-        
+
+        preferenceExportPostsToCSV = preferenceScreen.findPreference(KEY_EXPORT_POSTS_FROM_CSV);
+        preferenceExportPostsToCSV.setSummary(csvPath);
+		
         preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
         
         String domFiltersPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
@@ -62,6 +70,9 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceImportBirthdays = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS);
         preferenceImportBirthdays.setSummary(birthdaysPath);
         preferenceImportBirthdays.setEnabled(new File(birthdaysPath).exists());
+
+        preferenceExportBirthdays = preferenceScreen.findPreference(KEY_EXPORT_BIRTHDAYS);
+        preferenceExportBirthdays.setSummary(birthdaysPath);
 	}
 
 	@Override
@@ -97,10 +108,19 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
 			Importer.importBirtdays(this, importPath);
             return true;
+        } else if (preference == preferenceExportPostsToCSV) {
+	        String exportPath = IOUtils.generateUniqueFileName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME);
+			Importer.exportPostsToCSV(this, exportPath);
+            return true;
+        } else if (preference == preferenceExportBirthdays) {
+	        String exportPath = IOUtils.generateUniqueFileName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME);
+			Importer.exportBirthdaysToCSV(this, exportPath);
+            return true;
         }
+                
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
-    
+
     public static void startPreferencesActivityForResult(Activity caller) {
 		Intent intent = new Intent(caller, PhotoPreferencesActivity.class);
 		Bundle bundle = new Bundle();

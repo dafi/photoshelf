@@ -8,7 +8,11 @@ import com.ternaryop.phototumblrshare.DraftPostHelper;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 
 public class PhotoSharePost extends TumblrPhotoPost {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -6670033021694674250L;
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
 	private long lastPublishedTimestamp;
 	private int groupId;
 

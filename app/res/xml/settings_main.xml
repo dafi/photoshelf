@@ -20,6 +20,10 @@
             android:persistent="false"
             android:title="@string/import_posts_from_csv_title" />
         <Preference
+            android:key="export_posts_csv"
+            android:persistent="false"
+            android:title="@string/export_posts_csv_title" />
+        <Preference
             android:key="import_posts_from_tumblr"
             android:persistent="false"
             android:title="@string/import_posts_from_tumblr_title" />
@@ -31,7 +35,11 @@
             android:key="import_birthdays"
             android:persistent="false"
             android:title="@string/import_birthdays_title" />
-    </PreferenceScreen>
+        <Preference
+            android:key="export_birthdays"
+            android:persistent="false"
+            android:title="@string/export_birthdays_title" />
+        </PreferenceScreen>
 
     <PreferenceCategory
         android:key="pref_key_schedule_settings"
