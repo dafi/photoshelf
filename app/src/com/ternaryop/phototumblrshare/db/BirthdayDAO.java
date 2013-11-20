@@ -18,7 +18,7 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 	public static final String NAME = "NAME";
 	public static final String BIRTH_DATE = "BIRTH_DATE";
 	public static final String TUMBLR_NAME = "TUMBLR_NAME";
-	public static final String TABLE_NAME = "CONSOLR_BIRTHDAY";
+	public static final String TABLE_NAME = "BIRTHDAY";
 	
 	public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, NAME, BIRTH_DATE };
 
@@ -43,10 +43,18 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 				_ID,
 				BIRTH_DATE,
 				TUMBLR_NAME));
+		
+		// create views
+		db.execSQL("CREATE VIEW VW_MISSING_BIRTHDAYS AS"
+				+ " select distinct t.TAG AS name, t.tumblr_name from POST_TAG t"
+				+ " where ((t.SHOW_ORDER = 1)"
+				+ " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY)))"
+				+ " and (t.TAG not in ('art')))");
 	}
 
 	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        db.execSQL("DROP VIEW IF EXISTS VW_MISSING_BIRTHDAYS");
         onCreate(db);
     }
 
@@ -98,6 +106,28 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 				+ " and " + TUMBLR_NAME + " = ?",
 				new String[] {MONTH_DAY_FORMAT.format(date), tumblrName}) > 0;
 	}
+	
+    public List<String> getNameWithoutBirthDays(String tumblrName) {
+		SQLiteDatabase db = getDbHelper().getReadableDatabase();
+		Cursor c = db.query("VW_MISSING_BIRTHDAYS",
+				new String[] {NAME},
+				TUMBLR_NAME + " = ?",
+				new String[] {tumblrName},
+				null,
+				null,
+				NAME);
+		ArrayList<String> list = new ArrayList<String>();
+		try {
+			while (c.moveToNext()) {
+				list.add(c.getString(0));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			c.close();
+		}
+		return list;
+    }
 	
 	private List<Birthday> cursorToBirtdayList(Cursor c) {
 		ArrayList<Birthday> list = new ArrayList<Birthday>();
