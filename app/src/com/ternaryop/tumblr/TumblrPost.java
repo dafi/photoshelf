@@ -8,7 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.ternaryop.utils.StringUtils;
+import android.text.TextUtils;
 
 public class TumblrPost implements Serializable {
 	/**
@@ -235,6 +235,6 @@ public class TumblrPost implements Serializable {
 		if (tags == null || tags.size() == 0) {
 			return "";
 		}
-		return StringUtils.join(tags.iterator(), ",");
+		return TextUtils.join(",", tags);
 	}
 }
