@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.db.PostTagDAO;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Tumblr;
@@ -67,22 +66,22 @@ public class DraftPostHelper {
 	    return map;
 	}
 
-	public Map<String, PostTag> getLastPublishedPhotoByTags(final Tumblr tumblr,
+	public Map<String, Long> getLastPublishedPhotoByTags(final Tumblr tumblr,
 			final String tumblrName,
 			final List<String> tags,
 			final PostTagDAO postTagDAO)
 			throws Exception {
-		final Map<String, PostTag> lastPublish = new HashMap<String, PostTag>();
-		Map<String, PostTag> postByTags = postTagDAO.getLastPublishedPostForTags(tags, tumblrName);
+		final Map<String, Long> lastPublish = new HashMap<String, Long>();
+		Map<String, Long> postByTags = postTagDAO.getLastPublishedTimeByTags(tags, tumblrName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
 		
 		for (Iterator<String> itr = tags.iterator(); itr.hasNext();) {
 			final String tag = itr.next();
-			PostTag postTag = postByTags.get(tag);
+			Long lastPublishedTime = postByTags.get(tag);
 			
-			if (postTag == null) {
+			if (lastPublishedTime == null) {
 				// every thread receives its own parameters map
 				final HashMap<String, String> params = new HashMap<String, String>();
 				params.put("type", "photo");
@@ -95,13 +94,7 @@ public class DraftPostHelper {
 						try {
 							List<TumblrPhotoPost> posts = tumblr.getPhotoPosts(tumblrName, params);
 							for (TumblrPhotoPost post : posts) {
-						    	PostTag newPostTag = new PostTag(
-						    			post.getPostId(),
-						    			tumblrName,
-						    			tag,
-						    			post.getTimestamp(),
-						    			1);
-						    	lastPublish.put(tag.toLowerCase(Locale.US), newPostTag);
+						    	lastPublish.put(tag.toLowerCase(Locale.US), post.getTimestamp());
 							}
 						} catch (Exception e) {
 							return e;
@@ -110,7 +103,7 @@ public class DraftPostHelper {
 					}
 				});
 			} else {
-		    	lastPublish.put(tag.toLowerCase(Locale.US), postTag);
+		    	lastPublish.put(tag.toLowerCase(Locale.US), lastPublishedTime);
 			}
 		}
 		for (Future<Exception> result : executorService.invokeAll(callables)) {
@@ -125,7 +118,7 @@ public class DraftPostHelper {
 	public List<PhotoSharePost> getDraftPostSortedByPublishDate(
 			Map<String, List<TumblrPost> > draftPosts,
 			Map<String, TumblrPost> queuedPosts,
-			Map<String, PostTag> lastPublished) {
+			Map<String, Long> lastPublished) {
 		ArrayList<TimestampPosts> temp = new ArrayList<TimestampPosts>();
 
 		for (String tag : draftPosts.keySet()) {
@@ -137,7 +130,7 @@ public class DraftPostHelper {
 		    	queuedTimestamp = queuedPosts.get(tag).getScheduledPublishTime() * 1000; 
 		    }
 		    if (lastPublished.get(tag) != null) {
-		    	lastPublishedTimestamp = lastPublished.get(tag).getPublishTimestamp() * 1000;
+		    	lastPublishedTimestamp = lastPublished.get(tag) * 1000;
 		    }
 	    	long timestampToSave;
 		    if (queuedTimestamp > 0) {

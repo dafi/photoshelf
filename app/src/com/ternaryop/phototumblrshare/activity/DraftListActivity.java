@@ -22,7 +22,6 @@ import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.DBHelper;
 import com.ternaryop.phototumblrshare.db.Importer;
 import com.ternaryop.phototumblrshare.db.Importer.ImportCompleteCallback;
-import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
@@ -136,7 +135,7 @@ public class DraftListActivity extends PostsListActivity implements OnPhotoBrows
 					
 					// get last published
 					this.publishProgress(getContext().getString(R.string.finding_last_published_posts));
-					Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
+					Map<String, Long> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
 							Tumblr.getSharedTumblr(getContext()),
 							getBlogName(),
 							tags,

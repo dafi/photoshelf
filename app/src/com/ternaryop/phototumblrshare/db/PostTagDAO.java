@@ -92,7 +92,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		 return db.rawQuery(sqlQuery, null);
 	}
 
-	public Map<String, PostTag> getLastPublishedPostForTags(List<String> tags, String tumblrName) {
+	public Map<String, Long> getLastPublishedTimeByTags(List<String> tags, String tumblrName) {
 		// contains tumblrName, too
 		String args[] = new String[tags.size() + 1];
 		args[0] = tumblrName;
@@ -110,7 +110,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		}
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		
-		Cursor c = db.rawQuery("SELECT " + TextUtils.join(",", COLUMNS) 
+		Cursor c = db.rawQuery("SELECT " + TAG + "," + PUBLISH_TIMESTAMP 
 				+ " FROM post_tag AS t"
 				+ " WHERE t.TUMBLR_NAME = ?"
 				+ " AND lower(t.tag) IN (" + inClause + ")"
@@ -121,21 +121,11 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		        + " GROUP BY PUBLISH_TIMESTAMP",
 		        args);
 
-		return cursorToPostTagMap(c);
-	}
-	
-	private Map<String, PostTag> cursorToPostTagMap(Cursor c) {
-		HashMap<String, PostTag> map = new HashMap<String, PostTag>();
+		HashMap<String, Long> map = new HashMap<String, Long>();
 		try {
 			while (c.moveToNext()) {
-				PostTag postTag = new PostTag(
-						c.getLong(c.getColumnIndex(_ID)),
-						c.getString(c.getColumnIndex(TUMBLR_NAME)),
-						c.getString(c.getColumnIndex(TAG)),
-						c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
-						c.getLong(c.getColumnIndex(SHOW_ORDER))
-						);
-				map.put(postTag.getTag().toLowerCase(Locale.US), postTag);
+				map.put(c.getString(c.getColumnIndex(TAG)).toLowerCase(Locale.US),
+						c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)));
 			}
 		} finally {
 			c.close();
