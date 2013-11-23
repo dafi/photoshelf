@@ -22,6 +22,7 @@ public class ScheduledListActivity extends PostsListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         
+        photoAdapter.setOnPhotoBrowseClick(this);
 		if (getBlogName() != null) {
 			offset = 0;
 			hasMorePosts = true;

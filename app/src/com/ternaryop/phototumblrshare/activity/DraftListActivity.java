@@ -24,14 +24,13 @@ import com.ternaryop.phototumblrshare.db.Importer;
 import com.ternaryop.phototumblrshare.db.Importer.ImportCompleteCallback;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
-import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
-public class DraftListActivity extends PostsListActivity implements OnPhotoBrowseClick {
+public class DraftListActivity extends PostsListActivity {
 	private static final String LOADER_PREFIX_AVATAR = "avatar";
 	
 	private HashMap<String, TumblrPost> queuedPosts;
@@ -161,11 +160,6 @@ public class DraftListActivity extends PostsListActivity implements OnPhotoBrows
 		intent.putExtras(bundle);
 
 		context.startActivity(intent);
-	}
-
-	@Override
-	public void onPhotoBrowseClick(PhotoSharePost post) {
-		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), post.getFirstTag());
 	}
 
 	@Override

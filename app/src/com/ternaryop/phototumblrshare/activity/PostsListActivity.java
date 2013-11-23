@@ -24,13 +24,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
 import com.ternaryop.phototumblrshare.list.PhotoAdapter;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 
-public abstract class PostsListActivity extends PhotoTumblrActivity implements OnScrollListener, OnItemClickListener, MultiChoiceModeListener {
+public abstract class PostsListActivity extends PhotoTumblrActivity implements OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick {
 	protected enum POST_ACTION {
 		PUBLISH,
 		DELETE
@@ -337,4 +338,10 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 			}
 		}
 	}
+
+	@Override
+	public void onPhotoBrowseClick(PhotoSharePost post) {
+		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), post.getFirstTag());
+	}
+
 }
