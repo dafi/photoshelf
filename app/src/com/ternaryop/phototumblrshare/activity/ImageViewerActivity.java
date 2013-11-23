@@ -26,6 +26,7 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
@@ -156,7 +157,7 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 				fileName = fileName.substring(index + 1);
 			}
 			// write to a public location otherwise the called app can't access to file
-			final File destFile = new File(ShareUtils.getSharedImageDirectory(), fileName);
+			final File destFile = new File(AppSupport.getPicturesDirectory(), fileName);
 			new AbsProgressBarAsyncTask<Void, Void, Void>(this, getString(R.string.downloading_image)) {
 
 				@Override

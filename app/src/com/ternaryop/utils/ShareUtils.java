@@ -1,12 +1,9 @@
 package com.ternaryop.utils;
 
-import java.io.File;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 
 public class ShareUtils {
@@ -24,14 +21,5 @@ public class ShareUtils {
         sharingIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         
         context.startActivity(Intent.createChooser(sharingIntent, chooserTitle));
-    }
-
-    public static File getSharedImageDirectory() {
-        File sharedDirectory = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "shared");
-        if (!sharedDirectory.exists()) {
-            sharedDirectory.mkdirs();
-        }
-        return sharedDirectory;
     }
 }

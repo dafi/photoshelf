@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 
 import com.ternaryop.tumblr.Blog;
@@ -16,6 +18,8 @@ import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 
 public class AppSupport {
+	private static final String SUBDIRECTORY_PICTURES = "photoShareTumblr";
+
 	private final Context context;
 	private static final String PREF_SELECTED_BLOG = "selectedBlog";
 	private static final String PREF_BLOG_NAMES = "blogNames";
@@ -116,4 +120,13 @@ public class AppSupport {
 		editor.putLong(LAST_BIRTHDAY_SHOW_TIME, timems);
 		editor.commit();
 	}
+
+    public static File getPicturesDirectory() {
+        File fullDirPath = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), SUBDIRECTORY_PICTURES);
+        if (!fullDirPath.exists()) {
+            fullDirPath.mkdirs();
+        }
+        return fullDirPath;
+    }
 }
