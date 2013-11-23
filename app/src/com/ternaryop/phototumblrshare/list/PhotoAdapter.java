@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.phototumblrshare.list.PhotoSharePost.ScheduleTime;
 import com.ternaryop.tumblr.TumblrAltSize;
  
 public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.OnClickListener {
@@ -34,14 +35,17 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
     
     public View getView(int position, View convertView, ViewGroup parent) {
         View vi = convertView;
+        ViewHolder holder;
+
         if (convertView == null) {
             vi = inflater.inflate(R.layout.list_row, null);
+            holder = new ViewHolder(vi);
+            vi.setTag(holder);
+        } else {
+        	holder = (ViewHolder) convertView.getTag();
         }
 
         final PhotoSharePost post = getItem(position);
-
-        TextView title = (TextView)vi.findViewById(R.id.title_textview);
-        TextView timeDesc = (TextView)vi.findViewById(R.id.time_desc);
 
         switch (post.getScheduleTimeType()) {
         	case POST_PUBLISH_NEVER:
@@ -56,24 +60,22 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 			break;
         }
 
-        ImageView thumbImage = (ImageView)vi.findViewById(R.id.list_image);
         String titleString = post.getFirstTag();
-        title.setText(Html.fromHtml(titleString).toString().replaceAll("\n", ""));
-        timeDesc.setText(post.getLastPublishedTimestampAsString());
+        holder.title.setText(Html.fromHtml(titleString).toString().replaceAll("\n", ""));
+        holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
-        ImageView browseImage = (ImageView)vi.findViewById(R.id.browse_images);
-        browseImage.setTag(post);
-        browseImage.setOnClickListener(this);
-        if (onPhotoBrowseClick == null) {
-        	browseImage.setVisibility(View.GONE);
+        holder.browseImage.setTag(post);
+        holder.browseImage.setOnClickListener(this);
+        if (onPhotoBrowseClick == null || post.getScheduleTimeType() == ScheduleTime.POST_PUBLISH_NEVER) {
+        	holder.browseImage.setVisibility(View.GONE);
         } else {
-        	browseImage.setVisibility(View.VISIBLE);
+        	holder.browseImage.setVisibility(View.VISIBLE);
         }
         
 		// TODO find 75x75 image url
 		List<TumblrAltSize> altSizes = post.getPhotos().get(0).getAltSizes();
 		TumblrAltSize smallestImage = altSizes.get(altSizes.size() - 1);
-        imageLoader.displayImage(smallestImage.getUrl(), thumbImage);
+        imageLoader.displayImage(smallestImage.getUrl(), holder.thumbImage);
         return vi;
     }
     
@@ -141,6 +143,21 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 		super.insert(object, index);
 		if (isRecomputeGroupIds()) {
 			calcGroupIds();
+		}
+	}
+	
+	private class ViewHolder {
+		TextView title;
+		TextView timeDesc;
+		ImageView thumbImage;
+		ImageView browseImage;
+
+		public ViewHolder(View vi) {
+	        title = (TextView)vi.findViewById(R.id.title_textview);
+	        timeDesc = (TextView)vi.findViewById(R.id.time_desc);
+
+	        thumbImage = (ImageView)vi.findViewById(R.id.list_image);
+	        browseImage = (ImageView)vi.findViewById(R.id.browse_images);
 		}
 	}
 }
