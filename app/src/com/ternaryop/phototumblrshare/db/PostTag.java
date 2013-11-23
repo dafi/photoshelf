@@ -20,7 +20,6 @@ public class PostTag implements Serializable {
 	private String tumblrName;
 
 	public PostTag() {
-		
 	}
 
 	public PostTag(long id, String tumblrName, String tag, long timestamp, long showOrder) {
@@ -73,7 +72,8 @@ public class PostTag implements Serializable {
 	
 	@Override
 	public String toString() {
-		return String.format(Locale.US, "%1$s[%2$d] = tag %3$s ts = %4$d order %5$d", tumblrName, id, tag, publishTimestamp, showOrder);
+		return String.format(Locale.US, "%1$s[%2$d] = tag %3$s ts = %4$d order %5$d",
+				tumblrName, id, tag, publishTimestamp, showOrder);
 	}
 	
 	public static List<PostTag> postTagsFromTumblrPost(TumblrPost tumblrPost) {
@@ -87,6 +87,4 @@ public class PostTag implements Serializable {
 		
 		return list;
 	}
-
-
 }

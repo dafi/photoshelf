@@ -20,7 +20,9 @@ import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.DraftPostHelper;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.DBHelper;
-import com.ternaryop.phototumblrshare.db.LastPublishedPostCache;
+import com.ternaryop.phototumblrshare.db.Importer;
+import com.ternaryop.phototumblrshare.db.Importer.ImportCompleteCallback;
+import com.ternaryop.phototumblrshare.db.PostTag;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.phototumblrshare.list.OnPhotoBrowseClick;
@@ -86,8 +88,12 @@ public class DraftListActivity extends PostsListActivity implements OnPhotoBrows
 	}
 
 	private void clearCache() {
-		DBHelper.getInstance(this).getLastPublishedPostCacheDAO().removeAll();
-		readPhotoPosts();
+		Importer.importFromTumblr(this, getBlogName(), new ImportCompleteCallback() {
+			@Override
+			public void complete() {
+				readPhotoPosts();
+			}
+		});
 	}
 
 	protected void refreshUI() {
@@ -124,17 +130,17 @@ public class DraftListActivity extends PostsListActivity implements OnPhotoBrows
 					queuedPosts = new HashMap<String, TumblrPost>();
 					DraftPostHelper publisher = new DraftPostHelper();
 					publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(getContext()), getBlogName(), tagsForDraftPosts, queuedPosts,
-							DBHelper.getInstance(getContext()).getLastPublishedPostCacheDAO());
+							DBHelper.getInstance(getContext()).getPostTagDAO());
 
 					ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
 					
 					// get last published
 					this.publishProgress(getContext().getString(R.string.finding_last_published_posts));
-					Map<String, LastPublishedPostCache> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
+					Map<String, PostTag> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
 							Tumblr.getSharedTumblr(getContext()),
 							getBlogName(),
 							tags,
-							DBHelper.getInstance(getContext()).getLastPublishedPostCacheDAO());
+							DBHelper.getInstance(getContext()).getPostTagDAO());
 					
 					return publisher.getDraftPostSortedByPublishDate(
 							tagsForDraftPosts,

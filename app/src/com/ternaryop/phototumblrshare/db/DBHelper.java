@@ -6,11 +6,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
 	public static final String DB_NAME = "phototumblrshare.db";
- 	private static final int SCHEMA_VERSION = 4;
+ 	private static final int SCHEMA_VERSION = 1;
 
  	private static DBHelper instance = null;
 
- 	private LastPublishedPostCacheDAO lastPublishedPostCacheDAO;
  	private PostTagDAO postTagDAO;
  	private BirthdayDAO birthdayDAO;
  	 
@@ -32,29 +31,22 @@ public class DBHelper extends SQLiteOpenHelper {
 	 */
 	private DBHelper(Context context) {
 		super(context, DB_NAME, null, SCHEMA_VERSION);
-		lastPublishedPostCacheDAO = new LastPublishedPostCacheDAO(this);
 		postTagDAO = new PostTagDAO(this);
 		birthdayDAO = new BirthdayDAO(this);
 	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		lastPublishedPostCacheDAO.onCreate(db);
 		postTagDAO.onCreate(db);
 		birthdayDAO.onCreate(db);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		lastPublishedPostCacheDAO.onUpgrade(db, oldVersion, newVersion);
 		postTagDAO.onUpgrade(db, oldVersion, newVersion);
 		birthdayDAO.onUpgrade(db, oldVersion, newVersion);
     }
 
-	public LastPublishedPostCacheDAO getLastPublishedPostCacheDAO() {
-		return lastPublishedPostCacheDAO;
-	}
-	
 	public PostTagDAO getPostTagDAO() {
 		return postTagDAO;
 	}

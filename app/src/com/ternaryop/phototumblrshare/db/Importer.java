@@ -68,10 +68,15 @@ public class Importer {
 			DialogUtils.showErrorDialog(context, error);
 		}
 	}
-	
+
 	public static void importFromTumblr(final Context context, final String blogName) {
+		importFromTumblr(context, blogName, null);
+	}
+	
+	public static void importFromTumblr(final Context context, final String blogName, final ImportCompleteCallback callback) {
 		PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
-		PostRetriever postRetriever = new PostRetriever(context, post.getPublishTimestamp(), new Callback<List<TumblrPost>>() {
+		long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
+		PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, new Callback<List<TumblrPost>>() {
 			
 			@Override
 			public void failure(Exception error) {
@@ -89,7 +94,15 @@ public class Importer {
 				new DbImportAsyncTask<PostTag>(context,
 						allPostTags.iterator(),
 						DBHelper.getInstance(context).getPostTagDAO(),
-						false).execute();
+						false) {
+					@Override
+					protected void onPostExecute(Void result) {
+						super.onPostExecute(result);
+						if (callback != null) {
+							callback.complete();
+						}
+					}
+				}.execute();
 			}
 		});
 		Tumblr.getSharedTumblr(context).readPublicPhotoPosts(blogName, null, postRetriever);
@@ -178,5 +191,9 @@ public class Importer {
 					Long.parseLong(fields[3]),
 					Long.parseLong(fields[4]));
 		}
+	}
+
+	public interface ImportCompleteCallback {
+		void complete();
 	}
 }
