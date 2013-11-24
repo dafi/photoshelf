@@ -47,7 +47,7 @@ public class DraftListActivity extends PostsListActivity {
         photoAdapter.setOnPhotoBrowseClick(this);
         photoAdapter.setRecomputeGroupIds(true);
 
-        readPhotoPosts();
+        refreshCache();
 	}
 
 	@Override
@@ -77,15 +77,15 @@ public class DraftListActivity extends PostsListActivity {
 		case R.id.action_draft_refresh:
 			readPhotoPosts();
 			return true;
-		case R.id.action_draft_clear_cache:
-			clearCache();
+		case R.id.action_draft_refresh_cache:
+		    refreshCache();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
-	private void clearCache() {
+	private void refreshCache() {
 		Importer.importFromTumblr(this, getBlogName(), new ImportCompleteCallback() {
 			@Override
 			public void complete() {
