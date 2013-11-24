@@ -22,4 +22,25 @@ public class StringUtils {
 	
 		return sb.toString();
 	}
+
+    public static String capitalize(String str) {
+        StringBuilder sb = new StringBuilder(str.length());
+        boolean upcase = true;
+        
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+
+            if (Character.isWhitespace(ch)) {
+                upcase = true;
+            } else {
+                if (upcase) {
+                    ch = Character.toUpperCase(ch);
+                    upcase = false;
+                }
+            }
+            sb.append(ch);
+        }
+
+        return sb.toString();
+    }
 }
