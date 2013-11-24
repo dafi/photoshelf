@@ -30,6 +30,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
 	private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
 	private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
+    private static final String KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia";
+	
 	
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
@@ -40,6 +42,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private Preference preferenceImportDOMFilters;
 	private Preference preferenceImportBirthdays;
 	private Preference preferenceExportBirthdays;
+    private Preference preferenceImportBirthdaysFromWikipedia;
     
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +76,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
         preferenceExportBirthdays = preferenceScreen.findPreference(KEY_EXPORT_BIRTHDAYS);
         preferenceExportBirthdays.setSummary(birthdaysPath);
+
+        preferenceImportBirthdaysFromWikipedia = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA);
 	}
 
 	@Override
@@ -115,6 +120,9 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         } else if (preference == preferenceExportBirthdays) {
 	        String exportPath = IOUtils.generateUniqueFileName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME);
 			Importer.exportBirthdaysToCSV(this, exportPath);
+            return true;
+        } else if (preference == preferenceImportBirthdaysFromWikipedia) {
+            Importer.importMissingBirthdaysFromWikipedia(this, new AppSupport(this).getSelectedBlogName());
             return true;
         }
                 

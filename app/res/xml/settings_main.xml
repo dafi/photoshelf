@@ -36,6 +36,10 @@
             android:persistent="false"
             android:title="@string/import_birthdays_title" />
         <Preference
+            android:key="import_birthdays_from_wikipedia"
+            android:persistent="false"
+            android:title="@string/import_missing_birthdays_from_wikipedia_title" />
+        <Preference
             android:key="export_birthdays"
             android:persistent="false"
             android:title="@string/export_birthdays_title" />

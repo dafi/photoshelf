@@ -1,16 +1,25 @@
 package com.ternaryop.phototumblrshare.db;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.widget.Toast;
 
 import com.ternaryop.phototumblrshare.R;
@@ -22,6 +31,7 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.StringUtils;
 
 public class Importer {
 	public static void importPostsFromCSV(final Context context, final String importPath) {
@@ -181,6 +191,83 @@ public class Importer {
 		}
 	}
 
+    public static void importMissingBirthdaysFromWikipedia(final Context context, final String blogName) {
+        new AbsProgressBarAsyncTask<Void, String, String>(context,
+                context.getString(R.string.import_missing_birthdays_from_wikipedia_title)) {
+            @Override
+            protected void onProgressUpdate(String... values) {
+                getProgressDialog().setMessage(values[0]);
+            }
+
+            @Override
+            protected String doInBackground(Void... params) {
+                BirthdayDAO birthdayDAO = DBHelper.getInstance(context).getBirthdayDAO();
+                List<String> names = birthdayDAO.getNameWithoutBirthDays(blogName);
+                List<Birthday> birthdays = new ArrayList<Birthday>();
+                int curr = 1;
+                int size = names.size();
+
+                
+                for (final String name : names) {
+                    String cleanName = StringUtils
+                                .capitalize(name)
+                                .replaceAll(" ", "_")
+                                .replaceAll("\"", "");
+                    String url = "http://en.wikipedia.org/wiki/" + cleanName;
+                    publishProgress(name + " (" + curr + "/" + size + ")");
+                    try {
+                        Document document = Jsoup.connect(url).get();
+                        // protect against redirect
+                        if (document.title().toLowerCase(Locale.US).contains(name)) {
+                            Elements el = document.select(".bday");
+                            if (el.size() > 0) {
+                                String birthDate = el.get(0).text();
+                                birthdays.add(new Birthday(name, birthDate, blogName));
+                            }
+                        }
+                    } catch (Exception e) {
+                        // simply skip
+                    }
+                    ++curr;
+                }
+                // store to db and write the csv file
+                SQLiteDatabase db = birthdayDAO.getDbHelper().getWritableDatabase();
+                try {
+                    db.beginTransaction();
+                    String fileName = "birthdays-" + new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()) + ".csv";
+                    String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + fileName;
+                    PrintWriter pw = new PrintWriter(path);
+                    for (Birthday birthday : birthdays) {
+                        pw.println(String.format("%1$d;%2$s;%3$s;%4$s",
+                                1L,
+                                birthday.getName(),
+                                Birthday.ISO_DATE_FORMAT.format(birthday.getBirthDate()),
+                                blogName));
+                        birthdayDAO.insert(birthday);
+                    }
+                    pw.flush();
+                    pw.close();
+                    db.setTransactionSuccessful();
+                } catch (Exception e) {
+                    setError(e);
+                } finally {
+                    db.endTransaction();
+                }
+                return getContext().getString(R.string.import_progress_title, birthdays.size());
+            }
+            
+            protected void onPostExecute(String message) {
+                super.onPostExecute(null);
+                
+                if (getError() == null) {
+                    DialogUtils.showSimpleMessageDialog(getContext(),
+                            R.string.import_missing_birthdays_from_wikipedia_title,
+                            message);
+                }
+            }
+        }.execute();
+    }
+	
 	static class PostTagCSVBuilder implements CSVBuilder<PostTag> {
 		@Override
 		public PostTag parseCSVFields(String[] fields) {

@@ -33,7 +33,7 @@
     <string name="delete_post_plural_confirm">Delete %1$d posts, are you sure?</string>
     <string name="publish_post_singular_confirm">Publish \'%1$s\', are you sure?</string>
     <string name="publish_post_plural_confirm">Publish %1$d posts, are you sure?</string>
-    <string name="clear_cache">Clear Cache</string>
+    <string name="refresh_cache">Refresh Cache</string>
     <string name="image_size">Image %1$dx%2$d</string>
     <string name="menu_show_image">Show Image</string>
     <string name="menu_header_show_image">Image for %1s</string>
@@ -64,10 +64,11 @@
     <string name="import_posts_from_tumblr_title">Import Posts From Tumblr</string>
     <string name="import_dom_filters_title">Import DOM Filters</string>
     <string name="import_birthdays_title">Import Birthdays</string>
+    <string name="import_missing_birthdays_from_wikipedia_title">Import Missing Birthdays from Wikipedia</string>
     <string name="export_birthdays_title">Export Birthdays to CSV File</string>
     <string name="exporting_to_csv">Exporting to CSV&#8230;</string>
     <string name="start_import_title">Start Import&#8230;</string>
-    <string name="import_progress_title">Imported %1$d posts</string>
+    <string name="import_progress_title">Imported %1$d items</string>
     <string name="enter_tag_hint">Enter tag to search</string>
     <string name="tag_with_post_count">%1$s (%2$d)</string>
     <string name="posts_read_count_title">%1$d posts read&#8230;</string>
