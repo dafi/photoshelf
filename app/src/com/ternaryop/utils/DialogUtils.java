@@ -11,28 +11,27 @@ public class DialogUtils {
 	}
 
 	public static void showErrorDialog(Context context, String title, Exception e) {
-		new AlertDialog.Builder(context)
-		.setCancelable(false) // This blocks the 'BACK' button
-	    .setTitle(title)
-	    .setMessage(e.getLocalizedMessage())
-	    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int whichButton) {
-		        dialog.dismiss();                    
-	        }
-		})
-	    .show();
+	    showSimpleMessageDialog(context, title, e.getLocalizedMessage());
 	}
 
 	public static void showErrorDialog(Context context, int resId, Exception e) {
-		new AlertDialog.Builder(context)
-		.setCancelable(false) // This blocks the 'BACK' button
-	    .setTitle(resId)
-	    .setMessage(e.getLocalizedMessage())
-	    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int whichButton) {
-		        dialog.dismiss();                    
-	        }
-		})
-	    .show();
+        showSimpleMessageDialog(context, context.getString(resId), e.getLocalizedMessage());
 	}
+
+    public static void showSimpleMessageDialog(Context context, int resId, String message) {
+        showSimpleMessageDialog(context, context.getString(resId), message);
+    }
+    
+    public static void showSimpleMessageDialog(Context context, String title, String message) {
+        new AlertDialog.Builder(context)
+        .setCancelable(false) // This blocks the 'BACK' button
+        .setTitle(title)
+        .setMessage(message)
+        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.dismiss();                    
+            }
+        })
+        .show();
+    }
 }
