@@ -80,16 +80,14 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
 		String sqlQuery = "SELECT %2$s, %3$s, count(*) as post_count FROM %1$s"
-				+ " WHERE %3$s LIKE '%%%5$s%%' AND %4$s='%6$s'"
+				+ " WHERE %3$s LIKE ? AND %4$s=?"
 				+ " GROUP BY %3$s ORDER BY %3$s";
 		sqlQuery = String.format(sqlQuery,
 				TABLE_NAME,
 				_ID,
 				TAG,
-				TUMBLR_NAME,
-				tag,
-				tumblrName);
-		 return db.rawQuery(sqlQuery, null);
+				TUMBLR_NAME);
+		 return db.rawQuery(sqlQuery, new String[] {"%" + tag + "%", tumblrName});
 	}
 
 	public Map<String, Long> getLastPublishedTimeByTags(List<String> tags, String tumblrName) {

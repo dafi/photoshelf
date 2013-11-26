@@ -48,8 +48,7 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 		db.execSQL("CREATE VIEW VW_MISSING_BIRTHDAYS AS"
 				+ " select distinct t.TAG AS name, t.tumblr_name from POST_TAG t"
 				+ " where ((t.SHOW_ORDER = 1)"
-				+ " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY)))"
-				+ " and (t.TAG not in ('art')))");
+				+ " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY where birth_date > '1900-01-01 00:00:00'))))");
 	}
 
 	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

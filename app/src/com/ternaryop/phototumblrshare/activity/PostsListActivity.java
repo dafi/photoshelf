@@ -249,7 +249,6 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 						deletePost(mode);
 						break;
 					}
-//		        	mode.finish();
 		            break;
 		        }
 		    }
@@ -344,4 +343,7 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), post.getFirstTag());
 	}
 
+	public void onThumbnailImageClick(PhotoSharePost post) {
+		ImageViewerActivity.startImageViewer(this, post.getFirstPhotoAltSize().get(0).getUrl(), post.getCaption());
+	}
 }
