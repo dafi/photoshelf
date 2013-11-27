@@ -13,14 +13,20 @@ public abstract class AbsDAO<Pojo> {
 
 	protected abstract void onCreate(SQLiteDatabase db);
 	protected abstract void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
-	public abstract long insert(Pojo pojo);
 	public abstract ContentValues getContentValues(Pojo pojo);
+    public abstract String getTableName();
 
-	public void removeAll() {
-		
-	}
+    public long insert(Pojo pojo) {
+        SQLiteDatabase db = getDbHelper().getWritableDatabase();
+        return db.insertOrThrow(getTableName(), null, getContentValues(pojo));
+    }
 
-	public SQLiteOpenHelper getDbHelper() {
+    public void removeAll() {
+        SQLiteDatabase db = getDbHelper().getWritableDatabase();
+        db.delete(getTableName(), null, null);
+    }
+
+    public SQLiteOpenHelper getDbHelper() {
 		return dbHelper;
 	}
 }

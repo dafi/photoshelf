@@ -48,7 +48,7 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 		db.execSQL("CREATE VIEW VW_MISSING_BIRTHDAYS AS"
 				+ " select distinct t.TAG AS name, t.tumblr_name from POST_TAG t"
 				+ " where ((t.SHOW_ORDER = 1)"
-				+ " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY where birth_date > '1900-01-01 00:00:00'))))");
+				+ " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY))))");
 	}
 
 	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -57,18 +57,12 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         onCreate(db);
     }
 
-	public long insert(Birthday birthday) {
-		SQLiteDatabase db = getDbHelper().getWritableDatabase();
-		long rows = db.insertOrThrow(TABLE_NAME, null, getContentValues(birthday));
-		
-		return rows;
-	}
-
 	public List<Birthday> getBirthdayByDate(Date date, String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		// tumblrName is not used to filter rows
 		
-		String sqlQuery = "SELECT %2$s, %3$s, %4$s FROM %1$s WHERE strftime('%%m%%d', %3$s) = '%5$s' ORDER BY %2$s, strftime('%%d', %3$s)";
+		// exclude row with an invalid date
+		String sqlQuery = "SELECT %2$s, %3$s, %4$s FROM %1$s WHERE BIRTH_DATE > '1900-01-01' strftime('%%m%%d', %3$s) = '%5$s' ORDER BY %2$s, strftime('%%d', %3$s)";
 		sqlQuery = String.format(sqlQuery,
 				TABLE_NAME,
 				NAME,
@@ -154,5 +148,10 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 		v.put(BIRTH_DATE, Birthday.ISO_DATE_FORMAT.format(birthday.getBirthDate()));
 		
 		return v;
+	}
+	
+	@Override
+	public String getTableName() {
+	    return TABLE_NAME;
 	}
 }

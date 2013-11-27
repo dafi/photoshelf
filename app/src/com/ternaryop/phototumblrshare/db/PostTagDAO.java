@@ -64,18 +64,6 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		return v;
 	}
 
-	public long insert(PostTag postTag) {
-		SQLiteDatabase db = getDbHelper().getWritableDatabase();
-		long rows = db.insertOrThrow(TABLE_NAME, null, getContentValues(postTag));
-		
-		return rows;
-	}
-
-	public void removeAll() {
-		SQLiteDatabase db = getDbHelper().getWritableDatabase();
-        db.execSQL("delete from " + TABLE_NAME);
-	}
-
 	public Cursor getCursorByTag(String tag, String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
@@ -154,4 +142,9 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		}	
 		return postTag;
 	}
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
 }
