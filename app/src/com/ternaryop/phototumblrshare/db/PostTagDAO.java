@@ -123,19 +123,20 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
 		String sqlQuery = "SELECT " + TextUtils.join(",", COLUMNS) + ", max(" + PUBLISH_TIMESTAMP + ")"
-				+ " FROM " + TABLE_NAME;
+				+ " FROM " + TABLE_NAME + " WHERE " + TUMBLR_NAME + "=?";
 
-		Cursor c = db.rawQuery(sqlQuery, null);
+		Cursor c = db.rawQuery(sqlQuery, new String[] {tumblrName});
 		PostTag postTag = null;
 		try {
-			if (c.moveToNext()) {
-				postTag = new PostTag(
-						c.getLong(c.getColumnIndex(_ID)),
-						c.getString(c.getColumnIndex(TUMBLR_NAME)),
-						c.getString(c.getColumnIndex(TAG)),
-						c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
-						c.getLong(c.getColumnIndex(SHOW_ORDER))
-						);
+		    // be sure at least one record is returned (table could be empty)
+			if (c.moveToNext() && !c.isNull(c.getColumnIndex(_ID))) {
+                postTag = new PostTag(
+                        c.getLong(c.getColumnIndex(_ID)),
+                        c.getString(c.getColumnIndex(TUMBLR_NAME)),
+                        c.getString(c.getColumnIndex(TAG)),
+                        c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
+                        c.getLong(c.getColumnIndex(SHOW_ORDER))
+                        );
 			}
 		} finally {
 			c.close();
