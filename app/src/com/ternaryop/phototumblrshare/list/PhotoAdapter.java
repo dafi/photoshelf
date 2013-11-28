@@ -62,16 +62,20 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 
         String titleString = post.getFirstTag();
         holder.title.setText(Html.fromHtml(titleString).toString().replaceAll("\n", ""));
-        holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
-        holder.browseImage.setTag(post);
-        holder.browseImage.setOnClickListener(this);
-        if (onPhotoBrowseClick == null || post.getScheduleTimeType() == ScheduleTime.POST_PUBLISH_NEVER) {
-        	holder.browseImage.setVisibility(View.GONE);
-        } else {
-        	holder.browseImage.setVisibility(View.VISIBLE);
+        // set the onclick listeners
+        if (onPhotoBrowseClick != null) {
+            if (post.getScheduleTimeType() != ScheduleTime.POST_PUBLISH_NEVER) {
+            	holder.title.setOnClickListener(this);
+            	holder.title.setTag(post);
+            }
+            
+            holder.thumbImage.setOnClickListener(this);
+            holder.thumbImage.setTag(post);
         }
         
+        holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
+
 		// TODO find 75x75 image url
 		List<TumblrAltSize> altSizes = post.getPhotos().get(0).getAltSizes();
 		TumblrAltSize smallestImage = altSizes.get(altSizes.size() - 1);
@@ -80,7 +84,14 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
     }
     
 	public void onClick(View v) {
-		onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
+		switch (v.getId()) {
+			case R.id.title_textview:
+				onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
+				break;
+			case R.id.thumbnail_image:
+				onPhotoBrowseClick.onThumbnailImageClick((PhotoSharePost)v.getTag());
+				break;
+		}
 	}
 	
 	public void calcGroupIds() {
@@ -150,14 +161,12 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 		TextView title;
 		TextView timeDesc;
 		ImageView thumbImage;
-		ImageView browseImage;
 
 		public ViewHolder(View vi) {
 	        title = (TextView)vi.findViewById(R.id.title_textview);
 	        timeDesc = (TextView)vi.findViewById(R.id.time_desc);
 
-	        thumbImage = (ImageView)vi.findViewById(R.id.list_image);
-	        browseImage = (ImageView)vi.findViewById(R.id.browse_images);
+	        thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
 		}
 	}
 }

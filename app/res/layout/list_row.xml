@@ -14,19 +14,20 @@
         android:background="@drawable/image_bg"
         android:padding="3dip" >
 
-        <ImageView
-            android:id="@+id/list_image"
+        <com.ternaryop.phototumblrshare.widget.ClickableImageView
+            android:id="@+id/thumbnail_image"
             android:layout_width="75dip"
             android:layout_height="75dip" />
     </LinearLayout>
 
-    <TextView
+    <com.ternaryop.phototumblrshare.widget.ClickableTextView
         android:id="@+id/title_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/thumbnail"
         android:layout_toRightOf="@+id/thumbnail"
-        android:textColor="#040404"
+        android:textColor="@color/link_text_color"
+        android:background="@color/link_text_color_bg"
         android:textSize="15sp"
         android:textStyle="bold"
         android:typeface="sans" />
@@ -40,18 +41,5 @@
         android:layout_toRightOf="@+id/thumbnail"
         android:textColor="#343434"
         android:textSize="12sp" />
-
-    <!-- On Nexus 7 the click area is too small so we use a fixed width, paddingBottom and paddingTop -->
-
-    <ImageView
-        android:id="@+id/browse_images"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="15sp"
-        android:paddingBottom="20dp"
-        android:paddingTop="20dp"
-        android:src="@drawable/arrow" />
 
 </com.ternaryop.phototumblrshare.widget.CheckableRelativeLayout>

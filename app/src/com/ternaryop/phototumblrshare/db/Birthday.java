@@ -25,7 +25,7 @@ public class Birthday implements BaseColumns, Serializable {
 
 	public Birthday(String name, Date birthDate, String tumblrName) {
 		this.tumblrName = tumblrName;
-		this.name = name;
+		this.name = name.toLowerCase(Locale.US);
 		this.birthDate = birthDate;
 	}
 
@@ -38,7 +38,7 @@ public class Birthday implements BaseColumns, Serializable {
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = name.toLowerCase(Locale.US);
 	}
 
 	public Date getBirthDate() {

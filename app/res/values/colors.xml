@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="link_text_color">#040404</color>
+    <color name="link_text_color_bg">#00000000</color>
+    <color name="link_text_color_clicked">#0000FF</color>
+    <color name="link_text_color_clicked_bg">#ffffff</color>
+
+</resources>
