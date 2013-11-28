@@ -9,6 +9,7 @@ import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -27,7 +28,7 @@ public class BirthdaysActivity extends PhotoTumblrActivity implements ActionBar.
 		BirthdayDAO birthdayDatabaseHelper = DBHelper
 				.getInstance(this)
 				.getBirthdayDAO();
-		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(new Date(), getBlogName());
+		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(new Date());
 		fillList(list);
 	}
 
@@ -36,7 +37,10 @@ public class BirthdaysActivity extends PhotoTumblrActivity implements ActionBar.
 		for (Birthday birthday : list) {
 			sb.append(birthday + "\n");
 		}
-		((TextView)findViewById(R.id.text)).setText(sb);
+		TextView textView = (TextView)findViewById(R.id.text);
+        textView.setText(sb);
+        // allow textView to scroll
+		textView.setMovementMethod(new ScrollingMovementMethod());
 	}
 
 	private void setupActionBar() {

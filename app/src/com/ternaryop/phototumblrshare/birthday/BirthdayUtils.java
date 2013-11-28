@@ -27,7 +27,7 @@ public class BirthdayUtils {
 				.getInstance(context.getApplicationContext())
 				.getBirthdayDAO();
 		Calendar now = Calendar.getInstance(Locale.US);
-		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(now.getTime(), null);
+		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(now.getTime());
 		if (list.isEmpty()) {
 			return false;
 		}

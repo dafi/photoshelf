@@ -57,19 +57,17 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         onCreate(db);
     }
 
-	public List<Birthday> getBirthdayByDate(Date date, String tumblrName) {
+	public List<Birthday> getBirthdayByDate(Date date) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
-		// tumblrName is not used to filter rows
 		
 		// exclude row with an invalid date
-		String sqlQuery = "SELECT %2$s, %3$s, %4$s FROM %1$s WHERE BIRTH_DATE > '1900-01-01' strftime('%%m%%d', %3$s) = '%5$s' ORDER BY %2$s, strftime('%%d', %3$s)";
+		String sqlQuery = "SELECT %2$s, %3$s, %4$s FROM %1$s WHERE BIRTH_DATE > '1900-01-01' AND strftime('%%m%%d', %3$s) = '%5$s' ORDER BY %2$s, strftime('%%d', %3$s)";
 		sqlQuery = String.format(sqlQuery,
 				TABLE_NAME,
 				NAME,
 				BIRTH_DATE,
 				TUMBLR_NAME,
-				MONTH_DAY_FORMAT.format(date),
-				tumblrName);
+				MONTH_DAY_FORMAT.format(date));
 		Cursor c = db.rawQuery(sqlQuery, null);
 		List<Birthday> list = cursorToBirtdayList(c);
 
