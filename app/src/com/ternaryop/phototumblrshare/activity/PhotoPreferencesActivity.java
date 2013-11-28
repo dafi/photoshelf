@@ -114,12 +114,12 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 			Importer.importBirtdays(this, importPath);
             return true;
         } else if (preference == preferenceExportPostsToCSV) {
-	        String exportPath = IOUtils.generateUniqueFileName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME);
-			Importer.exportPostsToCSV(this, exportPath);
+	        String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
+			Importer.exportPostsToCSV(this, getExportPath(exportPath));
             return true;
         } else if (preference == preferenceExportBirthdays) {
-	        String exportPath = IOUtils.generateUniqueFileName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME);
-			Importer.exportBirthdaysToCSV(this, exportPath);
+	        String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+			Importer.exportBirthdaysToCSV(this, getExportPath(exportPath));
             return true;
         } else if (preference == preferenceImportBirthdaysFromWikipedia) {
             Importer.importMissingBirthdaysFromWikipedia(this, new AppSupport(this).getSelectedBlogName());
@@ -127,6 +127,19 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         }
                 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
+    }
+    
+    /**
+     * If necessary rename exportPath
+     * @param exportPath
+     * @return
+     */
+    public String getExportPath(String exportPath) {
+        String newPath = IOUtils.generateUniqueFileName(exportPath);
+        if (!newPath.equals(exportPath)) {
+            new File(exportPath).renameTo(new File(newPath));
+        }
+        return exportPath;
     }
 
     public static void startPreferencesActivityForResult(Activity caller) {
