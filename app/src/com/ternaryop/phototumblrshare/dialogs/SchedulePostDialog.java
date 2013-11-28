@@ -6,14 +6,15 @@ import java.util.Locale;
 
 import org.json.JSONObject;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.ternaryop.phototumblrshare.R;
@@ -40,8 +41,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 		this.onPostSchedule = onPostSchedule;
 		setContentView(R.layout.dialog_schedule_post);
 		
-		setTitle(R.string.schedule_post);
-		((TextView)findViewById(R.id.post_title_textview)).setText(item.getFirstTag());
+		setTitle(context.getString(R.string.schedule_dialog_title, item.getFirstTag()));
 		((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
 		((Button)findViewById(R.id.schedule_button)).setOnClickListener(this);
 
@@ -65,7 +65,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 				dismiss();
 				return;
 			case R.id.schedule_button:
-				schedulePost();
+			    checkAndSchedule();
 				return;
 			case R.id.choose_time_button:
 				new TimePickerDialog(getContext(), this,
@@ -82,6 +82,22 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 				return;
 		}
 	}
+
+    private void checkAndSchedule() {
+        if (scheduleDateTime.getTimeInMillis() <= System.currentTimeMillis()) {
+            new AlertDialog.Builder(getContext())
+            .setMessage(R.string.scheduled_time_is_in_the_past_continue_title)
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    schedulePost();
+                }
+            })
+            .setNegativeButton(android.R.string.no, null)
+            .show();
+        } else {
+            schedulePost();
+        }
+    }
 
 	private void schedulePost() {
 		Tumblr.getSharedTumblr(getContext())

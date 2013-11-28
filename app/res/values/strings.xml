@@ -26,6 +26,7 @@
     <string name="finding_last_published_posts">Finding last published posts&#8230;</string>
     <string name="schedule_post">Schedule</string>
     <string name="schedule_title">Schedule</string>
+    <string name="schedule_dialog_title">Schedule: %1$s</string>
     <string name="publish_post">Publish</string>
     <string name="save_to_draft_singular_confirm">Save to draft \'%1$s\', are you sure?</string>
     <string name="save_to_draft_plural_confirm">Save to draft %1$d posts, are you sure?</string>
@@ -85,4 +86,5 @@
     <string name="wallpaper_changed_title">Wallpaper changed</string>
     <string name="share_image_title">Share Image</string>
     <string name="downloading_image">Downloading image&#8230;</string>
+    <string name="scheduled_time_is_in_the_past_continue_title">Scheduled time is in the past, continue?</string>
 </resources>
