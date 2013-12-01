@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import com.ternaryop.phototumblrshare.activity.ImageViewerActivity;
@@ -7,6 +8,7 @@ import com.ternaryop.phototumblrshare.activity.ImageViewerActivity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
@@ -53,5 +55,15 @@ public class ImagePickerWebViewClient extends WebViewClient {
 	@Override
 	public void onPageFinished(WebView view, String url) {
 		progressBar.setVisibility(View.GONE);
+	}
+	
+	@Override
+	public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+	    // rudimental way to removed javascript and other resources
+	    // javascript can't be simply disabled because of kitkat bug
+	    if (url.indexOf(".gif") >= 0 || url.indexOf(".js") >= 0) {
+	        return new WebResourceResponse("text/html", "UTF-8", new ByteArrayInputStream(new byte[0]));
+	    }
+	    return null; 
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.View.OnLongClickListener;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
@@ -27,12 +29,15 @@ import com.ternaryop.phototumblrshare.parsers.TitleData;
 import com.ternaryop.phototumblrshare.parsers.TitleParser;
 import com.ternaryop.utils.URLUtils;
 
+@SuppressLint("SetJavaScriptEnabled")
 public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongClickListener, OnImagesRetrieved {
 	private static final String TEXT_WITH_URL = "textWithUrl";
 
 	private WebView webView;
 	private ImageUrlRetriever imageUrlRetriever;
 	private ProgressBar progressBar;
+
+    private ImageDOMSelectorFinder domSelectorFinder;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,7 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 		imageUrlRetriever = new ImageUrlRetriever(this, this);
 		progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
 		prepareWebView();
+		domSelectorFinder = new ImageDOMSelectorFinder(this);
 
 	    String textWithUrl = getTextWithUrl();
 
@@ -85,6 +91,8 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 			}
 		});
 		webView.setOnLongClickListener(this);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.addJavascriptInterface(this, "targetUrlRetriever");
 	}
 
 	private void beginPostToTumblr(String textWithUrl) {
@@ -133,11 +141,9 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 		@Override
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);
-			String url = msg.getData().getString("url");
-			String domSelector = new ImageDOMSelectorFinder(activity).getSelectorFromUrl(url);
-			if (domSelector != null) {
-				activity.imageUrlRetriever.addOrRemoveUrl(domSelector, url);
-			}
+			String url = msg.getData().getString("src");
+			String js = String.format("document.querySelector(\"img[src='%1$s']\").parentNode.href", url);
+            activity.webView.loadUrl("javascript:var url = " + js + "; targetUrlRetriever.setTargetHrefURL(url);");
 		}
 	}
 
@@ -161,4 +167,21 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 
 		context.startActivity(intent);
 	}
+
+    /**
+     * Workaround for 4.4 bug 
+     * http://code.google.com/p/android/issues/detail?id=62928
+     * @param url
+     */
+    @JavascriptInterface
+    public void setTargetHrefURL(final String url) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                String domSelector = domSelectorFinder.getSelectorFromUrl(url);
+                if (domSelector != null) {
+                    imageUrlRetriever.addOrRemoveUrl(domSelector, url);
+                }
+            }
+        });
+    }
 }

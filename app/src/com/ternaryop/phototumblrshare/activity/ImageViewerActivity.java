@@ -65,11 +65,13 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 		webView.addJavascriptInterface(this, "dimRetriever");
 		webViewLoaded = false;
 
-//		webView.setInitialScale(1);
-//		webView.getSettings().setLoadWithOverviewMode(true);
+		webView.setInitialScale(1);
+		webView.getSettings().setLoadWithOverviewMode(true);
 		webView.getSettings().setUseWideViewPort(true);		
-		
-		webView.setWebChromeClient(new WebChromeClient() {
+		webView.getSettings().setBuiltInZoomControls(true);
+		webView.getSettings().setSupportZoom(true);
+
+        webView.setWebChromeClient(new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
 				progressBar.setProgress(newProgress);
