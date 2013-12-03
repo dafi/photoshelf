@@ -4,10 +4,13 @@ import java.io.File;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.view.MenuItem;
 
@@ -31,7 +34,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
 	private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
     private static final String KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia";
-	
+    private static final String KEY_SCHEDULE_TIME_SPAN = "schedule_time_span";
 	
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
@@ -43,11 +46,17 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private Preference preferenceImportBirthdays;
 	private Preference preferenceExportBirthdays;
     private Preference preferenceImportBirthdaysFromWikipedia;
+    private Preference preferenceScheduleTimeSpan;
+
+    private AppSupport appSupport;
     
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_main);
+
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(prefListener);
+        appSupport = new AppSupport(this);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -78,8 +87,23 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceExportBirthdays.setSummary(birthdaysPath);
 
         preferenceImportBirthdaysFromWikipedia = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA);
+        
+        preferenceScheduleTimeSpan = preferenceScreen.findPreference(KEY_SCHEDULE_TIME_SPAN);
+        prefListener.onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(this), KEY_SCHEDULE_TIME_SPAN);
 	}
 
+	// Use instance field for listener
+	// It will not be gc'd as long as this instance is kept referenced
+	private OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key.equals(KEY_SCHEDULE_TIME_SPAN)) {
+                int hours = sharedPreferences.getInt(key, 0);
+                preferenceScheduleTimeSpan.setSummary(getString(hours == 1 ? R.string.hour_title_singular : R.string.hour_title_plural, hours));
+            }
+        }
+	};
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -102,28 +126,30 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
         	Importer.importPostsFromCSV(this, importPath);
             return true;
-        } else if (preference == preferenceImportPostsFromTumblr) {
-			Importer.importFromTumblr(this, new AppSupport(this).getSelectedBlogName());
-            return true;
-        } else if (preference == preferenceImportDOMFilters) {
-	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
-			Importer.importDOMFilters(this, importPath);
-            return true;
-        } else if (preference == preferenceImportBirthdays) {
-	        String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
-			Importer.importBirtdays(this, importPath);
-            return true;
-        } else if (preference == preferenceExportPostsToCSV) {
-	        String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
-			Importer.exportPostsToCSV(this, getExportPath(exportPath));
-            return true;
-        } else if (preference == preferenceExportBirthdays) {
-	        String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
-			Importer.exportBirthdaysToCSV(this, getExportPath(exportPath));
-            return true;
-        } else if (preference == preferenceImportBirthdaysFromWikipedia) {
-            Importer.importMissingBirthdaysFromWikipedia(this, new AppSupport(this).getSelectedBlogName());
-            return true;
+        } else {
+            if (preference == preferenceImportPostsFromTumblr) {
+            	Importer.importFromTumblr(this, appSupport.getSelectedBlogName());
+                return true;
+            } else if (preference == preferenceImportDOMFilters) {
+                String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
+            	Importer.importDOMFilters(this, importPath);
+                return true;
+            } else if (preference == preferenceImportBirthdays) {
+                String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+            	Importer.importBirtdays(this, importPath);
+                return true;
+            } else if (preference == preferenceExportPostsToCSV) {
+                String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
+            	Importer.exportPostsToCSV(this, getExportPath(exportPath));
+                return true;
+            } else if (preference == preferenceExportBirthdays) {
+                String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+            	Importer.exportBirthdaysToCSV(this, getExportPath(exportPath));
+                return true;
+            } else if (preference == preferenceImportBirthdaysFromWikipedia) {
+                Importer.importMissingBirthdaysFromWikipedia(this, appSupport.getSelectedBlogName());
+                return true;
+            }
         }
                 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
