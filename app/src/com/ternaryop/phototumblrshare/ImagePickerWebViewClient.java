@@ -3,8 +3,7 @@ package com.ternaryop.phototumblrshare;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
-import com.ternaryop.phototumblrshare.activity.ImageViewerActivity;
-
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
@@ -13,6 +12,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.ternaryop.phototumblrshare.activity.ImageViewerActivity;
 
 public class ImagePickerWebViewClient extends WebViewClient {
 	private final ProgressBar progressBar;
@@ -52,9 +53,13 @@ public class ImagePickerWebViewClient extends WebViewClient {
 		progressBar.setProgress(0);
 		progressBar.setVisibility(View.VISIBLE);
 	}
+
 	@Override
 	public void onPageFinished(WebView view, String url) {
 		progressBar.setVisibility(View.GONE);
+		if (view.getTitle() != null) {
+		    ((Activity)view.getContext()).getActionBar().setSubtitle(view.getTitle());
+		}
 	}
 	
 	@Override

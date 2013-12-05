@@ -45,6 +45,7 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_webview);
+        setTitle(R.string.image_viewer_activity_title);
 	    setActionBarIcon();
 
 	    ProgressBar progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
@@ -115,8 +116,8 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 	public void setDimensions(final int w, final int h) {
 		runOnUiThread(new Runnable() {
 		    public void run() {
-				setTitle(getString(R.string.image_size, w, h));
-				}
+		        getActionBar().setSubtitle(getActionBar().getSubtitle() + String.format(" (%1dx%2d)", w, h));
+			}
 		  });
 	}
 
