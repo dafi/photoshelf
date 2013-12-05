@@ -15,8 +15,8 @@ public class FileCache {
     }
     
     public FileCache(Context context, String prefix) {
-    	this.prefix = prefix;
-		cacheDir = context.getCacheDir();
+    	this.prefix = new File(prefix).getName();
+		cacheDir = new File(context.getCacheDir(), prefix).getParentFile();
         
 		if (!cacheDir.exists()) {
             cacheDir.mkdirs();
@@ -51,6 +51,13 @@ public class FileCache {
         	for (File f : files) {
         		f.delete();
         	}
+        }
+    }
+
+    public static void clearCache(Context context, String prefixDir) {
+        File cacheDir = new File(context.getCacheDir(), prefixDir);
+        for (File f : cacheDir.listFiles()) {
+            f.delete();
         }
     }
 }

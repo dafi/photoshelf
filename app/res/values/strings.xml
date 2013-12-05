@@ -87,4 +87,10 @@
     <string name="share_image_title">Share Image</string>
     <string name="downloading_image">Downloading image&#8230;</string>
     <string name="scheduled_time_is_in_the_past_continue_title">Scheduled time is in the past, continue?</string>
+    <string name="hour_title_singular">One hour</string>
+    <string name="hour_title_plural">%1$d hours</string>
+    <string name="pref_clear_cache">Clear Cache</string>
+    <string name="clear_image_cache_title">Clear Image Cache</string>
+    <string name="clear_cache_confirm">Clear cache, are you sure?</string>
+
 </resources>

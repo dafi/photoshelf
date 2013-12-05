@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import com.ternaryop.phototumblrshare.R;
 
 public class ImageLoader {
+    public final static String IMAGE_PREFIX_DIRECTORY = "images" + File.separator;
     
 	private MemoryCache memoryCache = new MemoryCache();
 	private FileCache fileCache;
@@ -36,7 +37,7 @@ public class ImageLoader {
     private final int stub_id = R.drawable.stub;
 
     public ImageLoader(Context context, String prefix) {
-		this.fileCache = new FileCache(context, prefix);    		
+        this.fileCache = new FileCache(context, IMAGE_PREFIX_DIRECTORY + prefix);    		
         executorService = Executors.newFixedThreadPool(5);
     }
     
@@ -217,7 +218,10 @@ public class ImageLoader {
         fileCache.clear();
     }
 
-
+    public static void clearImageCache(Context context) {
+        FileCache.clearCache(context, IMAGE_PREFIX_DIRECTORY);
+    }
+    
 	protected Drawable drawableFromUrl(String url) {
 		HttpURLConnection conn = null;
 		OutputStream os = null;

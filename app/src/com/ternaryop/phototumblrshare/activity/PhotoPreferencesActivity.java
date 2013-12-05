@@ -3,6 +3,8 @@ package com.ternaryop.phototumblrshare.activity;
 import java.io.File;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -14,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.view.MenuItem;
 
+import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.Importer;
@@ -35,6 +38,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
     private static final String KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia";
     private static final String KEY_SCHEDULE_TIME_SPAN = "schedule_time_span";
+    private static final String KEY_CLEAR_IMAGE_CACHE = "clear_image_cache";
 	
 	public static final int MAIN_PREFERENCES_RESULT = 1;
 
@@ -47,6 +51,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private Preference preferenceExportBirthdays;
     private Preference preferenceImportBirthdaysFromWikipedia;
     private Preference preferenceScheduleTimeSpan;
+    private Preference preferenceClearImageCache;
 
     private AppSupport appSupport;
     
@@ -90,6 +95,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         
         preferenceScheduleTimeSpan = preferenceScreen.findPreference(KEY_SCHEDULE_TIME_SPAN);
         prefListener.onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(this), KEY_SCHEDULE_TIME_SPAN);
+
+        preferenceClearImageCache = preferenceScreen.findPreference(KEY_CLEAR_IMAGE_CACHE);
 	}
 
 	// Use instance field for listener
@@ -149,12 +156,33 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
             } else if (preference == preferenceImportBirthdaysFromWikipedia) {
                 Importer.importMissingBirthdaysFromWikipedia(this, appSupport.getSelectedBlogName());
                 return true;
+            } else if (preference == preferenceClearImageCache) {
+                clearImageCache();
+                return true;
             }
         }
                 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
     
+    private void clearImageCache() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    ImageLoader.clearImageCache(PhotoPreferencesActivity.this);
+                    break;
+                }
+            }
+        };
+        new AlertDialog.Builder(this)
+        .setMessage(R.string.clear_cache_confirm)
+        .setPositiveButton(android.R.string.yes, dialogClickListener)
+        .setNegativeButton(android.R.string.no, null)
+        .show();        
+    }
+
     /**
      * If necessary rename exportPath
      * @param exportPath
