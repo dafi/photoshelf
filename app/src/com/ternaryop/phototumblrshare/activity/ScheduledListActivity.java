@@ -81,7 +81,7 @@ public class ScheduledListActivity extends PostsListActivity {
 				    	}
 					}
 			    	if (photoPosts.size() > 0) {
-			    		totalPosts =  photoShareList.size();
+                        totalPosts = photoShareList.get(0).getTotalPosts();
 			    		hasMorePosts = true;
 			    	} else {
 			    		totalPosts = photoAdapter.getCount() + photoShareList.size();
