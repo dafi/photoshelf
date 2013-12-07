@@ -2,10 +2,13 @@ package com.ternaryop.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,5 +56,23 @@ public class IOUtils {
     		file = new File(parentFile, nameWithExt);
     	}
     	return file.getAbsolutePath();
+    }
+
+    public static byte[] readURL(String url) throws IOException {
+        HttpURLConnection connection = null;
+        InputStream is = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            is = connection.getInputStream();
+            copy(is, baos);
+        } finally {
+            if (baos != null) try { baos.close(); } catch (Exception e) {}
+            if (is != null) try { is.close(); } catch (Exception e) {}
+            if (connection != null) try { connection.disconnect(); } catch (Exception e) {}
+        }
+
+        return baos.toByteArray();
     }
 }

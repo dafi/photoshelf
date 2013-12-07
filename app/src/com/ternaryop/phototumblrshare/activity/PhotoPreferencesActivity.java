@@ -28,6 +28,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String CSV_FILE_NAME = "tags.csv";
     private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
 	private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
+    private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
 
 	private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
 	private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
@@ -36,6 +37,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 	private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
 	private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
 	private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
+	private static final String KEY_EXPORT_MISSING_BIRTHDAYS = "export_missing_birthdays";
     private static final String KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia";
     private static final String KEY_SCHEDULE_TIME_SPAN = "schedule_time_span";
     private static final String KEY_CLEAR_IMAGE_CACHE = "clear_image_cache";
@@ -52,6 +54,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private Preference preferenceImportBirthdaysFromWikipedia;
     private Preference preferenceScheduleTimeSpan;
     private Preference preferenceClearImageCache;
+    private Preference preferenceExportMissingBirthdays;
 
     private AppSupport appSupport;
     
@@ -97,6 +100,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         prefListener.onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(this), KEY_SCHEDULE_TIME_SPAN);
 
         preferenceClearImageCache = preferenceScreen.findPreference(KEY_CLEAR_IMAGE_CACHE);
+
+        preferenceExportMissingBirthdays = preferenceScreen.findPreference(KEY_EXPORT_MISSING_BIRTHDAYS);
 	}
 
 	// Use instance field for listener
@@ -158,6 +163,10 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
                 return true;
             } else if (preference == preferenceClearImageCache) {
                 clearImageCache();
+                return true;
+            } else if (preference == preferenceExportMissingBirthdays) {
+                String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + MISSING_BIRTHDAYS_FILE_NAME;
+                Importer.exportMissingBirthdaysToCSV(this, getExportPath(exportPath), appSupport.getSelectedBlogName());
                 return true;
             }
         }

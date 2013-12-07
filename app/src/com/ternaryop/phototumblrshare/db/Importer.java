@@ -2,6 +2,7 @@ package com.ternaryop.phototumblrshare.db;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -31,6 +34,7 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.IOUtils;
 import com.ternaryop.utils.StringUtils;
 
 public class Importer {
@@ -199,6 +203,45 @@ public class Importer {
                 getProgressDialog().setMessage(values[0]);
             }
 
+            private Birthday getBirthdayFromGoogle(String name, String blogName) throws IOException, ParseException {
+                String cleanName = name
+                        .replaceAll(" ", "+")
+                        .replaceAll("\"", "");
+                String url = "https://www.google.com/search?q=" + cleanName;
+                String html = new String(IOUtils.readURL(url), "UTF-8");
+                // match only dates in expected format (ie. "day month_name year")
+                Pattern pattern = Pattern.compile("\\(born (\\d{1,2}) ([a-zA-Z]+) (\\d{4})\\)");
+                Matcher matcher = pattern.matcher(html);
+                if (matcher.find()) {
+                    String day = matcher.group(1);
+                    String month = matcher.group(2);
+                    String year = matcher.group(3);
+                    
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM yyyy", Locale.US);
+                    Date date = dateFormat.parse(day + " " + month + " " + year);
+                    return new Birthday(name, date, blogName);
+                }
+                return null;
+            }
+
+            private Birthday getBirthdayFromWikipedia(String name, String blogName) throws IOException, ParseException {
+                String cleanName = StringUtils
+                        .capitalize(name)
+                        .replaceAll(" ", "_")
+                        .replaceAll("\"", "");
+                String url = "http://en.wikipedia.org/wiki/" + cleanName;
+                Document document = Jsoup.connect(url).get();
+                // protect against redirect
+                if (document.title().toLowerCase(Locale.US).contains(name)) {
+                    Elements el = document.select(".bday");
+                    if (el.size() > 0) {
+                        String birthDate = el.get(0).text();
+                        return new Birthday(name, birthDate, blogName);
+                    }
+                }
+                return null;
+            }
+            
             @Override
             protected String doInBackground(Void... params) {
                 BirthdayDAO birthdayDAO = DBHelper.getInstance(context).getBirthdayDAO();
@@ -209,21 +252,14 @@ public class Importer {
 
                 
                 for (final String name : names) {
-                    String cleanName = StringUtils
-                                .capitalize(name)
-                                .replaceAll(" ", "_")
-                                .replaceAll("\"", "");
-                    String url = "http://en.wikipedia.org/wiki/" + cleanName;
                     publishProgress(name + " (" + curr + "/" + size + ")");
                     try {
-                        Document document = Jsoup.connect(url).get();
-                        // protect against redirect
-                        if (document.title().toLowerCase(Locale.US).contains(name)) {
-                            Elements el = document.select(".bday");
-                            if (el.size() > 0) {
-                                String birthDate = el.get(0).text();
-                                birthdays.add(new Birthday(name, birthDate, blogName));
-                            }
+                        Birthday birthday = getBirthdayFromGoogle(name, blogName);
+                        if (birthday == null) {
+                            birthday = getBirthdayFromWikipedia(name, blogName);
+                        }
+                        if (birthday != null) {
+                            birthdays.add(birthday);
                         }
                     } catch (Exception e) {
                         // simply skip
