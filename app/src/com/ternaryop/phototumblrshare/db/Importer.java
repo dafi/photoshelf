@@ -267,7 +267,33 @@ public class Importer {
             }
         }.execute();
     }
-	
+
+    public static void exportMissingBirthdaysToCSV(final Context context, final String exportPath, final String tumblrName) {
+        try {
+            new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
+                @Override
+                protected Void doInBackground(Void... voidParams) {
+                    List<String> list = DBHelper.getInstance(context).getBirthdayDAO().getNameWithoutBirthDays(tumblrName);
+                    try {
+                        PrintWriter pw = new PrintWriter(exportPath);
+                        for (String name : list) {
+                            pw.println(name);
+                        }
+                        pw.flush();
+                        pw.close();
+                    } catch (Exception e) {
+                        setError(e);
+                    } finally {
+                    }   
+                    
+                    return null;
+                }
+            }.execute();
+        } catch (Exception error) {
+            DialogUtils.showErrorDialog(context, error);
+        }
+    }
+    
 	static class PostTagCSVBuilder implements CSVBuilder<PostTag> {
 		@Override
 		public PostTag parseCSVFields(String[] fields) {
