@@ -92,5 +92,8 @@
     <string name="pref_clear_cache">Clear Cache</string>
     <string name="clear_image_cache_title">Clear Image Cache</string>
     <string name="clear_cache_confirm">Clear cache, are you sure?</string>
+    <string name="pref_posts_title">Posts</string>
+    <string name="pref_birthdays_title">Birthdays</string>
+    <string name="export_missing_birthdays_title">Export Missing Birthdays</string>
 
 </resources>
