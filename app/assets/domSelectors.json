@@ -1,5 +1,6 @@
 {
 	"http:\/\/images.bangtidy.net\/.*\/attachment":"#theimage",
+	"http:\/\/images.bangtidy.net\/\\d{4}/\\d{1,2}/.*/.*":"#theimage",	
 	"http:\/\/x05.org":"#img_obj",
 	"http:\/\/www.imagebam.com":"[onclick*=scale]",
 	"http:\/\/www.pixtreat.com":"#img_obj",
