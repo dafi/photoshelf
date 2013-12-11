@@ -34,7 +34,6 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
-import com.ternaryop.utils.IOUtils;
 import com.ternaryop.utils.StringUtils;
 
 public class Importer {
