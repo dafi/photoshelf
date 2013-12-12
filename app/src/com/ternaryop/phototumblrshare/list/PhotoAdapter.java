@@ -65,9 +65,11 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 
         // set the onclick listeners
         if (onPhotoBrowseClick != null) {
-            if (post.getScheduleTimeType() != ScheduleTime.POST_PUBLISH_NEVER) {
-            	holder.title.setOnClickListener(this);
-            	holder.title.setTag(post);
+            if (post.getScheduleTimeType() == ScheduleTime.POST_PUBLISH_NEVER) {
+                holder.title.setOnClickListener(null);
+            } else {
+                holder.title.setOnClickListener(this);
+                holder.title.setTag(post);
             }
             
             holder.thumbImage.setOnClickListener(this);
@@ -84,6 +86,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
     }
     
 	public void onClick(View v) {
+        System.out.println("PhotoAdapter.onClick()" + ((PhotoSharePost)v.getTag()).getTagsAsString());
 		switch (v.getId()) {
 			case R.id.title_textview:
 				onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
