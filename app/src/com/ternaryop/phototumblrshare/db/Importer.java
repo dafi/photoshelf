@@ -206,18 +206,19 @@ public class Importer {
                 String cleanName = name
                         .replaceAll(" ", "+")
                         .replaceAll("\"", "");
-                String url = "https://www.google.com/search?q=" + cleanName;
-                String html = Jsoup.connect(url).get().text();
+                String url = "https://www.google.com/search?hl=en&q=" + cleanName;
+                String text = Jsoup.connect(url)
+                        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0")
+                        .get()
+                        .text();
                 // match only dates in expected format (ie. "Born: month_name day, year")
-                Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+) (\\d{1,2}), (\\d{4})");
-                Matcher matcher = pattern.matcher(html);
+                Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+ \\d{1,2}, \\d{4})");
+                Matcher matcher = pattern.matcher(text);
                 if (matcher.find()) {
-                    String day = matcher.group(1);
-                    String month = matcher.group(2);
-                    String year = matcher.group(3);
+                    String textDate = matcher.group(1);
                     
                     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
-                    Date date = dateFormat.parse(day + " " + month + " " + year);
+                    Date date = dateFormat.parse(textDate);
                     return new Birthday(name, date, blogName);
                 }
                 return null;
