@@ -86,7 +86,6 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
     }
     
 	public void onClick(View v) {
-        System.out.println("PhotoAdapter.onClick()" + ((PhotoSharePost)v.getTag()).getTagsAsString());
 		switch (v.getId()) {
 			case R.id.title_textview:
 				onPhotoBrowseClick.onPhotoBrowseClick((PhotoSharePost)v.getTag());
