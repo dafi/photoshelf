@@ -81,7 +81,9 @@ public class ScheduledListActivity extends PostsListActivity {
 				    	}
 					}
 			    	if (photoPosts.size() > 0) {
-                        totalPosts = photoShareList.get(0).getTotalPosts();
+			    	    // tumblr doesn't return the total posts count for scheduled posts
+			    	    // so we set to the photoShareList count
+                        totalPosts = photoShareList.size();
 			    		hasMorePosts = true;
 			    	} else {
 			    		totalPosts = photoAdapter.getCount() + photoShareList.size();
