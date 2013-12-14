@@ -1,12 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_blogname"
-        android:icon="@drawable/stub"
-        android:title=""
-        android:actionProviderClass="com.ternaryop.phototumblrshare.BlogActionProvider"
-        android:showAsAction="ifRoom"/>
-    <item
         android:id="@+id/action_draft_refresh"
         android:icon="@drawable/ic_menu_refresh"
         android:showAsAction="always"

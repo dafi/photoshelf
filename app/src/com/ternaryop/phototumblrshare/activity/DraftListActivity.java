@@ -16,7 +16,6 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.DraftPostHelper;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.db.DBHelper;
@@ -25,25 +24,18 @@ import com.ternaryop.phototumblrshare.db.Importer.ImportCompleteCallback;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog;
 import com.ternaryop.phototumblrshare.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost;
-import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
 public class DraftListActivity extends PostsListActivity {
-	private static final String LOADER_PREFIX_AVATAR = "avatar";
-	
 	private HashMap<String, TumblrPost> queuedPosts;
 	private Calendar lastScheduledDate;
 	
-	private ImageLoader blogAvatarImageLoader;
-	private MenuItem blogNameMenuItem;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         
-		blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
         photoAdapter.setOnPhotoBrowseClick(this);
         photoAdapter.setRecomputeGroupIds(true);
 
@@ -53,26 +45,11 @@ public class DraftListActivity extends PostsListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.draft, menu);
-		// strangely isn't accessing from onOptionsItemSelected
-		// so we store here
-		blogNameMenuItem = menu.findItem(R.id.action_blogname);
-		// set icon to currect avatar blog 
-		blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(getBlogName(), 32), blogNameMenuItem);
 		return true;
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getGroupId()) {
-		case R.id.group_menu_actionbar_blog:
-			String blogName = item.getTitle().toString();
-			appSupport.setSelectedBlogName(blogName);
-			setActionBarIcon();
-			blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(blogName, 32), blogNameMenuItem);
-			readPhotoPosts();
-			return true;
-		}
-		
 		switch (item.getItemId()) {
 		case R.id.action_draft_refresh:
 			readPhotoPosts();

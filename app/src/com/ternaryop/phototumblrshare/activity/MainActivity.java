@@ -9,14 +9,20 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.AppSupport.AppSupportCallback;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.tumblr.AuthenticationCallback;
+import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 
 public class MainActivity extends PhotoTumblrActivity implements OnClickListener, AuthenticationCallback {
+    private static final String LOADER_PREFIX_AVATAR = "avatar";
+
+    private ImageLoader blogAvatarImageLoader;
+    private MenuItem blogNameMenuItem;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,9 +32,10 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 		enableUI(Tumblr.isLogged(this));
 
 		((TextView)findViewById(R.id.version_number)).setText(getVersion());
+        blogAvatarImageLoader = new ImageLoader(this, LOADER_PREFIX_AVATAR);
 	}
 	
-	public String getVersion() {
+    public String getVersion() {
 	    try {
 	        String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
 	        int versionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
@@ -42,12 +49,14 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	protected void onResume() {
 		super.onResume();
 
-        // if we are returning from authentication then enable the UI
-	    boolean handled = Tumblr.handleOpenURI(this, getIntent().getData(), this);
+		if (!Tumblr.isLogged(this)) {
+	        // if we are returning from authentication then enable the UI
+	        boolean handled = Tumblr.handleOpenURI(this, getIntent().getData(), this);
 
-	    // show the preference only if we aren't in the middle of URI handling and not already logged in
-		if (!Tumblr.isLogged(this) && !handled) {
-	    	PhotoPreferencesActivity.startPreferencesActivityForResult(this);
+	        // show the preference only if we aren't in the middle of URI handling and not already logged in
+	        if (!handled) {
+	            PhotoPreferencesActivity.startPreferencesActivityForResult(this);
+	        }
 		}
 	}
 
@@ -69,11 +78,25 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+
+        // strangely isn't accessing from onOptionsItemSelected
+        // so we store here
+        blogNameMenuItem = menu.findItem(R.id.action_blogname);
+        // set icon to currect avatar blog 
+        blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(getBlogName(), 32), blogNameMenuItem);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getGroupId()) {
+        case R.id.group_menu_actionbar_blog:
+            String blogName = item.getTitle().toString();
+            appSupport.setSelectedBlogName(blogName);
+            blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(blogName, 32), blogNameMenuItem);
+            return true;
+        }
+        
 	    switch (item.getItemId()) {
 	        case R.id.action_settings:
 	        	PhotoPreferencesActivity.startPreferencesActivityForResult(this);
@@ -119,6 +142,7 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 				@Override
 				public void onComplete(AppSupport appSupport, Exception error) {
 					enableUI(token != null && tokenSecret != null);
+					blogAvatarImageLoader.displayIcon(Blog.getAvatarUrlBySize(getBlogName(), 32), blogNameMenuItem);
 				}
 			});
 		} else {
