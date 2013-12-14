@@ -2,9 +2,11 @@ package com.ternaryop.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
 
-public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> implements OnCancelListener {
 	private ProgressDialog progressDialog;
 	private Exception error;
 	private Context context;
@@ -14,6 +16,7 @@ public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends 
 		progressDialog = new ProgressDialog(context);
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		progressDialog.setMessage(message);
+		progressDialog.setOnCancelListener(this);
 	}
 
 	protected void onPreExecute() {
@@ -44,4 +47,9 @@ public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends 
 	public Context getContext() {
 		return context;
 	}
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        cancel(true);
+    }
 }
