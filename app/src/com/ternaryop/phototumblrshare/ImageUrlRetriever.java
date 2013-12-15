@@ -1,5 +1,7 @@
 package com.ternaryop.phototumblrshare;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -9,6 +11,8 @@ import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
+import com.ternaryop.utils.IOUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,6 +32,9 @@ public class ImageUrlRetriever {
 	private ActionMode actionMode;
 	private final OnImagesRetrieved callback;
 	private boolean useActionMode;
+	private boolean useFile;
+	private ArrayList<String> imageUrls;
+	private ArrayList<File> imageFiles;
 
 	public ImageUrlRetriever(Context context, OnImagesRetrieved callback) {
 		this.context = context;
@@ -81,11 +88,17 @@ public class ImageUrlRetriever {
 		}
 
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			switch (item.getItemId()) {
+		    useFile = item.getItemId() == R.id.create_from_file;
+
+		    switch (item.getItemId()) {
 			case R.id.showDialog:
 				retrieve();
 				mode.finish();
 				return true;
+            case R.id.create_from_file:
+                retrieve();
+                mode.finish();
+                return true;
 			default:
 				return false;
 			}
@@ -110,10 +123,10 @@ public class ImageUrlRetriever {
 	}
 
 	public interface OnImagesRetrieved {
-		public void onImagesRetrieved(String title, List<String> imageUrls);
+		public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever);
 	}
 
-	class UrlRetrieverAsyncTask extends AsyncTask<Object, Integer, List<String>> {
+	class UrlRetrieverAsyncTask extends AsyncTask<Object, Integer, Void> {
 		private ProgressDialog progressDialog;
 
 		@Override
@@ -126,8 +139,14 @@ public class ImageUrlRetriever {
 		}
 
 		@Override
-		protected List<String> doInBackground(Object... params) {
-			ArrayList<String> imageUrls = new ArrayList<String>();
+		protected Void doInBackground(Object... params) {
+		    if (useFile) {
+		        imageFiles = new ArrayList<File>();
+		        imageUrls = null;
+		    } else {
+	            imageUrls = new ArrayList<String>();
+	            imageFiles = null;
+		    }
 			try {
 				@SuppressWarnings("unchecked")
 				Map<String, String> urls = (Map<String, String>) params[0];
@@ -144,9 +163,20 @@ public class ImageUrlRetriever {
 						try {
 							URI uri = new URI(link);
 							if (!uri.isAbsolute()) {
-								link = new URI(url).resolve(uri).toString();
+								uri = new URI(url).resolve(uri);
 							}
-							imageUrls.add(link);
+							if (imageFiles != null) {
+							    File file = new File(context.getCacheDir(), String.valueOf(uri.toString().hashCode()));
+                                FileOutputStream fos = new FileOutputStream(file);
+							    try {
+							        IOUtils.saveURL(link, fos);
+							        imageFiles.add(file);
+							    } finally {
+							        fos.close();
+							    }
+							} else {
+							    imageUrls.add(link.toString());
+							}
 						} catch (URISyntaxException e) {
 						}
 					}
@@ -156,7 +186,7 @@ public class ImageUrlRetriever {
 				error = e;
 				return null;
 			}
-			return imageUrls;
+			return null;
 		}
 
 		@Override
@@ -165,11 +195,11 @@ public class ImageUrlRetriever {
 		}
 
 		@Override
-		protected void onPostExecute(List<String> imageUrls) {
+		protected void onPostExecute(Void voidParam) {
 			try {
 				progressDialog.dismiss();
 				if (error == null) {
-					callback.onImagesRetrieved(title, imageUrls);
+                    callback.onImagesRetrieved(ImageUrlRetriever.this);
 					urlSelectorMap.clear();
 				} else {
 					new AlertDialog.Builder(context)
@@ -184,5 +214,13 @@ public class ImageUrlRetriever {
 				.show();
 			}
 		}
+	}
+	
+	public List<File> getImageFiles() {
+	    return imageFiles;
+	}
+	
+	public List<String> getImageUrls() {
+	    return imageUrls;
 	}
 }

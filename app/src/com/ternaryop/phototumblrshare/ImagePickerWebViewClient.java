@@ -1,7 +1,6 @@
 package com.ternaryop.phototumblrshare;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
@@ -32,8 +31,8 @@ public class ImagePickerWebViewClient extends WebViewClient {
 
 			ImageUrlRetriever imageUrlRetriever = new ImageUrlRetriever(context, new ImageUrlRetriever.OnImagesRetrieved() {
 				@Override
-				public void onImagesRetrieved(String title, List<String> imageUrls) {
-					ImageViewerActivity.startImageViewer(context, imageUrls.get(0), null);
+				public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
+					ImageViewerActivity.startImageViewer(context, imageUrlRetriever.getImageUrls().get(0), null);
 				}
 			});
 			imageUrlRetriever.setUseActionMode(false);

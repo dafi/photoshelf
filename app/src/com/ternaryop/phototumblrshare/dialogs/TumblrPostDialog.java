@@ -1,5 +1,6 @@
 package com.ternaryop.phototumblrshare.dialogs;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 	private EditText postTitle;
 	private EditText postTags;
 	private Spinner blogList;
-	private String[] imageUrls;
+	private List<String> imageUrls;
+	private List<File> imageFiles;
 	private AppSupport appSupport;
 	private long postId;
 	private OnClickListener dialogClickListener;
@@ -96,29 +98,31 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		if (postId > 0) {
 			setTitle(R.string.edit_post_title);
 		} else {
-			if (imageUrls.length == 1) {
+		    int size = imageUrls != null ? imageUrls.size() : imageFiles.size();
+			if (size == 1) {
 				setTitle(R.string.tumblr_post_title);
 			} else {
-				setTitle(getContext().getString(R.string.tumblr_multiple_post_title, imageUrls.length));
+				setTitle(getContext().getString(R.string.tumblr_multiple_post_title, size));
 			}
 		}
 		super.show();
 	}
 	
-	public String[] getImageUrls() {
+	public List<String> getImageUrls() {
 		return imageUrls;
 	}
 
 	public void setImageUrls(List<String> imageUrls) {
-		this.imageUrls = imageUrls.toArray(new String[imageUrls.size()]);
+		this.imageUrls = imageUrls;
 	}
 
 	public void setImageUrlsFromImageInfo(List<ImageInfo> imageList) {
-		this.imageUrls = new String[imageList.size()];
+		ArrayList<String> tmpList = new ArrayList<String>(imageList.size());
 
-		for (int i = 0; i < imageList.size(); i++) {
-			this.imageUrls[i] = imageList.get(0).getDestinationDocumentURL();
+		for (ImageInfo imageInfo : imageList) {
+            tmpList.add(imageInfo.getDestinationDocumentURL());
 		}
+		this.imageUrls = tmpList;
 	}
 
 	public String getPostTitle() {
@@ -234,16 +238,16 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 					.getSelectedItem();
 			appSupport.setSelectedBlogName(selectedBlogName);
 
-			String[] urls = getImageUrls();
-			final PostCallback callback = new PostCallback(urls.length, publish);
+			List<?> urlsOrFiles = getImageUrls() != null ? getImageUrls() : getImageFiles();
+			final PostCallback callback = new PostCallback(urlsOrFiles.size(), publish);
 			if (publish) {
-				for (String url : urls) {
+				for (Object url : urlsOrFiles) {
 					Tumblr.getSharedTumblr(getContext()).publishPhotoPost(selectedBlogName,
 							url, getPostTitle(), getPostTags(),
 							callback);
 				}
 			} else {
-				for (String url : urls) {
+				for (Object url : urlsOrFiles) {
 					Tumblr.getSharedTumblr(getContext()).draftPhotoPost(selectedBlogName,
 							url, getPostTitle(), getPostTags(),
 							callback);
@@ -280,4 +284,12 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 		setPostTitle(titleData.toString());
 		setPostTags(titleData.getTags());
 	}
+
+    public List<File> getImageFiles() {
+        return imageFiles;
+    }
+
+    public void setImageFiles(List<File> imageFiles) {
+        this.imageFiles = imageFiles;
+    }
 }

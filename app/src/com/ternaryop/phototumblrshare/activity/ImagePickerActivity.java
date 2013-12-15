@@ -1,6 +1,5 @@
 package com.ternaryop.phototumblrshare.activity;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -148,10 +147,14 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
 	}
 
 	@Override
-	public void onImagesRetrieved(String title, List<String> imageUrls) {
-		TitleData titleData = TitleParser.instance().parseTitle(title);
-		TumblrPostDialog dialog = new TumblrPostDialog(this);
-		dialog.setImageUrls(imageUrls);
+    public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
+        TitleData titleData = TitleParser.instance().parseTitle(imageUrlRetriever.getTitle());
+        TumblrPostDialog dialog = new TumblrPostDialog(this);
+        if (imageUrlRetriever.getImageUrls() != null) {
+            dialog.setImageUrls(imageUrlRetriever.getImageUrls());
+        } else {
+            dialog.setImageFiles(imageUrlRetriever.getImageFiles());
+        }
 		dialog.setPostTitle(titleData.toString());
 		dialog.setPostTags(titleData.getTags());
 		
