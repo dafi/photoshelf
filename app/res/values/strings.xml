@@ -34,7 +34,6 @@
     <string name="delete_post_plural_confirm">Delete %1$d posts, are you sure?</string>
     <string name="publish_post_singular_confirm">Publish \'%1$s\', are you sure?</string>
     <string name="publish_post_plural_confirm">Publish %1$d posts, are you sure?</string>
-    <string name="refresh_cache">Refresh Cache</string>
     <string name="menu_show_image">Show Image</string>
     <string name="menu_header_show_image">Image for %1s</string>
     <string name="test_page_title">Test Page</string>
@@ -54,7 +53,6 @@
     <string name="settings">Settings</string>
     <string name="edit_post_title">Edit</string>
     <string name="parse_title">Parse Title</string>
-    <string name="post_actions_menu_header">Post Actions</string>
     <string name="delete_post">Delete</string>
     <string name="search_tag">Search Tag</string>
     <string name="browse_images_by_tags_title">Browse Image by Tags</string>
@@ -95,5 +93,6 @@
     <string name="pref_posts_title">Posts</string>
     <string name="pref_birthdays_title">Birthdays</string>
     <string name="export_missing_birthdays_title">Export Missing Birthdays</string>
+    <string name="create_from_file_title">Create from File</string>
 
 </resources>

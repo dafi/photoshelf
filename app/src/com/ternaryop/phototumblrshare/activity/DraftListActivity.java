@@ -52,9 +52,6 @@ public class DraftListActivity extends PostsListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_draft_refresh:
-			readPhotoPosts();
-			return true;
-		case R.id.action_draft_refresh_cache:
 		    refreshCache();
 			return true;
 		default:
