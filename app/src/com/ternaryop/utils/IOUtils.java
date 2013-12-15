@@ -59,20 +59,28 @@ public class IOUtils {
     }
 
     public static byte[] readURL(String url) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            saveURL(url, baos);
+        } finally {
+            if (baos != null) try { baos.close(); } catch (Exception e) {}
+        }
+
+        return baos.toByteArray();
+    }
+
+    public static void saveURL(String url, OutputStream os) throws IOException {
         HttpURLConnection connection = null;
         InputStream is = null;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
             is = connection.getInputStream();
-            copy(is, baos);
+            copy(is, os);
         } finally {
-            if (baos != null) try { baos.close(); } catch (Exception e) {}
             if (is != null) try { is.close(); } catch (Exception e) {}
             if (connection != null) try { connection.disconnect(); } catch (Exception e) {}
         }
-
-        return baos.toByteArray();
     }
 }

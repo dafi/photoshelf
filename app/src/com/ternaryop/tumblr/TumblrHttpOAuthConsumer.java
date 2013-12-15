@@ -1,31 +1,23 @@
 package com.ternaryop.tumblr;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.scribe.builder.ServiceBuilder;
+import org.scribe.builder.api.TumblrApi;
+import org.scribe.model.OAuthConstants;
+import org.scribe.model.OAuthRequest;
+import org.scribe.model.Response;
+import org.scribe.model.Token;
+import org.scribe.model.Verb;
+import org.scribe.model.Verifier;
+import org.scribe.oauth.OAuthService;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -34,93 +26,106 @@ import android.preference.PreferenceManager;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.utils.JSONUtils;
 
-public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class TumblrHttpOAuthConsumer {
+    private static final String PREFS_NAME = "tumblr";
+    private static final String PREF_OAUTH_SECRET = "oAuthSecret";
+    private static final String PREF_OAUTH_TOKEN = "oAuthToken";
 
-    private static final String REQUEST_TOKEN_URL = "https://www.tumblr.com/oauth/request_token";
-    private static final String ACCESS_TOKEN_URL = "https://www.tumblr.com/oauth/access_token";
-    private static final String AUTH_URL = "https://www.tumblr.com/oauth/authorize";
+    private OAuthService oAuthService;
+    private Token accessToken;
+    private String consumerKey;
 
-    public static final String PREFS_NAME = "tumblr";
-	public static final String PREF_OAUTH_SECRET = "oAuthSecret";
-	public static final String PREF_OAUTH_TOKEN = "oAuthToken";
+	public TumblrHttpOAuthConsumer(Context context) {
+        consumerKey = context.getString(R.string.CONSUMER_KEY);
 
-	private String oAuthAccessKey;
-	private String oAuthAccessSecret;
+        oAuthService = new ServiceBuilder()
+        .provider(TumblrApi.class)
+        .apiKey(consumerKey)
+        .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+        .callback(context.getString(R.string.CALLBACK_URL))
+        .build();
 
-	// provider is used only during login phases
-	private CommonsHttpOAuthProvider provider;
-
-	// Until the login isn't completed the instance tumblr must be null
-	// When login is completed the loginTumblr isn't longer useful and tumblr can be set
-	private static TumblrHttpOAuthConsumer loginTumblr; 
-
-	public TumblrHttpOAuthConsumer(String consumerKey, String consumerSecret) {
-		super(consumerKey, consumerSecret);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        accessToken = new Token(
+                preferences.getString(PREF_OAUTH_TOKEN, null),
+                preferences.getString(PREF_OAUTH_SECRET, null));
 	}
 
-	public TumblrHttpOAuthConsumer(final String consumerKey, final String consumerSecret, String oAuthAccessKey, String oAuthAccessSecret) {
-		super(consumerKey, consumerSecret);
-		this.oAuthAccessKey = oAuthAccessKey;
-		this.oAuthAccessSecret = oAuthAccessSecret;
+    public static boolean isLogged(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return preferences.contains(PREF_OAUTH_TOKEN) && preferences.contains(PREF_OAUTH_SECRET);
+    }
+    
+    public String getConsumerKey() {
+        return consumerKey;
+    }
+	
+    private static void authorize(Context context) {
+        // Callback url scheme is defined into manifest
+        OAuthService oAuthService = new ServiceBuilder()
+        .provider(TumblrApi.class)
+        .apiKey(context.getString(R.string.CONSUMER_KEY))
+        .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+        .callback(context.getString(R.string.CALLBACK_URL))
+        .build();
+        Token requestToken = oAuthService.getRequestToken();
+        Editor edit = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        edit.putString(PREF_OAUTH_TOKEN, requestToken.getToken());
+        edit.putString(PREF_OAUTH_SECRET, requestToken.getSecret());
+        edit.commit();
+        String authorizationUrl = oAuthService.getAuthorizationUrl(requestToken);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authorizationUrl));
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        context.startActivity(intent);
 	}
 
-    public void authorize(Context context, String consumerKey, String consumerSecret) {
-    	provider = new CommonsHttpOAuthProvider(
-		        REQUEST_TOKEN_URL,
-		        ACCESS_TOKEN_URL,
-		        AUTH_URL);
-
-		// http://stackoverflow.com/questions/7841936/android-tumblr-oauth-signpost-401
-		String authUrl;
-		try {
-		    // Callback url scheme is defined into manifest
-		    authUrl = provider.retrieveRequestToken(this, context.getString(R.string.CALLBACK_URL));
-		    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-		    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-			context.startActivity(intent);
-		} catch (OAuthException e) {
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
-		}
-	}
-
-    public void access(final Context context, final String token, final String verifier, final AuthenticationCallback callback) {
-		new AsyncTask<Void, Void, Exception>() {
+    private static void access(final Context context, final Uri uri, final AuthenticationCallback callback) {
+		new AsyncTask<Void, Void, Token>() {
+		    Exception error;
 			@Override
-			protected Exception doInBackground(Void... params) {
+			protected Token doInBackground(Void... params) {
+			    Token accessToken = null;
 				try {
-					provider.retrieveAccessToken(TumblrHttpOAuthConsumer.this, verifier);
-				} catch (OAuthException e) {
-					return e;
+	                OAuthService oAuthService = new ServiceBuilder()
+	                .provider(TumblrApi.class)
+	                .apiKey(context.getString(R.string.CONSUMER_KEY))
+	                .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+	                .callback(context.getString(R.string.CALLBACK_URL))
+	                .build();
+	                SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+	                Token requestToken = new Token(
+	                        prefs.getString(PREF_OAUTH_TOKEN, ""),
+	                        prefs.getString(PREF_OAUTH_SECRET, ""));
+	                accessToken = oAuthService.getAccessToken(requestToken,
+	                                new Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)));
+				} catch (Exception e) {
+				    error = e;
 				}
-				return null;
+				return accessToken;
 			}
-			protected void onPostExecute(Exception error) {
-				Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
-				edit.putString(PREF_OAUTH_TOKEN,  getToken());
-				edit.putString(PREF_OAUTH_SECRET, getTokenSecret());
-				edit.commit();
+			protected void onPostExecute(Token token) {
+			    if (token != null && error == null) {
+	                Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+	                edit.putString(PREF_OAUTH_TOKEN,  token.getToken());
+	                edit.putString(PREF_OAUTH_SECRET, token.getSecret());
+	                edit.commit();
+			    }
 				if (callback != null) {
-					callback.tumblrAuthenticated(getToken(), getTokenSecret(), error);
+				    if (token == null) {
+	                    callback.tumblrAuthenticated(null, null, error);
+				    } else {
+	                    callback.tumblrAuthenticated(token.getToken(), token.getSecret(), error);
+				    }
 				}
 			}
 		}.execute();
 	}
 
 	public static void loginWithActivity(final Context context) {
-		if (loginTumblr == null) {
-			loginTumblr = new TumblrHttpOAuthConsumer(
-					context.getString(R.string.CONSUMER_KEY),
-					context.getString(R.string.CONSUMER_SECRET));
-		}
         new AsyncTask<Void, Void, Void>() {
     		@Override
     		protected Void doInBackground(Void... params) {
-    			loginTumblr.authorize(context, loginTumblr.getConsumerKey(), loginTumblr.getConsumerSecret());
+    			TumblrHttpOAuthConsumer.authorize(context);
     			return null;
     		}
         }.execute();
@@ -139,53 +144,49 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
         boolean canHandleURI = uri != null && callbackUrl.startsWith(uri.getScheme());
 
         if (canHandleURI) {
-        	loginTumblr.access(
+        	TumblrHttpOAuthConsumer.access(
         			context,
-        			uri.getQueryParameter("oauth_token"),
-        			uri.getQueryParameter("oauth_verifier"),
+        			uri,
         			callback);
         }
         
         return canHandleURI;
 	}
 	
-	public synchronized HttpResponse getSignedPostResponse(String url, List<NameValuePair> params) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, ClientProtocolException, IOException {
-        HttpPost request = new HttpPost(url);
+    public synchronized Response getSignedPostResponse(String url, Map<String, ?> params) throws IOException {
+        OAuthRequest oAuthReq = new OAuthRequest(Verb.POST, url);
 
-        request.setEntity(new UrlEncodedFormEntity(params));
-        CommonsHttpOAuthConsumer consumer = new CommonsHttpOAuthConsumer(getConsumerKey(), getConsumerSecret());
-        consumer.setTokenWithSecret(oAuthAccessKey, oAuthAccessSecret);
-        consumer.sign(request);
-
-        return new DefaultHttpClient().execute(request, new BasicHttpContext());
-	}
-
-	public HttpResponse getSignedGetResponse(String url, List<NameValuePair> params) throws ClientProtocolException, IOException, OAuthException, IllegalStateException {
-        if (params != null) {
-        	if(!url.endsWith("?")) {
-                url += "?";
-        	}
-        	String paramString = URLEncodedUtils.format(params, "UTF-8");
-            url += paramString;        	
+        for (String key : params.keySet()) {
+            Object value = params.get(key);
+            if (value instanceof String) {
+                oAuthReq.addBodyParameter(key, (String)value);
+            }
         }
-        HttpContext context = new BasicHttpContext();
-        HttpRequestBase request = new HttpGet(url);
+        oAuthService.signRequest(accessToken, oAuthReq);
+        return new MultipartConverter(oAuthReq, params).getRequest().send();
+    }
 
-        // to be thread safe create a new consumer
-        CommonsHttpOAuthConsumer consumer = new CommonsHttpOAuthConsumer(getConsumerKey(), getConsumerSecret());
-        consumer.setTokenWithSecret(oAuthAccessKey, oAuthAccessSecret);
-        consumer.sign(request);
+    public synchronized Response getSignedGetResponse(String url, Map<String, ?> params) throws IOException {
+        OAuthRequest oAuthReq = new OAuthRequest(Verb.GET, url);
 
-        return new DefaultHttpClient().execute(request, context);
-    }    
-	
+        if (params != null) {
+            for (String key : params.keySet()) {
+                Object value = params.get(key);
+                oAuthReq.addQuerystringParameter(key, value.toString());
+            }
+
+        }
+        oAuthService.signRequest(accessToken, oAuthReq);
+        return oAuthReq.send();
+    }
+    
     public JSONObject jsonFromGet(String url) {
 		return jsonFromGet(url, null);
     }    
 
-    public JSONObject jsonFromGet(String url, List<NameValuePair> params) {
-    	try {
-    		JSONObject json = JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getEntity().getContent());
+    public JSONObject jsonFromGet(String url, Map<String, ?> params) {
+        try {
+            JSONObject json = JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getStream());
     		checkResult(json);
     		return json;
 		} catch (Exception e) {
@@ -193,9 +194,9 @@ public class TumblrHttpOAuthConsumer extends CommonsHttpOAuthConsumer {
 		}
     }    
 
-    public JSONObject jsonFromPost(String url, List<NameValuePair> params) {
-    	try {
-        	JSONObject json = JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getEntity().getContent());
+    public JSONObject jsonFromPost(String url, Map<String, ?> params) {
+        try {
+            JSONObject json = JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getStream());
     		checkResult(json);
     		return json;
 		} catch (Exception e) {
