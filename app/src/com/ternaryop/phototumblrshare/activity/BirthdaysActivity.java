@@ -9,6 +9,7 @@ import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
@@ -34,11 +35,24 @@ public class BirthdaysActivity extends PhotoTumblrActivity implements ActionBar.
 
 	private void fillList(List<Birthday> list) {
 		StringBuilder sb = new StringBuilder();
-		for (Birthday birthday : list) {
-			sb.append(birthday + "\n");
+		Calendar now = Calendar.getInstance();
+		int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);
+		int month = now.get(Calendar.MONTH);
+        Calendar date = Calendar.getInstance();
+
+        for (Birthday birthday : list) {
+		    date.setTime(birthday.getBirthDate());
+		
+		    if (date.get(Calendar.DAY_OF_MONTH) == dayOfMonth
+		            && date.get(Calendar.MONTH) == month) {
+		        sb.append("<b>" + birthday + "</b>");
+		    } else {
+	            sb.append(birthday);
+		    }
+		    sb.append("<br/>");
 		}
 		TextView textView = (TextView)findViewById(R.id.text);
-        textView.setText(sb);
+        textView.setText(Html.fromHtml(sb.toString()));
         // allow textView to scroll
 		textView.setMovementMethod(new ScrollingMovementMethod());
 	}
