@@ -48,6 +48,10 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 	}
 
 	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	    // no need to upgrade
+	    if (newVersion == 2) {
+	        return;
+	    }
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }

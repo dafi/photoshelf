@@ -8,10 +8,6 @@ import java.util.Locale;
 
 import android.provider.BaseColumns;
 
-// SELECT date('now', '-1 day'), name, strftime('%d-%m-%Y', birth_date) FROM consolr_birthday 
-// where strftime('%m',birth_date) = strftime('%m', date('now'))
-// order by strftime('%d',birth_date)
-
 public class Birthday implements BaseColumns, Serializable {
 	private static final long serialVersionUID = 5887665998065237345L;
 	private String name;
@@ -30,7 +26,7 @@ public class Birthday implements BaseColumns, Serializable {
 	}
 
 	public Birthday(String name, String birthDate, String tumblrName) throws ParseException {
-		this(name, ISO_DATE_FORMAT.parse(birthDate), tumblrName);
+		this(name, birthDate == null || birthDate.trim().length() == 0 ? null : ISO_DATE_FORMAT.parse(birthDate), tumblrName);
 	}
 
 	public String getName() {
@@ -59,6 +55,6 @@ public class Birthday implements BaseColumns, Serializable {
 	
 	@Override
 	public String toString() {
-		return ISO_DATE_FORMAT.format(birthDate) + " " + name;
+		return (birthDate == null ? "" : ISO_DATE_FORMAT.format(birthDate) + " ") + name;
 	}
 }

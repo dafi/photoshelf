@@ -171,10 +171,11 @@ public class Importer {
 					try {
 						PrintWriter pw = new PrintWriter(exportPath);
 						while (c.moveToNext()) {
-							pw.println(String.format("%1$d;%2$s;%3$s;%4$s",
+							String birthdate = c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE));
+                            pw.println(String.format("%1$d;%2$s;%3$s;%4$s",
 									c.getLong(c.getColumnIndex(BirthdayDAO._ID)),
 									c.getString(c.getColumnIndex(BirthdayDAO.NAME)),
-									c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE)),
+									birthdate == null ? "" : birthdate,
 									c.getString(c.getColumnIndex(BirthdayDAO.TUMBLR_NAME))
 									));
 						}
