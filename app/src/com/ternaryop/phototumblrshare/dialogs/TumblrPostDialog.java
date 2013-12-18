@@ -105,6 +105,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 				setTitle(getContext().getString(R.string.tumblr_multiple_post_title, size));
 			}
 		}
+		// move caret to end
+		postTitle.setSelection(postTitle.length());
 		super.show();
 	}
 	
@@ -281,7 +283,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
 	private void parseTitle() {
 		TitleData titleData = TitleParser.instance().parseTitle(postTitle.getText().toString());
-		setPostTitle(titleData.toString());
+		setPostTitle(titleData.toHtml());
 		setPostTags(titleData.getTags());
 	}
 

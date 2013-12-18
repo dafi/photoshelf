@@ -8,7 +8,6 @@ import java.util.Locale;
 
 
 public class TitleData {
-	private static String format = "<p><strong>$who</strong> <em>$where_loc, $where_city ($when)</em></p>";
 	private static String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives", "at the"};
 
     private static HashMap<String, String> cities = new HashMap<String, String>();
@@ -22,9 +21,9 @@ public class TitleData {
         cities.put("NYC", "New York City");
     }
 
-    private String who = "***";
-    private String location = "***";
-    private String city = "***";
+    private String who;
+    private String location;
+    private String city;
     private List<String> tags = Collections.emptyList();
     private String when;
 
@@ -103,11 +102,39 @@ public class TitleData {
 		this.when = when.trim();
 	}
 
-    public String toString() {
-    	return format
-    			.replace("$who", who)
-    			.replace("$where_loc", location)
-    			.replace("$where_city", city)
-    			.replace("$when", when);
+    public String toHtml() {
+        StringBuilder sb = new StringBuilder();
+
+        if (who != null) {
+            sb
+            .append("<strong>" + who + "</strong>")
+            .append(" ");
+        }
+        if (location != null || when != null || city != null) {
+            sb.append("<em>");
+            if (location != null) {
+                sb
+                .append(location);
+                if (city == null) {
+                    sb.append(" ");
+                } else {
+                    sb.append(", ");
+                }
+            }
+            if (city != null) {
+                sb
+                .append(city)
+                .append(" ");
+            }
+            if (when != null) {
+                sb
+                .append("(")
+                .append(when)
+                .append(")");
+            }
+            sb.append("</em>");
+        }
+        return sb.toString();
+        
     }
 }

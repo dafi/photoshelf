@@ -155,7 +155,7 @@ public class ImagePickerActivity extends PhotoTumblrActivity implements OnLongCl
         } else {
             dialog.setImageFiles(imageUrlRetriever.getImageFiles());
         }
-		dialog.setPostTitle(titleData.toString());
+		dialog.setPostTitle(titleData.toHtml());
 		dialog.setPostTags(titleData.getTags());
 		
 		dialog.show();
