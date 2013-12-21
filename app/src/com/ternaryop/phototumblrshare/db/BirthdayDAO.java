@@ -154,4 +154,27 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 	public String getTableName() {
 	    return TABLE_NAME;
 	}
+
+    public Birthday getBirthdayByName(String name, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        
+        Cursor c = db.query(TABLE_NAME,
+                new String[] {BIRTH_DATE},
+                "lower(" + NAME + ") = lower(?) and " + TUMBLR_NAME + "=?",
+                new String[] {name, tumblrName},
+                null, null, null);
+        try {
+            if (c.moveToNext()) {
+                return new Birthday(
+                        name,
+                        c.getString(0),
+                        tumblrName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            c.close();
+        }
+        return null;
+    }
 }

@@ -82,6 +82,32 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		 return db.rawQuery(sqlQuery, new String[] {"%" + tag + "%", tumblrName});
 	}
 
+    public PostTag getRandomPostByTag(String tag, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        String sqlQuery = "SELECT *"
+                            + " FROM " + TABLE_NAME
+                            + " WHERE lower(" + TAG +") = lower(?)"
+                            + " and " + TUMBLR_NAME + " = ?"
+                            + " and " + SHOW_ORDER + " = 1"
+                            + " ORDER BY RANDOM() LIMIT 1";
+
+        Cursor c = db.rawQuery(sqlQuery, new String[] {tag, tumblrName});
+        try {
+            if (c.moveToNext()) {
+                return new PostTag(
+                        c.getLong(c.getColumnIndex(_ID)),
+                        tumblrName,
+                        c.getString(c.getColumnIndex(TAG)),
+                        c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
+                        c.getLong(c.getColumnIndex(SHOW_ORDER))
+                        );
+            }
+        } finally {
+            c.close();
+        }
+        return null;
+    }
+    
 	public Map<String, Long> getLastPublishedTimeByTags(List<String> tags, String tumblrName) {
 		// contains tumblrName, too
 		String args[] = new String[tags.size() + 1];
