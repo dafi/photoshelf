@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.ternaryop.phototumblrshare.AppSupport;
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.IOUtils;
@@ -38,6 +39,7 @@ import com.ternaryop.utils.ShareUtils;
 public class ImageViewerActivity extends PhotoTumblrActivity {
 	private static final String IMAGE_URL = "imageUrl";
 	private static final String IMAGE_TITLE = "imageTitle";
+	private static final String IMAGE_TAG = "imageTag";
 	private boolean webViewLoaded;
 	private Menu optionsMenu;
 
@@ -99,13 +101,16 @@ public class ImageViewerActivity extends PhotoTumblrActivity {
 		return webView;
 	}
 
-	public static void startImageViewer(Context context, String url, String title) {
+	public static void startImageViewer(Context context, String url, TumblrPhotoPost post) {
 		Intent intent = new Intent(context, ImageViewerActivity.class);
 		Bundle bundle = new Bundle();
 
 		bundle.putString(IMAGE_URL, url);
-		if (title != null) {
-			bundle.putString(IMAGE_TITLE, title);
+		if (post != null) {
+			bundle.putString(IMAGE_TITLE, post.getCaption());
+			if (!post.getTags().isEmpty()) {
+				bundle.putString(IMAGE_TAG, post.getTags().get(0));
+			}
 		}
 		intent.putExtras(bundle);
 

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -30,6 +31,7 @@ import com.ternaryop.phototumblrshare.list.PhotoSharePost;
 import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
+import com.ternaryop.tumblr.TumblrPhotoPost;
 
 public abstract class PostsListActivity extends PhotoTumblrActivity implements OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick {
 	protected enum POST_ACTION {
@@ -132,9 +134,23 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		PhotoSharePost item = (PhotoSharePost) parent.getItemAtPosition(position);
-		ImageViewerActivity.startImageViewer(this, item.getFirstPhotoAltSize().get(0).getUrl(), item.getCaption());
+		if (getCallingActivity() == null) {
+			ImageViewerActivity.startImageViewer(this,
+					item.getFirstPhotoAltSize().get(0).getUrl(),
+					item);
+		} else {
+			finish(item);
+		}
 	}
 
+	public void finish(TumblrPhotoPost post) {
+		  Intent data = new Intent();
+		  data.putExtra("post", post);
+		  // Activity finished ok, return the data
+		  setResult(RESULT_OK, data);
+		  super.finish();
+		} 	
+	
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         mode.setTitle(R.string.select_posts);
         mode.setSubtitle(getString(R.string.selected_singular, 1));
@@ -229,7 +245,7 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	String url = arrayAdapter.getItem(which).getUrl();
-                		ImageViewerActivity.startImageViewer(PostsListActivity.this, url, post.getCaption());
+                		ImageViewerActivity.startImageViewer(PostsListActivity.this, url, post);
                     }
                 });
         builder.show();
@@ -344,6 +360,6 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 	}
 
 	public void onThumbnailImageClick(PhotoSharePost post) {
-		ImageViewerActivity.startImageViewer(this, post.getFirstPhotoAltSize().get(0).getUrl(), post.getCaption());
+		ImageViewerActivity.startImageViewer(this, post.getFirstPhotoAltSize().get(0).getUrl(), post);
 	}
 }
