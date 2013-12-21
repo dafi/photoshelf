@@ -64,10 +64,9 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 		for (int buttonId : new int[] {
 				R.id.draft_button,
 				R.id.scheduled_button,
-				R.id.test_page_button,
 				R.id.browse_images_by_tags_button,
 				R.id.browse_tags_button,
-				R.id.birthdays}) {
+				R.id.extras_button}) {
 			Button button = (Button)findViewById(buttonId);
 			button.setOnClickListener(this);
 			button.setEnabled(enabled);
@@ -115,17 +114,14 @@ public class MainActivity extends PhotoTumblrActivity implements OnClickListener
 		case R.id.scheduled_button:
 			ScheduledListActivity.startScheduledListActivity(this, getBlogName());
 			break;
-		case R.id.test_page_button:
-	    	ImagePickerActivity.startImagePicker(this, getString(R.string.test_page_url));
-			break;
 		case R.id.browse_images_by_tags_button:
 			TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), null);
 			break;
 		case R.id.browse_tags_button:
 			TagListActivity.startTagListActivity(this, getBlogName(), null);
 			break;
-		case R.id.birthdays:
-			BirthdaysActivity.startBirthdaysActivity(this, getBlogName());
+		case R.id.extras_button:
+		    ExtrasMainActivity.startExtrasActivity(this);
 			break;
 		}
 	}

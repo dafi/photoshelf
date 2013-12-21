@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -128,6 +129,17 @@ public class TagPhotoBrowserActivity extends PostsListActivity implements OnQuer
 		intent.putExtras(bundle);
 
 		context.startActivity(intent);
+	}
+
+	public static void startPhotoBrowserActivityForResult(Activity activity, String blogName, String postTag, int requestCode) {
+		Intent intent = new Intent(activity, TagPhotoBrowserActivity.class);
+		Bundle bundle = new Bundle();
+
+		bundle.putString(BLOG_NAME, blogName);
+		bundle.putString(POST_TAG, postTag);
+		intent.putExtras(bundle);
+
+		activity.startActivityForResult(intent, requestCode);
 	}
 
 	@Override

@@ -38,14 +38,6 @@
             android:textSize="@dimen/main_button_title_size" />
 
         <Button
-            android:id="@+id/test_page_button"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="left|top"
-            android:text="@string/test_page_title"
-            android:textSize="@dimen/main_button_title_size" />
-
-        <Button
             android:id="@+id/browse_tags_button"
             android:layout_width="100dp"
             android:layout_height="100dp"
@@ -54,11 +46,11 @@
             android:textSize="@dimen/main_button_title_size" />
 
         <Button
-            android:id="@+id/birthdays"
+            android:id="@+id/extras_button"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_gravity="left|top"
-            android:text="@string/birthdays_title"
+            android:text="Extras"
             android:textSize="@dimen/main_button_title_size" />
     </GridLayout>
 

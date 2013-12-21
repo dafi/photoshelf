@@ -1,8 +1,11 @@
 package com.ternaryop.phototumblrshare.birthday;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,10 +16,14 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.ternaryop.phototumblrshare.R;
-import com.ternaryop.phototumblrshare.activity.BirthdaysActivity;
+import com.ternaryop.phototumblrshare.activity.BirthdaysPublisherActivity;
 import com.ternaryop.phototumblrshare.db.Birthday;
 import com.ternaryop.phototumblrshare.db.BirthdayDAO;
 import com.ternaryop.phototumblrshare.db.DBHelper;
+import com.ternaryop.phototumblrshare.db.PostTag;
+import com.ternaryop.phototumblrshare.db.PostTagDAO;
+import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.tumblr.TumblrPhotoPost;
 
 public class BirthdayUtils {
 	private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshare.bday";
@@ -67,15 +74,38 @@ public class BirthdayUtils {
 
 	private static PendingIntent createPendingIntent(Context context) {
 		// Define Activity to start
-		Intent resultIntent = new Intent(context, BirthdaysActivity.class);
+		Intent resultIntent = new Intent(context, BirthdaysPublisherActivity.class);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// Adds the back stack
-		stackBuilder.addParentStack(BirthdaysActivity.class);
+		stackBuilder.addParentStack(BirthdaysPublisherActivity.class);
 		// Adds the Intent to the top of the stack
 		stackBuilder.addNextIntent(resultIntent);
 		// Gets a PendingIntent containing the entire back stack
 		PendingIntent resultPendingIntent =
 		        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 		return resultPendingIntent;
+	}
+	
+	public static List<TumblrPhotoPost> getPhotoPosts(final Context context, Calendar birthDate) {
+        DBHelper dbHelper = DBHelper
+                .getInstance(context.getApplicationContext());
+        List<Birthday> birthDays = dbHelper
+                .getBirthdayDAO()
+                .getBirthdayByDate(birthDate.getTime());
+	    ArrayList<TumblrPhotoPost> posts = new ArrayList<TumblrPhotoPost>();
+
+	    PostTagDAO postTagDAO = dbHelper.getPostTagDAO();
+	    Map<String, String> params = new HashMap<String, String>(2);
+	    params.put("type", "photo");
+	    for (Birthday b : birthDays) {
+	        PostTag postTag = postTagDAO.getRandomPostByTag(b.getName(), b.getTumblrName());
+	        if (postTag != null) {
+	            params.put("id", String.valueOf(postTag.getId()));
+	            TumblrPhotoPost post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
+	                    .getPublicPosts(b.getTumblrName(), params);
+                posts.add(post);
+	        }
+        }
+	    return posts;
 	}
 }
