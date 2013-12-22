@@ -1,6 +1,7 @@
 package com.ternaryop.phototumblrshare.db;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -108,34 +109,8 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         return null;
     }
     
-	public Map<String, Long> getLastPublishedTimeByTags(List<String> tags, String tumblrName) {
-		// contains tumblrName, too
-		String args[] = new String[tags.size() + 1];
-		args[0] = tumblrName;
-		// make lowecase to match using ignorecase
-		for (int i = 0; i < tags.size(); i++) {
-			args[i + 1] = tags.get(i).toLowerCase(Locale.US);
-		}
-		
-		StringBuilder inClause = new StringBuilder();
-		for (int i = 0; i < tags.size(); i++) {
-			inClause.append("?");
-			if (i < (tags.size() - 1)) {
-				inClause.append(",");
-			}
-		}
-		SQLiteDatabase db = getDbHelper().getReadableDatabase();
-		
-		Cursor c = db.rawQuery("SELECT " + TAG + "," + PUBLISH_TIMESTAMP 
-				+ " FROM post_tag AS t"
-				+ " WHERE t.TUMBLR_NAME = ?"
-				+ " AND lower(t.tag) IN (" + inClause + ")"
-				+ " AND PUBLISH_TIMESTAMP = "
-				+ " (SELECT MAX(PUBLISH_TIMESTAMP)"
-		        + "   FROM post_tag p"
-		        + "  WHERE p.tag = t.tag )"
-		        + " GROUP BY PUBLISH_TIMESTAMP",
-		        args);
+	public Map<String, Long> getMapTagLastPublishedTime(List<String> tags, String tumblrName) {
+		Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[] {TAG, PUBLISH_TIMESTAMP}); 
 
 		HashMap<String, Long> map = new HashMap<String, Long>();
 		try {
@@ -149,6 +124,60 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		return map;
 	}
 
+    public List<PostTag> getListTagsLastPublishedTime(List<String> tags, String tumblrName) {
+        return cursorToList(getCursorLastPublishedTime(tags, tumblrName, COLUMNS));
+    }
+
+    private Cursor getCursorLastPublishedTime(List<String> tags, String tumblrName, String[] selectArgs) {
+        // contains tumblrName, too
+        String args[] = new String[tags.size() + 1];
+        args[0] = tumblrName;
+        // make lowecase to match using ignorecase
+        for (int i = 0; i < tags.size(); i++) {
+            args[i + 1] = tags.get(i).toLowerCase(Locale.US);
+        }
+        
+        StringBuilder inClause = new StringBuilder();
+        for (int i = 0; i < tags.size(); i++) {
+            inClause.append("?");
+            if (i < (tags.size() - 1)) {
+                inClause.append(",");
+            }
+        }
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        
+        return db.rawQuery("SELECT " + TextUtils.join(",", selectArgs) 
+                + " FROM post_tag AS t"
+                + " WHERE t.TUMBLR_NAME = ?"
+                + " AND lower(t.tag) IN (" + inClause + ")"
+                + " AND PUBLISH_TIMESTAMP = "
+                + " (SELECT MAX(PUBLISH_TIMESTAMP)"
+                + "   FROM post_tag p"
+                + "  WHERE p.tag = t.tag )"
+                + " GROUP BY PUBLISH_TIMESTAMP",
+                args);
+    }
+
+    private List<PostTag> cursorToList(Cursor c) {
+        ArrayList<PostTag> list = new ArrayList<PostTag>();
+        try {
+            while (c.moveToNext()) {
+                PostTag postTag = new PostTag(
+                        c.getLong(c.getColumnIndex(_ID)),
+                        c.getString(c.getColumnIndex(TUMBLR_NAME)),
+                        c.getString(c.getColumnIndex(TAG)),
+                        c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
+                        c.getLong(c.getColumnIndex(SHOW_ORDER)));
+                list.add(postTag);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            c.close();
+        }
+        return list;
+    }   
+    
 	public PostTag findLastPublishedPost(String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 

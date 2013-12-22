@@ -69,7 +69,7 @@ public class BirthdaysPublisherActivity extends PhotoTumblrActivity implements G
                 Calendar now = Calendar.getInstance(Locale.US);
                 return BirthdayUtils.getPhotoPosts(BirthdaysPublisherActivity.this, now);
             }
-            
+
             protected void onPostExecute(List<TumblrPhotoPost> posts) {
                 super.onPostExecute(null);
                 if (getError() == null) {

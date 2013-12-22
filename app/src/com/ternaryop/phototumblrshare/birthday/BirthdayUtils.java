@@ -2,6 +2,7 @@ package com.ternaryop.phototumblrshare.birthday;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -108,4 +109,49 @@ public class BirthdayUtils {
         }
 	    return posts;
 	}
+
+	public static void bestByRange(Context context, int fromYear, int toYear, String postTags, String tumblrName) {
+	    /*
+	     Example
+                Calendar now = Calendar.getInstance(Locale.US);
+                int currYear = now.get(Calendar.YEAR);
+                BirthdayUtils.bestByRange(getApplicationContext(), currYear - 30, currYear, "BestUnder30", getBlogName());
+
+	     */
+	    final int THUMBS_COUNT = 9;
+        DBHelper dbHelper = DBHelper.getInstance(context);
+        List<Birthday> birthdays = dbHelper.getBirthdayDAO().getBirthdayByYearRange(fromYear, toYear, tumblrName);
+        Collections.shuffle(birthdays);
+        int maxItems = Math.min(birthdays.size(), THUMBS_COUNT);
+        
+        ArrayList<String> names = new ArrayList<String>();
+        for (int i = 0; i < maxItems; i++) {
+            Birthday birthday = birthdays.get(i);
+            names.add(birthday.getName());
+        }
+        List<PostTag> posts = dbHelper.getPostTagDAO().getListTagsLastPublishedTime(names, tumblrName);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"breathwomen-thumb-250\">");
+
+        Map<String, String> params = new HashMap<String, String>(2);
+        TumblrPhotoPost post = null;
+        params.put("type", "photo");
+        for (PostTag postTag : posts) {
+            params.put("id", String.valueOf(postTag.getId()));
+            post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
+                        .getPublicPosts(tumblrName, params);
+            String imageUrl = post.getFirstPhotoAltSize().get(TumblrPhotoPost.IMAGE_INDEX_250_PIXELS).getUrl();
+            sb.append("<img src=\"" + imageUrl + "\"/>");
+        }                
+        sb.append("</div>");
+        System.out.println(sb);
+        if (post != null) {
+            Tumblr.getSharedTumblr(context)
+                .draftPhotoPost(tumblrName,
+                    post.getFirstPhotoAltSize().get(TumblrPhotoPost.IMAGE_INDEX_500_PIXELS).getUrl(),
+                    sb.toString(),
+                    postTags);
+        }
+    }
+    
 }

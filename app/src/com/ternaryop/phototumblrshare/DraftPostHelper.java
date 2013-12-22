@@ -72,7 +72,7 @@ public class DraftPostHelper {
 			final PostTagDAO postTagDAO)
 			throws Exception {
 		final Map<String, Long> lastPublish = new HashMap<String, Long>();
-		Map<String, Long> postByTags = postTagDAO.getLastPublishedTimeByTags(tags, tumblrName);
+		Map<String, Long> postByTags = postTagDAO.getMapTagLastPublishedTime(tags, tumblrName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();

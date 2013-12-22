@@ -125,9 +125,9 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 		try {
 			while (c.moveToNext()) {
 				Birthday birthday = new Birthday(
-						c.getString(0),
-						c.getString(1),
-						c.getString(2));
+						c.getString(c.getColumnIndex(NAME)),
+						c.getString(c.getColumnIndex(BIRTH_DATE)),
+						c.getString(c.getColumnIndex(TUMBLR_NAME)));
 				list.add(birthday);
 			}
 		} catch (Exception e) {
@@ -176,5 +176,28 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
             c.close();
         }
         return null;
+    }
+
+    public List<Birthday> getBirthdayByYearRange(int from, int to, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        
+        String dateQuery = "";
+        
+        if (from == 0) {
+            
+        } else if (to == 0) {
+            
+        } else {
+            dateQuery = BIRTH_DATE + " BETWEEN '" + from + "-01-01' AND '" + to + "-12-31'";
+        }
+        
+        Cursor c = db.query(TABLE_NAME,
+                COLUMNS,
+                dateQuery + " and " + TUMBLR_NAME + "=?",
+                new String[] {tumblrName},
+                null,
+                null,
+                BIRTH_DATE);
+        return cursorToBirtdayList(c);
     }
 }
