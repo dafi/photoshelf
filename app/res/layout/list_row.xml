@@ -42,4 +42,13 @@
         android:textColor="#343434"
         android:textSize="12sp" />
 
+    <TextView
+        android:id="@+id/caption"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/time_desc"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:paddingTop="4dp"
+        android:textColor="#343434"
+        android:textSize="12sp" />
 </com.ternaryop.phototumblrshare.widget.CheckableRelativeLayout>

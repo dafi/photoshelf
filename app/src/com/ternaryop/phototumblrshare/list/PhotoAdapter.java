@@ -1,7 +1,6 @@
 package com.ternaryop.phototumblrshare.list;
 
 import java.util.Collection;
-import java.util.List;
 
 import android.content.Context;
 import android.text.Html;
@@ -15,7 +14,7 @@ import android.widget.TextView;
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.list.PhotoSharePost.ScheduleTime;
-import com.ternaryop.tumblr.TumblrAltSize;
+import com.ternaryop.utils.StringUtils;
  
 public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.OnClickListener {
     private static LayoutInflater inflater = null;
@@ -60,8 +59,8 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 			break;
         }
 
-        String titleString = post.getFirstTag();
-        holder.title.setText(Html.fromHtml(titleString).toString().replaceAll("\n", ""));
+        holder.title.setText(post.getFirstTag());
+        holder.caption.setText(Html.fromHtml(StringUtils.stripHtmlTags("a|img|p|br", post.getCaption())));
 
         // set the onclick listeners
         if (onPhotoBrowseClick != null) {
@@ -78,10 +77,8 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
         
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
-		// TODO find 75x75 image url
-		List<TumblrAltSize> altSizes = post.getPhotos().get(0).getAltSizes();
-		TumblrAltSize smallestImage = altSizes.get(altSizes.size() - 1);
-        imageLoader.displayImage(smallestImage.getUrl(), holder.thumbImage);
+		String imageUrl = post.getClosestPhotoByWidth(75).getUrl();
+        imageLoader.displayImage(imageUrl, holder.thumbImage);
         return vi;
     }
     
@@ -162,11 +159,13 @@ public class PhotoAdapter extends ArrayAdapter<PhotoSharePost> implements View.O
 	private class ViewHolder {
 		TextView title;
 		TextView timeDesc;
+        TextView caption;
 		ImageView thumbImage;
 
 		public ViewHolder(View vi) {
 	        title = (TextView)vi.findViewById(R.id.title_textview);
 	        timeDesc = (TextView)vi.findViewById(R.id.time_desc);
+	        caption = (TextView)vi.findViewById(R.id.caption);
 
 	        thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
 		}

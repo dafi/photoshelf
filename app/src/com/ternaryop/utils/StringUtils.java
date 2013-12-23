@@ -43,4 +43,15 @@ public class StringUtils {
 
         return sb.toString();
     }
+
+    /**
+     * String all specified HTML tags contained into string
+     * @param tags tags separated by pipe (eg "a|br|img")
+     * @param string
+     * @return stripped string
+     */
+    public static String stripHtmlTags(String tags, String string) {
+        return Pattern.compile("<\\/?(" + tags + ").*?>", Pattern.CASE_INSENSITIVE)
+                .matcher(string).replaceAll("");
+    }
 }
