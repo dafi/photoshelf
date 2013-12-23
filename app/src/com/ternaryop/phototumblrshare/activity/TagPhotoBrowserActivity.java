@@ -31,7 +31,9 @@ public class TagPhotoBrowserActivity extends PostsListActivity implements OnQuer
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         
-	    Bundle bundle = getIntent().getExtras();
+        photoAdapter.setOnPhotoBrowseClick(this);
+
+        Bundle bundle = getIntent().getExtras();
 		postTag = bundle.getString(POST_TAG);
 		if (getBlogName() != null && postTag != null && postTag.trim().length() > 0) {
 			onQueryTextSubmit(postTag.trim());
