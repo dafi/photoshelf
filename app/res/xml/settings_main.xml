@@ -10,50 +10,52 @@
             android:persistent="false"
             android:title="@string/tumblr_login_title" />
     </PreferenceCategory>
-
-    <PreferenceScreen
-        android:key="import_category_key"
-        android:persistent="false"
+    <PreferenceCategory
+        android:key="pref_key_import_export_key"
         android:title="@string/pref_import_category_title" >
-        <Preference
-            android:key="import_dom_filters"
+        <PreferenceScreen
+            android:key="import_category_key"
             android:persistent="false"
-            android:title="@string/import_dom_filters_title" />
+            android:title="@string/pref_import_screen_title" >
+            <Preference
+                android:key="import_dom_filters"
+                android:persistent="false"
+                android:title="@string/import_dom_filters_title" />
 
-        <PreferenceCategory android:title="@string/pref_posts_title" >
-            <Preference
-                android:key="import_posts_from_csv"
-                android:persistent="false"
-                android:title="@string/import_posts_from_csv_title" />
-            <Preference
-                android:key="export_posts_csv"
-                android:persistent="false"
-                android:title="@string/export_posts_csv_title" />
-            <Preference
-                android:key="import_posts_from_tumblr"
-                android:persistent="false"
-                android:title="@string/import_posts_from_tumblr_title" />
-        </PreferenceCategory>
-        <PreferenceCategory android:title="@string/pref_birthdays_title" >
-            <Preference
-                android:key="import_birthdays"
-                android:persistent="false"
-                android:title="@string/import_birthdays_title" />
-            <Preference
-                android:key="import_birthdays_from_wikipedia"
-                android:persistent="false"
-                android:title="@string/import_missing_birthdays_from_wikipedia_title" />
-            <Preference
-                android:key="export_birthdays"
-                android:persistent="false"
-                android:title="@string/export_birthdays_title" />
-            <Preference
-                android:key="export_missing_birthdays"
-                android:persistent="false"
-                android:title="@string/export_missing_birthdays_title" />
+            <PreferenceCategory android:title="@string/pref_posts_title" >
+                <Preference
+                    android:key="import_posts_from_csv"
+                    android:persistent="false"
+                    android:title="@string/import_posts_from_csv_title" />
+                <Preference
+                    android:key="export_posts_csv"
+                    android:persistent="false"
+                    android:title="@string/export_posts_csv_title" />
+                <Preference
+                    android:key="import_posts_from_tumblr"
+                    android:persistent="false"
+                    android:title="@string/import_posts_from_tumblr_title" />
             </PreferenceCategory>
-    </PreferenceScreen>
-
+            <PreferenceCategory android:title="@string/pref_birthdays_title" >
+                <Preference
+                    android:key="import_birthdays"
+                    android:persistent="false"
+                    android:title="@string/import_birthdays_title" />
+                <Preference
+                    android:key="import_birthdays_from_wikipedia"
+                    android:persistent="false"
+                    android:title="@string/import_missing_birthdays_from_wikipedia_title" />
+                <Preference
+                    android:key="export_birthdays"
+                    android:persistent="false"
+                    android:title="@string/export_birthdays_title" />
+                <Preference
+                    android:key="export_missing_birthdays"
+                    android:persistent="false"
+                    android:title="@string/export_missing_birthdays_title" />
+            </PreferenceCategory>
+        </PreferenceScreen>
+    </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_schedule_settings"
         android:title="@string/pref_schedule_title" >
