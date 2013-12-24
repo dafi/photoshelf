@@ -8,5 +8,6 @@
 	"http:\/\/www.picturesion.com":"#full_image",
     "http:\/\/.*.imagevenue.com":"#thepic",
     "http:\/\/imagetwist.com":".pic",
-    "http:/\/\www.hotcelebshome.com":"#thepic"
+    "http:/\/\www.hotcelebshome.com":"#thepic",
+    "http:\/\/eyeprime.net":".attachment-810x810"
 }
