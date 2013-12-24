@@ -1,7 +1,5 @@
 package com.ternaryop.tumblr;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -378,7 +376,7 @@ public class Tumblr {
         }.execute();
     }
     
-    public TumblrPost getPublicPosts(final String tumblrName, Map<String, String> params) {
+    public List<TumblrPost> getPublicPosts(final String tumblrName, Map<String, String> params) {
         String apiUrl = getApiUrl(tumblrName, "/posts");
         
         Map<String, String> modifiedParams = new HashMap<String, String>(params);
@@ -387,7 +385,12 @@ public class Tumblr {
 
         try {
             JSONObject json = consumer.jsonFromGet(apiUrl, modifiedParams);
-            return build(json.getJSONObject("response").getJSONArray("posts").getJSONObject(0));
+            JSONArray jsonArray = json.getJSONObject("response").getJSONArray("posts");
+            ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                list.add(build(jsonArray.getJSONObject(i)));
+            }
+            return list;
         } catch (Exception e) {
             throw new TumblrException(e);
         }
@@ -400,21 +403,5 @@ public class Tumblr {
 			return new TumblrPhotoPost(json);
 		}
 		throw new IllegalArgumentException("Unable to build post for type " + type);
-	}
-
-	public void readPublicPhotoPosts(String tumblrName, String tag, PostRetriever postRetriever) {
-    	try {
-	        String blogUrl = tumblrName + ".tumblr.com";
-
-			String apiUrl = "http://api.tumblr.com/v2/blog/" + blogUrl + "/posts/photo?limit=" + MAX_POST_PER_REQUEST;
-			apiUrl += "&api_key=" + consumer.getConsumerKey();
-			if (tag != null && tag.trim().length() > 0) {
-				apiUrl += "&tag=" + URLEncoder.encode(tag, "UTF-8");
-			}
-			postRetriever.setApiUrl(apiUrl);
-			postRetriever.execute();
-		} catch (UnsupportedEncodingException e) {
-			throw new TumblrException(e);
-		}
 	}
 }

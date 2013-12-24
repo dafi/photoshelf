@@ -103,7 +103,7 @@ public class BirthdayUtils {
 	        if (postTag != null) {
 	            params.put("id", String.valueOf(postTag.getId()));
 	            TumblrPhotoPost post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
-	                    .getPublicPosts(b.getTumblrName(), params);
+	                    .getPublicPosts(b.getTumblrName(), params).get(0);
                 posts.add(post);
 	        }
         }
@@ -139,7 +139,7 @@ public class BirthdayUtils {
         for (PostTag postTag : posts) {
             params.put("id", String.valueOf(postTag.getId()));
             post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
-                        .getPublicPosts(tumblrName, params);
+                        .getPublicPosts(tumblrName, params).get(0);
             String imageUrl = post.getClosestPhotoByWidth(250).getUrl();
             sb.append("<img src=\"" + imageUrl + "\"/>");
         }                

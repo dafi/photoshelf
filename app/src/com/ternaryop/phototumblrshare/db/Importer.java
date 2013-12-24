@@ -28,9 +28,8 @@ import android.widget.Toast;
 import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.importer.CSVIterator;
 import com.ternaryop.phototumblrshare.importer.CSVIterator.CSVBuilder;
+import com.ternaryop.phototumblrshare.importer.PostRetriever;
 import com.ternaryop.tumblr.Callback;
-import com.ternaryop.tumblr.PostRetriever;
-import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
@@ -118,7 +117,7 @@ public class Importer {
 				}.execute();
 			}
 		});
-		Tumblr.getSharedTumblr(context).readPublicPhotoPosts(blogName, null, postRetriever);
+		postRetriever.readPhotoPosts(blogName, null);
 	}
 
 	public static void importDOMFilters(Context context, String importPath) {
