@@ -140,7 +140,7 @@ public class BirthdayUtils {
             params.put("id", String.valueOf(postTag.getId()));
             post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
                         .getPublicPosts(tumblrName, params);
-            String imageUrl = post.getFirstPhotoAltSize().get(TumblrPhotoPost.IMAGE_INDEX_250_PIXELS).getUrl();
+            String imageUrl = post.getClosestPhotoByWidth(250).getUrl();
             sb.append("<img src=\"" + imageUrl + "\"/>");
         }                
         sb.append("</div>");
@@ -148,7 +148,7 @@ public class BirthdayUtils {
         if (post != null) {
             Tumblr.getSharedTumblr(context)
                 .draftPhotoPost(tumblrName,
-                    post.getFirstPhotoAltSize().get(TumblrPhotoPost.IMAGE_INDEX_500_PIXELS).getUrl(),
+                    post.getClosestPhotoByWidth(500).getUrl(),
                     sb.toString(),
                     postTags);
         }

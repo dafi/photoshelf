@@ -31,8 +31,7 @@ public class GridViewPhotoAdapter extends ArrayAdapter<TumblrPhotoPost> {
 		} else {
 			imageView = (ImageView)convertView;
 		}
-        imageLoader.displayImage(getItem(position).getFirstPhotoAltSize()
-                .get(TumblrPhotoPost.IMAGE_INDEX_250_PIXELS).getUrl(), imageView);
+        imageLoader.displayImage(getItem(position).getClosestPhotoByWidth(250).getUrl(), imageView);
 
         return imageView;
 	}

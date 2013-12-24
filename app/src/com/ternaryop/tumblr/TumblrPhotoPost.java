@@ -13,13 +13,6 @@ public class TumblrPhotoPost extends TumblrPost {
 	 */
 	private static final long serialVersionUID = 8910912231608271421L;
 	
-	public final static int IMAGE_INDEX_1280_PIXELS = 0;
-	public final static int IMAGE_INDEX_500_PIXELS = 1;
-	public final static int IMAGE_INDEX_400_PIXELS = 2;
-	public final static int IMAGE_INDEX_250_PIXELS = 3;
-	public final static int IMAGE_INDEX_100_PIXELS = 4;
-	public final static int IMAGE_INDEX_75_PIXELS = 5;
-	
 	private List<TumblrPhoto> photos;
 	private String caption;
 

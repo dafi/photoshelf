@@ -143,7 +143,7 @@ public class BirthdaysPublisherActivity extends PhotoTumblrActivity implements G
 
     private void createBirthdayPost(Bitmap cakeImage, TumblrPhotoPost post)
             throws IOException {
-        String imageUrl = post.getFirstPhotoAltSize().get(TumblrPhotoPost.IMAGE_INDEX_400_PIXELS).getUrl();
+        String imageUrl = post.getClosestPhotoByWidth(400).getUrl();
         Bitmap image = ImageUtils.readImage(imageUrl);
         
         final int IMAGE_SEPARATOR_HEIGHT = 10;
