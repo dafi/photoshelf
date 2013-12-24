@@ -176,4 +176,8 @@ public class TagPhotoBrowserActivity extends PostsListActivity implements OnQuer
 	public boolean onSuggestionSelect(int position) {
 		return true;
 	}
+
+    public void onPhotoBrowseClick(PhotoSharePost post) {
+        // do nothing otherwise launch a new TagBrowser on same tag
+    }
 }
