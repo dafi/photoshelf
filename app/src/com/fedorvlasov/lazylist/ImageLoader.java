@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 
 import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.utils.ImageUtils;
 
 public class ImageLoader {
     public final static String IMAGE_PREFIX_DIRECTORY = "images" + File.separator;
@@ -35,8 +36,10 @@ public class ImageLoader {
     private ExecutorService executorService;
     private Handler handler = new Handler(); // handler to display images in UI thread
     private final int stub_id = R.drawable.stub;
+    private Context context;
 
     public ImageLoader(Context context, String prefix) {
+        this.context = context;
         this.fileCache = new FileCache(context, IMAGE_PREFIX_DIRECTORY + prefix);    		
         executorService = Executors.newFixedThreadPool(5);
     }
@@ -55,10 +58,14 @@ public class ImageLoader {
     }
 
     public void displayDrawable(final String url, final ImageLoaderCallback callback) {
+        displayDrawable(url, callback, true);
+    }
+    
+    public void displayDrawable(final String url, final ImageLoaderCallback callback, final boolean scaleForDefaultDisplay) {
         executorService.submit(new Runnable() {
 			@Override
 			public void run() {
-				final Drawable icon = drawableFromUrl(url);
+				final Drawable icon = drawableFromUrl(url, scaleForDefaultDisplay);
 				if (icon != null) {
 					handler.post(new Runnable() {
 						@Override
@@ -222,7 +229,7 @@ public class ImageLoader {
         FileCache.clearCache(context, IMAGE_PREFIX_DIRECTORY);
     }
     
-	protected Drawable drawableFromUrl(String url) {
+	protected Drawable drawableFromUrl(String url, boolean scaleForDefaultDisplay) {
 		HttpURLConnection conn = null;
 		OutputStream os = null;
 		try {
@@ -238,6 +245,9 @@ public class ImageLoader {
 	            
 	            bitmap = Utils.decodeFile(f);
 			}
+            if (scaleForDefaultDisplay) {
+                bitmap = ImageUtils.scaleBitmapForDefaultDisplay(context, bitmap);
+            }
 			return new BitmapDrawable(null, bitmap);
 		} catch (Exception e) {
 			e.printStackTrace();

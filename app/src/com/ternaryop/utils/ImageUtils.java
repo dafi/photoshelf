@@ -5,9 +5,12 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 public class ImageUtils {
 
@@ -38,4 +41,25 @@ public class ImageUtils {
 	    // recreate the new Bitmap
 	    return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
 	}
+
+    public static Bitmap scaleBitmapForDefaultDisplay(Context context, Bitmap bitmap) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE))
+        .getDefaultDisplay()
+        .getMetrics(metrics);
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        float scaleWidth = metrics.scaledDensity;
+        float scaleHeight = metrics.scaledDensity;
+
+        // create a matrix for the manipulation
+        Matrix matrix = new Matrix();
+        // resize the bit map
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // recreate the new Bitmap
+        return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+    }
 }

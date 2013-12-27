@@ -8,6 +8,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.fedorvlasov.lazylist.ImageLoader;
+import com.ternaryop.phototumblrshare.R;
 import com.ternaryop.phototumblrshare.widget.CheckableImageView;
 import com.ternaryop.tumblr.TumblrPhotoPost;
  
@@ -23,11 +24,12 @@ public class GridViewPhotoAdapter extends ArrayAdapter<TumblrPhotoPost> {
 		ImageView imageView;
 		
 		if (convertView == null) {
+            int layoutWidth = getContext().getResources().getDimensionPixelSize(R.dimen.grid_layout_thumb_width);
+            int layoutHeight = getContext().getResources().getDimensionPixelSize(R.dimen.grid_layout_thumb_height);
 			// create the checkable view
 			imageView = new CheckableImageView(getContext());
-			imageView.setLayoutParams(new GridView.LayoutParams(250, 250));
+			imageView.setLayoutParams(new GridView.LayoutParams(layoutWidth, layoutHeight));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(8, 8, 2, 2);
 		} else {
 			imageView = (ImageView)convertView;
 		}
