@@ -69,8 +69,7 @@ public class DraftListActivity extends PostsListActivity {
 	}
 
 	protected void refreshUI() {
-		int resId = photoAdapter.getCount() == 1 ? R.string.posts_in_draft_singular : R.string.posts_in_draft_plural;
-		setTitle(getString(resId, photoAdapter.getCount()));
+		setTitle(getResources().getQuantityText(R.plurals.posts_in_draft, photoAdapter.getCount()));
 		photoAdapter.notifyDataSetChanged();
 	}
 

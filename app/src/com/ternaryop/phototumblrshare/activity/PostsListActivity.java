@@ -90,12 +90,9 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 		    }
 		};
 		
-		String message;
-		if (selectedPosts.size() == 1) {
-			message = getString(R.string.save_to_draft_singular_confirm, selectedPosts.get(0).getFirstTag());
-		} else {
-			message = getString(R.string.save_to_draft_plural_confirm, selectedPosts.size());
-		}
+		String message = getResources().getQuantityString(R.plurals.save_to_draft_confirm,
+		        selectedPosts.size(),
+		        selectedPosts.get(0).getFirstTag());
 		new AlertDialog.Builder(this)
 		.setMessage(message)
 		.setPositiveButton(android.R.string.yes, dialogClickListener)
@@ -153,7 +150,7 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 	
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         mode.setTitle(R.string.select_posts);
-        mode.setSubtitle(getString(R.string.selected_singular, 1));
+        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
 		MenuInflater inflater = mode.getMenuInflater();
 		inflater.inflate(getActionModeMenuId(), menu);
         return true;
@@ -211,12 +208,11 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
             	item.setVisible(singleSelection);
             }
 		}
-        
-        if (singleSelection) {
-            mode.setSubtitle(getString(R.string.selected_singular, 1));
-        } else {
-            mode.setSubtitle(getString(R.string.selected_plural, selectCount));
-        }
+
+        mode.setSubtitle(getResources().getQuantityString(
+                R.plurals.selected_items,
+                selectCount,
+                selectCount));
     }
 
     protected int[] getSingleSelectionMenuIds() {
@@ -274,18 +270,16 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 		String message = null;
     	switch (postAction) {
 		case PUBLISH:
-			if (postsList.size() == 1) {
-				message = getString(R.string.publish_post_singular_confirm, postsList.get(0).getFirstTag());
-			} else {
-				message = getString(R.string.publish_post_plural_confirm, postsList.size());
-			}
+		    message = getResources().getQuantityString(R.plurals.publish_post_confirm,
+		            postsList.size(),
+                    postsList.size(),
+		            postsList.get(0).getFirstTag());
 			break;
 		case DELETE:
-			if (postsList.size() == 1) {
-				message = getString(R.string.delete_post_singular_confirm, postsList.get(0).getFirstTag());
-			} else {
-				message = getString(R.string.delete_post_plural_confirm, postsList.size());
-			}
+            message = getResources().getQuantityString(R.plurals.delete_post_confirm,
+                    postsList.size(),
+                    postsList.size(),
+                    postsList.get(0).getFirstTag());
 			break;
 		}
 		

@@ -111,7 +111,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if (key.equals(KEY_SCHEDULE_TIME_SPAN)) {
                 int hours = sharedPreferences.getInt(key, 0);
-                preferenceScheduleTimeSpan.setSummary(getString(hours == 1 ? R.string.hour_title_singular : R.string.hour_title_plural, hours));
+                preferenceScheduleTimeSpan.setSummary(getResources().getQuantityString(R.plurals.hour_title, hours, hours));
             }
         }
 	};

@@ -47,13 +47,13 @@ public class BirthdayUtils {
 				.setSmallIcon(R.drawable.stat_notify_bday);
 		if (list.size() == 1) {
 			Birthday birthday = list.get(0);
-			builder.setContentTitle(context.getString(R.string.birthday_title_singular));
+			builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size()));
 			Calendar cal = Calendar.getInstance(Locale.US);
 			cal.setTime(birthday.getBirthDate());
 			long years = currYear - cal.get(Calendar.YEAR);
 			builder.setContentText(context.getString(R.string.birthday_years_old, birthday.getName(), years));
 		} else {
-			builder.setContentTitle(context.getString(R.string.birthday_title_plural, list.size()));
+            builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size(), list.size()));
 			NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 			inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title));
 			for (Birthday birthday : list) {
