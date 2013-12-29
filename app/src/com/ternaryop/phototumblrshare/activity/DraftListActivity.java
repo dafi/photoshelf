@@ -68,7 +68,10 @@ public class DraftListActivity extends PostsListActivity {
 	}
 
 	protected void refreshUI() {
-		setTitle(getResources().getQuantityText(R.plurals.posts_in_draft, photoAdapter.getCount()));
+		setTitle(getResources().getQuantityString(
+		        R.plurals.posts_in_draft,
+		        photoAdapter.getCount(),
+		        photoAdapter.getCount()));
 		photoAdapter.notifyDataSetChanged();
 	}
 
