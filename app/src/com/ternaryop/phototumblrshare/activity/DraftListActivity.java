@@ -11,7 +11,6 @@ import java.util.Map;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -140,8 +139,7 @@ public class DraftListActivity extends PostsListActivity {
     	return R.menu.draft_context;
     }
 	
-	private void showScheduleDialog(final int position, final ActionMode mode) {
-		final PhotoSharePost item = (PhotoSharePost)photoAdapter.getItem(position);
+	private void showScheduleDialog(final PhotoSharePost item, final ActionMode mode) {
 		SchedulePostDialog dialog = new SchedulePostDialog(this,
 				getBlogName(),
 				item,
@@ -190,10 +188,7 @@ public class DraftListActivity extends PostsListActivity {
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.post_schedule:
-			SparseBooleanArray checkedItemPositions = photoListView.getCheckedItemPositions();
-			int firstPosition = checkedItemPositions.keyAt(0);
-			
-			showScheduleDialog(firstPosition, mode);
+			showScheduleDialog(getSelectedPosts().get(0), mode);
 			return true;
 		}
 		return super.onActionItemClicked(mode, item);

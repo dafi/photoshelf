@@ -164,27 +164,29 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
     	SparseBooleanArray checkedItemPositions = photoListView.getCheckedItemPositions();
     	ArrayList<PhotoSharePost> list = new ArrayList<PhotoSharePost>();
     	for (int i = 0; i < checkedItemPositions.size(); i++) {
-    		list.add(photoAdapter.getItem(checkedItemPositions.keyAt(i)));
+            int key = checkedItemPositions.keyAt(i);
+            if (checkedItemPositions.get(key)) {
+                list.add(photoAdapter.getItem(key));
+            }
     	}
     	return list;
 	}
     
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-		SparseBooleanArray checkedItemPositions = photoListView.getCheckedItemPositions();
-		int firstPosition = checkedItemPositions.keyAt(0);
+        PhotoSharePost post = getSelectedPosts().get(0);
 		
 		switch (item.getItemId()) {
 		case R.id.post_publish:
 			showConfirmDialog(POST_ACTION.PUBLISH, mode);
 			return true;
 		case R.id.group_menu_image_dimension:
-			browseImageBySize(photoAdapter.getItem(firstPosition));
+			browseImageBySize(post);
 			return true;
 		case R.id.post_delete:
 			showConfirmDialog(POST_ACTION.DELETE, mode);
 			return true;
 		case R.id.post_edit:
-			showEditDialog(photoAdapter.getItem(firstPosition), mode);
+			showEditDialog(post, mode);
 			return true;
 		case R.id.post_save_draft:
 			saveAsDraft(mode);
