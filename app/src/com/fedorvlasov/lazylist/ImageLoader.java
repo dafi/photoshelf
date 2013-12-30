@@ -24,7 +24,7 @@ import android.os.Handler;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
-import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.photoshelf.R;
 import com.ternaryop.utils.ImageUtils;
 
 public class ImageLoader {

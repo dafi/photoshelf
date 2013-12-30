@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ternaryop.phototumblrshare"
-    android:versionCode="69"
+    package="com.ternaryop.photoshelf"
+    android:versionCode="1"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -19,26 +19,35 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.ternaryop.phototumblrshare.activity.PhotoPreferencesActivity"
+            android:name="com.ternaryop.photoshelf.activity.PhotoPreferencesActivity"
             android:label="@string/settings" />
-        <activity android:name="com.ternaryop.phototumblrshare.activity.TagListActivity" />
-        <activity android:name="com.ternaryop.phototumblrshare.activity.ScheduledListActivity" />
-        <activity android:name="com.ternaryop.phototumblrshare.activity.TagPhotoBrowserActivity" />
-        <activity android:name="com.ternaryop.phototumblrshare.activity.ImageViewerActivity" />
-        <activity android:name="com.ternaryop.phototumblrshare.activity.ExtrasMainActivity" />
-        <activity android:name="com.ternaryop.phototumblrshare.activity.ImagePickerActivity" >
-            <intent-filter android:label="A) Photo Share" >
+        <activity android:name="com.ternaryop.photoshelf.activity.TagListActivity" />
+        <activity android:name="com.ternaryop.photoshelf.activity.ScheduledListActivity" />
+        <activity android:name="com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity" />
+        <activity android:name="com.ternaryop.photoshelf.activity.ImageViewerActivity" />
+        <activity android:name="com.ternaryop.photoshelf.activity.ExtrasMainActivity" />
+        <activity android:name="com.ternaryop.photoshelf.activity.ImagePickerActivity" >
+            <intent-filter android:label="A Photo Shelf" >
                 <action android:name="android.intent.action.SEND" />
 
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter android:label="A Photo Shelf" >
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="http" />
+                <data android:host="*" />
+            </intent-filter>
         </activity>
-        <activity android:name="com.ternaryop.phototumblrshare.activity.DraftListActivity" >
+        <activity android:name="com.ternaryop.photoshelf.activity.DraftListActivity" >
         </activity>
         <activity
-            android:name="com.ternaryop.phototumblrshare.activity.MainActivity"
+            android:name="com.ternaryop.photoshelf.activity.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -51,22 +60,22 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="phototumblrshare" />
+                <data android:scheme="photoshelf" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.ternaryop.phototumblrshare.activity.BirthdaysActivity"
-            android:parentActivityName="com.ternaryop.phototumblrshare.activity.MainActivity" >
+            android:name="com.ternaryop.photoshelf.activity.BirthdaysActivity"
+            android:parentActivityName="com.ternaryop.photoshelf.activity.MainActivity" >
         </activity>
         <activity
-            android:name="com.ternaryop.phototumblrshare.activity.BirthdaysPublisherActivity"
-            android:parentActivityName="com.ternaryop.phototumblrshare.activity.MainActivity" >
+            android:name="com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity"
+            android:parentActivityName="com.ternaryop.photoshelf.activity.MainActivity" >
         </activity>
 
-        <service android:name="com.ternaryop.phototumblrshare.service.BootService" >
+        <service android:name="com.ternaryop.photoshelf.service.BootService" >
         </service>
 
-        <receiver android:name="com.ternaryop.phototumblrshare.service.BootServiceReceiver" >
+        <receiver android:name="com.ternaryop.photoshelf.service.BootServiceReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

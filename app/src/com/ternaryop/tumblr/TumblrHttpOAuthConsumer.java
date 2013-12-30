@@ -23,7 +23,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 
-import com.ternaryop.phototumblrshare.R;
+import com.ternaryop.photoshelf.R;
 import com.ternaryop.utils.JSONUtils;
 
 public class TumblrHttpOAuthConsumer {

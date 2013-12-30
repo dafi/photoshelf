@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.ternaryop.phototumblrshare.widget.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.ternaryop.widget.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -14,13 +14,13 @@
         android:background="@drawable/image_bg"
         android:padding="3dip" >
 
-        <com.ternaryop.phototumblrshare.widget.ClickableImageView
+        <com.ternaryop.widget.ClickableImageView
             android:id="@+id/thumbnail_image"
             android:layout_width="75dip"
             android:layout_height="75dip" />
     </LinearLayout>
 
-    <com.ternaryop.phototumblrshare.widget.ClickableTextView
+    <com.ternaryop.widget.ClickableTextView
         android:id="@+id/title_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,4 +51,4 @@
         android:paddingTop="4dp"
         android:textColor="#343434"
         android:textSize="12sp" />
-</com.ternaryop.phototumblrshare.widget.CheckableRelativeLayout>
+</com.ternaryop.widget.CheckableRelativeLayout>

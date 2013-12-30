@@ -4,7 +4,7 @@
         android:id="@+id/action_blogname"
         android:icon="@drawable/stub"
         android:title=""
-        android:actionProviderClass="com.ternaryop.phototumblrshare.BlogActionProvider"
+        android:actionProviderClass="com.ternaryop.photoshelf.BlogActionProvider"
         android:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_settings"
