@@ -211,7 +211,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 				if (publish) {
 					progressDialog.setMessage(getContext().getString(R.string.publishing_post));
 				} else {
-					progressDialog.setMessage(getContext().getResources().getQuantityText(R.string.save_draft_post, max));
+					progressDialog.setMessage(getContext().getResources().getQuantityString(R.plurals.saving_post_in_draft, max, max));
 				}
 				progressDialog.setMax(max);
 				progressDialog.show();
