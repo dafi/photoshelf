@@ -166,9 +166,10 @@ public class ImageUrlRetriever {
 							URI uri = new URI(link);
 							if (!uri.isAbsolute()) {
 								uri = new URI(url).resolve(uri);
+								link = uri.toString();
 							}
 							if (imageFiles != null) {
-							    File file = new File(context.getCacheDir(), String.valueOf(uri.toString().hashCode()));
+							    File file = new File(context.getCacheDir(), String.valueOf(link.hashCode()));
                                 FileOutputStream fos = new FileOutputStream(file);
 							    try {
 							        IOUtils.saveURL(link, fos);
@@ -177,7 +178,7 @@ public class ImageUrlRetriever {
 							        fos.close();
 							    }
 							} else {
-							    imageUrls.add(link.toString());
+							    imageUrls.add(link);
 							}
 						} catch (URISyntaxException e) {
 						}
