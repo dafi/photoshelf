@@ -9,5 +9,7 @@
     "http:\/\/.*.imagevenue.com":"#thepic",
     "http:\/\/imagetwist.com":".pic",
     "http:/\/\www.hotcelebshome.com":"#thepic",
-    "http:\/\/eyeprime.net":".attachment-810x810"
+    "http:\/\/eyeprime.net":".attachment-810x810",
+	"http:\/\/images.bangtidy.net\/.*\/attachment":"#theimage",
+	"http:\/\/celebmafia.com":""
 }

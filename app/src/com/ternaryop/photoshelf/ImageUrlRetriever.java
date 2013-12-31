@@ -155,11 +155,18 @@ public class ImageUrlRetriever {
 				int i = 1;
 				for (String url : urls.keySet()) {
 					String selector = urls.get(url);
-					Document htmlDocument = Jsoup.connect(url).get();
-					if (title == null) {
-						title = htmlDocument.title();
+					String link;
+					// if the selector is empty then 'url' is an image
+					// and doesn't need to be parsed
+					if (selector.trim().length() == 0) {
+					    link = url;
+					} else {
+	                    Document htmlDocument = Jsoup.connect(url).get();
+	                    if (title == null) {
+	                        title = htmlDocument.title();
+	                    }
+	                    link = htmlDocument.select(selector).attr("src");
 					}
-					String link = htmlDocument.select(selector).attr("src");
 					if (!link.isEmpty()) {
 						// if necessary resolve relative urls
 						try {
