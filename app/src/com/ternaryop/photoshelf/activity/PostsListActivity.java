@@ -90,7 +90,8 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 		};
 		
 		String message = getResources().getQuantityString(R.plurals.save_to_draft_confirm,
-		        selectedPosts.size(),
+                selectedPosts.size(),
+                selectedPosts.size(),
 		        selectedPosts.get(0).getFirstTag());
 		new AlertDialog.Builder(this)
 		.setMessage(message)
