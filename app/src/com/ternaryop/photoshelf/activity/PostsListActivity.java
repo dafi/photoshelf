@@ -3,9 +3,8 @@ package com.ternaryop.photoshelf.activity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
@@ -28,10 +27,11 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
-import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
+import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.DialogUtils;
 
 public abstract class PostsListActivity extends PhotoTumblrActivity implements OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick {
 	protected enum POST_ACTION {
@@ -76,15 +76,14 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 		    public void onClick(DialogInterface dialog, int which) {
 		        switch (which) {
 		        case DialogInterface.BUTTON_POSITIVE:
-		        	RefreshCallback refreshCallback = new RefreshCallback(selectedPosts);
-		        	for (final PhotoShelfPost post : selectedPosts) {
-		        		refreshCallback.post = post;
-			    		Tumblr.getSharedTumblr(PostsListActivity.this).saveDraft(
-			    				getBlogName(),
-			    				post.getPostId(),
-			    				refreshCallback);
-					}
-		    		refreshCallback.finish(mode);
+		            new ActionExecutor(PostsListActivity.this, R.string.saving_posts_to_draft_title, mode) {
+		                @Override
+		                protected void executeAction(PhotoShelfPost post) {
+	                        Tumblr.getSharedTumblr(getContext()).saveDraft(
+	                                getBlogName(),
+	                                post.getPostId());
+		                }
+		            }.execute();
 		            break;
 		        }
 		    }
@@ -100,17 +99,14 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 	    .show();		
 	}
 
-	private void deletePost(ActionMode mode) {
-		final List<PhotoShelfPost> selectedPosts = getSelectedPosts();
-    	RefreshCallback refreshCallback = new RefreshCallback(selectedPosts);
-
-		for (final PhotoShelfPost post : selectedPosts) {
-			refreshCallback.post = post;
-			Tumblr.getSharedTumblr(this).deletePost(getBlogName(),
-					post.getPostId(),
-					refreshCallback);
-		}
-		refreshCallback.finish(mode);
+	private void deletePost(final ActionMode mode) {
+		new ActionExecutor(this, R.string.deleting_posts_title, mode) {
+            @Override
+            protected void executeAction(PhotoShelfPost post) {
+                Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
+                        post.getPostId());
+            }
+        }.execute();
 	}
 
 	@Override
@@ -293,63 +289,72 @@ public abstract class PostsListActivity extends PhotoTumblrActivity implements O
 	}
 	
 	private void publishPost(ActionMode mode) {
-		final List<PhotoShelfPost> selectedPosts = getSelectedPosts();
-		RefreshCallback refreshCallback = new RefreshCallback(selectedPosts);
-		for (final PhotoShelfPost post : selectedPosts) {
-			refreshCallback.post = post;
-			Tumblr.getSharedTumblr(this).publishPost(getBlogName(),
-					post.getPostId(),
-					refreshCallback);
-		}
-		refreshCallback.finish(mode);
+        new ActionExecutor(this, R.string.publishing_posts_title, mode) {
+            @Override
+            protected void executeAction(PhotoShelfPost post) {
+                Tumblr.getSharedTumblr(getContext()).publishPost(getBlogName(),
+                        post.getPostId());
+            }
+        }.execute();
 	}
+
+	abstract class ActionExecutor extends AbsProgressBarAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
+        private ActionMode mode;
+
+        public ActionExecutor(Context context, int resId, ActionMode mode) {
+            super(context, context.getString(resId));
+            this.mode = mode;
+        }
+
+        @Override
+        protected void onProgressUpdate(PhotoShelfPost... values) {
+            PhotoShelfPost post = values[0];
+            photoAdapter.remove(post);
+            getProgressDialog().setMessage(post.getTagsAsString());
+        }
+        
+        @Override
+        protected void onPostExecute(List<PhotoShelfPost> notDeletedPosts) {
+            super.onPostExecute(null);
+            
+            refreshUI();
+            // all posts have been deleted so call actionMode.finish() 
+            if (notDeletedPosts.size() == 0) {
+                mode.finish();
+                return;
+            }
+            // leave posts not processed checked
+            photoListView.clearChoices();
+            for (PhotoShelfPost post : notDeletedPosts) {
+                int position = photoAdapter.getPosition(post);
+                photoListView.setItemChecked(position, true);
+            }
+            DialogUtils.showSimpleMessageDialog(getContext(),
+                    R.string.generic_error,
+                    getContext().getResources().getQuantityString(
+                            R.plurals.general_posts_error,
+                            notDeletedPosts.size(),
+                            notDeletedPosts.size()));
+        }
+
+        @Override
+        protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
+            List<PhotoShelfPost> notDeletedPosts = new ArrayList<PhotoShelfPost>();
+
+            for (final PhotoShelfPost post : getSelectedPosts()) {
+                try {
+                    executeAction(post);
+                    this.publishProgress(post);
+                } catch (Exception e) {
+                    notDeletedPosts.add(post);
+                }
+            }
+            return notDeletedPosts;
+        }
+        
+        protected abstract void executeAction(PhotoShelfPost post);
+    };
 	
-	class RefreshCallback extends AbsCallback {
-		PhotoShelfPost post;
-		private ArrayList<PhotoShelfPost> remainingPosts;
-
-		public RefreshCallback(List<PhotoShelfPost> selectedPosts) {
-			super(PostsListActivity.this, R.string.parsing_error);
-		}
-
-		@Override
-		public void failure(Exception e) {
-			super.failure(e);
-			if (post != null) {
-				if (remainingPosts == null) {
-					remainingPosts = new ArrayList<PhotoShelfPost>();
-				}
-				remainingPosts.add(post);
-			}
-		}
-		
-		@Override
-		public void complete(JSONObject result) {
-			if (post != null) {
-				photoAdapter.remove(post);
-			}
-			post = null;
-		}
-		
-		public void finish(ActionMode mode) {
-			refreshUI();
-			
-			// all posts are processed so call actionMode.finish() 
-			if (remainingPosts == null) {
-				mode.finish();
-				return;
-			}
-			// leave posts not processed checked
-			for (int i = 0; i < photoAdapter.getCount(); i++) {
-				photoListView.setItemChecked(i, false);
-			}
-			for (PhotoShelfPost post : remainingPosts) {
-				int position = photoAdapter.getPosition(post);
-				photoListView.setItemChecked(position, true);
-			}
-		}
-	}
-
 	@Override
 	public void onPhotoBrowseClick(PhotoShelfPost post) {
 		TagPhotoBrowserActivity.startPhotoBrowserActivity(this, getBlogName(), post.getFirstTag());

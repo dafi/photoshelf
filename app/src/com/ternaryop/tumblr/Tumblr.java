@@ -219,96 +219,45 @@ public class Tumblr {
 		return list;
     }
 
-    public void publishPost(final String tumblrName, final long id, final Callback<JSONObject> callback) {
-        new AsyncTask<Void, Void, JSONObject>() {
-        	Exception error;
-    		@Override
-    		protected JSONObject doInBackground(Void... voidParams) {
-    	        String apiUrl = getApiUrl(tumblrName, "/post/edit");
-    	    	
-                Map<String, String> params = new HashMap<String, String>();
-    	        params.put("id", id + "");
-    	        params.put("state", "published");
+    public void publishPost(final String tumblrName, final long id) {
+        String apiUrl = getApiUrl(tumblrName, "/post/edit");
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("id", String.valueOf(id));
+        params.put("state", "published");
 
-    	        try {
-        	        JSONObject json = consumer.jsonFromPost(apiUrl, params);
-        	        return json.getJSONObject("response");
-				} catch (Exception e) {
-					error = e;
-				}
-    	        return null;
-    		}
-
-			@Override
-			protected void onPostExecute(JSONObject response) {
-				if (error == null) {
-					callback.complete(response);
-				} else {
-					callback.failure(error);
-				}
-			}
-        }.execute();
+        try {
+            consumer.jsonFromPost(apiUrl, params);
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
     }
 
-    public void deletePost(final String tumblrName, final long id, final Callback<JSONObject> callback) {
-        new AsyncTask<Void, Void, JSONObject>() {
-        	Exception error;
-    		@Override
-    		protected JSONObject doInBackground(Void... voidParams) {
-    	        String apiUrl = getApiUrl(tumblrName, "/post/delete");
-    	    	
-                Map<String, String> params = new HashMap<String, String>();
-    	        params.put("id", id + "");
+    public void deletePost(final String tumblrName, final long id) {
+        String apiUrl = getApiUrl(tumblrName, "/post/delete");
+      
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("id", String.valueOf(id));
 
-    	        try {
-        	        JSONObject json = consumer.jsonFromPost(apiUrl, params);
-        	        return json.getJSONObject("response");
-				} catch (Exception e) {
-					error = e;
-				}
-    	        return null;
-    		}
-
-			@Override
-			protected void onPostExecute(JSONObject response) {
-				if (error == null) {
-					callback.complete(response);
-				} else {
-					callback.failure(error);
-				}
-			}
-        }.execute();
+        try {
+            consumer.jsonFromPost(apiUrl, params);
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
     }
 
-    public void saveDraft(final String tumblrName, final long id, final Callback<JSONObject> callback) {
-        new AsyncTask<Void, Void, JSONObject>() {
-        	Exception error;
-    		@Override
-    		protected JSONObject doInBackground(Void... voidParams) {
-    	        String apiUrl = getApiUrl(tumblrName, "/post/edit");
-    	    	
-                Map<String, String> params = new HashMap<String, String>();
-    	        params.put("id", id + "");
-    	        params.put("state", "draft");
+    public void saveDraft(final String tumblrName, final long id) {
+        String apiUrl = getApiUrl(tumblrName, "/post/edit");
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("id", String.valueOf(id));
+        params.put("state", "draft");
 
-    	        try {
-        	        JSONObject json = consumer.jsonFromPost(apiUrl, params);
-        	        return json.getJSONObject("response");
-				} catch (Exception e) {
-					error = e;
-				}
-    	        return null;
-    		}
-
-			@Override
-			protected void onPostExecute(JSONObject response) {
-				if (error == null) {
-					callback.complete(response);
-				} else {
-					callback.failure(error);
-				}
-			}
-        }.execute();
+        try {
+            consumer.jsonFromPost(apiUrl, params);
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
     }
 
     public void schedulePost(final String tumblrName, final long id, final long timestamp, final Callback<JSONObject> callback) {
