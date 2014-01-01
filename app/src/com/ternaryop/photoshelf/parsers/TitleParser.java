@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ternaryop.utils.StringUtils;
+
 public class TitleParser {
-    private static Pattern titleRE = Pattern.compile("^(.*?)\\s([-\u2013|~@]|attends|arrives)");
+    private static Pattern titleRE = Pattern.compile("^(.*?)\\s([-\u2013|~@]|attends|arrives)", Pattern.CASE_INSENSITIVE);
 
     private static String[] months = {"", "January",
                   "February",
@@ -104,7 +106,7 @@ public class TitleParser {
     public TitleData parseTitle(String title) {
         TitleData titleData = new TitleData();
 
-        title = cleanupText(title);
+        title = StringUtils.replaceUnicodeWithClosestAscii(title);
 
         Matcher m = titleRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
@@ -144,25 +146,6 @@ public class TitleParser {
 
         return titleData;
     }
-
-	private String cleanupText(String title) {
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < title.length(); i++) {
-        	char ch = title.charAt(i);
-			int type = Character.getType(ch);
-        	if (type == Character.INITIAL_QUOTE_PUNCTUATION
-        			|| type == Character.FINAL_QUOTE_PUNCTUATION
-        			|| ('\u2032' <= ch && ch <= '\u2037')) {
-        		sb.append("\"");
-        	} else if (type == Character.DASH_PUNCTUATION) {
-        		sb.append("-");
-        	} else {
-        		sb.append(ch);
-        	}
-        }
-		return sb.toString();
-	}
 
     public static TitleParser instance() {
     	return instance;
