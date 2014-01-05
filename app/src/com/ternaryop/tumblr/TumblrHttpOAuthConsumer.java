@@ -35,7 +35,7 @@ public class TumblrHttpOAuthConsumer {
     private Token accessToken;
     private String consumerKey;
 
-	public TumblrHttpOAuthConsumer(Context context) {
+    public TumblrHttpOAuthConsumer(Context context) {
         consumerKey = context.getString(R.string.CONSUMER_KEY);
 
         oAuthService = new ServiceBuilder()
@@ -49,17 +49,25 @@ public class TumblrHttpOAuthConsumer {
         accessToken = new Token(
                 preferences.getString(PREF_OAUTH_TOKEN, null),
                 preferences.getString(PREF_OAUTH_SECRET, null));
-	}
+    }
 
     public static boolean isLogged(Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         return preferences.contains(PREF_OAUTH_TOKEN) && preferences.contains(PREF_OAUTH_SECRET);
     }
     
+    public static void logout(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        Editor edit = preferences.edit();
+        edit.remove(PREF_OAUTH_TOKEN);
+        edit.remove(PREF_OAUTH_SECRET);
+        edit.commit();
+    }
+    
     public String getConsumerKey() {
         return consumerKey;
     }
-	
+    
     private static void authorize(Context context) {
         // Callback url scheme is defined into manifest
         OAuthService oAuthService = new ServiceBuilder()
@@ -77,82 +85,82 @@ public class TumblrHttpOAuthConsumer {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authorizationUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         context.startActivity(intent);
-	}
+    }
 
     private static void access(final Context context, final Uri uri, final AuthenticationCallback callback) {
-		new AsyncTask<Void, Void, Token>() {
-		    Exception error;
-			@Override
-			protected Token doInBackground(Void... params) {
-			    Token accessToken = null;
-				try {
-	                OAuthService oAuthService = new ServiceBuilder()
-	                .provider(TumblrApi.class)
-	                .apiKey(context.getString(R.string.CONSUMER_KEY))
-	                .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-	                .callback(context.getString(R.string.CALLBACK_URL))
-	                .build();
-	                SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-	                Token requestToken = new Token(
-	                        prefs.getString(PREF_OAUTH_TOKEN, ""),
-	                        prefs.getString(PREF_OAUTH_SECRET, ""));
-	                accessToken = oAuthService.getAccessToken(requestToken,
-	                                new Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)));
-				} catch (Exception e) {
-				    error = e;
-				}
-				return accessToken;
-			}
-			protected void onPostExecute(Token token) {
-			    if (token != null && error == null) {
-	                Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
-	                edit.putString(PREF_OAUTH_TOKEN,  token.getToken());
-	                edit.putString(PREF_OAUTH_SECRET, token.getSecret());
-	                edit.commit();
-			    }
-				if (callback != null) {
-				    if (token == null) {
-	                    callback.tumblrAuthenticated(null, null, error);
-				    } else {
-	                    callback.tumblrAuthenticated(token.getToken(), token.getSecret(), error);
-				    }
-				}
-			}
-		}.execute();
-	}
-
-	public static void loginWithActivity(final Context context) {
-        new AsyncTask<Void, Void, Void>() {
-    		@Override
-    		protected Void doInBackground(Void... params) {
-    			TumblrHttpOAuthConsumer.authorize(context);
-    			return null;
-    		}
+        new AsyncTask<Void, Void, Token>() {
+            Exception error;
+            @Override
+            protected Token doInBackground(Void... params) {
+                Token accessToken = null;
+                try {
+                    OAuthService oAuthService = new ServiceBuilder()
+                    .provider(TumblrApi.class)
+                    .apiKey(context.getString(R.string.CONSUMER_KEY))
+                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+                    .callback(context.getString(R.string.CALLBACK_URL))
+                    .build();
+                    SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+                    Token requestToken = new Token(
+                            prefs.getString(PREF_OAUTH_TOKEN, ""),
+                            prefs.getString(PREF_OAUTH_SECRET, ""));
+                    accessToken = oAuthService.getAccessToken(requestToken,
+                                    new Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)));
+                } catch (Exception e) {
+                    error = e;
+                }
+                return accessToken;
+            }
+            protected void onPostExecute(Token token) {
+                if (token != null && error == null) {
+                    Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                    edit.putString(PREF_OAUTH_TOKEN,  token.getToken());
+                    edit.putString(PREF_OAUTH_SECRET, token.getSecret());
+                    edit.commit();
+                }
+                if (callback != null) {
+                    if (token == null) {
+                        callback.tumblrAuthenticated(null, null, error);
+                    } else {
+                        callback.tumblrAuthenticated(token.getToken(), token.getSecret(), error);
+                    }
+                }
+            }
         }.execute();
-	}
-	
-	/**
-	 * Return true if the uri scheme can be handled, false otherwise
-	 * The returned value indicated only the scheme can be handled, the method complete the access asynchronously
-	 * @param context
-	 * @param uri
-	 * @param callback can be null
-	 * @return
-	 */
-	public static boolean handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
-		String callbackUrl = context.getString(R.string.CALLBACK_URL);
+    }
+
+    public static void loginWithActivity(final Context context) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                TumblrHttpOAuthConsumer.authorize(context);
+                return null;
+            }
+        }.execute();
+    }
+    
+    /**
+     * Return true if the uri scheme can be handled, false otherwise
+     * The returned value indicated only the scheme can be handled, the method complete the access asynchronously
+     * @param context
+     * @param uri
+     * @param callback can be null
+     * @return
+     */
+    public static boolean handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
+        String callbackUrl = context.getString(R.string.CALLBACK_URL);
         boolean canHandleURI = uri != null && callbackUrl.startsWith(uri.getScheme());
 
         if (canHandleURI) {
-        	TumblrHttpOAuthConsumer.access(
-        			context,
-        			uri,
-        			callback);
+            TumblrHttpOAuthConsumer.access(
+                    context,
+                    uri,
+                    callback);
         }
         
         return canHandleURI;
-	}
-	
+    }
+    
     public synchronized Response getSignedPostResponse(String url, Map<String, ?> params) throws IOException {
         OAuthRequest oAuthReq = new OAuthRequest(Verb.POST, url);
 
@@ -181,37 +189,37 @@ public class TumblrHttpOAuthConsumer {
     }
     
     public JSONObject jsonFromGet(String url) {
-		return jsonFromGet(url, null);
+        return jsonFromGet(url, null);
     }    
 
     public JSONObject jsonFromGet(String url, Map<String, ?> params) {
         try {
             JSONObject json = JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getStream());
-    		checkResult(json);
-    		return json;
-		} catch (Exception e) {
-			throw new TumblrException(e);
-		}
+            checkResult(json);
+            return json;
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
     }    
 
     public JSONObject jsonFromPost(String url, Map<String, ?> params) {
         try {
             JSONObject json = JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getStream());
-    		checkResult(json);
-    		return json;
-		} catch (Exception e) {
-			throw new TumblrException(e);
-		}
+            checkResult(json);
+            return json;
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
     }
 
-	private void checkResult(JSONObject json) throws JSONException {
-		if (!json.has("meta")) {
-			throw new JSONException("Invalid tumblr response, meta not found");
-		}
-		int status = json.getJSONObject("meta").getInt("status");
-		if (status != 200 && status != 201) {
-			throw new JSONException(json.getJSONObject("meta").getString("msg"));
-		}
-	}    
+    private void checkResult(JSONObject json) throws JSONException {
+        if (!json.has("meta")) {
+            throw new JSONException("Invalid tumblr response, meta not found");
+        }
+        int status = json.getJSONObject("meta").getInt("status");
+        if (status != 200 && status != 201) {
+            throw new JSONException(json.getJSONObject("meta").getString("msg"));
+        }
+    }    
 
 }
