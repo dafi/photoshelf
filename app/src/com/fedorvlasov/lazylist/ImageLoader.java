@@ -30,8 +30,8 @@ import com.ternaryop.utils.ImageUtils;
 public class ImageLoader {
     public final static String IMAGE_PREFIX_DIRECTORY = "images" + File.separator;
     
-	private MemoryCache memoryCache = new MemoryCache();
-	private FileCache fileCache;
+    private MemoryCache memoryCache = new MemoryCache();
+    private FileCache fileCache;
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     private ExecutorService executorService;
     private Handler handler = new Handler(); // handler to display images in UI thread
@@ -40,57 +40,62 @@ public class ImageLoader {
 
     public ImageLoader(Context context, String prefix) {
         this.context = context;
-        this.fileCache = new FileCache(context, IMAGE_PREFIX_DIRECTORY + prefix);    		
+        this.fileCache = new FileCache(context, IMAGE_PREFIX_DIRECTORY + prefix);            
         executorService = Executors.newFixedThreadPool(5);
     }
     
-    public void displayImage(String url, ImageView imageView)
-    {
+    public void displayImage(String url, ImageView imageView) {
+        displayImage(url, imageView, false);
+    }
+
+    public void displayImage(String url, ImageView imageView, boolean scaleForDefaultDisplay) {
         imageViews.put(imageView, url);
-        Bitmap bitmap=memoryCache.get(url);
-        if(bitmap!=null)
+        Bitmap bitmap = memoryCache.get(url);
+        if (bitmap != null) {
+            if (scaleForDefaultDisplay) {
+                bitmap = ImageUtils.scaleBitmapForDefaultDisplay(context, bitmap);
+            }
             imageView.setImageBitmap(bitmap);
-        else
-        {
-            queuePhoto(url, imageView);
+        } else {
+            queuePhoto(url, imageView, scaleForDefaultDisplay);
             imageView.setImageResource(stub_id);
         }
     }
-
+    
     public void displayDrawable(final String url, final ImageLoaderCallback callback) {
         displayDrawable(url, callback, true);
     }
     
     public void displayDrawable(final String url, final ImageLoaderCallback callback, final boolean scaleForDefaultDisplay) {
         executorService.submit(new Runnable() {
-			@Override
-			public void run() {
-				final Drawable icon = drawableFromUrl(url, scaleForDefaultDisplay);
-				if (icon != null) {
-					handler.post(new Runnable() {
-						@Override
-						public void run() {
-							callback.display(icon);
-						}
-					});
-				}
-			}
-		});
+            @Override
+            public void run() {
+                final Drawable icon = drawableFromUrl(url, scaleForDefaultDisplay);
+                if (icon != null) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.display(icon);
+                        }
+                    });
+                }
+            }
+        });
     }
     
     public void displayIcon(final String url, final MenuItem menuItem) {
-    	displayDrawable(url, new ImageLoaderCallback() {
-			@Override
-			public void display(Drawable drawable) {
-				menuItem.setIcon(drawable);
-			}
-		});
+        displayDrawable(url, new ImageLoaderCallback() {
+            @Override
+            public void display(Drawable drawable) {
+                menuItem.setIcon(drawable);
+            }
+        });
     }
         
-    private void queuePhoto(String url, ImageView imageView)
+    private void queuePhoto(String url, ImageView imageView, boolean scaleForDefaultDisplay)
     {
         PhotoToLoad p=new PhotoToLoad(url, imageView);
-        executorService.submit(new PhotosLoader(p));
+        executorService.submit(new PhotosLoader(p, scaleForDefaultDisplay));
     }
     
     private Bitmap getBitmap(String url) 
@@ -175,22 +180,26 @@ public class ImageLoader {
     
     class PhotosLoader implements Runnable {
         PhotoToLoad photoToLoad;
-        PhotosLoader(PhotoToLoad photoToLoad){
-            this.photoToLoad=photoToLoad;
+        private boolean scaleForDefaultDisplay;
+        PhotosLoader(PhotoToLoad photoToLoad, boolean scaleForDefaultDisplay) {
+            this.photoToLoad = photoToLoad;
+            this.scaleForDefaultDisplay = scaleForDefaultDisplay;
         }
         
         @Override
         public void run() {
-            try{
-                if(imageViewReused(photoToLoad))
+            try {
+                if (imageViewReused(photoToLoad)) {
                     return;
-                Bitmap bmp=getBitmap(photoToLoad.url);
+                }
+                Bitmap bmp = getBitmap(photoToLoad.url);
                 memoryCache.put(photoToLoad.url, bmp);
-                if(imageViewReused(photoToLoad))
+                if (imageViewReused(photoToLoad)) {
                     return;
-                BitmapDisplayer bd=new BitmapDisplayer(bmp, photoToLoad);
+                }
+                BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad, scaleForDefaultDisplay);
                 handler.post(bd);
-            }catch(Throwable th){
+            } catch (Throwable th) {
                 th.printStackTrace();
             }
         }
@@ -204,19 +213,30 @@ public class ImageLoader {
     }
     
     //Used to display bitmap in the UI thread
-    class BitmapDisplayer implements Runnable
-    {
+    class BitmapDisplayer implements Runnable {
         Bitmap bitmap;
         PhotoToLoad photoToLoad;
-        public BitmapDisplayer(Bitmap b, PhotoToLoad p){bitmap=b;photoToLoad=p;}
+        private boolean scaleForDefaultDisplay;
+
+        public BitmapDisplayer(Bitmap b, PhotoToLoad p, boolean scaleForDefaultDisplay) {
+            bitmap = b;
+            photoToLoad = p;
+            this.scaleForDefaultDisplay = scaleForDefaultDisplay;
+        }
+
         public void run()
         {
-            if(imageViewReused(photoToLoad))
+            if (imageViewReused(photoToLoad)) {
                 return;
-            if(bitmap!=null)
+            }
+            if (bitmap != null) {
+                if (scaleForDefaultDisplay) {
+                    bitmap = ImageUtils.scaleBitmapForDefaultDisplay(context, bitmap);
+                }
                 photoToLoad.imageView.setImageBitmap(bitmap);
-            else
+            } else {
                 photoToLoad.imageView.setImageResource(stub_id);
+            }
         }
     }
 
@@ -229,36 +249,36 @@ public class ImageLoader {
         FileCache.clearCache(context, IMAGE_PREFIX_DIRECTORY);
     }
     
-	protected Drawable drawableFromUrl(String url, boolean scaleForDefaultDisplay) {
-		HttpURLConnection conn = null;
-		OutputStream os = null;
-		try {
-			File f = fileCache.getFile(url);
-			Bitmap bitmap = Utils.decodeFile(f);
-			
-			if (bitmap == null) {
-			    conn = (HttpURLConnection) new URL(url).openConnection();
-	            conn.setInstanceFollowRedirects(true);
-			    conn.connect();
-	            os = new FileOutputStream(f);
-	            Utils.CopyStream(conn.getInputStream(), os);
-	            
-	            bitmap = Utils.decodeFile(f);
-			}
+    protected Drawable drawableFromUrl(String url, boolean scaleForDefaultDisplay) {
+        HttpURLConnection conn = null;
+        OutputStream os = null;
+        try {
+            File f = fileCache.getFile(url);
+            Bitmap bitmap = Utils.decodeFile(f);
+            
+            if (bitmap == null) {
+                conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setInstanceFollowRedirects(true);
+                conn.connect();
+                os = new FileOutputStream(f);
+                Utils.CopyStream(conn.getInputStream(), os);
+                
+                bitmap = Utils.decodeFile(f);
+            }
             if (scaleForDefaultDisplay) {
                 bitmap = ImageUtils.scaleBitmapForDefaultDisplay(context, bitmap);
             }
-			return new BitmapDrawable(null, bitmap);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try { if (os != null) os.close(); } catch (Exception ex) {}
-			try { if (conn != null) conn.disconnect(); } catch (Exception ex) {}
-		}
-		return null;
-	}
-	
-	public interface ImageLoaderCallback {
-		public void display(Drawable drawable);
-	}
+            return new BitmapDrawable(null, bitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try { if (os != null) os.close(); } catch (Exception ex) {}
+            try { if (conn != null) conn.disconnect(); } catch (Exception ex) {}
+        }
+        return null;
+    }
+    
+    public interface ImageLoaderCallback {
+        public void display(Drawable drawable);
+    }
 }

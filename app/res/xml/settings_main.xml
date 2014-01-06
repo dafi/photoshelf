@@ -8,7 +8,7 @@
         <Preference
             android:key="tumblr_login"
             android:persistent="false"
-            android:title="@string/tumblr_login_title" />
+            android:title="@string/login_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_import_export_key"
@@ -73,5 +73,12 @@
             android:persistent="false"
             android:title="@string/clear_image_cache_title" />
     </PreferenceCategory>
-
+    <PreferenceCategory
+        android:key="pref_key_developer"
+        android:title="@string/pref_developer" >
+        <Preference
+            android:key="version"
+            android:persistent="false" />
+    </PreferenceCategory>
+    
 </PreferenceScreen>
