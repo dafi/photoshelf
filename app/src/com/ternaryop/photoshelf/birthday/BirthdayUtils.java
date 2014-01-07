@@ -65,6 +65,9 @@ public class BirthdayUtils {
 			builder.setStyle(inboxStyle);
 		}
 
+		// remove notification when user clicks on it
+		builder.setAutoCancel(true);
+		
 		Notification notification = builder.build();
 		NotificationManager notificationManager = (NotificationManager)context.getApplicationContext()
 				.getSystemService(Context.NOTIFICATION_SERVICE);
