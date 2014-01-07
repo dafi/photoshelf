@@ -44,7 +44,7 @@
     <string name="parse_title">Parse Title</string>
     <string name="delete_post">Delete</string>
     <string name="search_tag">Search Tag</string>
-    <string name="browse_images_by_tags_title">Browse Image by Tags</string>
+    <string name="browse_images_by_tags_title">Browse Image</string>
     <string name="browse_tags_title">Browse Tags</string>
     <string name="reading_tags_title">Reading posts tagged with \'%1$s\'&#8230;</string>
     <string name="import_posts_from_csv_title">Import Posts from CSV File</string>
