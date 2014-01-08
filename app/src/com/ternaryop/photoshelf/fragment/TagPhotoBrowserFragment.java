@@ -85,11 +85,6 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnQ
         searchView.setSuggestionsAdapter(adapter);
     }
     
-    protected void refreshUI() {
-        getActivity().setTitle(getString(R.string.browser_image_title, postTag, photoAdapter.getCount(), totalPosts));
-        photoAdapter.notifyDataSetChanged();
-    }
-    
     protected void readPhotoPosts() {
         if (isScrolling) {
             return;

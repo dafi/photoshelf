@@ -32,9 +32,6 @@
     <string name="image_viewer_activity_title">Image Viewer</string>
     <string name="login_title">Login</string>
     <string name="logout_title">Logout</string>
-    <string name="browser_image_title">%1$s %2$d/%3$d posts</string>
-    <string name="browser_sheduled_images_title">Scheduled %1$d/%2$d posts</string>
-    <string name="scheduled_title">Scheduled</string>
     <string name="authentication_success_title">Authentication success, caching blogs</string>
     <string name="save_draft_post">Save as Draft</string>
     <string name="select_images">Select Images</string>
@@ -44,7 +41,7 @@
     <string name="parse_title">Parse Title</string>
     <string name="delete_post">Delete</string>
     <string name="search_tag">Search Tag</string>
-    <string name="browse_images_by_tags_title">Browse Image</string>
+    <string name="browse_images_by_tags_title">Browse Images</string>
     <string name="browse_tags_title">Browse Tags</string>
     <string name="reading_tags_title">Reading posts tagged with \'%1$s\'&#8230;</string>
     <string name="import_posts_from_csv_title">Import Posts from CSV File</string>
@@ -93,7 +90,6 @@
         <item quantity="other">Saving %1$d posts in draft&#8230;</item>
     </plurals>
     <plurals name="posts_count">
-        <item quantity="zero">No posts</item>
         <item quantity="one">One post</item>
         <item quantity="other">%1$d posts</item>
     </plurals>
@@ -133,5 +129,6 @@
     <string name="tags_title">Tags</string>
     <string name="extras_title">Extras</string>
     <string name="birthdays_today_title">Today birthdays</string>
-
+    <string name="post_count_1_of_x">%1$d/%2$d posts</string>
+    
 </resources>

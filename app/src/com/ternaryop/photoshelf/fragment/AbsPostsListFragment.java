@@ -318,6 +318,22 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }.execute();
     }
 
+    protected void refreshUI() {
+        if (hasMorePosts) {
+            getActivity().getActionBar().setSubtitle(
+                    getString(R.string.post_count_1_of_x,
+                            photoAdapter.getCount(),
+                            totalPosts));
+        } else {
+            getActivity().getActionBar().setSubtitle(
+                    getResources().getQuantityString(
+                            R.plurals.posts_count,
+                            photoAdapter.getCount(),
+                            photoAdapter.getCount()));
+        }
+        photoAdapter.notifyDataSetChanged();
+    }
+    
     abstract class ActionExecutor extends AbsProgressBarAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
         private ActionMode mode;
 

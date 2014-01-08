@@ -73,14 +73,6 @@ public class DraftListFragment extends AbsPostsListFragment {
         });
     }
 
-    protected void refreshUI() {
-        getActivity().getActionBar().setSubtitle(getResources().getQuantityString(
-                R.plurals.posts_count,
-                photoAdapter.getCount(),
-                photoAdapter.getCount()));
-        photoAdapter.notifyDataSetChanged();
-    }
-
     @Override
     protected void readPhotoPosts() {
         photoAdapter.clear();

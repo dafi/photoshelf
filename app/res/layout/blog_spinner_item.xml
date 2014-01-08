@@ -3,14 +3,14 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingBottom="5dp"
-    android:paddingTop="5dp" >
+    android:paddingBottom="3dp"
+    android:paddingTop="3dp" >
 
     <ImageView
         android:id="@+id/image1"
         android:layout_width="48dip"
         android:layout_height="48dip"
-        android:paddingLeft="5dp" />
+        android:paddingLeft="3dp" />
 
     <TextView
         android:id="@+id/title1"
@@ -18,8 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/image1"
-        android:paddingLeft="6dp"
-        android:textColor="#343434"
-        android:textSize="12sp" />
+        android:paddingLeft="4dp"
+        android:textColor="#555555" />
 
 </RelativeLayout>

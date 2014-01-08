@@ -32,11 +32,6 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         return R.menu.scheduled_context;
     }
     
-    protected void refreshUI() {
-        getActivity().getActionBar().setSubtitle(getString(R.string.browser_sheduled_images_title, photoAdapter.getCount(), totalPosts));
-        photoAdapter.notifyDataSetChanged();
-    }
-    
     @Override
     protected void readPhotoPosts() {
         if (isScrolling) {
