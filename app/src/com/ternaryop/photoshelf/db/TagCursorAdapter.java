@@ -19,50 +19,57 @@ import com.ternaryop.utils.StringUtils;
  *
  */
 public class TagCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, ViewBinder {
-	private String tumblrName;
-	private DBHelper dbHelper;
-	private String pattern = "";
-	private Context context;
+    private String blogName;
+    private DBHelper dbHelper;
+    private String pattern = "";
+    private Context context;
 
-	public TagCursorAdapter(Context context, int resId, String tumblrName) {
-		super(context,
-				resId,
-				null,
-				new String[] { PostTagDAO.TAG },
-				new int[] { android.R.id.text1 },
-				0);
-		this.context = context;
-		this.tumblrName = tumblrName;
-		dbHelper = DBHelper.getInstance(context);
+    public TagCursorAdapter(Context context, int resId, String blogName) {
+        super(context,
+                resId,
+                null,
+                new String[] { PostTagDAO.TAG },
+                new int[] { android.R.id.text1 },
+                0);
+        this.context = context;
+        this.blogName = blogName;
+        dbHelper = DBHelper.getInstance(context);
 
-		setViewBinder(this);
-		setFilterQueryProvider(this);
-	}
+        setViewBinder(this);
+        setFilterQueryProvider(this);
+    }
 
-	@Override
-	public Cursor runQuery(CharSequence constraint) {
-		this.pattern = constraint == null ? "" : constraint.toString().trim();
-		return dbHelper.getPostTagDAO().getCursorByTag(pattern, tumblrName);
-	}
+    @Override
+    public Cursor runQuery(CharSequence constraint) {
+        this.pattern = constraint == null ? "" : constraint.toString().trim();
+        return dbHelper.getPostTagDAO().getCursorByTag(pattern, blogName);
+    }
 
-	public String convertToString(final Cursor cursor) {
-		final int columnIndex = cursor.getColumnIndexOrThrow(PostTagDAO.TAG);
-		return cursor.getString(columnIndex);
-	}
+    public String convertToString(final Cursor cursor) {
+        final int columnIndex = cursor.getColumnIndexOrThrow(PostTagDAO.TAG);
+        return cursor.getString(columnIndex);
+    }
 
-	@Override
-	public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
-		final int countColumnIndex = cursor.getColumnIndexOrThrow("post_count");
-		final int postCount = cursor.getInt(countColumnIndex);
-		if (pattern.length() > 0) {
-			final String htmlHighlightPattern = StringUtils.htmlHighlightPattern(
-					pattern, cursor.getString(columnIndex));
-			final Spanned spanned = Html.fromHtml(context.getString(R.string.tag_with_post_count, htmlHighlightPattern, postCount));
-			((TextView) view).setText(spanned);
-		} else {
-			((TextView) view).setText(context.getString(R.string.tag_with_post_count, cursor.getString(columnIndex), postCount));
-		}
-		return true;
-	}
+    @Override
+    public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
+        final int countColumnIndex = cursor.getColumnIndexOrThrow("post_count");
+        final int postCount = cursor.getInt(countColumnIndex);
+        if (pattern.length() > 0) {
+            final String htmlHighlightPattern = StringUtils.htmlHighlightPattern(
+                    pattern, cursor.getString(columnIndex));
+            final Spanned spanned = Html.fromHtml(context.getString(R.string.tag_with_post_count, htmlHighlightPattern, postCount));
+            ((TextView) view).setText(spanned);
+        } else {
+            ((TextView) view).setText(context.getString(R.string.tag_with_post_count, cursor.getString(columnIndex), postCount));
+        }
+        return true;
+    }
 
+    public String getBlogName() {
+        return blogName;
+    }
+
+    public void setBlogName(String blogName) {
+        this.blogName = blogName;
+    }
 }
