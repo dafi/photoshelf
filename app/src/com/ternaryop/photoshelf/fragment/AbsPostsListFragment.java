@@ -60,7 +60,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_photo_list, container, false);
+        View rootView = inflater.inflate(getPostListViewResource(), container, false);
         
         photoAdapter = new PhotoAdapter(getActivity(), LOADER_PREFIX_POSTS_THUMB);
 
@@ -76,6 +76,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         return rootView;
     }
 
+    protected int getPostListViewResource() {
+        return R.layout.fragment_photo_list;
+    }
+
     public void onPrepareOptionsMenu(Menu menu) {
         if (fragmentActivityStatus.isDrawerOpen()) {
             subTitle = getActivity().getActionBar().getSubtitle();
@@ -85,7 +89,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }
         super.onPrepareOptionsMenu(menu);
     }
-    
+
     protected abstract void readPhotoPosts();
     
     protected abstract int getActionModeMenuId();

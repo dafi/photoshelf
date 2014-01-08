@@ -37,12 +37,18 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnQ
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
 
         photoAdapter.setOnPhotoBrowseClick(this);
+        photoListView.setEmptyView(rootView.findViewById(android.R.id.empty));
         
         if (getBlogName() != null && postTag != null && postTag.trim().length() > 0) {
             onQueryTextSubmit(postTag.trim());
         }
         
         return rootView;
+    }
+    
+    @Override
+    protected int getPostListViewResource() {
+        return R.layout.fragment_tag_browse_photo_list;
     }
     
     @Override
