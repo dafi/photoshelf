@@ -1,16 +1,16 @@
 package com.ternaryop.photoshelf.adapter;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.widget.CheckableImageView;
  
 public class GridViewPhotoAdapter extends ArrayAdapter<TumblrPhotoPost> {
     private ImageLoader imageLoader;
@@ -21,21 +21,21 @@ public class GridViewPhotoAdapter extends ArrayAdapter<TumblrPhotoPost> {
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
-		ImageView imageView;
-		
+	    ViewHolder holder;
+	    
 		if (convertView == null) {
-            int layoutWidth = getContext().getResources().getDimensionPixelSize(R.dimen.grid_layout_thumb_width);
-            int layoutHeight = getContext().getResources().getDimensionPixelSize(R.dimen.grid_layout_thumb_height);
-			// create the checkable view
-			imageView = new CheckableImageView(getContext());
-			imageView.setLayoutParams(new GridView.LayoutParams(layoutWidth, layoutHeight));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+	        LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	        convertView = inflater.inflate(R.layout.gridview_photo_item, null);
+	        holder = new ViewHolder(convertView);
+	        convertView.setTag(holder);
 		} else {
-			imageView = (ImageView)convertView;
+			holder = (ViewHolder) convertView.getTag();
 		}
-        imageLoader.displayImage(getItem(position).getClosestPhotoByWidth(250).getUrl(), imageView);
+        TumblrPhotoPost post = getItem(position);
+        holder.caption.setText(post.getTags().get(0));
+        imageLoader.displayImage(post.getClosestPhotoByWidth(250).getUrl(), holder.thumbImage);
 
-        return imageView;
+        return convertView;
 	}
 
 	public void updatePostByTag(TumblrPhotoPost newPost, boolean notifyChange) {
@@ -54,4 +54,14 @@ public class GridViewPhotoAdapter extends ArrayAdapter<TumblrPhotoPost> {
 	        }
 	    }
 	}
+	
+    private class ViewHolder {
+        TextView caption;
+        ImageView thumbImage;
+
+        public ViewHolder(View vi) {
+            caption = (TextView)vi.findViewById(R.id.caption);
+            thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
+        }
+    }
 }
