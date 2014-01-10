@@ -71,6 +71,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
                 getContext(),
                 android.R.layout.simple_dropdown_item_1line,
                 "");
+        tagAdapter.setBlogName(appSupport.getSelectedBlogName());
         postTags.setAdapter(tagAdapter);
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());        
         
