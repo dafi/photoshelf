@@ -88,14 +88,14 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 		return list;
 	}
 	
-	public boolean hasBirthdaysInDate(Date date, String tumblrName) {
+	public long getBirthdaysCountInDate(Date date, String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 		
 		return DatabaseUtils.queryNumEntries(db,
 				TABLE_NAME,
 				"strftime('%m%d', " + BIRTH_DATE + ") = ?"
 				+ " and " + TUMBLR_NAME + " = ?",
-				new String[] {MONTH_DAY_FORMAT.format(date), tumblrName}) > 0;
+				new String[] {MONTH_DAY_FORMAT.format(date), tumblrName});
 	}
 	
     public List<String> getNameWithoutBirthDays(String tumblrName) {

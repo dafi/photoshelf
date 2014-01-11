@@ -20,11 +20,11 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
     
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        DrawerItem drawerItem = getItem(position);
+        DrawerItem item = getItem(position);
         ViewHolder holder;
         
         if (convertView == null) {
-            if (drawerItem.isHeader()) {
+            if (item.isHeader()) {
                 convertView = inflater.inflate(R.layout.drawer_header_list_item, null);
             } else {
                 convertView = inflater.inflate(R.layout.drawer_list_item, null);
@@ -34,7 +34,14 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.title.setText(drawerItem.getTitle());
+        holder.title.setText(item.getTitle());
+        // the header hasn't counter
+        if (holder.counter != null) {
+            holder.counter.setVisibility(View.GONE);
+            if (item.isCounterVisible() && item.getCountRetriever() != null) {
+                item.getCountRetriever().updateCount(holder.counter);
+            }
+        }
         return convertView;
     }
 
@@ -64,9 +71,21 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
 
     private class ViewHolder {
         TextView title;
+        TextView counter;
         
         ViewHolder(View view) {
             title = (TextView) view.findViewById(android.R.id.text1);
+            counter = (TextView) view.findViewById(R.id.counter);
         }
+    }
+
+    public void refreshCounters(String blogName) {
+        for (int i = 0; i < getCount(); i++) {
+            DrawerItem item = getItem(i);
+            if (item.getCountRetriever() != null) {
+                item.getCountRetriever().setBlogName(blogName);
+            }
+        }
+        notifyDataSetChanged();
     }
 }

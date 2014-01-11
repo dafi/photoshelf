@@ -27,6 +27,9 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter;
 import com.ternaryop.photoshelf.adapter.DrawerAdapter;
 import com.ternaryop.photoshelf.adapter.DrawerItem;
+import com.ternaryop.photoshelf.counter.BirthdaysCountRetriever;
+import com.ternaryop.photoshelf.counter.DraftCountRetriever;
+import com.ternaryop.photoshelf.counter.QueueCountRetriever;
 import com.ternaryop.photoshelf.fragment.BirthdaysFragment;
 import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment;
 import com.ternaryop.photoshelf.fragment.DraftListFragment;
@@ -112,8 +115,10 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
 
     private DrawerAdapter initDrawerAdapter() {
         adapter = new DrawerAdapter(getApplicationContext());
-        adapter.add(new DrawerItem(getString(R.string.draft_title), DraftListFragment.class));
-        adapter.add(new DrawerItem(getString(R.string.schedule_title), ScheduledListFragment.class));
+        adapter.add(new DrawerItem(getString(R.string.draft_title), DraftListFragment.class,
+                true, new DraftCountRetriever(this, getBlogName())));
+        adapter.add(new DrawerItem(getString(R.string.schedule_title), ScheduledListFragment.class,
+                true, new QueueCountRetriever(this, getBlogName())));
         
         // Tags
         adapter.add(new DrawerItem(getString(R.string.tags_title)));
@@ -123,7 +128,8 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         // Extras
         adapter.add(new DrawerItem(getString(R.string.extras_title), null));
         adapter.add(new DrawerItem(getString(R.string.birthdays_title), BirthdaysFragment.class));
-        adapter.add(new DrawerItem(getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class));
+        adapter.add(new DrawerItem(getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class,
+                true, new BirthdaysCountRetriever(this, getBlogName())));
         adapter.add(new DrawerItem(getString(R.string.test_page_title), ImagePickerFragment.class));
         
         return adapter;
@@ -168,8 +174,9 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     private class BlogItemSelectedListener implements OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            String selectedBlogName = (String) blogList.getSelectedItem();
-            appSupport.setSelectedBlogName(selectedBlogName);
+            String blogName = (String) blogList.getSelectedItem();
+            appSupport.setSelectedBlogName(blogName);
+            adapter.refreshCounters(blogName);
         }
 
         public void onNothingSelected(AdapterView<?> parent) {
