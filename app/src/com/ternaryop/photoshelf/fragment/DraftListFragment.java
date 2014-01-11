@@ -76,7 +76,6 @@ public class DraftListFragment extends AbsPostsListFragment {
     @Override
     protected void readPhotoPosts() {
         photoAdapter.clear();
-        refreshUI();
         
         new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts)) {
             @Override
@@ -90,8 +89,8 @@ public class DraftListFragment extends AbsPostsListFragment {
                 
                 if (getError() == null) {
                     photoAdapter.addAll(posts);
-                    refreshUI();
                 }
+                refreshUI();
             }
 
             @Override
