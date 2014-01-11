@@ -86,7 +86,7 @@ public class Tumblr {
     }
     
     
-    protected String getApiUrl(String tumblrName, String suffix) {
+    public String getApiUrl(String tumblrName, String suffix) {
         return API_PREFIX + "/blog/" + tumblrName + ".tumblr.com" + suffix;
     }
     
@@ -356,5 +356,9 @@ public class Tumblr {
             return new TumblrPhotoPost(json);
         }
         throw new IllegalArgumentException("Unable to build post for type " + type);
+    }
+
+    public TumblrHttpOAuthConsumer getConsumer() {
+        return consumer;
     }
 }
