@@ -32,13 +32,15 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
+import com.ternaryop.photoshelf.counter.CountChangedListener;
+import com.ternaryop.photoshelf.counter.CountProvider;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 
-public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick {
+public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick {
     protected enum POST_ACTION {
         PUBLISH,
         DELETE
@@ -56,6 +58,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     private int[] singleSelectionMenuIds;
 
     private CharSequence subTitle;
+
+    private CountChangedListener countChangedListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -334,6 +338,9 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                             R.plurals.posts_count,
                             photoAdapter.getCount(),
                             photoAdapter.getCount()));
+            if (countChangedListener != null) {
+                countChangedListener.onChangeCount(this, photoAdapter.getCount());
+            }
         }
         photoAdapter.notifyDataSetChanged();
     }
@@ -402,5 +409,16 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     public void onThumbnailImageClick(PhotoShelfPost post) {
         ImageViewerActivity.startImageViewer(getActivity(), post.getFirstPhotoAltSize().get(0).getUrl(), post);
+    }
+
+
+    @Override
+    public void setCountChangedListener(CountChangedListener countChangedListener) {
+        this.countChangedListener = countChangedListener;
+    }
+
+    @Override
+    public CountChangedListener getCountChangedListener() {
+        return countChangedListener;
     }
 }

@@ -3,17 +3,20 @@ package com.ternaryop.photoshelf.counter;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.view.View;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-public abstract class AbsCountRetriever implements CountRetriever {
+public abstract class AbsCountRetriever implements CountRetriever, CountChangedListener {
     private Context context;
     private String blogName;
     private AsyncTask<Void, Void, Long> task;
     private Long lastCount;
+    private BaseAdapter adapter;
 
-    public AbsCountRetriever(Context context, String blogName) {
+    public AbsCountRetriever(Context context, String blogName, BaseAdapter adapter) {
         this.context = context;
         this.blogName = blogName;
+        this.adapter = adapter;
     }
 
     public Context getContext() {
@@ -34,6 +37,10 @@ public abstract class AbsCountRetriever implements CountRetriever {
         this.blogName = blogName;
     }
 
+    /**
+     * This method will be executed always asynchronously
+     * @return
+     */
     protected abstract Long getCount();
     
     @Override
@@ -70,5 +77,24 @@ public abstract class AbsCountRetriever implements CountRetriever {
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+    
+    @Override
+    public void onChangeCount(CountProvider provider, long newCount) {
+        if (lastCount != null && lastCount.longValue() == newCount) {
+            return;
+        }
+        lastCount = newCount;
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    public BaseAdapter getAdapter() {
+        return adapter;
+    }
+
+    public void setAdapter(BaseAdapter adapter) {
+        this.adapter = adapter;
     }
 }

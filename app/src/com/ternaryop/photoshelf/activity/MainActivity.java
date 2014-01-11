@@ -28,6 +28,9 @@ import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter;
 import com.ternaryop.photoshelf.adapter.DrawerAdapter;
 import com.ternaryop.photoshelf.adapter.DrawerItem;
 import com.ternaryop.photoshelf.counter.BirthdaysCountRetriever;
+import com.ternaryop.photoshelf.counter.CountChangedListener;
+import com.ternaryop.photoshelf.counter.CountProvider;
+import com.ternaryop.photoshelf.counter.CountRetriever;
 import com.ternaryop.photoshelf.counter.DraftCountRetriever;
 import com.ternaryop.photoshelf.counter.QueueCountRetriever;
 import com.ternaryop.photoshelf.fragment.BirthdaysFragment;
@@ -116,9 +119,9 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     private DrawerAdapter initDrawerAdapter() {
         adapter = new DrawerAdapter(getApplicationContext());
         adapter.add(new DrawerItem(getString(R.string.draft_title), DraftListFragment.class,
-                true, new DraftCountRetriever(this, getBlogName())));
+                true, new DraftCountRetriever(this, getBlogName(), adapter)));
         adapter.add(new DrawerItem(getString(R.string.schedule_title), ScheduledListFragment.class,
-                true, new QueueCountRetriever(this, getBlogName())));
+                true, new QueueCountRetriever(this, getBlogName(), adapter)));
         
         // Tags
         adapter.add(new DrawerItem(getString(R.string.tags_title)));
@@ -129,7 +132,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         adapter.add(new DrawerItem(getString(R.string.extras_title), null));
         adapter.add(new DrawerItem(getString(R.string.birthdays_title), BirthdaysFragment.class));
         adapter.add(new DrawerItem(getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class,
-                true, new BirthdaysCountRetriever(this, getBlogName())));
+                true, new BirthdaysCountRetriever(this, getBlogName(), adapter)));
         adapter.add(new DrawerItem(getString(R.string.test_page_title), ImagePickerFragment.class));
         
         return adapter;
@@ -240,6 +243,11 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
             DrawerItem drawerItem = adapter.getItem(position);
             Fragment fragment = Fragment.instantiate(getApplicationContext(),
                     drawerItem.getFragmentClass().getName());
+            
+            CountRetriever countRetriever = drawerItem.getCountRetriever();
+            if (fragment instanceof CountProvider && countRetriever instanceof CountChangedListener) {
+                ((CountProvider)fragment).setCountChangedListener((CountChangedListener) countRetriever);
+            }
             
             // pass parameter to test page
             if (fragment instanceof ImagePickerFragment) {
