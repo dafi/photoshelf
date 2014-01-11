@@ -79,6 +79,9 @@ public class TitleData {
 	public void setTags(String[] tags) {
 		ArrayList<String> list = new ArrayList<String>();
 		for (int i = 0; i < tags.length; i++) {
+		    if (tags[i] == null) {
+		        continue;
+		    }
 			String tag = tags[i]
 	        		.replace("[0-9]*(st|nd|rd|th)?", "")
 	        		.replaceAll("\"|'", "");
