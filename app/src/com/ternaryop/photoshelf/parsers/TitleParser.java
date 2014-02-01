@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static Pattern titleRE = Pattern.compile("^(.*?)\\s([-\u2013|~@]|attends|arrives)", Pattern.CASE_INSENSITIVE);
+    private static Pattern titleRE = Pattern.compile("^(.*?)\\s([-\u2013|~@]|attends|arrives|leaves)", Pattern.CASE_INSENSITIVE);
 
     private static String[] months = {"", "January",
                   "February",
@@ -110,7 +110,7 @@ public class TitleParser {
 
         Matcher m = titleRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
-          titleData.setWho(m.group(1));
+          titleData.setWho(StringUtils.capitalize(m.group(1)));
           // remove the 'who' chunk
           title = title.substring(m.regionStart() + m.group(0).length());
         }
