@@ -67,6 +67,8 @@ public class StringUtils {
                 if (upcase) {
                     ch = Character.toUpperCase(ch);
                     upcase = false;
+                } else {
+                	ch = Character.toLowerCase(ch);
                 }
             }
             sb.append(ch);
