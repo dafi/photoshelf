@@ -4,5 +4,10 @@
         android:id="@+id/action_publish"
         android:showAsAction="always"
         android:title="@string/publish_post"/>
-
+    
+    <item
+        android:id="@+id/action_draft"
+        android:showAsAction="never"
+        android:title="@string/save_draft_post"/>
+    
 </menu>

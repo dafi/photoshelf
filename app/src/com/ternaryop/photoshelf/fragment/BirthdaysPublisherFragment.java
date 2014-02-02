@@ -116,7 +116,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }
     }
 
-    private void publish(final ActionMode mode) {
+    private void publish(final ActionMode mode, final boolean saveAsDraft) {
         new AbsProgressBarAsyncTask<Void, String, List<TumblrPhotoPost>>(getActivity(), "") {
             @Override
             protected void onProgressUpdate(String... values) {
@@ -133,7 +133,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
                     for (TumblrPhotoPost post : getCheckedPosts()) {
                         String name = post.getTags().get(0);
                         publishProgress(getContext().getString(R.string.sending_cake_title, name));
-                        createBirthdayPost(cakeImage, post);
+                        createBirthdayPost(cakeImage, post, saveAsDraft);
                     }
                 } catch (Exception e) {
                     setError(e);
@@ -150,7 +150,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }.execute();
     }
 
-    private void createBirthdayPost(Bitmap cakeImage, TumblrPhotoPost post)
+    private void createBirthdayPost(Bitmap cakeImage, TumblrPhotoPost post, boolean saveAsDraft)
             throws IOException {
         String imageUrl = post.getClosestPhotoByWidth(400).getUrl();
         Bitmap image = ImageUtils.readImage(imageUrl);
@@ -166,10 +166,17 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         canvas.drawBitmap(cakeImage, (image.getWidth() - cakeImage.getWidth()) / 2, 0, null);
         canvas.drawBitmap(image, 0, cakeImage.getHeight() + IMAGE_SEPARATOR_HEIGHT, null);
         File file = saveImage(destBmp, "birth-" + post.getTags().get(0));
-        Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(getBlogName(),
-                file,
-                getCaption(post),
-                "Birthday, " + post.getTags().get(0));
+        if (saveAsDraft) {
+        	Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(getBlogName(),
+        			file,
+        			getCaption(post),
+        			"Birthday, " + post.getTags().get(0));
+        } else {
+        	Tumblr.getSharedTumblr(getActivity()).publishPhotoPost(getBlogName(),
+        			file,
+        			getCaption(post),
+        			"Birthday, " + post.getTags().get(0));
+        }
         file.delete();
     }
 
@@ -232,7 +239,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
         case R.id.action_publish:
-            publish(mode);
+            publish(mode, false);
             return true;
         default:
             return false;
