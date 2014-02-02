@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static Pattern titleRE = Pattern.compile("^(.*?)\\s([-\u2013|~@]|attends|arrives|leaves)", Pattern.CASE_INSENSITIVE);
+    private static Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves)", Pattern.CASE_INSENSITIVE);
 
     private static String[] months = {"", "January",
                   "February",
