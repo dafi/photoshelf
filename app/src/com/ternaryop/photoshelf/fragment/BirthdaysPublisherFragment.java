@@ -241,6 +241,9 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         case R.id.action_publish:
             publish(mode, false);
             return true;
+        case R.id.action_draft:
+            publish(mode, true);
+            return true;
         default:
             return false;
         }
