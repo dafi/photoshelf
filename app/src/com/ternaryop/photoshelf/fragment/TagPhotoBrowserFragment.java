@@ -181,6 +181,9 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnQ
 
     @Override
     public void onPhotoBrowseClick(PhotoShelfPost post) {
-        // do nothing otherwise launch a new TagBrowser on same tag
+        // do nothing if tags are equal otherwise a new TagBrowser on same tag is launched
+    	if (!postTag.equalsIgnoreCase(post.getFirstTag())) {
+    		super.onPhotoBrowseClick(post);
+    	}
     }
 }
