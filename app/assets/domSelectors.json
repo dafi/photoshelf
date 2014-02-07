@@ -11,6 +11,7 @@
     "http:\/\/eyeprime.net":".attachment-810x810",
 	"http:\/\/images.bangtidy.net\/.*\/attachment":"#theimage",
 	"hollywoodtuna.com\/.*page_id":"p a img",
+	"imgchili\.net":"#show_image",
 	"http:\/\/celebmafia.com":"",
 	"http:\/\/www.hawtcelebs.com\/wp-content":""
 }
