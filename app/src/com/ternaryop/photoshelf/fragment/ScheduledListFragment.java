@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
@@ -89,5 +91,12 @@ public class ScheduledListFragment extends AbsPostsListFragment {
                 return Collections.emptyList();
             }
         }.execute();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.scheduler, menu);
+
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }

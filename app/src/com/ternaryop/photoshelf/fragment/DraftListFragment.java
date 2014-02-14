@@ -46,14 +46,6 @@ public class DraftListFragment extends AbsPostsListFragment {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        boolean isMenuVisible = !fragmentActivityStatus.isDrawerOpen();
-        menu.findItem(R.id.action_draft_refresh).setVisible(isMenuVisible);
-
-        super.onPrepareOptionsMenu(menu);
-    }
-    
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case R.id.action_draft_refresh:

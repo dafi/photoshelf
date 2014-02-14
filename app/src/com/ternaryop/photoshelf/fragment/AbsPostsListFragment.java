@@ -22,8 +22,10 @@ import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.SearchView.OnQueryTextListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.SearchView;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
@@ -40,7 +42,7 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 
-public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick {
+public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick, OnQueryTextListener  {
     protected enum POST_ACTION {
         PUBLISH,
         DELETE
@@ -54,6 +56,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     protected boolean isScrolling;
     protected long totalPosts;
     protected ListView photoListView;
+    protected SearchView searchView;
 
     private int[] singleSelectionMenuIds;
 
@@ -86,11 +89,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     public void onPrepareOptionsMenu(Menu menu) {
         if (fragmentActivityStatus.isDrawerOpen()) {
-            subTitle = getActivity().getActionBar().getSubtitle();
             getActivity().getActionBar().setSubtitle(null);
         } else {
             getActivity().getActionBar().setSubtitle(subTitle);
         }
+        boolean isMenuVisible = !fragmentActivityStatus.isDrawerOpen();
+        menu.setGroupVisible(R.id.menu_photo_action_bar, isMenuVisible);
+        setupSearchView(menu);      
         super.onPrepareOptionsMenu(menu);
     }
 
@@ -328,16 +333,16 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     protected void refreshUI() {
         if (hasMorePosts) {
-            getActivity().getActionBar().setSubtitle(
-                    getString(R.string.post_count_1_of_x,
-                            photoAdapter.getCount(),
-                            totalPosts));
+            subTitle = getString(R.string.post_count_1_of_x,
+			        photoAdapter.getCount(),
+			        totalPosts);
+			getActivity().getActionBar().setSubtitle(subTitle);
         } else {
-            getActivity().getActionBar().setSubtitle(
-                    getResources().getQuantityString(
-                            R.plurals.posts_count,
-                            photoAdapter.getCount(),
-                            photoAdapter.getCount()));
+            subTitle = getResources().getQuantityString(
+			        R.plurals.posts_count,
+			        photoAdapter.getCount(),
+			        photoAdapter.getCount());
+			getActivity().getActionBar().setSubtitle(subTitle);
             if (countChangedListener != null) {
                 countChangedListener.onChangeCount(this, photoAdapter.getCount());
             }
@@ -420,5 +425,26 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     @Override
     public CountChangedListener getCountChangedListener() {
         return countChangedListener;
+    }
+
+    protected SearchView setupSearchView(Menu menu) {
+    	MenuItem searchMenu = menu.findItem(R.id.action_search);
+        if (searchMenu != null) {
+            searchView = (SearchView)searchMenu.getActionView();
+        	searchView.setQueryHint(getString(R.string.enter_tag_hint));
+        	searchView.setOnQueryTextListener(this);
+        }
+        return searchView;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+    	photoAdapter.getFilter().filter(newText);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return true;
     }
 }

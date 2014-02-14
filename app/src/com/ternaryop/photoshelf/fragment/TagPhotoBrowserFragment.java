@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
 import android.widget.SearchView.OnSuggestionListener;
 
 import com.ternaryop.photoshelf.Constants;
@@ -26,9 +25,8 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
-public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnQueryTextListener, OnSuggestionListener {
+public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnSuggestionListener {
     private String postTag;
-    private SearchView searchView;
     private boolean allowSearch;
 
     @Override
@@ -67,8 +65,6 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnQ
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.tag_browser, menu);
         
-        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        setupSearchView();      
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -79,16 +75,17 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnQ
         super.onPrepareOptionsMenu(menu);
     }
 
-    private void setupSearchView() {
-        searchView.setQueryHint(getString(R.string.enter_tag_hint));
-        searchView.setOnQueryTextListener(this);
-        
+    @Override
+    protected SearchView setupSearchView(Menu menu) {
+    	super.setupSearchView(menu);
+
         searchView.setOnSuggestionListener(this);
         TagCursorAdapter adapter = new TagCursorAdapter(
                 getActivity().getActionBar().getThemedContext(),
                 android.R.layout.simple_dropdown_item_1line,
                 getBlogName());
         searchView.setSuggestionsAdapter(adapter);
+        return searchView;
     }
     
     protected void readPhotoPosts() {

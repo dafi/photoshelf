@@ -1,6 +1,9 @@
 package com.ternaryop.photoshelf.adapter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 import android.content.Context;
 import android.text.Html;
@@ -8,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,15 +21,18 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
 import com.ternaryop.utils.StringUtils;
  
 public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.OnClickListener {
-    private static LayoutInflater inflater = null;
+	private static LayoutInflater inflater = null;
     private ImageLoader imageLoader;
 	private OnPhotoBrowseClick onPhotoBrowseClick;
 	private boolean recomputeGroupIds;
+	private ArrayList<PhotoShelfPost> allPosts;
+	private boolean isFiltering;
  
     public PhotoAdapter(Context context, String prefix) {
 		super(context, 0);
         inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
+        allPosts = new ArrayList<PhotoShelfPost>();
     }
  
     public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
@@ -127,6 +134,9 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 	@Override
 	public void add(PhotoShelfPost object) {
 		super.add(object);
+		if (!isFiltering) {
+			allPosts.add(object);
+		}
 		if (isRecomputeGroupIds()) {
 			calcGroupIds();
 		}
@@ -135,6 +145,9 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 	@Override
 	public void addAll(Collection<? extends PhotoShelfPost> collection) {
 		super.addAll(collection);
+		if (!isFiltering) {
+			allPosts.addAll(collection);
+		}
 		if (isRecomputeGroupIds()) {
 			calcGroupIds();
 		}
@@ -143,6 +156,11 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 	@Override
 	public void addAll(PhotoShelfPost... items) {
 		super.addAll(items);
+		if (!isFiltering) {
+			for (PhotoShelfPost post : items) {
+				allPosts.add(post);
+			}
+		}
 		if (isRecomputeGroupIds()) {
 			calcGroupIds();
 		}
@@ -151,10 +169,65 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 	@Override
 	public void insert(PhotoShelfPost object, int index) {
 		super.insert(object, index);
+		if (!isFiltering) {
+			allPosts.add(index, object);
+		}
 		if (isRecomputeGroupIds()) {
 			calcGroupIds();
 		}
 	}
+
+    @Override
+	public void clear() {
+		super.clear();
+		if (!isFiltering) {
+			allPosts.clear();
+		}
+	}
+
+	@Override
+	public void remove(PhotoShelfPost object) {
+		super.remove(object);
+		if (!isFiltering) {
+			allPosts.remove(object);
+		}
+	}
+	
+	@Override
+	public Filter getFilter() {
+		Filter filter = new Filter() {
+
+            @SuppressWarnings("unchecked")
+			@Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+            	isFiltering = true;
+            	clear();
+            	addAll((List<PhotoShelfPost>)results.values);
+            	isFiltering = false;
+                notifyDataSetChanged();
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                ArrayList<PhotoShelfPost> filteredPosts = new ArrayList<PhotoShelfPost>();
+                
+                String pattern = constraint.toString().toLowerCase(Locale.US);
+                for (PhotoShelfPost post : allPosts) {
+                    if (post.getFirstTag().toLowerCase(Locale.US).indexOf(pattern) >= 0)  {
+                        filteredPosts.add(post);
+                    }
+                }
+
+                FilterResults results = new FilterResults();
+                results.count = filteredPosts.size();
+                results.values = filteredPosts;
+
+                return results;
+            }
+        };
+
+        return filter;
+        }
 	
 	private class ViewHolder {
 		TextView title;
