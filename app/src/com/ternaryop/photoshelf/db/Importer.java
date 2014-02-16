@@ -85,7 +85,7 @@ public class Importer {
 		importFromTumblr(context, blogName, null);
 	}
 	
-	public static void importFromTumblr(final Context context, final String blogName, final ImportCompleteCallback callback) {
+	public static PostRetriever importFromTumblr(final Context context, final String blogName, final ImportCompleteCallback callback) {
 		PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
 		long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
 		PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, new Callback<List<TumblrPost>>() {
@@ -118,6 +118,7 @@ public class Importer {
 			}
 		});
 		postRetriever.readPhotoPosts(blogName, null);
+		return postRetriever;
 	}
 
 	public static void importDOMFilters(Context context, String importPath) {

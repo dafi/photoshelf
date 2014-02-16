@@ -25,18 +25,23 @@ import com.ternaryop.photoshelf.dialogs.SchedulePostDialog.onPostScheduleListene
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.TaskWithUI;
 
 public class DraftListFragment extends AbsPostsListFragment {
     private HashMap<String, TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
-    
+
+	@Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         
         photoAdapter.setOnPhotoBrowseClick(this);
         photoAdapter.setRecomputeGroupIds(true);
 
-        refreshCache();
+        if (taskUIRecreated()) {
+        	return;
+        }
+    	refreshCache();
     }
 
     @Override
@@ -57,7 +62,7 @@ public class DraftListFragment extends AbsPostsListFragment {
     }
 
     private void refreshCache() {
-        Importer.importFromTumblr(getActivity(), getBlogName(), new ImportCompleteCallback() {
+        task = Importer.importFromTumblr(getActivity(), getBlogName(), new ImportCompleteCallback() {
             @Override
             public void complete() {
                 readPhotoPosts();
@@ -69,10 +74,15 @@ public class DraftListFragment extends AbsPostsListFragment {
     protected void readPhotoPosts() {
         photoAdapter.clear();
         
-        new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts)) {
+        task = (TaskWithUI) new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts)) {
             @Override
             protected void onProgressUpdate(String... values) {
                 getProgressDialog().setMessage(values[0]);
+            }
+            
+            @Override
+            protected void onPreExecute() {
+            	super.onPreExecute();
             }
             
             @Override

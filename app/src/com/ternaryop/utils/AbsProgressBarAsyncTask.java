@@ -6,17 +6,35 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
 
-public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> implements OnCancelListener {
+public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> implements TaskWithUI, OnCancelListener {
 	private ProgressDialog progressDialog;
 	private Exception error;
 	private Context context;
+	private String message;
 	
 	public AbsProgressBarAsyncTask(Context context, String message) {
 		this.context = context;
+		this.message = message;
+		initProgressDialog();
+	}
+
+	private void initProgressDialog() {
 		progressDialog = new ProgressDialog(context);
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		progressDialog.setMessage(message);
 		progressDialog.setOnCancelListener(this);
+		progressDialog.show();
+	}
+	
+	public void recreateUI() {
+		initProgressDialog();
+		progressDialog.show();
+	}
+
+	public void dismiss() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
 	}
 
 	protected void onPreExecute() {
@@ -51,5 +69,9 @@ public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends 
     @Override
     public void onCancel(DialogInterface dialog) {
         cancel(true);
+    }
+    
+    public boolean isRunning() {
+    	return !isCancelled() && getStatus().equals(AsyncTask.Status.RUNNING);
     }
 }

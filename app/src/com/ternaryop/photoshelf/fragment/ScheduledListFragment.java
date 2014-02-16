@@ -15,6 +15,7 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.TaskWithUI;
 
 public class ScheduledListFragment extends AbsPostsListFragment {
     @Override
@@ -22,6 +23,11 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         super.onActivityCreated(savedInstanceState);
         
         photoAdapter.setOnPhotoBrowseClick(this);
+        
+        if (taskUIRecreated()) {
+        	return;
+        }
+
         if (getBlogName() != null) {
             offset = 0;
             hasMorePosts = true;
@@ -42,7 +48,7 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         refreshUI();
         isScrolling = true;
 
-        new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_scheduled_posts)) {
+        task = (TaskWithUI) new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_scheduled_posts)) {
             @Override
             protected void onProgressUpdate(String... values) {
                 getProgressDialog().setMessage(values[0]);
