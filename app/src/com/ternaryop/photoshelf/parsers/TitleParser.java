@@ -75,7 +75,13 @@ public class TitleParser {
                     monthInt = day;
                     day = tmp;
                 }
-                monthStr = months[monthInt];
+                // the swap above could get an invalid date
+                if (monthInt > 12) {
+                	day = -1;
+                	year = 0;
+                } else {
+                	monthStr = months[monthInt];
+                }
             } else {
             	m = null;
             }
