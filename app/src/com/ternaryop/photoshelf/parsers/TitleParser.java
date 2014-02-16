@@ -61,7 +61,7 @@ public class TitleParser {
             }
         } else {
             // handle dates in the form dd/dd/dd?? or (dd/dd/??)
-            m = Pattern.compile("\\(?([0-9]{2}).([0-9]{1,2}).([0-9]{2,4})\\)?").matcher(title);
+            m = Pattern.compile("\\s+\\(?([0-9]{2}).([0-9]{1,2}).([0-9]{2,4})\\)?").matcher(title);
             if (m.find() && m.groupCount() > 1) {
                 day = Integer.parseInt(m.group(1));
                 int monthInt = Integer.parseInt(m.group(2));
