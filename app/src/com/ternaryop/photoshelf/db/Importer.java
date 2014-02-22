@@ -25,6 +25,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.widget.Toast;
 
+import com.dropbox.sync.android.DbxAccountManager;
+import com.dropbox.sync.android.DbxException;
+import com.dropbox.sync.android.DbxException.Unauthorized;
+import com.dropbox.sync.android.DbxFile;
+import com.dropbox.sync.android.DbxFileSystem;
+import com.dropbox.sync.android.DbxPath;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.importer.CSVIterator;
 import com.ternaryop.photoshelf.importer.CSVIterator.CSVBuilder;
@@ -36,18 +42,40 @@ import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.StringUtils;
 
 public class Importer {
-	public static void importPostsFromCSV(final Context context, final String importPath) {
+	private Context context;
+	private DbxAccountManager dropboxManager;
+
+	public Importer(final Context context) {
+		this(context, null);
+	}
+
+	public Importer(final Context context, DbxAccountManager dropboxManager) {
+		this.context = context;
+		this.dropboxManager = dropboxManager;
+	}
+	
+	public void importPostsFromCSV(final String importPath) {
 		try {
-			new DbImportAsyncTask<PostTag>(context,
-					new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
-					DBHelper.getInstance(context).getPostTagDAO(),
-					true).execute();
+			if (dropboxManager.hasLinkedAccount()) {
+				DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
+				File exportFile = new File(importPath);
+				final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
+				new DbImportAsyncTask<PostTag>(context,
+						new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
+						DBHelper.getInstance(context).getPostTagDAO(),
+						true) {
+					protected void onPostExecute(Void result) {
+						super.onPostExecute(result);
+						file.close();
+					}
+				}.execute();
+			}
 		} catch (Exception error) {
 			DialogUtils.showErrorDialog(context, error);
 		}
 	}
 
-	public static void exportPostsToCSV(final Context context, final String exportPath) {
+	public void exportPostsToCSV(final String exportPath) {
 		try {
 			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
 				@Override
@@ -67,6 +95,8 @@ public class Importer {
 						}
 						pw.flush();
 						pw.close();
+						
+						copyFileToDropbox(exportPath);
 					} catch (Exception e) {
 						setError(e);
 					} finally {
@@ -81,11 +111,11 @@ public class Importer {
 		}
 	}
 
-	public static void importFromTumblr(final Context context, final String blogName) {
-		importFromTumblr(context, blogName, null);
+	public void importFromTumblr(final String blogName) {
+		importFromTumblr(blogName, null);
 	}
 	
-	public static PostRetriever importFromTumblr(final Context context, final String blogName, final ImportCompleteCallback callback) {
+	public PostRetriever importFromTumblr(final String blogName, final ImportCompleteCallback callback) {
 		PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
 		long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
 		PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, new Callback<List<TumblrPost>>() {
@@ -121,7 +151,7 @@ public class Importer {
 		return postRetriever;
 	}
 
-	public static void importDOMFilters(Context context, String importPath) {
+	public void importDOMFilters(String importPath) {
 		InputStream in = null;
 		OutputStream out = null;
 
@@ -143,25 +173,38 @@ public class Importer {
 		}
 	}
 
-	public static void importBirtdays(final Context context, final String importPath) {
+	public void importBirtdays(final String importPath) {
 		try {
-			new DbImportAsyncTask<Birthday>(context,
-					new CSVIterator<Birthday>(importPath, new CSVBuilder<Birthday>() {
+			if (dropboxManager.hasLinkedAccount()) {
+				DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
+				File exportFile = new File(importPath);
+				final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
+				file.getSyncStatus();
+				new DbImportAsyncTask<Birthday>(context,
+						new CSVIterator<Birthday>(file.getReadStream(), new CSVBuilder<Birthday>() {
 
-						@Override
-						public Birthday parseCSVFields(String[] fields) throws ParseException {
-							// id is skipped
-							return new Birthday(fields[1], fields[2], fields[3]);
-						}
-					}),
-					DBHelper.getInstance(context).getBirthdayDAO(),
-					true).execute();
+							@Override
+							public Birthday parseCSVFields(String[] fields) throws ParseException {
+								// id is skipped
+								return new Birthday(fields[1], fields[2], fields[3]);
+							}
+						}),
+						DBHelper.getInstance(context).getBirthdayDAO(),
+						true) {
+					@Override
+					protected void onPostExecute(Void result) {
+						super.onPostExecute(result);
+						file.close();
+					}
+				}
+				.execute();
+			}
 		} catch (Exception error) {
 			DialogUtils.showErrorDialog(context, error);
 		}
 	}
 	
-	public static void exportBirthdaysToCSV(final Context context, final String exportPath) {
+	public void exportBirthdaysToCSV(final String exportPath) {
 		try {
 			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
 				@Override
@@ -170,17 +213,23 @@ public class Importer {
 					Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME);
 					try {
 						PrintWriter pw = new PrintWriter(exportPath);
+						long id = 1;
 						while (c.moveToNext()) {
 							String birthdate = c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE));
-                            pw.println(String.format("%1$d;%2$s;%3$s;%4$s",
-									c.getLong(c.getColumnIndex(BirthdayDAO._ID)),
+							// ids are recomputed
+                            String csvLine = String.format(Locale.US,
+                            		"%1$d;%2$s;%3$s;%4$s",
+									id++,
 									c.getString(c.getColumnIndex(BirthdayDAO.NAME)),
 									birthdate == null ? "" : birthdate,
 									c.getString(c.getColumnIndex(BirthdayDAO.TUMBLR_NAME))
-									));
+									);
+							pw.println(csvLine);
 						}
 						pw.flush();
 						pw.close();
+
+						copyFileToDropbox(exportPath);
 					} catch (Exception e) {
 						setError(e);
 					} finally {
@@ -195,7 +244,7 @@ public class Importer {
 		}
 	}
 
-    public static void importMissingBirthdaysFromWikipedia(final Context context, final String blogName) {
+    public void importMissingBirthdaysFromWikipedia(final String blogName) {
         new AbsProgressBarAsyncTask<Void, String, String>(context,
                 context.getString(R.string.import_missing_birthdays_from_wikipedia_title)) {
             @Override
@@ -305,7 +354,7 @@ public class Importer {
         }.execute();
     }
 
-    public static void exportMissingBirthdaysToCSV(final Context context, final String exportPath, final String tumblrName) {
+    public void exportMissingBirthdaysToCSV(final String exportPath, final String tumblrName) {
         try {
             new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
                 @Override
@@ -318,6 +367,8 @@ public class Importer {
                         }
                         pw.flush();
                         pw.close();
+
+						copyFileToDropbox(exportPath);
                     } catch (Exception e) {
                         setError(e);
                     } finally {
@@ -345,5 +396,25 @@ public class Importer {
 
 	public interface ImportCompleteCallback {
 		void complete();
+	}
+
+	private void copyFileToDropbox(final String exportPath)
+			throws Unauthorized, DbxException, IOException {
+		if (dropboxManager.hasLinkedAccount()) {
+			DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
+			File exportFile = new File(exportPath);
+			DbxPath dbxPath = new DbxPath(exportFile.getName());
+			DbxFile file;
+			
+			try {
+				file = dbxFs.create(dbxPath);
+			} catch (DbxException.Exists ex) {
+				file = dbxFs.open(dbxPath);
+				file.getSyncStatus();
+				file.update();
+			}
+			file.writeFromExistingFile(exportFile, false);
+			file.close();
+		}
 	}
 }

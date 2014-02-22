@@ -62,7 +62,7 @@ public class DraftListFragment extends AbsPostsListFragment {
     }
 
     private void refreshCache() {
-        task = Importer.importFromTumblr(getActivity(), getBlogName(), new ImportCompleteCallback() {
+        task = new Importer(getActivity()).importFromTumblr(getBlogName(), new ImportCompleteCallback() {
             @Override
             public void complete() {
                 readPhotoPosts();

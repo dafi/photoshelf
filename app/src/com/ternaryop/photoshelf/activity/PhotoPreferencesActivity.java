@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.view.MenuItem;
 
+import com.dropbox.sync.android.DbxAccountManager;
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
@@ -25,12 +26,15 @@ import com.ternaryop.utils.IOUtils;
 
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesActivity extends PreferenceActivity {
-    private static final String CSV_FILE_NAME = "tags.csv";
+    private static final String TUMBLR_SERVICE_NAME = "Tumblr";
+	private static final String DROPBOX_SERVICE_NAME = "Dropbox";
+	private static final String CSV_FILE_NAME = "tags.csv";
     private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
     private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
     private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
 
     private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
+    private static final String KEY_DROPBOX_LOGIN = "dropbox_login";
     private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
     private static final String KEY_EXPORT_POSTS_FROM_CSV = "export_posts_csv";
     private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
@@ -44,6 +48,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String KEY_VERSION = "version";
     
     public static final int MAIN_PREFERENCES_RESULT = 1;
+	private static final int DROPBOX_RESULT = 2;
 
     private Preference preferenceTumblrLogin;
     private Preference preferenceImportPostsFromCSV;
@@ -56,8 +61,11 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private Preference preferenceScheduleTimeSpan;
     private Preference preferenceClearImageCache;
     private Preference preferenceExportMissingBirthdays;
+	private Preference preferenceDropboxLogin;
 
     private AppSupport appSupport;
+	private DbxAccountManager dropboxManager;
+	private Importer importer;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,14 +74,26 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(prefListener);
         appSupport = new AppSupport(this);
-
+        dropboxManager = DbxAccountManager.getInstance(getApplicationContext(),
+        		getString(R.string.DROPBOX_APP_KEY),
+        		getString(R.string.DROPBOX_APP_SECRET));
+        
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         preferenceTumblrLogin = preferenceScreen.findPreference(KEY_TUMBLR_LOGIN);
 
         if (Tumblr.isLogged(this)) {
-            preferenceTumblrLogin.setTitle(R.string.logout_title);
+            preferenceTumblrLogin.setTitle(getString(R.string.logout_title, TUMBLR_SERVICE_NAME));
+        } else {
+            preferenceTumblrLogin.setTitle(getString(R.string.login_title, TUMBLR_SERVICE_NAME));
+        }
+        
+        preferenceDropboxLogin = preferenceScreen.findPreference(KEY_DROPBOX_LOGIN);
+        if (dropboxManager.hasLinkedAccount()) {
+        	preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
+        } else {
+        	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
         }
         
         String csvPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
@@ -122,6 +142,16 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
             }
         }
     };
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if (resultCode == RESULT_OK && requestCode == DROPBOX_RESULT) {
+            if (dropboxManager.hasLinkedAccount()) {
+            	preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
+            } else {
+            	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+            }
+    	}
+    }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -147,41 +177,48 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
             return true;
         } else if (preference == preferenceImportPostsFromCSV) {
             String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
-            Importer.importPostsFromCSV(this, importPath);
+            getImporter().importPostsFromCSV(importPath);
             return true;
         } else {
             if (preference == preferenceImportPostsFromTumblr) {
-                Importer.importFromTumblr(this, appSupport.getSelectedBlogName());
+                getImporter().importFromTumblr(appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceImportDOMFilters) {
                 String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
-                Importer.importDOMFilters(this, importPath);
+                getImporter().importDOMFilters(importPath);
                 return true;
             } else if (preference == preferenceImportBirthdays) {
                 String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
-                Importer.importBirtdays(this, importPath);
+                getImporter().importBirtdays(importPath);
                 return true;
             } else if (preference == preferenceExportPostsToCSV) {
                 String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
-                Importer.exportPostsToCSV(this, getExportPath(exportPath));
+                getImporter().exportPostsToCSV(getExportPath(exportPath));
                 return true;
             } else if (preference == preferenceExportBirthdays) {
                 String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
-                Importer.exportBirthdaysToCSV(this, getExportPath(exportPath));
+                getImporter().exportBirthdaysToCSV(getExportPath(exportPath));
                 return true;
             } else if (preference == preferenceImportBirthdaysFromWikipedia) {
-                Importer.importMissingBirthdaysFromWikipedia(this, appSupport.getSelectedBlogName());
+                getImporter().importMissingBirthdaysFromWikipedia(appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceClearImageCache) {
                 clearImageCache();
                 return true;
             } else if (preference == preferenceExportMissingBirthdays) {
                 String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + MISSING_BIRTHDAYS_FILE_NAME;
-                Importer.exportMissingBirthdaysToCSV(this, getExportPath(exportPath), appSupport.getSelectedBlogName());
+                getImporter().exportMissingBirthdaysToCSV(getExportPath(exportPath), appSupport.getSelectedBlogName());
+                return true;
+            } else if (preference == preferenceDropboxLogin) {
+            	if (dropboxManager.hasLinkedAccount()) {
+            		dropboxManager.unlink();
+                	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+            	} else {
+            		dropboxManager.startLink(this, DROPBOX_RESULT);
+            	}
                 return true;
             }
         }
-                
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
@@ -260,4 +297,10 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceVersion.setSummary(version);
     }
 
+    public Importer getImporter() {
+    	if (importer == null) {
+    		importer = new Importer(this, dropboxManager);
+    	}
+    	return importer;
+    }
 }

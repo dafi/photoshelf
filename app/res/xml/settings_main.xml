@@ -3,13 +3,17 @@
     android:title="@string/settings" >
 
     <PreferenceCategory
-        android:key="pref_key_tumblr_settings"
-        android:title="@string/pref_tumblr_title" >
+        android:key="pref_key_login_settings"
+        android:title="@string/pref_service_login_title" >
         <Preference
             android:key="tumblr_login"
             android:persistent="false"
             android:title="@string/login_title" />
-    </PreferenceCategory>
+        <Preference
+            android:key="dropbox_login"
+            android:persistent="false"
+            android:title="@string/login_title" />
+        </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_import_export_key"
         android:title="@string/pref_import_category_title" >

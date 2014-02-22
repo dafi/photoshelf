@@ -30,8 +30,8 @@
     <string name="birthdays_title">Birthdays</string>
     <string name="image_picker_activity_title">Pick Images</string>
     <string name="image_viewer_activity_title">Image Viewer</string>
-    <string name="login_title">Login</string>
-    <string name="logout_title">Logout</string>
+    <string name="login_title">%1$s Login</string>
+    <string name="logout_title">%1$s Logout</string>
     <string name="authentication_success_title">Authentication success, caching blogs</string>
     <string name="save_draft_post">Save as Draft</string>
     <string name="select_images">Select Images</string>
@@ -61,7 +61,7 @@
     <string name="importSuccess">Data imported successfully</string>
     <string name="birthday_notification_title">Birthdays list</string>
     <string name="birthday_years_old">%1$s is %2$d years old</string>
-    <string name="pref_tumblr_title">Tumblr Access</string>
+    <string name="pref_service_login_title">Services Access</string>
     <string name="pref_import_category_title">Import and Export</string>
     <string name="pref_schedule_title">Schedule</string>
     <string name="set_wallpaper_title">Set Wallpaper</string>

@@ -14,11 +14,15 @@ public class CSVIterator<T> implements Iterator<T> {
 	private CSVBuilder<T> builder;
 
 	public CSVIterator(String importPath, CSVBuilder<T> builder) throws IOException {
-		this.builder = builder;
-		bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(importPath)));
-		line = bufferedReader.readLine();
+		this(new FileInputStream(importPath), builder);
 	}
 
+	public CSVIterator(FileInputStream fis, CSVBuilder<T> builder) throws IOException {
+		this.builder = builder;
+		bufferedReader = new BufferedReader(new InputStreamReader(fis));
+		line = bufferedReader.readLine();
+	}
+	
 	@Override
 	public boolean hasNext() {
 		return line != null;
