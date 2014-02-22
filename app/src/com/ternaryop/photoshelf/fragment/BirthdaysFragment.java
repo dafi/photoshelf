@@ -2,7 +2,6 @@ package com.ternaryop.photoshelf.fragment;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import android.app.ActionBar;
@@ -18,7 +17,6 @@ import android.widget.TextView;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Birthday;
-import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
 
 public class BirthdaysFragment extends AbsPhotoShelfFragment implements ActionBar.OnNavigationListener {
@@ -35,12 +33,6 @@ public class BirthdaysFragment extends AbsPhotoShelfFragment implements ActionBa
 
         setupActionBar();
         setHasOptionsMenu(true);
-        
-        BirthdayDAO birthdayDatabaseHelper = DBHelper
-                .getInstance(getActivity())
-                .getBirthdayDAO();
-        List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(new Date());
-        fillList(list);
         
         return rootView;
     }
