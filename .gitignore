@@ -15,7 +15,24 @@ gen/
 # Local configuration file (sdk path, etc)
 local.properties
 
+# IntelliJ IDEA
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+*.iml
+*.ipr
+*.iws
+
+# gradle files
+.gradle/
+build
+
+# OSX files
 .DS_Store
 
-app/res/values/tumblr.xml
+# keystore files
 app/build-keystore.properties
+
+# PhotoShelf files
+app/res/values/tumblr.xml
