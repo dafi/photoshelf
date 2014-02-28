@@ -16,6 +16,7 @@ import android.view.MenuItem;
 
 import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.adapter.LastPublishedTimestampComparator;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.Importer;
@@ -141,7 +142,7 @@ public class DraftListFragment extends AbsPostsListFragment {
             @Override
             public void onPostScheduled(long id, Calendar scheduledDateTime) {
                 lastScheduledDate = (Calendar) scheduledDateTime.clone();
-                photoAdapter.remove(item);
+                photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
                 refreshUI();
                 mode.finish();
             }

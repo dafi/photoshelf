@@ -1,7 +1,9 @@
 package com.ternaryop.photoshelf.adapter;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -192,8 +194,8 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 			allPosts.remove(object);
 		}
 	}
-	
-	@Override
+
+    @Override
 	public Filter getFilter() {
 		Filter filter = new Filter() {
 
@@ -228,7 +230,29 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 
         return filter;
         }
-	
+
+    public void removeAndRecalcGroups(PhotoShelfPost item, Calendar lastPublishDateTime) {
+        remove(item);
+        ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>(getCount());
+        boolean isRegroupNeeded = false;
+        String tag = item.getFirstTag();
+
+        for (int i = 0; i < getCount(); i++) {
+            PhotoShelfPost post = getItem(i);
+            list.add(post);
+            if (post.getFirstTag().equals(tag)) {
+                isRegroupNeeded = true;
+                post.setLastPublishedTimestamp(lastPublishDateTime.getTimeInMillis());
+            }
+        }
+        if (isRegroupNeeded) {
+            Collections.sort(list, new LastPublishedTimestampComparator());
+            clear();
+            addAll(list);
+            calcGroupIds();
+        }
+    }
+
 	private class ViewHolder {
 		TextView title;
 		TextView timeDesc;
