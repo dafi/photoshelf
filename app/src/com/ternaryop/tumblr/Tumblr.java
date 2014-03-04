@@ -223,7 +223,7 @@ public class Tumblr {
         return list;
     }
 
-    public void publishPost(final String tumblrName, final long id) {
+    public long publishPost(final String tumblrName, final long id) {
         String apiUrl = getApiUrl(tumblrName, "/post/edit");
         
         Map<String, String> params = new HashMap<String, String>();
@@ -231,7 +231,9 @@ public class Tumblr {
         params.put("state", "published");
 
         try {
-            consumer.jsonFromPost(apiUrl, params);
+            JSONObject jsonObject = consumer.jsonFromPost(apiUrl, params);
+            JSONObject response = jsonObject.getJSONObject("response");
+            return response.getLong("id");
         } catch (Exception e) {
             throw new TumblrException(e);
         }

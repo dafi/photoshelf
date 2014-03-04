@@ -130,5 +130,7 @@
     <string name="extras_title">Extras</string>
     <string name="birthdays_today_title">Today birthdays</string>
     <string name="post_count_1_of_x">%1$d/%2$d posts</string>
-    
+    <string name="upload_immediately">Upload immediately</string>
+    <string name="upload_error_ticker">PhotoShelf upload error</string>
+
 </resources>

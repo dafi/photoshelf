@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ternaryop.photoshelf"
-    android:versionCode="32"
+    android:versionCode="37"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -65,8 +65,8 @@
             android:parentActivityName="com.ternaryop.photoshelf.activity.MainActivity" >
         </activity>
 
-        <service android:name="com.ternaryop.photoshelf.service.BootService" >
-        </service>
+        <service android:name="com.ternaryop.photoshelf.service.BootService" />
+        <service android:name="com.ternaryop.photoshelf.service.PublishIntentService" />
 
         <receiver android:name="com.ternaryop.photoshelf.service.BootServiceReceiver" >
             <intent-filter>

@@ -5,21 +5,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.text.Html;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.ImageInfo;
@@ -27,11 +26,13 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
+import com.ternaryop.photoshelf.service.PublishIntentService;
 import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
+import org.json.JSONObject;
 
 public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
@@ -44,6 +45,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     private long postId;
     private OnClickListener dialogClickListener;
     private TagCursorAdapter tagAdapter;
+    private boolean blockUIWhilePublish;
 
     public TumblrPostDialog(Context context) {
         this(context, 0);
@@ -108,6 +110,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     
     @Override
     public void show() {
+        ((CheckBox)findViewById(R.id.block_ui)).setChecked(blockUIWhilePublish);
+
         if (postId > 0) {
             setTitle(R.string.edit_post_title);
         } else {
@@ -253,20 +257,41 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
             String selectedBlogName = (String) blogList
                     .getSelectedItem();
             appSupport.setSelectedBlogName(selectedBlogName);
+            blockUIWhilePublish = ((CheckBox)findViewById(R.id.block_ui)).isChecked();
 
             List<?> urlsOrFiles = getImageUrls() != null ? getImageUrls() : getImageFiles();
-            final PostCallback callback = new PostCallback(urlsOrFiles.size(), publish);
-            if (publish) {
-                for (Object url : urlsOrFiles) {
-                    Tumblr.getSharedTumblr(getContext()).publishPhotoPost(selectedBlogName,
-                            url, getPostTitle(), getPostTags(),
-                            callback);
+            if (blockUIWhilePublish) {
+                final PostCallback callback = new PostCallback(urlsOrFiles.size(), publish);
+                if (publish) {
+                    for (Object url : urlsOrFiles) {
+                        Tumblr.getSharedTumblr(getContext()).publishPhotoPost(selectedBlogName,
+                                url, getPostTitle(), getPostTags(),
+                                callback);
+                    }
+                } else {
+                    for (Object url : urlsOrFiles) {
+                        Tumblr.getSharedTumblr(getContext()).draftPhotoPost(selectedBlogName,
+                                url, getPostTitle(), getPostTags(),
+                                callback);
+                    }
                 }
             } else {
-                for (Object url : urlsOrFiles) {
-                    Tumblr.getSharedTumblr(getContext()).draftPhotoPost(selectedBlogName,
-                            url, getPostTitle(), getPostTags(),
-                            callback);
+                if (publish) {
+                    for (Object url : urlsOrFiles) {
+                        PublishIntentService.startPublishIntent(getContext(),
+                                url,
+                                selectedBlogName,
+                                getPostTitle(),
+                                getPostTags());
+                    }
+                } else {
+                    for (Object url : urlsOrFiles) {
+                        PublishIntentService.startSaveAsDraftIntent(getContext(),
+                                url,
+                                selectedBlogName,
+                                getPostTitle(),
+                                getPostTags());
+                    }
                 }
             }
             dismiss();
@@ -319,4 +344,13 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
         public void onNothingSelected(AdapterView<?> parent) {
         }
     }
+
+    public boolean isBlockUIWhilePublish() {
+        return blockUIWhilePublish;
+    }
+
+    public void setBlockUIWhilePublish(boolean blockUIWhilePublish) {
+        this.blockUIWhilePublish = blockUIWhilePublish;
+    }
+
 }

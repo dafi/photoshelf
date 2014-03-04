@@ -45,6 +45,12 @@
             android:src="@drawable/navigation_refresh" />
     </LinearLayout>
 
+    <CheckBox
+        android:id="@+id/block_ui"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/upload_immediately"
+        />
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="wrap_content"

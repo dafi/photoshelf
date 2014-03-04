@@ -158,6 +158,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
     public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
         TitleData titleData = TitleParser.instance().parseTitle(imageUrlRetriever.getTitle());
         TumblrPostDialog dialog = new TumblrPostDialog(getActivity());
+        dialog.setBlockUIWhilePublish(false);
         if (imageUrlRetriever.getImageUrls() != null) {
             dialog.setImageUrls(imageUrlRetriever.getImageUrls());
         } else {
