@@ -240,7 +240,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         for (int i = 0; i < getCount(); i++) {
             PhotoShelfPost post = getItem(i);
             list.add(post);
-            if (post.getFirstTag().equals(tag)) {
+            if (post.getFirstTag().equalsIgnoreCase(tag)) {
                 isRegroupNeeded = true;
                 post.setLastPublishedTimestamp(lastPublishDateTime.getTimeInMillis());
             }
