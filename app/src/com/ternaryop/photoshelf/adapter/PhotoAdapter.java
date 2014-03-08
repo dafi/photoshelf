@@ -113,7 +113,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 			
 			for (int i = 1; i < count; i++) {
 				// set same groupId for all identical tags
-				while (i < count && getItem(i).getFirstTag().equals(last)) {
+				while (i < count && getItem(i).getFirstTag().equalsIgnoreCase(last)) {
 					getItem(i++).setGroupId(groupId);
 				}
 				if (i < count) {
