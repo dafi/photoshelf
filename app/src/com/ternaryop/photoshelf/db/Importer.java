@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ternaryop.utils.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -42,12 +43,13 @@ import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.StringUtils;
 
 public class Importer {
+    private static final String CSV_FILE_NAME = "tags.csv";
+    private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
+    private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
+    private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
+
 	private Context context;
 	private DbxAccountManager dropboxManager;
-
-	public Importer(final Context context) {
-		this(context, null);
-	}
 
 	public Importer(final Context context, DbxAccountManager dropboxManager) {
 		this.context = context;
@@ -80,36 +82,42 @@ public class Importer {
 			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
 				@Override
 				protected Void doInBackground(Void... voidParams) {
-					SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
-					Cursor c = db.query(PostTagDAO.TABLE_NAME, null, null, null, null, null, PostTagDAO._ID);
-					try {
-						PrintWriter pw = new PrintWriter(exportPath);
-						while (c.moveToNext()) {
-							pw.println(String.format("%1$d;%2$s;%3$s;%4$d;%5$d",
-									c.getLong(c.getColumnIndex(PostTagDAO._ID)),
-									c.getString(c.getColumnIndex(PostTagDAO.TUMBLR_NAME)),
-									c.getString(c.getColumnIndex(PostTagDAO.TAG)),
-									c.getLong(c.getColumnIndex(PostTagDAO.PUBLISH_TIMESTAMP)),
-									c.getLong(c.getColumnIndex(PostTagDAO.SHOW_ORDER))
-									));
-						}
-						pw.flush();
-						pw.close();
-						
-						copyFileToDropbox(exportPath);
-					} catch (Exception e) {
-						setError(e);
-					} finally {
-						c.close();
-					}	
-					
-					return null;
+                    try {
+                        syncExportPostsToCSV(exportPath);
+                    } catch (Exception e) {
+                        setError(e);
+                    }
+
+                    return null;
 				}
-			}.execute();
+            }.execute();
 		} catch (Exception error) {
 			DialogUtils.showErrorDialog(context, error);
 		}
 	}
+
+    public void syncExportPostsToCSV(final String exportPath) throws Exception {
+        SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
+        Cursor c = db.query(PostTagDAO.TABLE_NAME, null, null, null, null, null, PostTagDAO._ID);
+        try {
+            PrintWriter pw = new PrintWriter(exportPath);
+            while (c.moveToNext()) {
+                pw.println(String.format("%1$d;%2$s;%3$s;%4$d;%5$d",
+                        c.getLong(c.getColumnIndex(PostTagDAO._ID)),
+                        c.getString(c.getColumnIndex(PostTagDAO.TUMBLR_NAME)),
+                        c.getString(c.getColumnIndex(PostTagDAO.TAG)),
+                        c.getLong(c.getColumnIndex(PostTagDAO.PUBLISH_TIMESTAMP)),
+                        c.getLong(c.getColumnIndex(PostTagDAO.SHOW_ORDER))
+                ));
+            }
+            pw.flush();
+            pw.close();
+
+            copyFileToDropbox(exportPath);
+        } finally {
+            c.close();
+        }
+    }
 
 	public void importFromTumblr(final String blogName) {
 		importFromTumblr(blogName, null);
@@ -209,40 +217,46 @@ public class Importer {
 			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
 				@Override
 				protected Void doInBackground(Void... voidParams) {
-					SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
-					Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME);
-					try {
-						PrintWriter pw = new PrintWriter(exportPath);
-						long id = 1;
-						while (c.moveToNext()) {
-							String birthdate = c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE));
-							// ids are recomputed
-                            String csvLine = String.format(Locale.US,
-                            		"%1$d;%2$s;%3$s;%4$s",
-									id++,
-									c.getString(c.getColumnIndex(BirthdayDAO.NAME)),
-									birthdate == null ? "" : birthdate,
-									c.getString(c.getColumnIndex(BirthdayDAO.TUMBLR_NAME))
-									);
-							pw.println(csvLine);
-						}
-						pw.flush();
-						pw.close();
+                    try {
+                        syncExportBirthdaysToCSV(exportPath);
+                    } catch (Exception e) {
+                        setError(e);
+                    }
 
-						copyFileToDropbox(exportPath);
-					} catch (Exception e) {
-						setError(e);
-					} finally {
-						c.close();
-					}	
-					
-					return null;
+                    return null;
 				}
-			}.execute();
+            }.execute();
 		} catch (Exception error) {
 			DialogUtils.showErrorDialog(context, error);
 		}
 	}
+
+    public void syncExportBirthdaysToCSV(final String exportPath) throws Exception {
+        SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
+        Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME);
+        try {
+            PrintWriter pw = new PrintWriter(exportPath);
+            long id = 1;
+            while (c.moveToNext()) {
+                String birthdate = c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE));
+                // ids are recomputed
+                String csvLine = String.format(Locale.US,
+                        "%1$d;%2$s;%3$s;%4$s",
+                        id++,
+                        c.getString(c.getColumnIndex(BirthdayDAO.NAME)),
+                        birthdate == null ? "" : birthdate,
+                        c.getString(c.getColumnIndex(BirthdayDAO.TUMBLR_NAME))
+                );
+                pw.println(csvLine);
+            }
+            pw.flush();
+            pw.close();
+
+            copyFileToDropbox(exportPath);
+        } finally {
+            c.close();
+        }
+    }
 
     public void importMissingBirthdaysFromWikipedia(final String blogName) {
         new AbsProgressBarAsyncTask<Void, String, String>(context,
@@ -410,6 +424,7 @@ public class Importer {
 				file = dbxFs.create(dbxPath);
 			} catch (DbxException.Exists ex) {
 				file = dbxFs.open(dbxPath);
+                file.readString();
 				file.getSyncStatus();
 				file.update();
 			}
@@ -417,4 +432,33 @@ public class Importer {
 			file.close();
 		}
 	}
+
+    /**
+     * If necessary rename exportPath
+     * @param exportPath
+     * @return
+     */
+    public static String getExportPath(String exportPath) {
+        String newPath = IOUtils.generateUniqueFileName(exportPath);
+        if (!newPath.equals(exportPath)) {
+            new File(exportPath).renameTo(new File(newPath));
+        }
+        return exportPath;
+    }
+
+    public static String getMissingBirthdaysPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + MISSING_BIRTHDAYS_FILE_NAME;
+    }
+
+    public static String getPostsPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
+    }
+
+    public static String getDOMFiltersPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
+    }
+
+    public static String getBirthdaysPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+    }
 }

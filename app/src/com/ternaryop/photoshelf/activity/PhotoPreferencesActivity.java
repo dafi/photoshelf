@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -22,16 +21,11 @@ import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.tumblr.Tumblr;
-import com.ternaryop.utils.IOUtils;
 
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String TUMBLR_SERVICE_NAME = "Tumblr";
 	private static final String DROPBOX_SERVICE_NAME = "Dropbox";
-	private static final String CSV_FILE_NAME = "tags.csv";
-    private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
-    private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
-    private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
 
     private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
     private static final String KEY_DROPBOX_LOGIN = "dropbox_login";
@@ -96,7 +90,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
         }
         
-        String csvPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
+        String csvPath = Importer.getPostsPath();
         preferenceImportPostsFromCSV = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_CSV);
         preferenceImportPostsFromCSV.setSummary(csvPath);
         preferenceImportPostsFromCSV.setEnabled(new File(csvPath).exists());
@@ -106,12 +100,12 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         
         preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
         
-        String domFiltersPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
+        String domFiltersPath = Importer.getDOMFiltersPath();
         preferenceImportDOMFilters = preferenceScreen.findPreference(KEY_IMPORT_DOM_FILTERS);
         preferenceImportDOMFilters.setSummary(domFiltersPath);
         preferenceImportDOMFilters.setEnabled(new File(domFiltersPath).exists());
 
-        String birthdaysPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
+        String birthdaysPath = Importer.getBirthdaysPath();
         preferenceImportBirthdays = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS);
         preferenceImportBirthdays.setSummary(birthdaysPath);
         preferenceImportBirthdays.setEnabled(new File(birthdaysPath).exists());
@@ -176,28 +170,23 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
             }
             return true;
         } else if (preference == preferenceImportPostsFromCSV) {
-            String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
-            getImporter().importPostsFromCSV(importPath);
+            getImporter().importPostsFromCSV(Importer.getPostsPath());
             return true;
         } else {
             if (preference == preferenceImportPostsFromTumblr) {
                 getImporter().importFromTumblr(appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceImportDOMFilters) {
-                String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
-                getImporter().importDOMFilters(importPath);
+                getImporter().importDOMFilters(Importer.getDOMFiltersPath());
                 return true;
             } else if (preference == preferenceImportBirthdays) {
-                String importPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
-                getImporter().importBirtdays(importPath);
+                getImporter().importBirtdays(Importer.getBirthdaysPath());
                 return true;
             } else if (preference == preferenceExportPostsToCSV) {
-                String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
-                getImporter().exportPostsToCSV(getExportPath(exportPath));
+                getImporter().exportPostsToCSV(Importer.getExportPath(Importer.getPostsPath()));
                 return true;
             } else if (preference == preferenceExportBirthdays) {
-                String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
-                getImporter().exportBirthdaysToCSV(getExportPath(exportPath));
+                getImporter().exportBirthdaysToCSV(Importer.getExportPath(Importer.getBirthdaysPath()));
                 return true;
             } else if (preference == preferenceImportBirthdaysFromWikipedia) {
                 getImporter().importMissingBirthdaysFromWikipedia(appSupport.getSelectedBlogName());
@@ -206,8 +195,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
                 clearImageCache();
                 return true;
             } else if (preference == preferenceExportMissingBirthdays) {
-                String exportPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + MISSING_BIRTHDAYS_FILE_NAME;
-                getImporter().exportMissingBirthdaysToCSV(getExportPath(exportPath), appSupport.getSelectedBlogName());
+                getImporter().exportMissingBirthdaysToCSV(Importer.getExportPath(Importer.getMissingBirthdaysPath()),
+                        appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceDropboxLogin) {
             	if (dropboxManager.hasLinkedAccount()) {
@@ -257,19 +246,6 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         .setPositiveButton(android.R.string.yes, dialogClickListener)
         .setNegativeButton(android.R.string.no, null)
         .show();        
-    }
-
-    /**
-     * If necessary rename exportPath
-     * @param exportPath
-     * @return
-     */
-    public String getExportPath(String exportPath) {
-        String newPath = IOUtils.generateUniqueFileName(exportPath);
-        if (!newPath.equals(exportPath)) {
-            new File(exportPath).renameTo(new File(newPath));
-        }
-        return exportPath;
     }
 
     public static void startPreferencesActivityForResult(Activity caller) {
