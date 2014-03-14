@@ -38,6 +38,7 @@ import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment;
 import com.ternaryop.photoshelf.fragment.DraftListFragment;
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus;
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment;
+import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment;
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment;
 import com.ternaryop.photoshelf.fragment.TagListFragment;
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment;
@@ -122,7 +123,8 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
                 true, new DraftCountRetriever(this, getBlogName(), adapter)));
         adapter.add(new DrawerItem(getString(R.string.schedule_title), ScheduledListFragment.class,
                 true, new QueueCountRetriever(this, getBlogName(), adapter)));
-        
+        adapter.add(new DrawerItem(getString(R.string.published_post), PublishedPostsListFragment.class));
+
         // Tags
         adapter.add(new DrawerItem(getString(R.string.tags_title)));
         adapter.add(new DrawerItem(getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment.class));

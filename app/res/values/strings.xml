@@ -20,6 +20,7 @@
     <string name="reading_draft_posts">Reading draft posts&#8230;</string>
     <string name="reading_scheduled_posts">Reading scheduled posts&#8230;</string>
     <string name="finding_last_published_posts">Finding last published posts&#8230;</string>
+    <string name="reading_published_posts">Reading published posts&#8230;</string>
     <string name="schedule_post">Schedule</string>
     <string name="schedule_title">Schedule</string>
     <string name="schedule_dialog_title">Schedule: %1$s</string>
@@ -132,5 +133,6 @@
     <string name="post_count_1_of_x">%1$d/%2$d posts</string>
     <string name="upload_immediately">Upload immediately</string>
     <string name="upload_error_ticker">PhotoShelf upload error</string>
+    <string name="published_post">Published</string>
 
 </resources>
