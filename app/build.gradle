@@ -53,6 +53,6 @@ task nativeLibsToJar(type: Zip) {
     into 'lib/'
 }
 
-tasks.withType(Compile) {
+tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn(nativeLibsToJar)
 }
