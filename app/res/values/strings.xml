@@ -134,5 +134,6 @@
     <string name="upload_immediately">Upload immediately</string>
     <string name="upload_error_ticker">PhotoShelf upload error</string>
     <string name="published_post">Published</string>
+    <string name="automatic_export">Automatic export</string>
 
 </resources>

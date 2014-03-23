@@ -68,10 +68,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(prefListener);
         appSupport = new AppSupport(this);
-        dropboxManager = DbxAccountManager.getInstance(getApplicationContext(),
-        		getString(R.string.DROPBOX_APP_KEY),
-        		getString(R.string.DROPBOX_APP_SECRET));
-        
+        dropboxManager = appSupport.getDbxAccountManager();
+
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();

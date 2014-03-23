@@ -21,6 +21,8 @@
             android:key="import_category_key"
             android:persistent="false"
             android:title="@string/pref_import_screen_title" >
+            <CheckBoxPreference android:key="automatic_export"
+                                android:title="@string/automatic_export"/>
             <Preference
                 android:key="import_dom_filters"
                 android:persistent="false"
