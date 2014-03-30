@@ -135,5 +135,9 @@
     <string name="upload_error_ticker">PhotoShelf upload error</string>
     <string name="published_post">Published</string>
     <string name="automatic_export">Automatic export</string>
+    <string name="week_selection_under_age">A selection of the most beautiful women under %1$d published last week</string>
+    <string name="week_selection_over_age">A selection of the most beautiful women over %1$d published last week</string>
+    <string name="name_with_age">%1$s (age %2$s)</string>
+    <string name="best_of">Best Of</string>
 
 </resources>

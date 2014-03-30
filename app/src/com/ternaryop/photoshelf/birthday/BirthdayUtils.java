@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.birthday;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -113,48 +114,75 @@ public class BirthdayUtils {
 	    return posts;
 	}
 
-	public static void bestByRange(Context context, int fromYear, int toYear, String postTags, String tumblrName) {
-	    /*
-	     Example
-                Calendar now = Calendar.getInstance(Locale.US);
-                int currYear = now.get(Calendar.YEAR);
-                BirthdayUtils.bestByRange(getApplicationContext(), currYear - 30, currYear, "BestUnder30", getBlogName());
-
-	     */
-	    final int THUMBS_COUNT = 9;
-        DBHelper dbHelper = DBHelper.getInstance(context);
-        List<Birthday> birthdays = dbHelper.getBirthdayDAO().getBirthdayByYearRange(fromYear, toYear, tumblrName);
-        Collections.shuffle(birthdays);
-        int maxItems = Math.min(birthdays.size(), THUMBS_COUNT);
-        
-        ArrayList<String> names = new ArrayList<String>();
-        for (int i = 0; i < maxItems; i++) {
-            Birthday birthday = birthdays.get(i);
-            names.add(birthday.getName());
+	public static void publishedInAgeRange(Context context, int fromAge, int toAge, int daysPeriod, String postTags, String tumblrName) {
+        if (fromAge != 0 && toAge != 0) {
+            throw new IllegalArgumentException("fromAge or toAge can't be both set to 0");
         }
-        List<PostTag> posts = dbHelper.getPostTagDAO().getListTagsLastPublishedTime(names, tumblrName);
+        String message;
+
+        if (fromAge == 0) {
+            message = context.getString(R.string.week_selection_under_age, toAge);
+        } else if (toAge == 0) {
+            message = context.getString(R.string.week_selection_over_age, fromAge);
+        } else {
+            throw new IllegalArgumentException("fromAge or toAge are both greater than 0");
+        }
+
+        final int THUMBS_COUNT = 9;
+        DBHelper dbHelper = DBHelper.getInstance(context);
+        List<Map<String, String>> birthdays = dbHelper.getBirthdayDAO()
+                .getBirthdayByAgeRange(fromAge, toAge == 0 ? Integer.MAX_VALUE : toAge, daysPeriod, tumblrName);
+        Collections.shuffle(birthdays);
+
         StringBuilder sb = new StringBuilder();
-        sb.append("<div class=\"breathwomen-thumb-250\">");
 
         Map<String, String> params = new HashMap<String, String>(2);
         TumblrPhotoPost post = null;
         params.put("type", "photo");
-        for (PostTag postTag : posts) {
-            params.put("id", String.valueOf(postTag.getId()));
+
+        int count = 0;
+        for (Map<String, String> info : birthdays) {
+            params.put("id", info.get("postId"));
             post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
                         .getPublicPosts(tumblrName, params).get(0);
             String imageUrl = post.getClosestPhotoByWidth(250).getUrl();
-            sb.append("<img src=\"" + imageUrl + "\"/>");
-        }                
-        sb.append("</div>");
-        System.out.println(sb);
+
+            sb.append("<a href=\"" + post.getPostUrl() + "\">");
+            sb.append("<p>" + context.getString(R.string.name_with_age, post.getTags().get(0), info.get("age")) + "</p>");
+            sb.append("<img style=\"width: 250px !important\" src=\"" + imageUrl + "\"/>");
+            sb.append("</a>");
+            sb.append("<br/>");
+
+            if (++count > THUMBS_COUNT) {
+                break;
+            }
+        }
         if (post != null) {
+            message = message + " (" + formatPeriodDate(-daysPeriod) + ")";
+
             Tumblr.getSharedTumblr(context)
-                .draftPhotoPost(tumblrName,
-                    post.getClosestPhotoByWidth(500).getUrl(),
-                    sb.toString(),
-                    postTags);
+                    .draftTextPost(tumblrName,
+                            message,
+                            sb.toString(),
+                            postTags);
         }
     }
-    
+
+    private static String formatPeriodDate(int daysPeriod) {
+        Calendar now = Calendar.getInstance();
+        Calendar period = Calendar.getInstance();
+        period.add(Calendar.DAY_OF_MONTH, daysPeriod);
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM", Locale.US);
+
+        if (now.get(Calendar.YEAR) == period.get(Calendar.YEAR)) {
+            if (now.get(Calendar.MONTH) == period.get(Calendar.MONTH)) {
+                return period.get(Calendar.DAY_OF_MONTH) + "-" + now.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(now.getTime()) + ", " + now.get(Calendar.YEAR);
+            }
+            return period.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(period.getTime())
+                    + " - " + now.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(now.getTime())
+                    + ", " + now.get(Calendar.YEAR);
+        }
+        return period.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(period.getTime()) + " " + period.get(Calendar.YEAR)
+                + " - " + now.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(now.getTime()) + " " + now.get(Calendar.YEAR);
+    }
 }

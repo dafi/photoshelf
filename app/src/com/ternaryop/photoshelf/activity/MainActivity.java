@@ -33,6 +33,7 @@ import com.ternaryop.photoshelf.counter.CountProvider;
 import com.ternaryop.photoshelf.counter.CountRetriever;
 import com.ternaryop.photoshelf.counter.DraftCountRetriever;
 import com.ternaryop.photoshelf.counter.QueueCountRetriever;
+import com.ternaryop.photoshelf.fragment.BestOfFragment;
 import com.ternaryop.photoshelf.fragment.BirthdaysFragment;
 import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment;
 import com.ternaryop.photoshelf.fragment.DraftListFragment;
@@ -135,6 +136,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         adapter.add(new DrawerItem(getString(R.string.birthdays_title), BirthdaysFragment.class));
         adapter.add(new DrawerItem(getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class,
                 true, new BirthdaysCountRetriever(this, getBlogName(), adapter)));
+        adapter.add(new DrawerItem(getString(R.string.best_of), BestOfFragment.class));
         adapter.add(new DrawerItem(getString(R.string.test_page_title), ImagePickerFragment.class));
         
         return adapter;

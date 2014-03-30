@@ -4,8 +4,10 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -178,26 +180,45 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         return null;
     }
 
-    public List<Birthday> getBirthdayByYearRange(int from, int to, String tumblrName) {
+    public List<Map<String, String>> getBirthdayByAgeRange(int fromAge, int toAge, int daysPeriod, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        
-        String dateQuery = "";
-        
-        if (from == 0) {
-            
-        } else if (to == 0) {
-            
-        } else {
-            dateQuery = BIRTH_DATE + " BETWEEN '" + from + "-01-01' AND '" + to + "-12-31'";
+
+        // integers are replaced directly inside query because rawQuery bounds them to strings
+        String dateQuery = "select" +
+                    " t._id," +
+                    " t.tag," +
+                    " (strftime('%Y', 'now') - strftime('%Y', b.birth_date)) - (strftime('%m-%d', 'now') < strftime('%m-%d', b.birth_date)) age" +
+                    " from post_tag t," +
+                    " birthday b" +
+                    " where" +
+                    " t.tag=b.name" +
+                    " and datetime(publish_timestamp,  'unixepoch') >= date('now', '" + (-daysPeriod) + " days')" +
+                    " and tag in (" +
+                    " select b.name from birthday b" +
+                    " where" +
+                    " (strftime('%Y', 'now') - strftime('%Y', b.birth_date))" +
+                    "     - (strftime('%m-%d', 'now') < strftime('%m-%d', b.birth_date) ) between " + fromAge + " and " + toAge + ")" +
+                    " and t.show_order=1" +
+                    " and t.TUMBLR_NAME=?" +
+                    " order by tag";
+
+        Cursor c = db.rawQuery(dateQuery,
+                new String[]{tumblrName});
+
+        ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        try {
+            while (c.moveToNext()) {
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put("postId", c.getString(0));
+                map.put("tag", c.getString(1));
+                map.put("age", c.getString(2));
+                list.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            c.close();
         }
-        
-        Cursor c = db.query(TABLE_NAME,
-                COLUMNS,
-                dateQuery + " and " + TUMBLR_NAME + "=?",
-                new String[] {tumblrName},
-                null,
-                null,
-                BIRTH_DATE);
-        return cursorToBirtdayList(c);
+        return list;
     }
 }

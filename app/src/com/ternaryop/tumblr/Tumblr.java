@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Tumblr {
     public final static int MAX_POST_PER_REQUEST = 20;
@@ -101,7 +101,7 @@ public class Tumblr {
             throw new TumblrException(e);
         }
     }
-    
+
     public void publishPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags, final Callback<Long> callback) {
         createPhotoPost(tumblrName, urlOrFile, caption, tags, "published", callback);
     }
@@ -152,6 +152,36 @@ public class Tumblr {
         params.put("caption", caption);
         params.put("tags", tags);
         
+        JSONObject json = consumer.jsonFromPost(apiUrl, params);
+        return json.getJSONObject("response").getLong("id");
+    }
+
+    public void draftTextPost(final String tumblrName, final String title, final String body, final String tags) {
+        try {
+            createTextPost(tumblrName, title, body, tags, "draft");
+        } catch (JSONException e) {
+            throw new TumblrException(e);
+        }
+    }
+
+    public void publishTextPost(final String tumblrName, final String title, final String body, final String tags) {
+        try {
+            createTextPost(tumblrName, title, body, tags, "published");
+        } catch (JSONException e) {
+            throw new TumblrException(e);
+        }
+    }
+
+    protected long createTextPost(final String tumblrName, final String title, final String body, final String tags, final String state) throws JSONException {
+        String apiUrl = getApiUrl(tumblrName, "/post");
+        HashMap<String, Object> params = new HashMap<String, Object>();
+
+        params.put("state", state);
+        params.put("type", "text");
+        params.put("title", title);
+        params.put("body", body);
+        params.put("tags", tags);
+
         JSONObject json = consumer.jsonFromPost(apiUrl, params);
         return json.getJSONObject("response").getLong("id");
     }
