@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.text.TextUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.text.TextUtils;
 
 public class TumblrPost implements Serializable {
 	/**
@@ -31,6 +31,7 @@ public class TumblrPost implements Serializable {
 	private boolean liked;
 	private String state;
 	private long totalPosts;
+    private long noteCount;
 	
 	// queue posts
 	private long scheduledPublishTime;
@@ -54,6 +55,7 @@ public class TumblrPost implements Serializable {
 		liked = json.has("liked") ? json.getBoolean("liked") : false;
 		state = json.getString("state");
 		totalPosts = json.has("total_posts") ? json.getLong("total_posts") : 0;
+        noteCount = json.has("note_count") ? json.getLong("note_count") : 0;
 
 		JSONArray jsonTags = json.getJSONArray("tags");
 		tags = new ArrayList<String>(jsonTags.length());
@@ -237,4 +239,12 @@ public class TumblrPost implements Serializable {
 		}
 		return TextUtils.join(",", tags);
 	}
+
+    public long getNoteCount() {
+        return noteCount;
+    }
+
+    public void setNoteCount(long noteCount) {
+        this.noteCount = noteCount;
+    }
 }
