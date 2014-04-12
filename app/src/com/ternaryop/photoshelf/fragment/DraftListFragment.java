@@ -16,7 +16,6 @@ import android.view.MenuItem;
 
 import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
-import com.ternaryop.photoshelf.adapter.LastPublishedTimestampComparator;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.Importer;
