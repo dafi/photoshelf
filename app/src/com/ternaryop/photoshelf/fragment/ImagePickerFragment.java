@@ -96,6 +96,8 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
         });
         webView.setOnLongClickListener(this);
         webView.getSettings().setJavaScriptEnabled(true);
+        // force a desktop browser UA
+        webView.getSettings().setUserAgentString("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0");
         webView.addJavascriptInterface(this, "targetUrlRetriever");
     }
 
