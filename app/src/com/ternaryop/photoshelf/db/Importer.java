@@ -15,11 +15,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.ternaryop.utils.IOUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -40,7 +35,11 @@ import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.IOUtils;
 import com.ternaryop.utils.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 public class Importer {
     private static final String CSV_FILE_NAME = "tags.csv";
@@ -58,20 +57,24 @@ public class Importer {
 	
 	public void importPostsFromCSV(final String importPath) {
 		try {
-			if (dropboxManager.hasLinkedAccount()) {
-				DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
-				File exportFile = new File(importPath);
-				final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
-				new DbImportAsyncTask<PostTag>(context,
-						new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
-						DBHelper.getInstance(context).getPostTagDAO(),
-						true) {
-					protected void onPostExecute(Void result) {
-						super.onPostExecute(result);
-						file.close();
-					}
-				}.execute();
-			}
+            new DbImportAsyncTask<PostTag>(context,
+                    new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
+                    DBHelper.getInstance(context).getPostTagDAO(),
+                    true).execute();
+//			if (dropboxManager.hasLinkedAccount()) {
+//				DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
+//				File exportFile = new File(importPath);
+//				final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
+//				new DbImportAsyncTask<PostTag>(context,
+//						new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
+//						DBHelper.getInstance(context).getPostTagDAO(),
+//						true) {
+//					protected void onPostExecute(Void result) {
+//						super.onPostExecute(result);
+//						file.close();
+//					}
+//				}.execute();
+//			}
 		} catch (Exception error) {
 			DialogUtils.showErrorDialog(context, error);
 		}
