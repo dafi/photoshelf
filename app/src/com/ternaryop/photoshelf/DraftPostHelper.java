@@ -21,6 +21,7 @@ import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
+import com.ternaryop.utils.TumblrUtils;
 
 public class DraftPostHelper {
 
@@ -297,7 +298,7 @@ public class DraftPostHelper {
 
 			@Override
 			public Exception call() throws Exception {
-				List<TumblrPost> posts = tumblr.getQueue(tumblrName, null);
+				List<TumblrPost> posts = TumblrUtils.getQueueAll(tumblr, tumblrName);
 				queuedPosts.putAll(getTagsForQueuedPosts(posts));
 				return null;
 			}
