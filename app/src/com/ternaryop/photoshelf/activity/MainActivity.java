@@ -75,8 +75,6 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
 
         appSupport = new AppSupport(this);
         
-        setContentView(R.layout.activity_main);
-
         title = drawerTitle = getTitle();
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
