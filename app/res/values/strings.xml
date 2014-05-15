@@ -139,5 +139,10 @@
     <string name="week_selection_over_age">A selection of the most beautiful women over %1$d published last week</string>
     <string name="name_with_age">%1$s (age %2$s)</string>
     <string name="best_of">Best Of</string>
+    <string name="copy_url_title">Copy URL</string>
+    <string name="download_title">Download</string>
+    <string name="image_saved_at_path">Image saved at %1$s</string>
+    <string name="url_copied_to_clipboard_title">URL copied to clipboard</string>
+    <string name="image_url_description">Image url</string>
 
 </resources>
