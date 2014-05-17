@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -12,17 +13,24 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.birthday.BirthdayUtils;
+import com.ternaryop.photoshelf.db.Birthday;
+import com.ternaryop.photoshelf.db.BirthdayDAO;
+import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.tumblr.Tumblr;
 
 /**
  * Created by dave on 01/03/14.
  */
 public class PublishIntentService extends IntentService {
-    private static final String NOTIFICATION_TAG = "com.ternaryop.photoshelf.publish.error";
+    private static final String NOTIFICATION_PUBLISH_ERROR_TAG = "com.ternaryop.photoshelf.publish.error";
+    private static final String NOTIFICATION_BIRTHDAY_ERROR_TAG = "com.ternaryop.photoshelf.birthday.error";
+    private static final String NOTIFICATION_BIRTHDAY_SUCCESS_TAG = "com.ternaryop.photoshelf.birthday.success";
     private static final int NOTIFICATION_ID = 1;
 
     public static final String URL_OR_FILE = "urlOrFile";
@@ -46,6 +54,7 @@ public class PublishIntentService extends IntentService {
         String action = intent.getStringExtra(PUBLISH_ACTION);
 
         try {
+            addBithdateFromTags(postTags, selectedBlogName);
             if (PUBLISH_ACTION_DRAFT.equals(action)) {
                 Tumblr.getSharedTumblr(getApplicationContext()).draftPhotoPost(selectedBlogName,
                         url, postTitle, postTags);
@@ -72,23 +81,71 @@ public class PublishIntentService extends IntentService {
             
     }
 
+    private void addBithdateFromTags(final String postTags, final String blogName) {
+        if (postTags == null) {
+            return;
+        }
+        String[] tags = postTags.split(",");
+        if (tags.length == 0) {
+            return;
+        }
+        final String name = tags[0].trim();
+
+        new Thread(new Runnable() {
+            public void run() {
+                BirthdayDAO birthdayDAO = DBHelper.getInstance(getApplicationContext()).getBirthdayDAO();
+                SQLiteDatabase db = birthdayDAO.getDbHelper().getWritableDatabase();
+                NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+                db.beginTransaction();
+
+                try {
+                    if (birthdayDAO.getBirthdayByName(name, blogName) != null) {
+                        return;
+                    }
+                    Birthday birthday = BirthdayUtils.searchBirthday(name, blogName);
+                    if (birthday != null) {
+                        birthdayDAO.insert(birthday);
+                        db.setTransactionSuccessful();
+                        String date = DateFormat.getDateInstance().format(birthday.getBirthDate());
+
+                        Notification notification = createNotification(name + ": " + date, R.string.new_birthday_ticker,
+                                R.drawable.stat_notify_bday);
+                        notificationManager.notify(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID, notification);
+                    }
+                } catch (Exception e) {
+                    Notification notification = createNotification(name + ": " + e.getLocalizedMessage(),
+                            R.string.birthday_add_error_ticker,
+                            R.drawable.stat_notify_error);
+                    notificationManager.notify(NOTIFICATION_BIRTHDAY_ERROR_TAG, NOTIFICATION_ID, notification);
+                } finally {
+                    db.endTransaction();
+                }
+            }
+        }).start();
+    }
+
     private void notifyError(Intent intent) {
         Object url = intent.getSerializableExtra(URL_OR_FILE).toString();
         String postTags = intent.getStringExtra(POST_TAGS);
+
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        // add url.hashCode() to ensure every notification is shown
+        Notification notification = createNotification(postTags, R.string.upload_error_ticker, R.drawable.stat_notify_error);
+        notificationManager.notify(NOTIFICATION_PUBLISH_ERROR_TAG, NOTIFICATION_ID + url.hashCode(), notification);
+    }
+
+    private Notification createNotification(String contentText, int stringTickerId, int iconId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 this)
-                .setTicker(getString(R.string.upload_error_ticker))
-                .setSmallIcon(R.drawable.stat_notify_error);
+                .setTicker(getString(stringTickerId))
+                .setSmallIcon(iconId);
 
-        builder.setContentText(postTags);
+        builder.setContentText(contentText);
         // remove notification when user clicks on it
         builder.setAutoCancel(true);
 
         Notification notification = builder.build();
-        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        // add url.hashCode() to ensure every notification is shown
-        notificationManager.notify(NOTIFICATION_TAG, NOTIFICATION_ID + url.hashCode(), notification);
-
+        return notification;
     }
 
     private static void startActionIntent(Context context,
