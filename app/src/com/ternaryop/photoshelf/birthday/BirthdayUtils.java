@@ -37,10 +37,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 public class BirthdayUtils {
-	private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
+    private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
 	private static final int BIRTHDAY_NOTIFICATION_ID = 1;
+    public static final String DESKTOP_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0";
 
-	public static boolean notifyBirthday(Context context) {
+    public static boolean notifyBirthday(Context context) {
 		BirthdayDAO birthdayDatabaseHelper = DBHelper
 				.getInstance(context.getApplicationContext())
 				.getBirthdayDAO();
@@ -50,7 +51,7 @@ public class BirthdayUtils {
 			return false;
 		}
 
-		long currYear = now.get(Calendar.YEAR);
+		int currYear = now.get(Calendar.YEAR);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(
 				context.getApplicationContext())
 				.setContentIntent(createPendingIntent(context))
@@ -60,7 +61,7 @@ public class BirthdayUtils {
 			builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size()));
 			Calendar cal = Calendar.getInstance(Locale.US);
 			cal.setTime(birthday.getBirthDate());
-			long years = currYear - cal.get(Calendar.YEAR);
+			int years = currYear - cal.get(Calendar.YEAR);
 			builder.setContentText(context.getString(R.string.birthday_years_old, birthday.getName(), years));
 		} else {
             builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size(), list.size()));
@@ -69,7 +70,7 @@ public class BirthdayUtils {
 			for (Birthday birthday : list) {
 				Calendar cal = Calendar.getInstance(Locale.US);
 				cal.setTime(birthday.getBirthDate());
-				long years = currYear - cal.get(Calendar.YEAR);
+				int years = currYear - cal.get(Calendar.YEAR);
 			    inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.getName(), years));
 			}
 			builder.setStyle(inboxStyle);
@@ -201,7 +202,7 @@ public class BirthdayUtils {
                 .replaceAll("\"", "");
         String url = "https://www.google.com/search?hl=en&q=" + cleanName;
         String text = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0")
+                .userAgent(DESKTOP_USER_AGENT)
                 .get()
                 .text();
         // match only dates in expected format (ie. "Born: month_name day, year")
@@ -223,7 +224,9 @@ public class BirthdayUtils {
                 .replaceAll(" ", "_")
                 .replaceAll("\"", "");
         String url = "http://en.wikipedia.org/wiki/" + cleanName;
-        Document document = Jsoup.connect(url).get();
+        Document document = Jsoup.connect(url)
+                .userAgent(DESKTOP_USER_AGENT)
+                .get();
         // protect against redirect
         if (document.title().toLowerCase(Locale.US).contains(name)) {
             Elements el = document.select(".bday");
@@ -235,10 +238,18 @@ public class BirthdayUtils {
         return null;
     }
 
-    public static Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
-        Birthday birthday = BirthdayUtils.searchGoogleForBirthday(name, blogName);
+    public static Birthday searchBirthday(String name, String blogName) {
+        Birthday birthday = null;
+
+        try {
+            birthday = BirthdayUtils.searchGoogleForBirthday(name, blogName);
+        } catch (Exception ex) {
+        }
         if (birthday == null) {
-            birthday = BirthdayUtils.searchWikipediaForBirthday(name, blogName);
+            try {
+                birthday = BirthdayUtils.searchWikipediaForBirthday(name, blogName);
+            } catch (Exception ex) {
+            }
         }
         return birthday;
     }
