@@ -1,13 +1,18 @@
 package com.ternaryop.photoshelf.birthday;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -26,6 +31,10 @@ import com.ternaryop.photoshelf.db.PostTag;
 import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
+import com.ternaryop.utils.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 public class BirthdayUtils {
 	private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
@@ -184,5 +193,53 @@ public class BirthdayUtils {
         }
         return period.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(period.getTime()) + " " + period.get(Calendar.YEAR)
                 + " - " + now.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(now.getTime()) + " " + now.get(Calendar.YEAR);
+    }
+
+    public static Birthday searchGoogleForBirthday(String name, String blogName) throws IOException, ParseException {
+        String cleanName = name
+                .replaceAll(" ", "+")
+                .replaceAll("\"", "");
+        String url = "https://www.google.com/search?hl=en&q=" + cleanName;
+        String text = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0")
+                .get()
+                .text();
+        // match only dates in expected format (ie. "Born: month_name day, year")
+        Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+ \\d{1,2}, \\d{4})");
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            String textDate = matcher.group(1);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
+            Date date = dateFormat.parse(textDate);
+            return new Birthday(name, date, blogName);
+        }
+        return null;
+    }
+
+    public static Birthday searchWikipediaForBirthday(String name, String blogName) throws IOException, ParseException {
+        String cleanName = StringUtils
+                .capitalize(name)
+                .replaceAll(" ", "_")
+                .replaceAll("\"", "");
+        String url = "http://en.wikipedia.org/wiki/" + cleanName;
+        Document document = Jsoup.connect(url).get();
+        // protect against redirect
+        if (document.title().toLowerCase(Locale.US).contains(name)) {
+            Elements el = document.select(".bday");
+            if (el.size() > 0) {
+                String birthDate = el.get(0).text();
+                return new Birthday(name, birthDate, blogName);
+            }
+        }
+        return null;
+    }
+
+    public static Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
+        Birthday birthday = BirthdayUtils.searchGoogleForBirthday(name, blogName);
+        if (birthday == null) {
+            birthday = BirthdayUtils.searchWikipediaForBirthday(name, blogName);
+        }
+        return birthday;
     }
 }
