@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves)", Pattern.CASE_INSENSITIVE);
+    private static Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
 
     private static String[] months = {"", "January",
                   "February",
@@ -52,12 +52,15 @@ public class TitleParser {
     	int year = 0;
     	
         // handle dates in the form Jan 10, 2010 or January 10 2010 or Jan 15
-        Matcher m = Pattern.compile("[-,]\\s+\\(?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(title);
-        if (m.find() && m.groupCount() > 1) {
-            day = m.group(2).length() != 0 ? Integer.parseInt(m.group(2)) : 0;
-            monthStr = monthsShort.get(m.group(1).toLowerCase(Locale.getDefault()));
-            if (m.groupCount() == 3 && m.group(3).length() > 0) {
-                year = Integer.parseInt(m.group(3));
+        Matcher m = Pattern.compile("(-|,|on)\\s+\\(?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(title);
+        if (m.find() && m.groupCount() > 2) {
+            day = m.group(3).length() != 0 ? Integer.parseInt(m.group(3)) : 0;
+            monthStr = monthsShort.get(m.group(2).toLowerCase(Locale.getDefault()));
+            if (m.groupCount() == 4 && m.group(4).length() > 0) {
+                year = Integer.parseInt(m.group(4));
+                if (year < 100) {
+                	year += 2000;
+                }
             }
         } else {
             // handle dates in the form dd/dd/dd?? or (dd/dd/??)
@@ -94,8 +97,11 @@ public class TitleParser {
         if (monthStr != null) {
         	dateComponents.put("month", monthStr);
         }
+        int currYear = Calendar.getInstance().get(Calendar.YEAR);
         if (year < 2000) {
-            year = Calendar.getInstance().get(Calendar.YEAR);
+            year = currYear;
+        } else if (year > currYear) {
+        	year = currYear;
         }
         dateComponents.put("year", year + "");
         if (m != null) {

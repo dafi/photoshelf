@@ -106,15 +106,19 @@ public class TitleData {
 	}
 
     public String toHtml() {
+    	return format("<strong>", "</strong>", "<em>", "</em>");
+    }
+
+    public String format(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose) {
         StringBuilder sb = new StringBuilder();
 
         if (who != null) {
             sb
-            .append("<strong>" + who + "</strong>")
+            .append(whoTagOpen + who + whoTagClose)
             .append(" ");
         }
         if (location != null || when != null || city != null) {
-            sb.append("<em>");
+            sb.append(descTagOpen);
             if (location != null) {
                 sb
                 .append(location);
@@ -135,9 +139,8 @@ public class TitleData {
                 .append(when)
                 .append(")");
             }
-            sb.append("</em>");
+            sb.append(descTagClose);
         }
         return sb.toString();
-        
     }
 }
