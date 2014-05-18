@@ -146,5 +146,12 @@
     <string name="image_url_description">Image url</string>
     <string name="new_birthday_ticker">New birthday added</string>
     <string name="birthday_add_error_ticker">Birthday add error</string>
+    <string name="home">Home</string>
+    <string name="total_posts">Total posts</string>
+    <string name="total_records">Total records</string>
+    <string name="total_unique_tags">Total unique tags</string>
+    <string name="total_unique_first_tags">Total unique first tags</string>
+    <string name="birthdays_count">Birthdays count</string>
+    <string name="missing_birthdays_count">Missing birthdays count</string>
 
 </resources>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="wrap_content"
+             android:layout_gravity="center"
+             android:layout_height="wrap_content">
+
+
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:text="@string/total_posts"
+            android:layout_width="wrap_content"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/total_posts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:text="@string/total_records"
+            android:layout_width="wrap_content"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/total_records"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:text="@string/total_unique_tags"
+            android:layout_width="wrap_content"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/total_unique_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:text="@string/total_unique_first_tags"
+            android:layout_width="wrap_content"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/total_unique_first_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:text="@string/birthdays_count"
+            android:layout_width="wrap_content"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/birthdays_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:text="@string/missing_birthdays_count"
+            android:layout_width="wrap_content"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/missing_birthdays_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+</TableLayout>

@@ -38,6 +38,7 @@ import com.ternaryop.photoshelf.fragment.BirthdaysFragment;
 import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment;
 import com.ternaryop.photoshelf.fragment.DraftListFragment;
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus;
+import com.ternaryop.photoshelf.fragment.HomeFragment;
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment;
 import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment;
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment;
@@ -111,6 +112,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());
         
         if (savedInstanceState == null) {
+            selectItem(0);
             drawerLayout.openDrawer(drawerLinearLayout);
         }
         enableUI(Tumblr.isLogged(this));
@@ -118,6 +120,8 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
 
     private DrawerAdapter initDrawerAdapter() {
         adapter = new DrawerAdapter(getApplicationContext());
+        adapter.add(new DrawerItem(getString(R.string.home), HomeFragment.class));
+
         adapter.add(new DrawerItem(getString(R.string.draft_title), DraftListFragment.class,
                 true, new DraftCountRetriever(this, getBlogName(), adapter)));
         adapter.add(new DrawerItem(getString(R.string.schedule_title), ScheduledListFragment.class,

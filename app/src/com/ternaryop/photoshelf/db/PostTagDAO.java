@@ -23,8 +23,14 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 	public static final String SHOW_ORDER = "SHOW_ORDER";
 	
 	public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
+    public static final String POST_COUNT_COLUMN = "post_count";
+    public static final String UNIQUE_TAGS_COUNT_COLUMN = "unique_tags_count";
+    public static final String UNIQUE_FIRST_TAG_COUNT_COLUMN = "unique_first_tag_count";
+    public static final String MISSING_BIRTHDAYS_COUNT_COLUMN = "missing_birthdays_count";
+    public static final String BIRTHDAYS_COUNT_COLUMN = "birthdays_count";
+    public static final String RECORD_COUNT_COLUMN = "record_count";
 
-	/**
+    /**
 	 * Constructor is accessible only from package
 	 */
 	PostTagDAO(SQLiteOpenHelper dbHelper) {
@@ -72,7 +78,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 	public Cursor getCursorByTag(String tag, String tumblrName) {
 		SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
-		String sqlQuery = "SELECT %2$s, %3$s, count(*) as post_count FROM %1$s"
+		String sqlQuery = "SELECT %2$s, %3$s, count(*) as " + POST_COUNT_COLUMN + " FROM %1$s"
 				+ " WHERE %3$s LIKE ? AND %4$s=?"
 				+ " GROUP BY %3$s ORDER BY %3$s";
 		sqlQuery = String.format(sqlQuery,
@@ -202,6 +208,31 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 		}	
 		return postTag;
 	}
+
+    public Map<String, Long> getStatisticCounts(String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+
+        String sqlQuery = "select" +
+                "(SELECT count(distinct(_id)) from post_tag where tumblr_name=?) " + POST_COUNT_COLUMN + "," +
+                "(SELECT count(*) FROM post_tag where tumblr_name=?) " + RECORD_COUNT_COLUMN + "," +
+                "(SELECT count(distinct(tag)) FROM post_tag where tumblr_name=?) " + UNIQUE_TAGS_COUNT_COLUMN + "," +
+                "(SELECT count(distinct(tag)) FROM post_tag where tumblr_name=? and show_order=1) " + UNIQUE_FIRST_TAG_COUNT_COLUMN + "," +
+                "(SELECT count(*) FROM birthday where tumblr_name=?) " + BIRTHDAYS_COUNT_COLUMN + "," +
+                "(SELECT count(*) FROM VW_MISSING_BIRTHDAYS where tumblr_name=?) " + MISSING_BIRTHDAYS_COUNT_COLUMN;
+
+        Cursor c = db.rawQuery(sqlQuery, new String[] {tumblrName, tumblrName, tumblrName, tumblrName, tumblrName, tumblrName});
+        HashMap<String, Long> map = new HashMap<String, Long>();
+        try {
+            if (c.moveToNext()) {
+                for (int i = 0; i < c.getColumnCount(); i++) {
+                    map.put(c.getColumnName(i), c.getLong(i));
+                }
+            }
+        } finally {
+            c.close();
+        }
+        return map;
+    }
 
     @Override
     public String getTableName() {
