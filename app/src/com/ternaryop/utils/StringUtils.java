@@ -61,7 +61,7 @@ public class StringUtils {
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
 
-            if (Character.isWhitespace(ch)) {
+            if (ch == '_' || ch == '-' || Character.isWhitespace(ch)) {
                 upcase = true;
             } else {
                 if (upcase) {
@@ -78,7 +78,7 @@ public class StringUtils {
     }
 
     /**
-     * String all specified HTML tags contained into string
+     * Strip all specified HTML tags contained into string
      * @param tags tags separated by pipe (eg "a|br|img")
      * @param string
      * @return stripped string
