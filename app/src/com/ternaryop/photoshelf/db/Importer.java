@@ -179,37 +179,24 @@ public class Importer {
 		}
 	}
 
-	public void importBirtdays(final String importPath) {
-		try {
-			if (dropboxManager.hasLinkedAccount()) {
-				DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
-				File exportFile = new File(importPath);
-				final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
-				file.getSyncStatus();
-				new DbImportAsyncTask<Birthday>(context,
-						new CSVIterator<Birthday>(file.getReadStream(), new CSVBuilder<Birthday>() {
+    public void importBirthdays(final String importPath) {
+        try {
+            new DbImportAsyncTask<Birthday>(context,
+                    new CSVIterator<Birthday>(importPath, new CSVBuilder<Birthday>() {
 
-							@Override
-							public Birthday parseCSVFields(String[] fields) throws ParseException {
-								// id is skipped
-								return new Birthday(fields[1], fields[2], fields[3]);
-							}
-						}),
-						DBHelper.getInstance(context).getBirthdayDAO(),
-						true) {
-					@Override
-					protected void onPostExecute(Void result) {
-						super.onPostExecute(result);
-						file.close();
-					}
-				}
-				.execute();
-			}
-		} catch (Exception error) {
-			DialogUtils.showErrorDialog(context, error);
-		}
-	}
-	
+                        @Override
+                        public Birthday parseCSVFields(String[] fields) throws ParseException {
+                            // id is skipped
+                            return new Birthday(fields[1], fields[2], fields[3]);
+                        }
+                    }),
+                    DBHelper.getInstance(context).getBirthdayDAO(),
+                    true).execute();
+        } catch (Exception error) {
+            DialogUtils.showErrorDialog(context, error);
+        }
+    }
+
 	public void exportBirthdaysToCSV(final String exportPath) {
 		try {
 			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {

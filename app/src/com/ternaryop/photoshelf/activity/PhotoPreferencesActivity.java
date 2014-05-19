@@ -178,7 +178,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
                 getImporter().importDOMFilters(Importer.getDOMFiltersPath());
                 return true;
             } else if (preference == preferenceImportBirthdays) {
-                getImporter().importBirtdays(Importer.getBirthdaysPath());
+                getImporter().importBirthdays(Importer.getBirthdaysPath());
                 return true;
             } else if (preference == preferenceExportPostsToCSV) {
                 getImporter().exportPostsToCSV(Importer.getExportPath(Importer.getPostsPath()));
