@@ -41,6 +41,14 @@ public class BirthdayUtils {
 	private static final int BIRTHDAY_NOTIFICATION_ID = 1;
     public static final String DESKTOP_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0";
 
+    private final static BirthdaySearcher[] BIRTHDAY_SEARCHERS = new BirthdaySearcher[3];
+
+    static {
+        BIRTHDAY_SEARCHERS[0] = new GoogleBirthdaySearcher();
+        BIRTHDAY_SEARCHERS[1] = new WikipediaBirthdaySearch();
+        BIRTHDAY_SEARCHERS[2] = new FamousBirthdaySearch();
+    }
+
     public static boolean notifyBirthday(Context context) {
 		BirthdayDAO birthdayDatabaseHelper = DBHelper
 				.getInstance(context.getApplicationContext())
@@ -196,61 +204,92 @@ public class BirthdayUtils {
                 + " - " + now.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(now.getTime()) + " " + now.get(Calendar.YEAR);
     }
 
-    public static Birthday searchGoogleForBirthday(String name, String blogName) throws IOException, ParseException {
-        String cleanName = name
-                .replaceAll(" ", "+")
-                .replaceAll("\"", "");
-        String url = "https://www.google.com/search?hl=en&q=" + cleanName;
-        String text = Jsoup.connect(url)
-                .userAgent(DESKTOP_USER_AGENT)
-                .get()
-                .text();
-        // match only dates in expected format (ie. "Born: month_name day, year")
-        Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+ \\d{1,2}, \\d{4})");
-        Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            String textDate = matcher.group(1);
+    public static class GoogleBirthdaySearcher implements BirthdaySearcher {
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
-            Date date = dateFormat.parse(textDate);
-            return new Birthday(name, date, blogName);
+        @Override
+        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
+            String cleanName = name
+                    .replaceAll(" ", "+")
+                    .replaceAll("\"", "");
+            String url = "https://www.google.com/search?hl=en&q=" + cleanName;
+            String text = Jsoup.connect(url)
+                    .userAgent(DESKTOP_USER_AGENT)
+                    .get()
+                    .text();
+            // match only dates in expected format (ie. "Born: month_name day, year")
+            Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+ \\d{1,2}, \\d{4})");
+            Matcher matcher = pattern.matcher(text);
+            if (matcher.find()) {
+                String textDate = matcher.group(1);
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
+                Date date = dateFormat.parse(textDate);
+                return new Birthday(name, date, blogName);
+            }
+            return null;
         }
-        return null;
     }
 
-    public static Birthday searchWikipediaForBirthday(String name, String blogName) throws IOException, ParseException {
-        String cleanName = StringUtils
-                .capitalize(name)
-                .replaceAll(" ", "_")
-                .replaceAll("\"", "");
-        String url = "http://en.wikipedia.org/wiki/" + cleanName;
-        Document document = Jsoup.connect(url)
-                .userAgent(DESKTOP_USER_AGENT)
-                .get();
-        // protect against redirect
-        if (document.title().toLowerCase(Locale.US).contains(name)) {
-            Elements el = document.select(".bday");
+    public static class WikipediaBirthdaySearch implements BirthdaySearcher {
+
+        @Override
+        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
+            String cleanName = StringUtils
+                    .capitalize(name)
+                    .replaceAll(" ", "_")
+                    .replaceAll("\"", "");
+            String url = "http://en.wikipedia.org/wiki/" + cleanName;
+            Document document = Jsoup.connect(url)
+                    .userAgent(DESKTOP_USER_AGENT)
+                    .get();
+            // protect against redirect
+            if (document.title().toLowerCase(Locale.US).contains(name)) {
+                Elements el = document.select(".bday");
+                if (el.size() > 0) {
+                    String birthDate = el.get(0).text();
+                    return new Birthday(name, birthDate, blogName);
+                }
+            }
+            return null;
+        }
+    }
+
+    public static class FamousBirthdaySearch implements BirthdaySearcher {
+
+        @Override
+        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
+            String cleanName = name.toLowerCase()
+                    .replaceAll("_", "-")
+                    .replaceAll(" ", "-")
+                    .replaceAll("\"", "");
+            String url = "http://www.famousbirthdays.com/people/" + cleanName + ".html";
+            Document document = Jsoup.connect(url)
+                    .userAgent(DESKTOP_USER_AGENT)
+                    .get();
+            Elements el = document.select("time");
             if (el.size() > 0) {
-                String birthDate = el.get(0).text();
+                String birthDate = el.get(0).attr("datetime");
                 return new Birthday(name, birthDate, blogName);
             }
+            return null;
         }
-        return null;
     }
 
     public static Birthday searchBirthday(String name, String blogName) {
-        Birthday birthday = null;
-
-        try {
-            birthday = BirthdayUtils.searchGoogleForBirthday(name, blogName);
-        } catch (Exception ex) {
-        }
-        if (birthday == null) {
+        for (BirthdaySearcher bs : BIRTHDAY_SEARCHERS) {
             try {
-                birthday = BirthdayUtils.searchWikipediaForBirthday(name, blogName);
+                Birthday birthday = bs.searchBirthday(name, blogName);
+                if (birthday != null) {
+                    return birthday;
+                }
             } catch (Exception ex) {
             }
         }
-        return birthday;
+
+        return null;
+    }
+
+    public interface BirthdaySearcher {
+        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException;
     }
 }
