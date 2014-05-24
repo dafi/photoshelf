@@ -4,6 +4,9 @@ import java.text.DecimalFormat;
 import java.util.Map;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,23 +29,47 @@ public class HomeFragment extends AbsPhotoShelfFragment {
         viewIdColumnMap.put(R.id.missing_birthdays_count, PostTagDAO.MISSING_BIRTHDAYS_COUNT_COLUMN);
     }
 
+    private static final int STATS_DATA_OK = 1;
+
+    private Handler handler;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
-        refresh(rootView);
+        refresh();
+
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == STATS_DATA_OK) {
+                    fillStatsUI((Map<String, Long>) msg.obj);
+                }
+            }
+        };
 
         return rootView;
     }
 
-    private void refresh(View rootView) {
-        Map<String, Long> statsMap = DBHelper.getInstance(getActivity()).getPostTagDAO().getStatisticCounts(getBlogName());
+    private void fillStatsUI(Map<String, Long> statsMap) {
         DecimalFormat format = new DecimalFormat("###,###");
         for (int i = 0; i < viewIdColumnMap.size(); i++) {
-            TextView textView = (TextView) rootView.findViewById(viewIdColumnMap.keyAt(i));
+            TextView textView = (TextView) getView().findViewById(viewIdColumnMap.keyAt(i));
             Long count = statsMap.get(viewIdColumnMap.valueAt(i));
             textView.setText(format.format(count));
         }
+        // Show only after textviews are filled to avoid ugly resize view effect
+        getView().findViewById(R.id.home_container).setVisibility(View.VISIBLE);
+    }
+
+    private void refresh() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Map<String, Long> statsMap = DBHelper.getInstance(getActivity()).getPostTagDAO().getStatisticCounts(getBlogName());
+                handler.obtainMessage(STATS_DATA_OK, statsMap).sendToTarget();
+            }
+        }).start();
     }
 }
