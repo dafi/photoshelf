@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.R;
@@ -54,13 +55,13 @@ public class HomeFragment extends AbsPhotoShelfFragment {
 
     private void fillStatsUI(Map<String, Long> statsMap) {
         DecimalFormat format = new DecimalFormat("###,###");
+        getView().findViewById(R.id.home_container).setVisibility(View.VISIBLE);
         for (int i = 0; i < viewIdColumnMap.size(); i++) {
             TextView textView = (TextView) getView().findViewById(viewIdColumnMap.keyAt(i));
             Long count = statsMap.get(viewIdColumnMap.valueAt(i));
             textView.setText(format.format(count));
+            textView.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade));
         }
-        // Show only after textviews are filled to avoid ugly resize view effect
-        getView().findViewById(R.id.home_container).setVisibility(View.VISIBLE);
     }
 
     private void refresh() {
