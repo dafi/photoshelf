@@ -16,6 +16,7 @@
         android:paddingTop="4dp"
         android:paddingLeft="4dp"
         android:stretchMode="none"
-        android:verticalSpacing="4dp" />
+        android:verticalSpacing="4dp"
+        tools:listitem="@layout/gridview_photo_item"/>
 
 </LinearLayout>

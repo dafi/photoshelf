@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.db;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -40,6 +41,12 @@ public class Birthday implements BaseColumns, Serializable {
 	public Date getBirthDate() {
 		return birthDate;
 	}
+
+    public Calendar getBirthDateCalendar() {
+        Calendar c = Calendar.getInstance();
+        c.setTime(birthDate);
+        return c;
+    }
 
 	public void setBirthDate(Date birthDate) {
 		this.birthDate = birthDate;

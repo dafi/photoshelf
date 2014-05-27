@@ -21,6 +21,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Pair;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity;
@@ -109,13 +110,13 @@ public class BirthdayUtils {
 		return resultPendingIntent;
 	}
 	
-	public static List<TumblrPhotoPost> getPhotoPosts(final Context context, Calendar birthDate) {
+	public static ArrayList<Pair<Birthday, TumblrPhotoPost>> getPhotoPosts(final Context context, Calendar birthDate) {
         DBHelper dbHelper = DBHelper
                 .getInstance(context.getApplicationContext());
         List<Birthday> birthDays = dbHelper
                 .getBirthdayDAO()
                 .getBirthdayByDate(birthDate.getTime());
-	    ArrayList<TumblrPhotoPost> posts = new ArrayList<TumblrPhotoPost>();
+	    ArrayList<Pair<Birthday, TumblrPhotoPost>> posts = new ArrayList<Pair<Birthday, TumblrPhotoPost>>();
 
 	    PostTagDAO postTagDAO = dbHelper.getPostTagDAO();
 	    Map<String, String> params = new HashMap<String, String>(2);
@@ -126,7 +127,7 @@ public class BirthdayUtils {
 	            params.put("id", String.valueOf(postTag.getId()));
 	            TumblrPhotoPost post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
 	                    .getPublicPosts(b.getTumblrName(), params).get(0);
-                posts.add(post);
+                posts.add(Pair.create(b, post));
 	        }
         }
 	    return posts;

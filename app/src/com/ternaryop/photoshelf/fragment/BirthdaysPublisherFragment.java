@@ -18,6 +18,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Pair;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -68,15 +69,16 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     private void refresh() {
-        new AbsProgressBarAsyncTask<Void, Void, List<TumblrPhotoPost>>(getActivity(), getString(R.string.shaking_images_title)) {
+        new AbsProgressBarAsyncTask<Void, Void, List<Pair<Birthday, TumblrPhotoPost>>>(getActivity(), getString(R.string.shaking_images_title)) {
 
             @Override
-            protected List<TumblrPhotoPost> doInBackground(Void... voidParams) {
+            protected List<Pair<Birthday, TumblrPhotoPost>> doInBackground(Void... voidParams) {
                 Calendar now = Calendar.getInstance(Locale.US);
                 return BirthdayUtils.getPhotoPosts(getActivity(), now);
             }
 
-            protected void onPostExecute(List<TumblrPhotoPost> posts) {
+            @Override
+            protected void onPostExecute(List<Pair<Birthday, TumblrPhotoPost>> posts) {
                 super.onPostExecute(null);
                 if (getError() == null) {
                     gridViewPhotoAdapter.clear();
@@ -209,7 +211,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
     
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        TumblrPhotoPost post = gridViewPhotoAdapter.getItem(position);
+        TumblrPhotoPost post = gridViewPhotoAdapter.getItem(position).second;
         TagPhotoBrowserActivity.startPhotoBrowserActivityForResult(this, getBlogName(),
                 post.getTags().get(0),
                 PICK_IMAGE_REQUEST_CODE,
@@ -255,7 +257,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         for (int i = 0; i < checkedItemPositions.size(); i++) {
             int key = checkedItemPositions.keyAt(i);
             if (checkedItemPositions.get(key)) {
-                list.add(gridViewPhotoAdapter.getItem(key));
+                list.add(gridViewPhotoAdapter.getItem(key).second);
             }
         }
         return list;

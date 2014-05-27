@@ -1,10 +1,8 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Bundle;
-import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -139,17 +137,17 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
         }
     }
 
-    private List<TumblrPhotoPost> getCheckedPosts() {
-        SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
-        ArrayList<TumblrPhotoPost> list = new ArrayList<TumblrPhotoPost>();
-        for (int i = 0; i < checkedItemPositions.size(); i++) {
-            int key = checkedItemPositions.keyAt(i);
-            if (checkedItemPositions.get(key)) {
-                list.add(gridViewPhotoAdapter.getItem(key));
-            }
-        }
-        return list;
-    }
+//    private List<TumblrPhotoPost> getCheckedPosts() {
+//        SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
+//        ArrayList<TumblrPhotoPost> list = new ArrayList<TumblrPhotoPost>();
+//        for (int i = 0; i < checkedItemPositions.size(); i++) {
+//            int key = checkedItemPositions.keyAt(i);
+//            if (checkedItemPositions.get(key)) {
+//                list.add(gridViewPhotoAdapter.getItem(key).second);
+//            }
+//        }
+//        return list;
+//    }
     
     public void onDestroyActionMode(ActionMode mode) {
     }
