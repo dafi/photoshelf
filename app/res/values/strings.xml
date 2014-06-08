@@ -28,7 +28,8 @@
     <string name="menu_show_image">Show Image</string>
     <string name="menu_header_show_image">Image for %1s</string>
     <string name="test_page_title">Test Page</string>
-    <string name="birthdays_title">Birthdays</string>
+    <string name="birthdays_by_date_title">Birthdays by Date</string>
+    <string name="birthdays_by_name_title">Birthdays by Name</string>
     <string name="image_picker_activity_title">Pick Images</string>
     <string name="image_viewer_activity_title">Image Viewer</string>
     <string name="login_title">%1$s Login</string>

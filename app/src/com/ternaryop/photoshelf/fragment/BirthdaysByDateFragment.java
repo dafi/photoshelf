@@ -18,14 +18,15 @@ import android.widget.TextView;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.DBHelper;
+import com.ternaryop.utils.DateTimeUtils;
 
-public class BirthdaysFragment extends AbsPhotoShelfFragment implements ActionBar.OnNavigationListener {
+public class BirthdaysByDateFragment extends AbsPhotoShelfFragment implements ActionBar.OnNavigationListener {
     private TextView textView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_birthdays_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_birthdays_by_date, container, false);
 
         textView = (TextView)rootView.findViewById(R.id.text);
         // allow textView to scroll
@@ -60,12 +61,14 @@ public class BirthdaysFragment extends AbsPhotoShelfFragment implements ActionBa
 
         for (Birthday birthday : list) {
             date.setTime(birthday.getBirthDate());
+            String age = String.valueOf(DateTimeUtils.yearsBetweenDates(date, now));
+            String str = getString(R.string.name_with_age, birthday.toString(), age);
         
             if (date.get(Calendar.DAY_OF_MONTH) == dayOfMonth
                     && date.get(Calendar.MONTH) == month) {
-                sb.append("<b>" + birthday + "</b>");
+                sb.append("<b>" + str + "</b>");
             } else {
-                sb.append(birthday);
+                sb.append(str);
             }
             sb.append("<br/>");
         }
