@@ -221,4 +221,15 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         }
         return list;
     }
+
+    public Cursor getBirthdayCursorByName(String name, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        return db.query(TABLE_NAME,
+                new String[] {_ID, NAME, BIRTH_DATE, TUMBLR_NAME},
+                String.format("%3$s is not null and %1$s like ? and %2$s = ?", NAME, TUMBLR_NAME, BIRTH_DATE),
+                new String[] {"%" + name + "%", tumblrName},
+                null,
+                null,
+                NAME);
+    }
 }
