@@ -139,13 +139,14 @@
     <string name="week_selection_under_age">A selection of the most beautiful women under %1$d published last week</string>
     <string name="week_selection_over_age">A selection of the most beautiful women over %1$d published last week</string>
     <string name="name_with_age">%1$s (age %2$s)</string>
+    <string name="name_with_date_age">%1$s: %2$s (%3$s)</string>
     <string name="best_of">Best Of</string>
     <string name="copy_url_title">Copy URL</string>
     <string name="download_title">Download</string>
     <string name="image_saved_at_path">Image saved at %1$s</string>
     <string name="url_copied_to_clipboard_title">URL copied to clipboard</string>
     <string name="image_url_description">Image url</string>
-    <string name="new_birthday_ticker">New birthday added</string>
+    <string name="new_birthday_ticker">Add birthday for %1$s</string>
     <string name="birthday_add_error_ticker">Birthday add error</string>
     <string name="home">Home</string>
     <string name="total_posts">Total posts</string>

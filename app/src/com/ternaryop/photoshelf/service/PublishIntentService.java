@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import android.app.IntentService;
@@ -23,6 +24,7 @@ import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.utils.DateTimeUtils;
 
 /**
  * Created by dave on 01/03/14.
@@ -107,9 +109,14 @@ public class PublishIntentService extends IntentService {
                         birthdayDAO.insert(birthday);
                         db.setTransactionSuccessful();
                         String date = DateFormat.getDateInstance().format(birthday.getBirthDate());
+                        String strAage = String.valueOf(DateTimeUtils.yearsBetweenDates(birthday.getBirthDateCalendar(), Calendar.getInstance()));
 
-                        Notification notification = createNotification(name + ": " + date, R.string.new_birthday_ticker,
+                        Notification notification = createNotification(
+                                getString(R.string.name_with_date_age, name, date, strAage),
+                                getString(R.string.new_birthday_ticker, name),
                                 R.drawable.stat_notify_bday);
+                        // if notification is already visible the user doesn't receive any visual feedback so we clear it
+                        notificationManager.cancel(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID);
                         notificationManager.notify(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID, notification);
                     }
                 } catch (Exception e) {
@@ -134,10 +141,10 @@ public class PublishIntentService extends IntentService {
         notificationManager.notify(NOTIFICATION_PUBLISH_ERROR_TAG, NOTIFICATION_ID + url.hashCode(), notification);
     }
 
-    private Notification createNotification(String contentText, int stringTickerId, int iconId) {
+    private Notification createNotification(String contentText, String stringTicker, int iconId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 this)
-                .setTicker(getString(stringTickerId))
+                .setTicker(stringTicker)
                 .setSmallIcon(iconId);
 
         builder.setContentText(contentText);
@@ -146,6 +153,10 @@ public class PublishIntentService extends IntentService {
 
         Notification notification = builder.build();
         return notification;
+    }
+
+    private Notification createNotification(String contentText, int stringTickerId, int iconId) {
+        return createNotification(contentText, getString(stringTickerId), iconId);
     }
 
     private static void startActionIntent(Context context,
