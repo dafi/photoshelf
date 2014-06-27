@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -16,6 +17,8 @@ import com.ternaryop.photoshelf.activity.ImageViewerActivity;
 
 public class ImagePickerWebViewClient extends WebViewClient {
 	private final ProgressBar progressBar;
+    private static String[] ALLOWED_EXTENSIONS = new String[] {"png", "jpg", "css"};
+    private boolean isMainUrl = true;
 
 	public ImagePickerWebViewClient(ProgressBar progressBar) {
 		this.progressBar = progressBar;
@@ -60,14 +63,39 @@ public class ImagePickerWebViewClient extends WebViewClient {
 		    ((Activity)view.getContext()).getActionBar().setSubtitle(view.getTitle());
 		}
 	}
-	
+
+    /**
+     * Implements a rudimental way to removed javascript and other resources.
+     * The javascript resources can't be simply disabled at webView level because of kitkat bug
+     * @param view
+     * @param url
+     * @return
+     */
 	@Override
 	public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-	    // rudimental way to removed javascript and other resources
-	    // javascript can't be simply disabled because of kitkat bug
-	    if (url.indexOf(".gif") >= 0 || url.indexOf(".js") >= 0) {
-	        return new WebResourceResponse("text/html", "UTF-8", new ByteArrayInputStream(new byte[0]));
+        // The first intercepted url is the url to load so skip any check on it
+        if (isMainUrl) {
+            isMainUrl = false;
+            return null;
+        }
+        if (isUrlAllowed(url)) {
+            return null;
 	    }
-	    return null; 
+        return new WebResourceResponse("text/html", "UTF-8", new ByteArrayInputStream(new byte[0]));
 	}
+
+    private boolean isUrlAllowed(String url) {
+        String path = Uri.parse(url).getLastPathSegment();
+
+        if (path.length() == 0) {
+            return false;
+        }
+        String urlExt = path.substring(path.lastIndexOf(".") + 1);
+        for (String s : ALLOWED_EXTENSIONS) {
+            if (s.equalsIgnoreCase(urlExt)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
