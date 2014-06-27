@@ -11,6 +11,7 @@ import android.provider.BaseColumns;
 
 public class Birthday implements BaseColumns, Serializable {
 	private static final long serialVersionUID = 5887665998065237345L;
+    private long id;
 	private String name;
 	private Date birthDate;
 	private String tumblrName;
@@ -64,4 +65,12 @@ public class Birthday implements BaseColumns, Serializable {
 	public String toString() {
 		return (birthDate == null ? "" : ISO_DATE_FORMAT.format(birthDate) + " ") + name;
 	}
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 }

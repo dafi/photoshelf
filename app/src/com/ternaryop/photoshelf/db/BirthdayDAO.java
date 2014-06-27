@@ -232,4 +232,22 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
                 null,
                 NAME);
     }
+
+    public static Birthday getBirthday(Cursor c) {
+        try {
+            Birthday birthday = new Birthday(
+                    c.getString(c.getColumnIndex(NAME)),
+                    c.getString(c.getColumnIndex(BIRTH_DATE)),
+                    c.getString(c.getColumnIndex(TUMBLR_NAME)));
+            birthday.setId(c.getLong(c.getColumnIndex(_ID)));
+            return birthday;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    public void remove(long id) {
+        SQLiteDatabase db = getDbHelper().getWritableDatabase();
+        db.delete(getTableName(), _ID + "=?", new String[]{String.valueOf(id)});
+    }
 }

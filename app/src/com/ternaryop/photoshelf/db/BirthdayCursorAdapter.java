@@ -34,7 +34,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
 
     public BirthdayCursorAdapter(Context context, String blogName) {
         super(context,
-                android.R.layout.simple_list_item_2,
+                android.R.layout.simple_list_item_activated_2,
                 null,
                 new String[] { BirthdayDAO.NAME, BirthdayDAO.BIRTH_DATE },
                 new int[] { android.R.id.text1, android.R.id.text2 },
@@ -98,5 +98,14 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         String tag = getCursor().getString(getCursor().getColumnIndex(BirthdayDAO.NAME));
         TagPhotoBrowserActivity.startPhotoBrowserActivity(activity, getBlogName(), tag, false);
 
+    }
+
+    public Birthday getBirthdayItem(int index) {
+        return BirthdayDAO.getBirthday((Cursor)getItem(index));
+    }
+
+    public void refresh() {
+        getFilter().filter(pattern);
+        notifyDataSetChanged();
     }
 }
