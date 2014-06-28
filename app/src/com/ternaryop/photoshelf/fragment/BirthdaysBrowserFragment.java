@@ -1,8 +1,11 @@
 package com.ternaryop.photoshelf.fragment;
 
+import java.text.DateFormatSymbols;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -16,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.ListView;
 import android.widget.SearchView;
 
@@ -24,13 +29,14 @@ import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayCursorAdapter;
 import com.ternaryop.photoshelf.db.DBHelper;
 
-public class BirthdaysByNameFragment extends AbsPhotoShelfFragment implements AdapterView.OnItemClickListener, AbsListView.MultiChoiceModeListener {
+public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements AdapterView.OnItemClickListener, AbsListView.MultiChoiceModeListener, ActionBar.OnNavigationListener {
     protected enum ITEM_ACTION {
         DELETE
     };
     private ListView listView;
     private BirthdayCursorAdapter birthdayAdapter;
     private int[] singleSelectionMenuIds;
+    private boolean alreadyScrolledToFirstBirthday;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -40,14 +46,14 @@ public class BirthdaysByNameFragment extends AbsPhotoShelfFragment implements Ad
         birthdayAdapter = new BirthdayCursorAdapter(
                 getActivity(),
                 fragmentActivityStatus.getAppSupport().getSelectedBlogName());
+        // listView is filled from onNavigationItemSelected
         listView = (ListView) rootView.findViewById(R.id.list);
         listView.setAdapter(birthdayAdapter);
         listView.setTextFilterEnabled(true);
         listView.setOnItemClickListener(this);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         listView.setMultiChoiceModeListener(this);
-        // start with list filled
-        birthdayAdapter.getFilter().filter("");
+
         ((SearchView) rootView.findViewById(R.id.searchView1)).setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
@@ -63,6 +69,8 @@ public class BirthdaysByNameFragment extends AbsPhotoShelfFragment implements Ad
         });
         rootView.findViewById(R.id.searchView1).requestFocus();
 
+        setupActionBar();
+        setHasOptionsMenu(true);
 
         return rootView;
     }
@@ -181,7 +189,59 @@ public class BirthdaysByNameFragment extends AbsPhotoShelfFragment implements Ad
         for (Birthday b : list) {
             DBHelper.getInstance(getActivity()).getBirthdayDAO().remove(b.getId());
         }
-        birthdayAdapter.refresh();
+        birthdayAdapter.refresh(null);
         mode.finish();
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        ActionBar actionBar = getActivity().getActionBar();
+
+        if (fragmentActivityStatus.isDrawerOpen()) {
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            actionBar.setDisplayShowTitleEnabled(true);
+        } else {
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+        super.onPrepareOptionsMenu(menu);
+    }
+
+    private void setupActionBar() {
+        ActionBar actionBar = getActivity().getActionBar();
+        String months[] = new String[13];
+        months[0] = getString(R.string.all);
+        System.arraycopy(new DateFormatSymbols().getMonths(), 0, months, 1, 12);
+        ArrayAdapter<String> monthAdapter = new ArrayAdapter<String>(
+                actionBar.getThemedContext(),
+                android.R.layout.simple_spinner_item,
+                months);
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setListNavigationCallbacks(monthAdapter, this);
+        actionBar.setSelectedNavigationItem(Calendar.getInstance().get(Calendar.MONTH) + 1);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(final int itemPosition, long itemId) {
+        birthdayAdapter.setMonth(itemPosition);
+        birthdayAdapter.refresh(new Filter.FilterListener() {
+            public void onFilterComplete(int count) {
+                // when month changes scroll to first item unless must be scroll to first birthday item
+                if (!alreadyScrolledToFirstBirthday) {
+                    alreadyScrolledToFirstBirthday = true;
+                    int pos = birthdayAdapter.findDayPosition(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+                    if (pos >= 0) {
+                        listView.setSelection(pos);
+                    }
+                } else {
+                    listView.setSelection(0);
+                }
+            }
+        });
+
+        return true;
     }
 }

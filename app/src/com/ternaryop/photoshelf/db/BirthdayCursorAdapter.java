@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
+import android.widget.Filter;
 import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
@@ -30,11 +31,12 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     private DBHelper dbHelper;
     private String pattern = "";
     private Context context;
+    private int month;
     private SimpleDateFormat dateFormat;
 
     public BirthdayCursorAdapter(Context context, String blogName) {
         super(context,
-                android.R.layout.simple_list_item_activated_2,
+                R.layout.list_row_2,
                 null,
                 new String[] { BirthdayDAO.NAME, BirthdayDAO.BIRTH_DATE },
                 new int[] { android.R.id.text1, android.R.id.text2 },
@@ -51,12 +53,31 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     @Override
     public Cursor runQuery(CharSequence constraint) {
         this.pattern = constraint == null ? "" : constraint.toString().trim();
-        return dbHelper.getBirthdayDAO().getBirthdayCursorByName(pattern, blogName);
+        return dbHelper.getBirthdayDAO().getBirthdayCursorByName(pattern, month, blogName);
     }
 
     public String convertToString(final Cursor cursor) {
         final int columnIndex = cursor.getColumnIndexOrThrow(BirthdayDAO.NAME);
         return cursor.getString(columnIndex);
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+        super.bindView(view, context, cursor);
+        Calendar now = Calendar.getInstance();
+        int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);
+        int month = now.get(Calendar.MONTH);
+        Calendar date = Calendar.getInstance();
+
+        try {
+            date.setTime(Birthday.ISO_DATE_FORMAT.parse(cursor.getString(cursor.getColumnIndex(BirthdayDAO.BIRTH_DATE))));
+            if (date.get(Calendar.DAY_OF_MONTH) == dayOfMonth && date.get(Calendar.MONTH) == month) {
+                view.setBackgroundResource(R.drawable.list_selector_post_never);
+            } else {
+                view.setBackgroundResource(R.drawable.list_selector_post_group_even);
+            }
+        } catch (ParseException e) {
+        }
     }
 
     @Override
@@ -104,8 +125,32 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         return BirthdayDAO.getBirthday((Cursor)getItem(index));
     }
 
-    public void refresh() {
-        getFilter().filter(pattern);
+    public void refresh(Filter.FilterListener filterListener) {
+        getFilter().filter(pattern, filterListener);
         notifyDataSetChanged();
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public int findDayPosition(int day) {
+        if (day < 0 || day > 31) {
+            return -1;
+        }
+        for (int i = 0; i < getCount(); i++) {
+            Cursor cursor = (Cursor) getItem(i);
+            String isoDate = cursor.getString(cursor.getColumnIndex(BirthdayDAO.BIRTH_DATE));
+            int bday = Integer.parseInt(isoDate.substring(isoDate.length() - 2));
+
+            if (bday == day) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
