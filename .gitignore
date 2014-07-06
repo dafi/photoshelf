@@ -16,10 +16,9 @@ gen/
 local.properties
 
 # IntelliJ IDEA
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/datasources.xml
-.idea/dataSources.ids
+# Exclude whole .idea directory
+# Read more at https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
+.idea/
 *.iml
 *.ipr
 *.iws
