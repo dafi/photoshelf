@@ -166,7 +166,8 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
             }
             int bday = Integer.parseInt(isoDate.substring(isoDate.length() - 2));
 
-            if (bday == day) {
+            // move to bday or closest one
+            if (bday >= day) {
                 return i;
             }
         }
