@@ -31,6 +31,7 @@ import com.ternaryop.photoshelf.db.DBHelper;
 
 public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements AdapterView.OnItemClickListener, AbsListView.MultiChoiceModeListener, ActionBar.OnNavigationListener {
     protected enum ITEM_ACTION {
+        MARK_AS_IGNORED,
         DELETE
     };
     private ListView listView;
@@ -119,6 +120,9 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
             case R.id.item_delete:
                 showConfirmDialog(ITEM_ACTION.DELETE, mode);
                 return true;
+            case R.id.item_mark_as_ignored:
+                showConfirmDialog(ITEM_ACTION.MARK_AS_IGNORED, mode);
+                return true;
             default:
                 return false;
         }
@@ -162,6 +166,8 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                             case DELETE:
                                 deletePost(birthdays, mode);
                                 break;
+                            case MARK_AS_IGNORED:
+                                markAsIgnored(birthdays, mode);
                         }
                         break;
                 }
@@ -176,6 +182,12 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                         birthdays.size(),
                         birthdays.get(0).getName());
                 break;
+            case MARK_AS_IGNORED:
+                message = getResources().getQuantityString(R.plurals.update_items_confirm,
+                        birthdays.size(),
+                        birthdays.size(),
+                        birthdays.get(0).getName());
+                break;
         }
 
         new AlertDialog.Builder(getActivity())
@@ -185,12 +197,40 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                 .show();
     }
 
+    private void markAsIgnored(List<Birthday> birthdays, ActionMode mode) {
+        for (Birthday b : birthdays) {
+            DBHelper.getInstance(getActivity()).getBirthdayDAO().markAsIgnored(b.getId());
+        }
+        birthdayAdapter.refresh(null);
+        mode.finish();
+    }
+
     private void deletePost(List<Birthday> list, final ActionMode mode) {
         for (Birthday b : list) {
             DBHelper.getInstance(getActivity()).getBirthdayDAO().remove(b.getId());
         }
         birthdayAdapter.refresh(null);
         mode.finish();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.birthdays_browser, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_show_ignored:
+                boolean isChecked = !item.isChecked();
+                item.setChecked(isChecked);
+                birthdayAdapter.setShowIgnored(isChecked);
+                birthdayAdapter.refresh(null);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

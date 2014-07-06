@@ -6,4 +6,8 @@
         android:title="@string/delete_post">
     </item>
 
+    <item
+        android:id="@+id/item_mark_as_ignored"
+        android:title="@string/mark_as_ignored">
+    </item>
 </menu>

@@ -122,6 +122,10 @@
         <item quantity="one">Delete \'%2$s\', are you sure?</item>
         <item quantity="other">Delete %1$d items, are you sure?</item>
     </plurals>
+    <plurals name="update_items_confirm">
+        <item quantity="one">Update \'%2$s\', are you sure?</item>
+        <item quantity="other">Update %1$d items, are you sure?</item>
+    </plurals>
 
     <string name="saving_posts_to_draft_title">Saving posts to draft&#8230;</string>
     <string name="deleting_posts_title">Deleting posts&#8230;</string>
@@ -160,5 +164,6 @@
     <string name="missing_birthdays_count">Missing birthdays count</string>
     <string name="select_items">Select items</string>
     <string name="all">All</string>
+    <string name="mark_as_ignored">Mark as ignored</string>
 
 </resources>

@@ -243,6 +243,17 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         }
     }
 
+    public Cursor getIgnoredBirthdayCursor(String name, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        return db.query(TABLE_NAME,
+                COLUMNS,
+                String.format("%3$s is null and %1$s like ? and %2$s = ?", NAME, TUMBLR_NAME, BIRTH_DATE),
+                new String[]{"%" + name + "%", tumblrName},
+                null,
+                null,
+                NAME);
+    }
+
     public static Birthday getBirthday(Cursor c) {
         try {
             Birthday birthday = new Birthday(
@@ -259,5 +270,12 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
     public void remove(long id) {
         SQLiteDatabase db = getDbHelper().getWritableDatabase();
         db.delete(getTableName(), _ID + "=?", new String[]{String.valueOf(id)});
+    }
+
+    public boolean markAsIgnored(long id) {
+        ContentValues v = new ContentValues();
+
+        v.put(BIRTH_DATE, (String)null);
+        return getDbHelper().getWritableDatabase().update(TABLE_NAME, v, _ID + "=?", new String[] {String.valueOf(id)}) == 1;
     }
 }

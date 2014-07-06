@@ -33,6 +33,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     private Context context;
     private int month;
     private SimpleDateFormat dateFormat;
+    private boolean showIgnored;
 
     public BirthdayCursorAdapter(Context context, String blogName) {
         super(context,
@@ -53,6 +54,9 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     @Override
     public Cursor runQuery(CharSequence constraint) {
         this.pattern = constraint == null ? "" : constraint.toString().trim();
+        if (showIgnored) {
+            return dbHelper.getBirthdayDAO().getIgnoredBirthdayCursor(pattern, blogName);
+        }
         return dbHelper.getBirthdayDAO().getBirthdayCursorByName(pattern, month, blogName);
     }
 
@@ -70,11 +74,16 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         Calendar date = Calendar.getInstance();
 
         try {
-            date.setTime(Birthday.ISO_DATE_FORMAT.parse(cursor.getString(cursor.getColumnIndex(BirthdayDAO.BIRTH_DATE))));
-            if (date.get(Calendar.DAY_OF_MONTH) == dayOfMonth && date.get(Calendar.MONTH) == month) {
-                view.setBackgroundResource(R.drawable.list_selector_post_never);
-            } else {
+            String isoDate = cursor.getString(cursor.getColumnIndex(BirthdayDAO.BIRTH_DATE));
+            if (isoDate == null) {
                 view.setBackgroundResource(R.drawable.list_selector_post_group_even);
+            } else {
+                date.setTime(Birthday.ISO_DATE_FORMAT.parse(isoDate));
+                if (date.get(Calendar.DAY_OF_MONTH) == dayOfMonth && date.get(Calendar.MONTH) == month) {
+                    view.setBackgroundResource(R.drawable.list_selector_post_never);
+                } else {
+                    view.setBackgroundResource(R.drawable.list_selector_post_group_even);
+                }
             }
         } catch (ParseException e) {
         }
@@ -93,13 +102,19 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
             }
         } else if (columnIndex == cursor.getColumnIndexOrThrow(BirthdayDAO.BIRTH_DATE)) {
             try {
-                Calendar c = Calendar.getInstance();
-                c.setTime(Birthday.ISO_DATE_FORMAT.parse(cursor.getString(columnIndex)));
+                String isoDate = cursor.getString(columnIndex);
+                if (isoDate == null) {
+                    ((TextView) view).setVisibility(View.GONE);
+                } else {
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(Birthday.ISO_DATE_FORMAT.parse(isoDate));
 
-                String age = String.valueOf(DateTimeUtils.yearsBetweenDates(c, Calendar.getInstance()));
-                String dateStr = dateFormat.format(c.getTime());
+                    String age = String.valueOf(DateTimeUtils.yearsBetweenDates(c, Calendar.getInstance()));
+                    String dateStr = dateFormat.format(c.getTime());
 
-                ((TextView) view).setText(context.getString(R.string.name_with_age, dateStr, age));
+                    ((TextView) view).setVisibility(View.VISIBLE);
+                    ((TextView) view).setText(context.getString(R.string.name_with_age, dateStr, age));
+                }
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -145,6 +160,10 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         for (int i = 0; i < getCount(); i++) {
             Cursor cursor = (Cursor) getItem(i);
             String isoDate = cursor.getString(cursor.getColumnIndex(BirthdayDAO.BIRTH_DATE));
+
+            if (isoDate == null) {
+                continue;
+            }
             int bday = Integer.parseInt(isoDate.substring(isoDate.length() - 2));
 
             if (bday == day) {
@@ -153,4 +172,13 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         }
         return -1;
     }
+
+    public boolean isShowIgnored() {
+        return showIgnored;
+    }
+
+    public void setShowIgnored(boolean showIgnored) {
+        this.showIgnored = showIgnored;
+    }
+
 }
