@@ -1,7 +1,10 @@
 package com.ternaryop.utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -61,5 +64,17 @@ public class ImageUtils {
 
         // recreate the new Bitmap
         return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+    }
+
+    public static void saveImageAsPNG(Bitmap image, File fullPath) throws IOException {
+        OutputStream fout = null;
+
+        try {
+            fout = new FileOutputStream(fullPath);
+            image.compress(Bitmap.CompressFormat.PNG, 100, fout);
+            fout.flush();
+        } finally {
+            if (fout != null) try { fout.close(); } catch (Exception ex) {}
+        }
     }
 }
