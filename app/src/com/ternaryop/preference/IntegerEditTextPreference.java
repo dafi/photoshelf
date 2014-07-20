@@ -4,6 +4,8 @@ import android.content.Context;
 import android.preference.EditTextPreference;
 import android.text.InputType;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.EditText;
 
 public class IntegerEditTextPreference extends EditTextPreference {
 
@@ -20,6 +22,12 @@ public class IntegerEditTextPreference extends EditTextPreference {
     public IntegerEditTextPreference(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+    }
+
+    @Override
+    protected void onAddEditTextToDialogView(View dialogView, EditText editText) {
+        super.onAddEditTextToDialogView(dialogView, editText);
+        editText.selectAll();
     }
 
     @Override
