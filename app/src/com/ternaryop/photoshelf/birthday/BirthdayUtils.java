@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.birthday;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,6 +21,9 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.util.Pair;
 
@@ -32,6 +36,7 @@ import com.ternaryop.photoshelf.db.PostTag;
 import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
+import com.ternaryop.utils.ImageUtils;
 import com.ternaryop.utils.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -288,6 +293,53 @@ public class BirthdayUtils {
         }
 
         return null;
+    }
+
+    public static void createBirthdayPost(Context context, Bitmap cakeImage, TumblrPhotoPost post, String blogName, boolean saveAsDraft)
+            throws IOException {
+        String imageUrl = post.getClosestPhotoByWidth(400).getUrl();
+        Bitmap image = ImageUtils.readImage(imageUrl);
+
+        final int IMAGE_SEPARATOR_HEIGHT = 10;
+        int canvasWidth = image.getWidth();
+        int canvasHeight = cakeImage.getHeight() + IMAGE_SEPARATOR_HEIGHT + image.getHeight();
+
+        Bitmap.Config config = image.getConfig() == null ? Bitmap.Config.ARGB_8888 : image.getConfig();
+        Bitmap destBmp = Bitmap.createBitmap(canvasWidth, canvasHeight, config);
+        Canvas canvas = new Canvas(destBmp);
+
+        canvas.drawBitmap(cakeImage, (image.getWidth() - cakeImage.getWidth()) / 2, 0, null);
+        canvas.drawBitmap(image, 0, cakeImage.getHeight() + IMAGE_SEPARATOR_HEIGHT, null);
+        String name = post.getTags().get(0);
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "birth-" + name + ".png");
+        ImageUtils.saveImageAsPNG(destBmp, file);
+        if (saveAsDraft) {
+            Tumblr.getSharedTumblr(context).draftPhotoPost(blogName,
+                    file,
+                    getBirthdayCaption(context, name, blogName),
+                    "Birthday, " + name);
+        } else {
+            Tumblr.getSharedTumblr(context).publishPhotoPost(blogName,
+                    file,
+                    getBirthdayCaption(context, name, blogName),
+                    "Birthday, " + name);
+        }
+        file.delete();
+    }
+
+    public static String getBirthdayCaption(Context context, String name, String blogName) {
+        DBHelper dbHelper = DBHelper
+                .getInstance(context.getApplicationContext());
+        Birthday birthDay = dbHelper
+                .getBirthdayDAO()
+                .getBirthdayByName(name, blogName);
+        Calendar birthDate = Calendar.getInstance();
+        birthDate.setTime(birthDay.getBirthDate());
+        int age = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+        // caption must not be localized
+        String caption = "Happy %1$dth Birthday, %2$s!!";
+        return String.format(caption, age, name);
     }
 
     public interface BirthdaySearcher {

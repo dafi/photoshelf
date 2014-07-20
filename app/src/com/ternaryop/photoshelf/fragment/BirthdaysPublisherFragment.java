@@ -1,10 +1,6 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -13,11 +9,8 @@ import java.util.Locale;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -38,11 +31,9 @@ import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.DBHelper;
-import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
-import com.ternaryop.utils.ImageUtils;
 
 public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
@@ -135,7 +126,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
                     for (TumblrPhotoPost post : getCheckedPosts()) {
                         String name = post.getTags().get(0);
                         publishProgress(getContext().getString(R.string.sending_cake_title, name));
-                        createBirthdayPost(cakeImage, post, saveAsDraft);
+                        BirthdayUtils.createBirthdayPost(getContext(), cakeImage, post, getBlogName(), saveAsDraft);
                     }
                 } catch (Exception e) {
                     setError(e);
@@ -152,36 +143,6 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }.execute();
     }
 
-    private void createBirthdayPost(Bitmap cakeImage, TumblrPhotoPost post, boolean saveAsDraft)
-            throws IOException {
-        String imageUrl = post.getClosestPhotoByWidth(400).getUrl();
-        Bitmap image = ImageUtils.readImage(imageUrl);
-        
-        final int IMAGE_SEPARATOR_HEIGHT = 10;
-        int canvasWidth = image.getWidth();
-        int canvasHeight = cakeImage.getHeight() + IMAGE_SEPARATOR_HEIGHT + image.getHeight();
-        
-        Config config = image.getConfig() == null ? Bitmap.Config.ARGB_8888 : image.getConfig();
-        Bitmap destBmp = Bitmap.createBitmap(canvasWidth, canvasHeight, config);
-        Canvas canvas = new Canvas(destBmp);
-        
-        canvas.drawBitmap(cakeImage, (image.getWidth() - cakeImage.getWidth()) / 2, 0, null);
-        canvas.drawBitmap(image, 0, cakeImage.getHeight() + IMAGE_SEPARATOR_HEIGHT, null);
-        File file = saveImage(destBmp, "birth-" + post.getTags().get(0));
-        if (saveAsDraft) {
-        	Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(getBlogName(),
-        			file,
-        			getCaption(post),
-        			"Birthday, " + post.getTags().get(0));
-        } else {
-        	Tumblr.getSharedTumblr(getActivity()).publishPhotoPost(getBlogName(),
-        			file,
-        			getCaption(post),
-        			"Birthday, " + post.getTags().get(0));
-        }
-        file.delete();
-    }
-
     private String getCaption(TumblrPost post) {
         DBHelper dbHelper = DBHelper
                 .getInstance(getActivity().getApplicationContext());
@@ -195,19 +156,6 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         // caption must not be localized
         String caption = "Happy %1$dth Birthday, %2$s!!";
         return String.format(caption, age, name);
-    }
-    
-    private File saveImage(Bitmap image, String fileName) throws IOException {
-        File imageFile = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), fileName + ".png");
-        OutputStream fout = new FileOutputStream(imageFile);
-
-        image.compress(Bitmap.CompressFormat.PNG, 100, fout);
-
-        fout.flush();
-        fout.close();
-        
-        return imageFile;
     }
     
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
