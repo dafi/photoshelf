@@ -4,7 +4,7 @@
         <item
             android:id="@+id/action_show_ignored"
             android:checkable="true"
-            android:title="Show Ignored"/>
+            android:title="@string/show_ignored"/>
     </group>
 
 </menu>

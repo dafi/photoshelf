@@ -30,9 +30,7 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
-import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
 public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener {
@@ -55,7 +53,9 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         gridView.setMultiChoiceModeListener(this);
         
         refresh();
-        
+
+        setHasOptionsMenu(true);
+
         return rootView;
     }
 
@@ -143,21 +143,6 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }.execute();
     }
 
-    private String getCaption(TumblrPost post) {
-        DBHelper dbHelper = DBHelper
-                .getInstance(getActivity().getApplicationContext());
-        String name = post.getTags().get(0);
-        Birthday birthDay = dbHelper
-                .getBirthdayDAO()
-                .getBirthdayByName(name, getBlogName());
-        Calendar birthDate = Calendar.getInstance();
-        birthDate.setTime(birthDay.getBirthDate());
-        int age = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
-        // caption must not be localized
-        String caption = "Happy %1$dth Birthday, %2$s!!";
-        return String.format(caption, age, name);
-    }
-    
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
         TumblrPhotoPost post = gridViewPhotoAdapter.getItem(position).second;
         TagPhotoBrowserActivity.startPhotoBrowserActivityForResult(this, getBlogName(),
@@ -176,7 +161,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
 
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         mode.setTitle(R.string.select_images);
-        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
+        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 0, 0));
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.birtdays_publisher_action, menu);
         return true;

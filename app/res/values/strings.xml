@@ -165,5 +165,6 @@
     <string name="select_items">Select items</string>
     <string name="all">All</string>
     <string name="mark_as_ignored">Mark as ignored</string>
+    <string name="show_ignored">Show Ignored</string>
 
 </resources>
