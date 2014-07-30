@@ -122,7 +122,7 @@ public class TitleParser {
 
         Matcher m = titleRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
-          titleData.setWho(StringUtils.capitalize(m.group(1)));
+          titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
           // remove the 'who' chunk
           title = title.substring(m.regionStart() + m.group(0).length());
         }

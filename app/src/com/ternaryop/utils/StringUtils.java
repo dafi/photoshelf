@@ -1,5 +1,6 @@
 package com.ternaryop.utils;
 
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,4 +104,14 @@ public class StringUtils {
         return sb.toString();
     }
     
+    // http://commons.apache.org/proper/commons-lang/apidocs/src-html/org/apache/commons/lang3/StringUtils.html#line.761
+    public static String stripAccents(final String input) {
+        if (input == null) {
+            return null;
+        }
+        final Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");//$NON-NLS-1$
+        final String decomposed = Normalizer.normalize(input, Normalizer.Form.NFD);
+        // Note that this doesn't correctly remove ligatures...
+        return pattern.matcher(decomposed).replaceAll("");//$NON-NLS-1$
+    }    
 }
