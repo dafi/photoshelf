@@ -5,8 +5,16 @@
     <color name="link_text_color_bg">#00000000</color>
     <color name="link_text_color_clicked">#0000FF</color>
     <color name="link_text_color_clicked_bg">#ffffff</color>
+
     <color name="drawer_menu_item">#555</color>
     <color name="drawer_counter_text_bg">#626262</color>
     <color name="drawer_counter_text_color">#c5c4c4</color>
-    
+    <color name="drawer_color_bg">#f1f1f2</color>
+    <color name="drawer_selected_item_bg">#4D7A07</color>
+
+    <color name="actionbar_bg">#6A9A1F</color>
+    <color name="actionbar_text">#ffffff</color>
+    <color name="actionbar_subtitletext">#ffffff</color>
+    <color name="actionbar_popup_bg">#4D7A07</color>
+
 </resources>

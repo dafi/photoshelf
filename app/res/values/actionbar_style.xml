@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PhotoShelf"
+           parent="@android:style/Theme.Holo.Light.DarkActionBar">
+        <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
+        <item name="android:itemTextAppearance">@style/TextAppearance</item>
+
+        <item name="android:actionBarStyle">@style/Theme.PhotoShelf.ActionBar</item>
+        <item name="android:actionBarTabTextStyle">@style/Theme.PhotoShelf.ActionBar.TabText</item>
+        <item name="android:actionMenuTextColor">@color/actionbar_text</item>
+
+        <!-- Light.DarkActionBar specific -->
+        <item name="android:actionBarWidgetTheme">@style/Theme.PhotoShelf.ActionBar.Widget</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="Theme.PhotoShelf.ActionBar"
+           parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/actionbar_bg</item>
+        <item name="android:titleTextStyle">@style/Theme.PhotoShelf.ActionBar.TitleText</item>
+        <item name="android:subtitleTextStyle">@style/Theme.PhotoShelf.ActionBar.TitleTextStyle</item>
+    </style>
+
+    <!-- ActionBar title text -->
+    <style name="Theme.PhotoShelf.ActionBar.TitleText"
+           parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/actionbar_text</item>
+    </style>
+
+    <!-- ActionBar tabs text styles -->
+    <style name="Theme.PhotoShelf.ActionBar.TabText"
+           parent="@android:style/Widget.Holo.ActionBar.TabText">
+        <item name="android:textColor">@color/actionbar_text</item>
+    </style>
+
+    <!-- Popup Menu Background Color styles -->
+    <style name="Theme.PhotoShelf.ActionBar.PopupMenu"
+           parent="@android:style/Widget.Holo.ListPopupWindow">
+        <item name="android:popupBackground">@color/actionbar_popup_bg</item>
+    </style>
+
+    <!-- Popup Menu Text Color styles -->
+    <style name="TextAppearance">
+        <item name="android:textColor">@color/actionbar_text</item>
+    </style>
+
+    <!-- this style is only referenced in a Light.DarkActionBar based theme -->
+    <style name="Theme.PhotoShelf.ActionBar.Widget" parent="@android:style/Theme.Holo">
+        <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
+    </style>
+
+    <!-- Subtitle Text Color styles -->
+    <style name="Theme.PhotoShelf.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle">
+        <item name="android:textColor">@color/actionbar_subtitletext</item>
+    </style>
+</resources>
