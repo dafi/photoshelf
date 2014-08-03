@@ -9,6 +9,8 @@
         <item name="android:actionBarTabTextStyle">@style/Theme.PhotoShelf.ActionBar.TabText</item>
         <item name="android:actionMenuTextColor">@color/actionbar_text</item>
 
+        <item name="android:actionModeStyle">@style/Theme.PhotoShelf.ActionMode</item>
+
         <!-- Light.DarkActionBar specific -->
         <item name="android:actionBarWidgetTheme">@style/Theme.PhotoShelf.ActionBar.Widget</item>
     </style>
@@ -25,6 +27,11 @@
     <style name="Theme.PhotoShelf.ActionBar.TitleText"
            parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textColor">@color/actionbar_text</item>
+    </style>
+
+    <!-- ActionBar subtitle text -->
+    <style name="Theme.PhotoShelf.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle">
+        <item name="android:textColor">@color/actionbar_subtitletext</item>
     </style>
 
     <!-- ActionBar tabs text styles -->
@@ -50,8 +57,22 @@
         <item name="android:textColorHint">@color/actionbar_text</item>
     </style>
 
-    <!-- Subtitle Text Color styles -->
-    <style name="Theme.PhotoShelf.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle">
-        <item name="android:textColor">@color/actionbar_subtitletext</item>
+    <!-- ActionMode styles -->
+    <style name="Theme.PhotoShelf.ActionMode"
+           parent="@android:style/Widget.Holo.Light.ActionMode.Inverse">
+        <item name="android:background">@color/actionmode_bg</item>
+        <item name="android:titleTextStyle">@style/Theme.PhotoShelf.ActionMode.TitleText</item>
+        <item name="android:subtitleTextStyle">@style/Theme.PhotoShelf.ActionMode.TitleTextStyle</item>
+    </style>
+
+    <!-- ActionMode title text -->
+    <style name="Theme.PhotoShelf.ActionMode.TitleText"
+           parent="@android:style/TextAppearance.Holo.Widget.ActionMode.Title">
+        <item name="android:textColor">@color/actionmode_text</item>
+    </style>
+
+    <!-- ActionMode subtitle text -->
+    <style name="Theme.PhotoShelf.ActionMode.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionMode.Subtitle">
+        <item name="android:textColor">@color/actionmode_subtitletext</item>
     </style>
 </resources>
