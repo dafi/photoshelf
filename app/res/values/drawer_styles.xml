@@ -2,7 +2,7 @@
 <resources>
 
     <style name="Drawer" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textColor">@color/drawer_menu_item</item>
+        <item name="android:textColor">@color/drawer_item_text</item>
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
@@ -21,9 +21,9 @@
         <item name="android:paddingRight">16dp</item>
         <item name="android:textAppearance">?android:attr/textAppearanceListItemSmall</item>
         <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
-        <item name="android:textColor">@color/drawer_row_text_selector</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
+        <item name="android:background">@color/drawer_row_bg_selector</item>
+        <item name="android:textColor">@color/drawer_row_text_selector</item>
     </style>
 
     <style name="DrawerCounterItem">
@@ -32,8 +32,8 @@
         <item name="android:layout_alignParentRight">true</item>
         <item name="android:layout_centerVertical">true</item>
         <item name="android:layout_marginRight">8dp</item>
-        <item name="android:background">@drawable/drawer_counter_bg</item>
-        <item name="android:textColor">@color/drawer_counter_text_color</item>
+        <item name="android:background">@color/drawer_counter_bg_selector</item>
+        <item name="android:textColor">@color/drawer_counter_text_selector</item>
     </style>
 
 </resources>

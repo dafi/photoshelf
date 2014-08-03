@@ -4,7 +4,7 @@
     <item android:state_focused="true" android:state_pressed="true" android:color="@android:color/white"/>
     <item android:state_focused="false" android:state_pressed="true" android:color="@android:color/white"/>
     <!-- state_activated overrides the value defined in android:activatedBackgroundIndicator -->
-    <item android:state_activated="true" android:color="@color/drawer_item_selected_text"/>
-    <item android:color="@color/drawer_item_text"/>
+    <item android:state_activated="true" android:color="@color/drawer_item_counter_selected_text"/>
+    <item android:color="@color/drawer_item_counter_text"/>
 
 </selector>
