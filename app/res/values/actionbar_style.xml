@@ -47,6 +47,7 @@
     <!-- this style is only referenced in a Light.DarkActionBar based theme -->
     <style name="Theme.PhotoShelf.ActionBar.Widget" parent="@android:style/Theme.Holo">
         <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
+        <item name="android:textColorHint">@color/actionbar_text</item>
     </style>
 
     <!-- Subtitle Text Color styles -->
