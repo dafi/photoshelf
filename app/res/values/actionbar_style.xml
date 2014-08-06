@@ -48,7 +48,7 @@
 
     <!-- Popup Menu Text Color styles -->
     <style name="TextAppearance">
-        <item name="android:textColor">@color/actionbar_text</item>
+        <item name="android:textColor">@color/actionbar_popup_text</item>
     </style>
 
     <!-- this style is only referenced in a Light.DarkActionBar based theme -->
