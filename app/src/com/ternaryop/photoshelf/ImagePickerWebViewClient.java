@@ -86,8 +86,8 @@ public class ImagePickerWebViewClient extends WebViewClient {
 
     private boolean isUrlAllowed(String url) {
         String path = Uri.parse(url).getLastPathSegment();
-
-        if (path.length() == 0) {
+ 
+        if (path == null || path.length() == 0) {
             return false;
         }
         String urlExt = path.substring(path.lastIndexOf(".") + 1);
