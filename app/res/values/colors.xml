@@ -11,7 +11,7 @@
     <color name="drawer_item_bg">@android:color/transparent</color>
 
     <color name="drawer_item_selected_text">#ffffff</color>
-    <color name="drawer_item_selected_bg">#6A9A1F</color>
+    <color name="drawer_item_selected_bg">#3949ab</color>
 
     <color name="drawer_item_counter_text">#ffffff</color>
     <color name="drawer_item_counter_bg">#626262</color>
@@ -19,14 +19,16 @@
     <color name="drawer_item_counter_selected_text">#000</color>
     <color name="drawer_item_counter_selected_bg">#ffffff</color>
 
-    <color name="actionbar_bg">#4D7A07</color>
+    <color name="actionbar_bg">#1a237e</color>
     <color name="actionbar_text">#ffffff</color>
     <color name="actionbar_subtitletext">#ffffff</color>
-    <color name="actionbar_popup_bg">#ffffff</color>
-    <color name="actionbar_popup_text">#555</color>
+    <color name="actionbar_popup_bg">#536dfe</color>
+    <color name="actionbar_popup_text">#fff</color>
 
-    <color name="actionmode_bg">#6A9A1F</color>
+    <color name="actionmode_bg">#3f51b5</color>
     <color name="actionmode_text">#ffffff</color>
     <color name="actionmode_subtitletext">#ffffff</color>
 
+    <color name="progressbar_bg">#c5cae9</color>
+    <color name="progressbar_progress_bg">#8c9eff</color>
 </resources>
