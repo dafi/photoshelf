@@ -37,7 +37,12 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
 //        gridView.setOnItemClickListener(this);
 //        gridView.setMultiChoiceModeListener(this);
 
-        refresh();
+        rootView.findViewById(R.id.create_post).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refresh();
+            }
+        });
 
         return rootView;
     }

@@ -4,6 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <Button
+        android:id="@+id/create_post"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Create 'Best of' post"/>
     <GridView
         android:id="@+id/gridview"
         android:layout_width="fill_parent"
