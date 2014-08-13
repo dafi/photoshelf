@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -23,6 +20,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.ternaryop.utils.IOUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 public class ImageUrlRetriever {
 	private final Context context;
@@ -109,6 +108,8 @@ public class ImageUrlRetriever {
 		// Called when the user exits the action mode
 		public void onDestroyActionMode(ActionMode mode) {
 			actionMode = null;
+            // remove selection to ensures it's empty if the user clicks on 'done' actionbar's button
+            urlSelectorMap.clear();
 		}
 	};
 
