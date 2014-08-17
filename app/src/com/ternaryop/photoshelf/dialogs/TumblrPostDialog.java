@@ -132,7 +132,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     }
 
     public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
+        this.imageUrls = new ArrayList<String>(imageUrls);
     }
 
     public void setImageUrlsFromImageInfo(List<ImageInfo> imageList) {
@@ -331,7 +331,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     }
 
     public void setImageFiles(List<File> imageFiles) {
-        this.imageFiles = imageFiles;
+        this.imageFiles = new ArrayList<File>(imageFiles);
     }
 
     private class BlogItemSelectedListener implements OnItemSelectedListener {
