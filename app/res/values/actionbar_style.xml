@@ -11,6 +11,8 @@
 
         <item name="android:actionModeStyle">@style/Theme.PhotoShelf.ActionMode</item>
 
+        <item name="android:dropDownListViewStyle">@style/Theme.PhotoShelf.Spinner.DropDownListView</item>
+
         <!-- Light.DarkActionBar specific -->
         <item name="android:actionBarWidgetTheme">@style/Theme.PhotoShelf.ActionBar.Widget</item>
     </style>
@@ -51,6 +53,12 @@
         <item name="android:textColor">@color/actionbar_popup_text</item>
     </style>
 
+    <!-- Spinner list items -->
+    <style name="Theme.PhotoShelf.Spinner.DropDownListView" parent="@android:style/Widget.Holo.ListView.DropDown">
+        <item name="android:listSelector">@drawable/selector_actionbar</item>
+        <item name="android:background">@color/actionbar_bg</item>
+    </style>
+
     <!-- this style is only referenced in a Light.DarkActionBar based theme -->
     <style name="Theme.PhotoShelf.ActionBar.Widget" parent="@android:style/Theme.Holo">
         <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
@@ -75,4 +83,5 @@
     <style name="Theme.PhotoShelf.ActionMode.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionMode.Subtitle">
         <item name="android:textColor">@color/actionmode_subtitletext</item>
     </style>
+
 </resources>
