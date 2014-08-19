@@ -82,7 +82,7 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnS
         searchView.setOnSuggestionListener(this);
         TagCursorAdapter adapter = new TagCursorAdapter(
                 getActivity().getActionBar().getThemedContext(),
-                android.R.layout.simple_dropdown_item_1line,
+                R.layout.ab_simple_dropdown_item_1line,
                 getBlogName());
         searchView.setSuggestionsAdapter(adapter);
         return searchView;

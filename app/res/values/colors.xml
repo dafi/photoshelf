@@ -24,6 +24,7 @@
     <color name="actionbar_subtitletext">#ffffff</color>
     <color name="actionbar_popup_bg">#536dfe</color>
     <color name="actionbar_popup_text">#fff</color>
+    <color name="actionbar_divider_bg">#fff</color>
 
     <color name="actionmode_bg">#3f51b5</color>
     <color name="actionmode_text">#ffffff</color>

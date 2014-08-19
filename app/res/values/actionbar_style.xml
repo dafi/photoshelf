@@ -12,6 +12,7 @@
         <item name="android:actionModeStyle">@style/Theme.PhotoShelf.ActionMode</item>
 
         <item name="android:dropDownListViewStyle">@style/Theme.PhotoShelf.Spinner.DropDownListView</item>
+        <item name="android:actionDropDownStyle">@style/Theme.PhotoShelf.Spinner.DropDownNav</item>
 
         <!-- Light.DarkActionBar specific -->
         <item name="android:actionBarWidgetTheme">@style/Theme.PhotoShelf.ActionBar.Widget</item>
@@ -55,14 +56,31 @@
 
     <!-- Spinner list items -->
     <style name="Theme.PhotoShelf.Spinner.DropDownListView" parent="@android:style/Widget.Holo.ListView.DropDown">
-        <item name="android:listSelector">@drawable/selector_actionbar</item>
-        <item name="android:background">@color/actionbar_bg</item>
+        <item name="android:listSelector">@drawable/ab_selector_spinner</item>
+        <item name="android:divider">@color/actionbar_divider_bg</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Spinner.DropDownNav" parent="@android:style/Widget.Holo.Spinner">
+        <item name="android:popupBackground">@color/actionbar_bg</item>
+        <item name="android:dropDownSelector">@drawable/ab_selector_spinner</item>
+    </style>
+
+    <!-- AutoComplete list items -->
+    <style name="Theme.PhotoShelf.SearchView.AutoCompleteTextView" parent="@android:style/Widget.Holo.Light.DropDownItem">
+        <item name="android:textColor">@color/actionbar_text</item>
+        <item name="android:background">@drawable/ab_selector_autocomplete</item>
+        <item name="android:divider">@color/actionbar_divider_bg</item>
+        <item name="android:dividerHeight">1dp</item>
     </style>
 
     <!-- this style is only referenced in a Light.DarkActionBar based theme -->
     <style name="Theme.PhotoShelf.ActionBar.Widget" parent="@android:style/Theme.Holo">
         <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
         <item name="android:textColorHint">@color/actionbar_text</item>
+        <!-- Styling the autocomplete list items collides with popup menu background so it can't be used -->
+        <!-- The workaround consists to duplicate the file R.layout.simple_dropdown_item_1line and change the style attribute -->
+        <!--<item name="android:dropDownListViewStyle">@style/Theme.PhotoShelf.SearchView.AutoCompleteTextView</item>-->
     </style>
 
     <!-- ActionMode styles -->
