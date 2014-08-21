@@ -24,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 
@@ -103,14 +104,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     
     protected abstract int getActionModeMenuId();
 
-    protected void saveAsDraft(final ActionMode mode) {
-        final List<PhotoShelfPost> selectedPosts = getSelectedPosts();
+    protected void saveAsDraft(final ActionMode mode, final List<PhotoShelfPost> postList) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
-                    new ActionExecutor(getActivity(), R.string.saving_posts_to_draft_title, mode) {
+                    new ActionExecutor(getActivity(), R.string.saving_posts_to_draft_title, mode, postList) {
                         @Override
                         protected void executeAction(PhotoShelfPost post) {
                             Tumblr.getSharedTumblr(getContext()).saveDraft(
@@ -122,11 +122,11 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 }
             }
         };
-        
+
         String message = getResources().getQuantityString(R.plurals.save_to_draft_confirm,
-                selectedPosts.size(),
-                selectedPosts.size(),
-                selectedPosts.get(0).getFirstTag());
+                postList.size(),
+                postList.size(),
+                postList.get(0).getFirstTag());
         new AlertDialog.Builder(getActivity())
         .setMessage(message)
         .setPositiveButton(android.R.string.yes, dialogClickListener)
@@ -134,8 +134,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         .show();        
     }
 
-    private void deletePost(final ActionMode mode) {
-        new ActionExecutor(getActivity(), R.string.deleting_posts_title, mode) {
+    private void deletePost(final ActionMode mode, final List<PhotoShelfPost> postList) {
+        new ActionExecutor(getActivity(), R.string.deleting_posts_title, mode, postList) {
             @Override
             protected void executeAction(PhotoShelfPost post) {
                 Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
@@ -204,27 +204,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
     
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        PhotoShelfPost post = getSelectedPosts().get(0);
-        
-        switch (item.getItemId()) {
-        case R.id.post_publish:
-            showConfirmDialog(POST_ACTION.PUBLISH, mode);
-            return true;
-        case R.id.group_menu_image_dimension:
-            browseImageBySize(post);
-            return true;
-        case R.id.post_delete:
-            showConfirmDialog(POST_ACTION.DELETE, mode);
-            return true;
-        case R.id.post_edit:
-            showEditDialog(post, mode);
-            return true;
-        case R.id.post_save_draft:
-            saveAsDraft(mode);
-            return true;
-        default:
-            return false;
-        }
+        return handleMenuItem(item, getSelectedPosts(), mode);
     }
 
     public void onDestroyActionMode(ActionMode mode) {
@@ -278,7 +258,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         builder.show();
     }
 
-    private void showConfirmDialog(final POST_ACTION postAction, final ActionMode mode) {
+    private void showConfirmDialog(final POST_ACTION postAction, final ActionMode mode, final List<PhotoShelfPost> postsList) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -286,10 +266,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 case DialogInterface.BUTTON_POSITIVE:
                     switch (postAction) {
                     case PUBLISH:
-                        publishPost(mode);
+                        publishPost(mode, postsList);
                         break;
                     case DELETE:
-                        deletePost(mode);
+                        deletePost(mode, postsList);
                         break;
                     }
                     break;
@@ -297,7 +277,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             }
         };
 
-        List<PhotoShelfPost> postsList = getSelectedPosts();
         String message = null;
         switch (postAction) {
         case PUBLISH:
@@ -321,8 +300,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         .show();        
     }
     
-    private void publishPost(ActionMode mode) {
-        new ActionExecutor(getActivity(), R.string.publishing_posts_title, mode) {
+    private void publishPost(ActionMode mode, final List<PhotoShelfPost> postList) {
+        new ActionExecutor(getActivity(), R.string.publishing_posts_title, mode, postList) {
             @Override
             protected void executeAction(PhotoShelfPost post) {
                 Tumblr.getSharedTumblr(getContext()).publishPost(getBlogName(),
@@ -352,10 +331,12 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     
     abstract class ActionExecutor extends AbsProgressBarAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
         private ActionMode mode;
+        private List<PhotoShelfPost> postList;
 
-        public ActionExecutor(Context context, int resId, ActionMode mode) {
+        public ActionExecutor(Context context, int resId, ActionMode mode, List<PhotoShelfPost> postList) {
             super(context, context.getString(resId));
             this.mode = mode;
+            this.postList = postList;
         }
 
         @Override
@@ -372,7 +353,9 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             refreshUI();
             // all posts have been deleted so call actionMode.finish() 
             if (notDeletedPosts.size() == 0) {
-                mode.finish();
+                if (mode != null) {
+                    mode.finish();
+                }
                 return;
             }
             // leave posts not processed checked
@@ -393,7 +376,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
             List<PhotoShelfPost> notDeletedPosts = new ArrayList<PhotoShelfPost>();
 
-            for (final PhotoShelfPost post : getSelectedPosts()) {
+            for (final PhotoShelfPost post : postList) {
                 try {
                     executeAction(post);
                     this.publishProgress(post);
@@ -412,10 +395,48 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), post.getFirstTag(), false);
     }
 
+    @Override
     public void onThumbnailImageClick(PhotoShelfPost post) {
         ImageViewerActivity.startImageViewer(getActivity(), post.getFirstPhotoAltSize().get(0).getUrl(), post);
     }
 
+    @Override
+    public void onOverflowClick(View view, final PhotoShelfPost post) {
+        PopupMenu popupMenu = new PopupMenu(getActivity(), view);
+        MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(getActionModeMenuId(), popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                ArrayList<PhotoShelfPost> postList = new ArrayList<PhotoShelfPost>();
+                postList.add(post);
+                return handleMenuItem(item, postList, null);
+            }
+        });
+        popupMenu.show();
+    }
+
+    protected boolean handleMenuItem(MenuItem item, List<PhotoShelfPost> postList, ActionMode mode) {
+        switch (item.getItemId()) {
+            case R.id.post_publish:
+                showConfirmDialog(POST_ACTION.PUBLISH, mode, postList);
+                return true;
+            case R.id.group_menu_image_dimension:
+                browseImageBySize(postList.get(0));
+                return true;
+            case R.id.post_delete:
+                showConfirmDialog(POST_ACTION.DELETE, mode, postList);
+                return true;
+            case R.id.post_edit:
+                showEditDialog(postList.get(0), mode);
+                return true;
+            case R.id.post_save_draft:
+                saveAsDraft(mode, postList);
+                return true;
+            default:
+                return false;
+        }
+    }
 
     @Override
     public void setCountChangedListener(CountChangedListener countChangedListener) {

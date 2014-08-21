@@ -48,7 +48,23 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/time_desc"
         android:layout_toRightOf="@+id/thumbnail"
+        android:layout_toLeftOf="@+id/menu"
         android:paddingTop="4dp"
         android:textColor="#343434"
         android:textSize="12sp" />
+
+    <ImageView
+        android:id="@+id/menu"
+        android:background="@drawable/overflow_menu_selector"
+        android:padding="8dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:src="@drawable/ic_overflow_dark"
+        android:scaleType="fitXY"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true" />
 </com.ternaryop.widget.CheckableRelativeLayout>

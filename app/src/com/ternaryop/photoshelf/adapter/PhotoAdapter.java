@@ -29,7 +29,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 	private boolean recomputeGroupIds;
 	private ArrayList<PhotoShelfPost> allPosts;
 	private boolean isFiltering;
- 
+
     public PhotoAdapter(Context context, String prefix) {
 		super(context, 0);
         inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -82,6 +82,9 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             
             holder.thumbImage.setOnClickListener(this);
             holder.thumbImage.setTag(post);
+
+            holder.menu.setOnClickListener(this);
+            holder.menu.setTag(post);
         }
         
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
@@ -91,14 +94,17 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         return vi;
     }
     
-	public void onClick(View v) {
+	public void onClick(final View v) {
 		switch (v.getId()) {
 			case R.id.title_textview:
 				onPhotoBrowseClick.onPhotoBrowseClick((PhotoShelfPost)v.getTag());
 				break;
 			case R.id.thumbnail_image:
 				onPhotoBrowseClick.onThumbnailImageClick((PhotoShelfPost)v.getTag());
-				break;
+                break;
+            case R.id.menu:
+                onPhotoBrowseClick.onOverflowClick(v, (PhotoShelfPost) v.getTag());
+                break;
 		}
 	}
 	
@@ -253,16 +259,18 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         }
     }
 
-	private class ViewHolder {
-		TextView title;
+    private class ViewHolder {
+        TextView title;
 		TextView timeDesc;
         TextView caption;
 		ImageView thumbImage;
+        ImageView menu;
 
 		public ViewHolder(View vi) {
 	        title = (TextView)vi.findViewById(R.id.title_textview);
 	        timeDesc = (TextView)vi.findViewById(R.id.time_desc);
 	        caption = (TextView)vi.findViewById(R.id.caption);
+            menu = (ImageView)vi.findViewById(R.id.menu);
 
 	        thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
 		}
