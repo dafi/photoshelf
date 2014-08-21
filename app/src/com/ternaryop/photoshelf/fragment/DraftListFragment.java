@@ -143,7 +143,9 @@ public class DraftListFragment extends AbsPostsListFragment {
                 lastScheduledDate = (Calendar) scheduledDateTime.clone();
                 photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
                 refreshUI();
-                mode.finish();
+                if (mode != null) {
+                    mode.finish();
+                }
             }
         });
         dialog.show();
@@ -178,12 +180,13 @@ public class DraftListFragment extends AbsPostsListFragment {
         return cal;
     }
 
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+    @Override
+    protected boolean handleMenuItem(MenuItem item, List<PhotoShelfPost> postList, ActionMode mode) {
         switch (item.getItemId()) {
-        case R.id.post_schedule:
-            showScheduleDialog(getSelectedPosts().get(0), mode);
-            return true;
+            case R.id.post_schedule:
+                showScheduleDialog(postList.get(0), mode);
+                return true;
         }
-        return super.onActionItemClicked(mode, item);
+        return super.handleMenuItem(item, postList, mode);
     }
 }
