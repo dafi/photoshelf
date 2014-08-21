@@ -1,3 +1,5 @@
+import java.util.regex.Pattern
+
 buildscript {
     repositories {
         mavenCentral()
@@ -43,6 +45,35 @@ android {
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
     }
+    signingConfigs {
+        release {
+            def props = new Properties()
+            props.load(new FileInputStream("build-keystore.properties"))
+            storeFile file(props.get("key.store"))
+            storePassword props.get("key.store.password")
+            keyAlias props.get("key.alias")
+            keyPassword props.get("key.alias.password")
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+task('increaseVersionCode') << {
+    def manifestFile = file("AndroidManifest.xml")
+    def pattern = Pattern.compile("(android:versionCode=\")([0-9]+)(\")")
+    def manifestText = manifestFile.getText()
+    def matcher = pattern.matcher(manifestText)
+    matcher.find()
+    def versionCode = Integer.parseInt(matcher.group(2)) + 1
+    def manifestContent = matcher.replaceAll("\$1" + versionCode + "\$3")
+    manifestFile.write(manifestContent)
 }
 
 task nativeLibsToJar(type: Zip) {
@@ -55,4 +86,10 @@ task nativeLibsToJar(type: Zip) {
 
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn(nativeLibsToJar)
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name == 'generateReleaseBuildConfig') {
+        task.dependsOn 'increaseVersionCode'
+    }
 }
