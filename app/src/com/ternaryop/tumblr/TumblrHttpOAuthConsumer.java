@@ -3,6 +3,16 @@ package com.ternaryop.tumblr;
 import java.io.IOException;
 import java.util.Map;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.preference.PreferenceManager;
+
+import com.ternaryop.photoshelf.R;
+import com.ternaryop.utils.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.scribe.builder.ServiceBuilder;
@@ -14,17 +24,6 @@ import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
-
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.preference.PreferenceManager;
-
-import com.ternaryop.photoshelf.R;
-import com.ternaryop.utils.JSONUtils;
 
 public class TumblrHttpOAuthConsumer {
     private static final String PREFS_NAME = "tumblr";
@@ -61,7 +60,7 @@ public class TumblrHttpOAuthConsumer {
         Editor edit = preferences.edit();
         edit.remove(PREF_OAUTH_TOKEN);
         edit.remove(PREF_OAUTH_SECRET);
-        edit.commit();
+        edit.apply();
     }
     
     public String getConsumerKey() {
@@ -80,7 +79,7 @@ public class TumblrHttpOAuthConsumer {
         Editor edit = context.getSharedPreferences(PREFS_NAME, 0).edit();
         edit.putString(PREF_OAUTH_TOKEN, requestToken.getToken());
         edit.putString(PREF_OAUTH_SECRET, requestToken.getSecret());
-        edit.commit();
+        edit.apply();
         String authorizationUrl = oAuthService.getAuthorizationUrl(requestToken);
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authorizationUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -116,7 +115,7 @@ public class TumblrHttpOAuthConsumer {
                     Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
                     edit.putString(PREF_OAUTH_TOKEN,  token.getToken());
                     edit.putString(PREF_OAUTH_SECRET, token.getSecret());
-                    edit.commit();
+                    edit.apply();
                 }
                 if (callback != null) {
                     if (token == null) {
