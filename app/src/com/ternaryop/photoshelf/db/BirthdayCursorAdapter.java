@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.db;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.content.Context;
@@ -45,7 +46,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         this.context = context;
         this.blogName = blogName;
         dbHelper = DBHelper.getInstance(context);
-        dateFormat = new SimpleDateFormat("d MMMM, yyyy");
+        dateFormat = new SimpleDateFormat("d MMMM, yyyy", Locale.US);
 
         setViewBinder(this);
         setFilterQueryProvider(this);

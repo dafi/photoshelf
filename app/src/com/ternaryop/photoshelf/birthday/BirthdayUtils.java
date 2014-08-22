@@ -264,7 +264,7 @@ public class BirthdayUtils {
 
         @Override
         public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
-            String cleanName = name.toLowerCase()
+            String cleanName = name.toLowerCase(Locale.US)
                     .replaceAll("_", "-")
                     .replaceAll(" ", "-")
                     .replaceAll("\"", "");

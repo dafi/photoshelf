@@ -8,6 +8,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -67,7 +68,7 @@ public class PublishIntentService extends IntentService {
         } catch (Exception ex) {
             try {
                 File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "publish_errors.txt");
-                String date = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
+                String date = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).format(new Date());
                 FileOutputStream fos = new FileOutputStream(file, true);
                 PrintStream ps = new PrintStream(fos);
                 ps.println(date + " Error on url " + url);
