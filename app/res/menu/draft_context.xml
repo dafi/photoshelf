@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/post_publish"
-        android:showAsAction="never"
-        android:title="@string/publish_post">
-    </item>
-    <item
         android:id="@+id/post_schedule"
         android:showAsAction="ifRoom"
         android:title="@string/schedule_post">
+    </item>
+    <item
+        android:id="@+id/post_publish"
+        android:showAsAction="never"
+        android:title="@string/publish_post">
     </item>
     <item
         android:id="@+id/group_menu_image_dimension"
