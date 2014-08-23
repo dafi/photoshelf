@@ -57,6 +57,7 @@
         android:id="@+id/menu"
         android:background="@drawable/overflow_menu_selector"
         android:padding="8dp"
+        android:contentDescription="@string/content_description_item_menu"
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:layout_width="40dp"

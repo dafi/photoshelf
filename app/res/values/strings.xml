@@ -166,5 +166,8 @@
     <string name="all">All</string>
     <string name="mark_as_ignored">Mark as ignored</string>
     <string name="show_ignored">Show Ignored</string>
+    <string name="content_description_item_menu">Item Menu</string>
+    <string name="content_description_empty_list">Empty List</string>
+    <string name="content_description_blog_avatar">Blog Avatar</string>
 
 </resources>
