@@ -210,6 +210,10 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 	}
 
     public Map<String, Long> getStatisticCounts(String tumblrName) {
+        if (tumblrName == null) {
+            // force to return all counter set to zero
+            tumblrName = "";
+        }
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
         String sqlQuery = "select" +

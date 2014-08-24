@@ -31,7 +31,7 @@ public class DraftListFragment extends AbsPostsListFragment {
     private HashMap<String, TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
 
-	@Override
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         
@@ -39,9 +39,9 @@ public class DraftListFragment extends AbsPostsListFragment {
         photoAdapter.setRecomputeGroupIds(true);
 
         if (taskUIRecreated()) {
-        	return;
+            return;
         }
-    	refreshCache();
+        refreshCache();
     }
 
     @Override
@@ -81,14 +81,9 @@ public class DraftListFragment extends AbsPostsListFragment {
             }
             
             @Override
-            protected void onPreExecute() {
-            	super.onPreExecute();
-            }
-            
-            @Override
             protected void onPostExecute(List<PhotoShelfPost> posts) {
                 super.onPostExecute(posts);
-                
+
                 if (getError() == null) {
                     photoAdapter.addAll(posts);
                 }
@@ -101,8 +96,7 @@ public class DraftListFragment extends AbsPostsListFragment {
                     HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
                     queuedPosts = new HashMap<String, TumblrPost>();
                     DraftPostHelper publisher = new DraftPostHelper();
-                    publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(getContext()), getBlogName(), tagsForDraftPosts, queuedPosts,
-                            DBHelper.getInstance(getContext()).getPostTagDAO());
+                    publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(getContext()), getBlogName(), tagsForDraftPosts, queuedPosts);
 
                     ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
                     
@@ -165,7 +159,7 @@ public class DraftListFragment extends AbsPostsListFragment {
                         maxScheduledTime = scheduledTime;
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             cal.setTime(new Date(maxScheduledTime));
             cal.set(Calendar.MINUTE, 0);
