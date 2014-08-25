@@ -40,7 +40,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String KEY_SCHEDULE_TIME_SPAN = "schedule_time_span";
     private static final String KEY_CLEAR_IMAGE_CACHE = "clear_image_cache";
     private static final String KEY_VERSION = "version";
-    
+    private static final String KEY_DROPBOX_VERSION = "dropbox_version";
+
     public static final int MAIN_PREFERENCES_RESULT = 1;
     private static final int DROPBOX_RESULT = 2;
 
@@ -264,11 +265,16 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
                     getPackageName(), 0).versionName;
             int versionCode = getPackageManager().getPackageInfo(
                     getPackageName(), 0).versionCode;
-            version = String.valueOf("v" + versionName + " build " + versionCode);
+            version = String.valueOf(versionName + " build " + versionCode);
         } catch (Exception e) {
             version = "N/A";
         }
         preferenceVersion.setSummary(version);
+
+        // dropbox
+        preferenceVersion = preferenceScreen.findPreference(KEY_DROPBOX_VERSION);
+        preferenceVersion.setTitle(getString(R.string.version_title, "Dropbox Sync"));
+        preferenceVersion.setSummary(DbxAccountManager.SDK_VERSION_NAME);
     }
 
     public Importer getImporter() {

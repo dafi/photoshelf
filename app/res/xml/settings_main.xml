@@ -85,6 +85,9 @@
         <Preference
             android:key="version"
             android:persistent="false" />
+        <Preference
+            android:key="dropbox_version"
+            android:persistent="false" />
     </PreferenceCategory>
     
 </PreferenceScreen>
