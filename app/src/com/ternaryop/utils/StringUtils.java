@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringUtils {
-    private static char[] unicodeChars = {
+    private static final char[] unicodeChars = {
         '\u00AB', '\u00AD', '\u00B4', '\u00BB', '\u00F7', '\u01C0', '\u01C3', '\u02B9',
         '\u02BA', '\u02BC', '\u02C4', '\u02C6', '\u02C8', '\u02CB', '\u02CD', '\u02DC',
         '\u0300', '\u0301', '\u0302', '\u0303', '\u030B', '\u030E', '\u0331', '\u0332',
@@ -21,7 +21,7 @@ public class StringUtils {
         '\u3009', '\u301B', '\u301C', '\u301D', '\u301E', '\uFEFF'
     };
     
-    private static String[] closestToUnicode = {
+    private static final String[] closestToUnicode = {
         "\"","-","'","\"","/","|","!","'",
         "\"","'","^","^","'","`","_","~",
         "`","'","^","~","\"","\"","_","_",
@@ -36,24 +36,24 @@ public class StringUtils {
         ">","]","~","\"","\"","",
         };
     
-	/**
-	 * Surround all pattern strings found on text with a <b> (bold) tag
-	 * @param pattern
-	 * @param text
-	 * @return
-	 */
-	public static String htmlHighlightPattern(String pattern, String text) {
-		StringBuffer sb = new StringBuffer();
-		Matcher m = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(text);
-	
-		while (m.find()) {
-			// get substring to preserve case
-			m.appendReplacement(sb, "<b>" + text.substring(m.start(), m.end()) + "</b>");
-		}
-		m.appendTail(sb);
-	
-		return sb.toString();
-	}
+  /**
+   * Surround all pattern strings found on text with a <b> (bold) tag
+   * @param pattern the pattern to surround
+   * @param text the whole string
+   * @return the string with highlighted patterns
+   */
+  public static String htmlHighlightPattern(String pattern, String text) {
+    StringBuffer sb = new StringBuffer();
+    Matcher m = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(text);
+  
+    while (m.find()) {
+      // get substring to preserve case
+      m.appendReplacement(sb, "<b>" + text.substring(m.start(), m.end()) + "</b>");
+    }
+    m.appendTail(sb);
+  
+    return sb.toString();
+  }
 
     public static String capitalize(String str) {
         StringBuilder sb = new StringBuilder(str.length());
@@ -69,7 +69,7 @@ public class StringUtils {
                     ch = Character.toUpperCase(ch);
                     upcase = false;
                 } else {
-                	ch = Character.toLowerCase(ch);
+                  ch = Character.toLowerCase(ch);
                 }
             }
             sb.append(ch);
@@ -81,7 +81,7 @@ public class StringUtils {
     /**
      * Strip all specified HTML tags contained into string
      * @param tags tags separated by pipe (eg "a|br|img")
-     * @param string
+     * @param string html string to strip
      * @return stripped string
      */
     public static String stripHtmlTags(String tags, String string) {

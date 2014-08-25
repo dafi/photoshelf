@@ -39,7 +39,7 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
 
     /**
      * This method will be executed always asynchronously
-     * @return
+     * @return the number of items for counter or null if error occurred
      */
     protected abstract Long getCount();
     
@@ -60,7 +60,7 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
             protected Long doInBackground(Void... params) {
                 try {
                     return getCount();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 return null;
             }
@@ -81,7 +81,7 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
     
     @Override
     public void onChangeCount(CountProvider provider, long newCount) {
-        if (lastCount != null && lastCount.longValue() == newCount) {
+        if (lastCount != null && lastCount == newCount) {
             return;
         }
         lastCount = newCount;

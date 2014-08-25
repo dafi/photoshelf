@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.dropbox.sync.android.DbxAccountManager;
 import com.dropbox.sync.android.DbxException;
-import com.dropbox.sync.android.DbxException.Unauthorized;
 import com.dropbox.sync.android.DbxFile;
 import com.dropbox.sync.android.DbxFileSystem;
 import com.dropbox.sync.android.DbxPath;
@@ -42,44 +41,44 @@ public class Importer {
     private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
     private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
 
-	private Context context;
-	private DbxAccountManager dropboxManager;
+    private final Context context;
+    private final DbxAccountManager dropboxManager;
 
-	public Importer(final Context context, DbxAccountManager dropboxManager) {
-		this.context = context;
-		this.dropboxManager = dropboxManager;
-	}
-	
-	public void importPostsFromCSV(final String importPath) {
-		try {
+    public Importer(final Context context, DbxAccountManager dropboxManager) {
+        this.context = context;
+        this.dropboxManager = dropboxManager;
+    }
+
+    public void importPostsFromCSV(final String importPath) {
+        try {
             new DbImportAsyncTask<PostTag>(context,
                     new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
                     DBHelper.getInstance(context).getPostTagDAO(),
                     true).execute();
-//			if (dropboxManager.hasLinkedAccount()) {
-//				DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
-//				File exportFile = new File(importPath);
-//				final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
-//				new DbImportAsyncTask<PostTag>(context,
-//						new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
-//						DBHelper.getInstance(context).getPostTagDAO(),
-//						true) {
-//					protected void onPostExecute(Void result) {
-//						super.onPostExecute(result);
-//						file.close();
-//					}
-//				}.execute();
-//			}
-		} catch (Exception error) {
-			DialogUtils.showErrorDialog(context, error);
-		}
-	}
+//            if (dropboxManager.hasLinkedAccount()) {
+//                DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
+//                File exportFile = new File(importPath);
+//                final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
+//                new DbImportAsyncTask<PostTag>(context,
+//                        new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
+//                        DBHelper.getInstance(context).getPostTagDAO(),
+//                        true) {
+//                    protected void onPostExecute(Void result) {
+//                        super.onPostExecute(result);
+//                        file.close();
+//                    }
+//                }.execute();
+//            }
+        } catch (Exception error) {
+            DialogUtils.showErrorDialog(context, error);
+        }
+    }
 
-	public void exportPostsToCSV(final String exportPath) {
-		try {
-			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
-				@Override
-				protected Void doInBackground(Void... voidParams) {
+    public void exportPostsToCSV(final String exportPath) {
+        try {
+            new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
+                @Override
+                protected Void doInBackground(Void... voidParams) {
                     try {
                         syncExportPostsToCSV(exportPath);
                     } catch (Exception e) {
@@ -87,12 +86,12 @@ public class Importer {
                     }
 
                     return null;
-				}
+                }
             }.execute();
-		} catch (Exception error) {
-			DialogUtils.showErrorDialog(context, error);
-		}
-	}
+        } catch (Exception error) {
+            DialogUtils.showErrorDialog(context, error);
+        }
+    }
 
     public void syncExportPostsToCSV(final String exportPath) throws Exception {
         SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
@@ -117,67 +116,67 @@ public class Importer {
         }
     }
 
-	public void importFromTumblr(final String blogName) {
-		importFromTumblr(blogName, null);
-	}
-	
-	public PostRetriever importFromTumblr(final String blogName, final ImportCompleteCallback callback) {
-		PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
-		long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
-		PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, new Callback<List<TumblrPost>>() {
-			
-			@Override
-			public void failure(Exception error) {
-				if (error != null) {
-					DialogUtils.showErrorDialog(context, error);
-				}
-			}
-			
-			@Override
-			public void complete(List<TumblrPost> allPosts) {
-				List<PostTag> allPostTags = new ArrayList<PostTag>();
-				for (TumblrPost tumblrPost : allPosts) {
-					allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));
-				}
-				new DbImportAsyncTask<PostTag>(context,
-						allPostTags.iterator(),
-						DBHelper.getInstance(context).getPostTagDAO(),
-						false) {
-					@Override
-					protected void onPostExecute(Void result) {
-						super.onPostExecute(result);
-						if (callback != null) {
-							callback.complete();
-						}
-					}
-				}.execute();
-			}
-		});
-		postRetriever.readPhotoPosts(blogName, null);
-		return postRetriever;
-	}
+    public void importFromTumblr(final String blogName) {
+        importFromTumblr(blogName, null);
+    }
 
-	public void importDOMFilters(String importPath) {
-		InputStream in = null;
-		OutputStream out = null;
+    public PostRetriever importFromTumblr(final String blogName, final ImportCompleteCallback callback) {
+        PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
+        long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
+        PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, new Callback<List<TumblrPost>>() {
 
-		try {
-			in = new FileInputStream(importPath);
-		    out = context.openFileOutput("domSelectors.json", 0);
+            @Override
+            public void failure(Exception error) {
+                if (error != null) {
+                    DialogUtils.showErrorDialog(context, error);
+                }
+            }
 
-		    byte[] buf = new byte[1024];
-		    int len;
-		    while ((len = in.read(buf)) > 0) {
-		        out.write(buf, 0, len);
-		    }
-			Toast.makeText(context, context.getString(R.string.importSuccess), Toast.LENGTH_LONG).show();
-		} catch (Exception e) {
-			Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-		} finally {
-			if (in != null) try { in.close(); } catch (Exception ex) {}
-			if (out != null) try { out.close(); } catch (Exception ex) {}
-		}
-	}
+            @Override
+            public void complete(List<TumblrPost> allPosts) {
+                List<PostTag> allPostTags = new ArrayList<PostTag>();
+                for (TumblrPost tumblrPost : allPosts) {
+                    allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));
+                }
+                new DbImportAsyncTask<PostTag>(context,
+                        allPostTags.iterator(),
+                        DBHelper.getInstance(context).getPostTagDAO(),
+                        false) {
+                    @Override
+                    protected void onPostExecute(Void result) {
+                        super.onPostExecute(result);
+                        if (callback != null) {
+                            callback.complete();
+                        }
+                    }
+                }.execute();
+            }
+        });
+        postRetriever.readPhotoPosts(blogName, null);
+        return postRetriever;
+    }
+
+    public void importDOMFilters(String importPath) {
+        InputStream in = null;
+        OutputStream out = null;
+
+        try {
+            in = new FileInputStream(importPath);
+            out = context.openFileOutput("domSelectors.json", 0);
+
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            Toast.makeText(context, context.getString(R.string.importSuccess), Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        } finally {
+            if (in != null) try { in.close(); } catch (Exception ignored) {}
+            if (out != null) try { out.close(); } catch (Exception ignored) {}
+        }
+    }
 
     public void importBirthdays(final String importPath) {
         try {
@@ -197,11 +196,11 @@ public class Importer {
         }
     }
 
-	public void exportBirthdaysToCSV(final String exportPath) {
-		try {
-			new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
-				@Override
-				protected Void doInBackground(Void... voidParams) {
+    public void exportBirthdaysToCSV(final String exportPath) {
+        try {
+            new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
+                @Override
+                protected Void doInBackground(Void... voidParams) {
                     try {
                         syncExportBirthdaysToCSV(exportPath);
                     } catch (Exception e) {
@@ -209,12 +208,12 @@ public class Importer {
                     }
 
                     return null;
-				}
+                }
             }.execute();
-		} catch (Exception error) {
-			DialogUtils.showErrorDialog(context, error);
-		}
-	}
+        } catch (Exception error) {
+            DialogUtils.showErrorDialog(context, error);
+        }
+    }
 
     public void syncExportBirthdaysToCSV(final String exportPath) throws Exception {
         SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
@@ -259,7 +258,6 @@ public class Importer {
                 int curr = 1;
                 int size = names.size();
 
-                
                 for (final String name : names) {
                     publishProgress(name + " (" + curr + "/" + size + ")");
                     try {
@@ -297,11 +295,11 @@ public class Importer {
                 }
                 return getContext().getString(R.string.import_progress_title, birthdays.size());
             }
-            
+
             protected void onPostExecute(String message) {
                 super.onPostExecute(null);
-                
-                if (getError() == null) {
+
+                if (!hasError()) {
                     DialogUtils.showSimpleMessageDialog(getContext(),
                             R.string.import_missing_birthdays_from_wikipedia_title,
                             message);
@@ -324,12 +322,11 @@ public class Importer {
                         pw.flush();
                         pw.close();
 
-						copyFileToDropbox(exportPath);
+                        copyFileToDropbox(exportPath);
                     } catch (Exception e) {
                         setError(e);
-                    } finally {
-                    }   
-                    
+                    }
+
                     return null;
                 }
             }.execute();
@@ -337,48 +334,48 @@ public class Importer {
             DialogUtils.showErrorDialog(context, error);
         }
     }
-    
-	static class PostTagCSVBuilder implements CSVBuilder<PostTag> {
-		@Override
-		public PostTag parseCSVFields(String[] fields) {
-			return new PostTag(
-					Long.parseLong(fields[0]),
-					fields[1],
-					fields[2],
-					Long.parseLong(fields[3]),
-					Long.parseLong(fields[4]));
-		}
-	}
 
-	public interface ImportCompleteCallback {
-		void complete();
-	}
+    static class PostTagCSVBuilder implements CSVBuilder<PostTag> {
+        @Override
+        public PostTag parseCSVFields(String[] fields) {
+            return new PostTag(
+                    Long.parseLong(fields[0]),
+                    fields[1],
+                    fields[2],
+                    Long.parseLong(fields[3]),
+                    Long.parseLong(fields[4]));
+        }
+    }
 
-	private void copyFileToDropbox(final String exportPath)
-			throws Unauthorized, DbxException, IOException {
-		if (dropboxManager.hasLinkedAccount()) {
-			DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
-			File exportFile = new File(exportPath);
-			DbxPath dbxPath = new DbxPath(exportFile.getName());
-			DbxFile file;
-			
-			try {
-				file = dbxFs.create(dbxPath);
-			} catch (DbxException.Exists ex) {
-				file = dbxFs.open(dbxPath);
+    public interface ImportCompleteCallback {
+        void complete();
+    }
+
+    private void copyFileToDropbox(final String exportPath)
+            throws IOException {
+        if (dropboxManager.hasLinkedAccount()) {
+            DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
+            File exportFile = new File(exportPath);
+            DbxPath dbxPath = new DbxPath(exportFile.getName());
+            DbxFile file;
+
+            try {
+                file = dbxFs.create(dbxPath);
+            } catch (DbxException.Exists ex) {
+                file = dbxFs.open(dbxPath);
                 file.readString();
-				file.getSyncStatus();
-				file.update();
-			}
-			file.writeFromExistingFile(exportFile, false);
-			file.close();
-		}
-	}
+                file.getSyncStatus();
+                file.update();
+            }
+            file.writeFromExistingFile(exportFile, false);
+            file.close();
+        }
+    }
 
     /**
      * If necessary rename exportPath
-     * @param exportPath
-     * @return
+     * @param exportPath the export path to use as prefix
+     * @return the original passed parameter if exportPath doesn't exist or a new unique path
      */
     public static String getExportPath(String exportPath) {
         String newPath = IOUtils.generateUniqueFileName(exportPath);

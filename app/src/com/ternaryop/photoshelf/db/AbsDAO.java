@@ -5,15 +5,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public abstract class AbsDAO<Pojo> {
-	private SQLiteOpenHelper dbHelper;
+    private final SQLiteOpenHelper dbHelper;
 
-	public AbsDAO(SQLiteOpenHelper dbHelper) {
-		this.dbHelper = dbHelper;
-	}
+    public AbsDAO(SQLiteOpenHelper dbHelper) {
+        this.dbHelper = dbHelper;
+    }
 
-	protected abstract void onCreate(SQLiteDatabase db);
-	protected abstract void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
-	public abstract ContentValues getContentValues(Pojo pojo);
+    protected abstract void onCreate(SQLiteDatabase db);
+    protected abstract void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
+    public abstract ContentValues getContentValues(Pojo pojo);
     public abstract String getTableName();
 
     public long insert(Pojo pojo) {
@@ -27,6 +27,6 @@ public abstract class AbsDAO<Pojo> {
     }
 
     public SQLiteOpenHelper getDbHelper() {
-		return dbHelper;
-	}
+        return dbHelper;
+    }
 }

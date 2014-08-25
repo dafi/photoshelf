@@ -28,13 +28,13 @@ import com.ternaryop.utils.StringUtils;
  *
  */
 public class BirthdayCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, ViewBinder {
-    private String blogName;
-    private DBHelper dbHelper;
-    private String pattern = "";
-    private Context context;
-    private int month;
-    private SimpleDateFormat dateFormat;
+    private final DBHelper dbHelper;
+    private final Context context;
+    private final SimpleDateFormat dateFormat;
     private boolean showIgnored;
+    private String blogName;
+    private String pattern = "";
+    private int month;
 
     public BirthdayCursorAdapter(Context context, String blogName) {
         super(context,
@@ -86,7 +86,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
                     view.setBackgroundResource(R.drawable.list_selector_post_group_even);
                 }
             }
-        } catch (ParseException e) {
+        } catch (ParseException ignored) {
         }
     }
 
@@ -105,7 +105,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
             try {
                 String isoDate = cursor.getString(columnIndex);
                 if (isoDate == null) {
-                    ((TextView) view).setVisibility(View.GONE);
+                    view.setVisibility(View.GONE);
                 } else {
                     Calendar c = Calendar.getInstance();
                     c.setTime(Birthday.ISO_DATE_FORMAT.parse(isoDate));
@@ -113,7 +113,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
                     String age = String.valueOf(DateTimeUtils.yearsBetweenDates(c, Calendar.getInstance()));
                     String dateStr = dateFormat.format(c.getTime());
 
-                    ((TextView) view).setVisibility(View.VISIBLE);
+                    view.setVisibility(View.VISIBLE);
                     ((TextView) view).setText(context.getString(R.string.name_with_age, dateStr, age));
                 }
             } catch (ParseException e) {

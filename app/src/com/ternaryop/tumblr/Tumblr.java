@@ -23,7 +23,7 @@ public class Tumblr {
 
     private static Tumblr instance;
     
-    private TumblrHttpOAuthConsumer consumer;
+    private final TumblrHttpOAuthConsumer consumer;
 
     private Tumblr(TumblrHttpOAuthConsumer consumer) {
         this.consumer = consumer;

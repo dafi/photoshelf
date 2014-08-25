@@ -47,7 +47,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     protected enum POST_ACTION {
         PUBLISH,
         DELETE
-    };
+    }
 
     private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 
@@ -313,15 +313,15 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     protected void refreshUI() {
         if (hasMorePosts) {
             subTitle = getString(R.string.post_count_1_of_x,
-			        photoAdapter.getCount(),
-			        totalPosts);
-			getActivity().getActionBar().setSubtitle(subTitle);
+                    photoAdapter.getCount(),
+                    totalPosts);
+            getActivity().getActionBar().setSubtitle(subTitle);
         } else {
             subTitle = getResources().getQuantityString(
-			        R.plurals.posts_count,
-			        photoAdapter.getCount(),
-			        photoAdapter.getCount());
-			getActivity().getActionBar().setSubtitle(subTitle);
+                    R.plurals.posts_count,
+                    photoAdapter.getCount(),
+                    photoAdapter.getCount());
+            getActivity().getActionBar().setSubtitle(subTitle);
             if (countChangedListener != null) {
                 countChangedListener.onChangeCount(this, photoAdapter.getCount());
             }
@@ -330,8 +330,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
     
     abstract class ActionExecutor extends AbsProgressBarAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
-        private ActionMode mode;
-        private List<PhotoShelfPost> postList;
+        private final ActionMode mode;
+        private final List<PhotoShelfPost> postList;
 
         public ActionExecutor(Context context, int resId, ActionMode mode, List<PhotoShelfPost> postList) {
             super(context, context.getString(resId));
@@ -388,8 +388,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }
         
         protected abstract void executeAction(PhotoShelfPost post);
-    };
-    
+    }
+
     @Override
     public void onPhotoBrowseClick(PhotoShelfPost post) {
         TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), post.getFirstTag(), false);
@@ -449,18 +449,18 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     protected SearchView setupSearchView(Menu menu) {
-    	MenuItem searchMenu = menu.findItem(R.id.action_search);
+        MenuItem searchMenu = menu.findItem(R.id.action_search);
         if (searchMenu != null) {
             searchView = (SearchView)searchMenu.getActionView();
-        	searchView.setQueryHint(getString(R.string.enter_tag_hint));
-        	searchView.setOnQueryTextListener(this);
+            searchView.setQueryHint(getString(R.string.enter_tag_hint));
+            searchView.setOnQueryTextListener(this);
         }
         return searchView;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-    	photoAdapter.getFilter().filter(newText);
+        photoAdapter.getFilter().filter(newText);
         return true;
     }
 

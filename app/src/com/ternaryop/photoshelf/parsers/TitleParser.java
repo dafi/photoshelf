@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
+    private static final Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
 
-    private static String[] months = {"", "January",
+    private static final String[] months = {"", "January",
                   "February",
                   "March",
                   "April",
@@ -25,7 +25,7 @@ public class TitleParser {
                   "October",
                   "November",
                   "December"};
-    private static HashMap<String, String> monthsShort = new HashMap<String, String>();
+    private static final HashMap<String, String> monthsShort = new HashMap<String, String>();
     static {
         monthsShort.put("jan", "January");
         monthsShort.put("feb", "February");
@@ -41,16 +41,16 @@ public class TitleParser {
         monthsShort.put("dec", "December");
     }
 
-	private static TitleParser instance = new TitleParser();
+    private static final TitleParser instance = new TitleParser();
     
     /**
      * Fill parseInfo with day, month, year, matched
      */
     protected Map<String, Object> parseDate(String title) {
-    	int day = 0;
-    	String monthStr = null;
-    	int year = 0;
-    	
+        int day = 0;
+        String monthStr = null;
+        int year = 0;
+        
         // handle dates in the form Jan 10, 2010 or January 10 2010 or Jan 15
         Matcher m = Pattern.compile("(-|,|on)\\s+\\(?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(title);
         if (m.find() && m.groupCount() > 2) {
@@ -59,7 +59,7 @@ public class TitleParser {
             if (m.groupCount() == 4 && m.group(4).length() > 0) {
                 year = Integer.parseInt(m.group(4));
                 if (year < 100) {
-                	year += 2000;
+                    year += 2000;
                 }
             }
         } else {
@@ -71,7 +71,7 @@ public class TitleParser {
                 year = Integer.parseInt(m.group(3));
                 // we have a two-digits year
                 if (year < 100) {
-                	year += 2000;
+                    year += 2000;
                 }
                 if (monthInt > 12) {
                     int tmp = monthInt;
@@ -80,39 +80,39 @@ public class TitleParser {
                 }
                 // the swap above could get an invalid date
                 if (monthInt > 12) {
-                	day = -1;
-                	year = 0;
+                    day = -1;
+                    year = 0;
                 } else {
-                	monthStr = months[monthInt];
+                    monthStr = months[monthInt];
                 }
             } else {
-            	m = null;
+                m = null;
             }
         }
         HashMap<String, Object> dateComponents = new HashMap<String, Object>();
         // day could be not present for example "New York City, January 11"
         if (day > 0) {
-        	dateComponents.put("day",  day + "");
+            dateComponents.put("day",  day + "");
         }
         if (monthStr != null) {
-        	dateComponents.put("month", monthStr);
+            dateComponents.put("month", monthStr);
         }
         int currYear = Calendar.getInstance().get(Calendar.YEAR);
         if (year < 2000) {
             year = currYear;
         } else if (year > currYear) {
-        	year = currYear;
+            year = currYear;
         }
         dateComponents.put("year", year + "");
         if (m != null) {
-        	dateComponents.put("matched", m);
+            dateComponents.put("matched", m);
         }
         
         return dateComponents;
     }
 
     private TitleParser() {
-    	
+        
     }
 
     public TitleData parseTitle(String title) {
@@ -130,10 +130,10 @@ public class TitleParser {
         Matcher dateMatcher = (Matcher) dateComponents.get("matched");
         String loc;
         if (dateMatcher == null) {
-        	// no date found so use all substring as location
-        	loc = title;
+            // no date found so use all substring as location
+            loc = title;
         } else {
-    		loc = title.substring(0, dateMatcher.start());
+            loc = title.substring(0, dateMatcher.start());
         }
         // city names can be multi words so allow whitespaces
         m = Pattern.compile("\\s*(.*)\\s+in\\s+([a-z.\\s]*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
@@ -147,9 +147,9 @@ public class TitleParser {
         String when = "";
         if (dateComponents.get("day") != null) {
             when = dateComponents.get("day") + " ";
-        };
+        }
         if (dateComponents.get("month") != null) {
-        	when += dateComponents.get("month") + ", ";
+            when += dateComponents.get("month") + ", ";
         }
         when += dateComponents.get("year");
 
@@ -160,6 +160,6 @@ public class TitleParser {
     }
 
     public static TitleParser instance() {
-    	return instance;
+        return instance;
     }
 }

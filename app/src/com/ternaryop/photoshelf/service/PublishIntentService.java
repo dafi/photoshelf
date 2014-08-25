@@ -29,6 +29,7 @@ import com.ternaryop.utils.DateTimeUtils;
 
 /**
  * Created by dave on 01/03/14.
+ * Contains all methods used to publish posts
  */
 public class PublishIntentService extends IntentService {
     private static final String NOTIFICATION_PUBLISH_ERROR_TAG = "com.ternaryop.photoshelf.publish.error";
@@ -77,7 +78,7 @@ public class PublishIntentService extends IntentService {
                 ps.flush();
                 ps.close();
                 fos.close();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             notifyError(intent);
         }
@@ -152,8 +153,7 @@ public class PublishIntentService extends IntentService {
         // remove notification when user clicks on it
         builder.setAutoCancel(true);
 
-        Notification notification = builder.build();
-        return notification;
+        return builder.build();
     }
 
     private Notification createNotification(String contentText, int stringTickerId, int iconId) {

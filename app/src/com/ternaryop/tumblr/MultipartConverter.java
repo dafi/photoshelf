@@ -18,8 +18,8 @@ import org.scribe.model.OAuthRequest;
  */
 public class MultipartConverter {
 
-    private String boundary;
-    private OAuthRequest originalRequest;
+    private final String boundary;
+    private final OAuthRequest originalRequest;
 
     private Integer bodyLength = 0;
     private List<Object> responsePieces;
@@ -45,7 +45,7 @@ public class MultipartConverter {
         byte[] local;
         for (Object piece : responsePieces) {
             if (piece instanceof StringBuilder) {
-                local = ((StringBuilder) piece).toString().getBytes();
+                local = piece.toString().getBytes();
             } else {
                 local = (byte[]) piece;
             }

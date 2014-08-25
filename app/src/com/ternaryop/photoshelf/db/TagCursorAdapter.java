@@ -20,9 +20,9 @@ import com.ternaryop.utils.StringUtils;
  */
 public class TagCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, ViewBinder {
     private String blogName;
-    private DBHelper dbHelper;
+    private final DBHelper dbHelper;
     private String pattern = "";
-    private Context context;
+    private final Context context;
 
     public TagCursorAdapter(Context context, int resId, String blogName) {
         super(context,

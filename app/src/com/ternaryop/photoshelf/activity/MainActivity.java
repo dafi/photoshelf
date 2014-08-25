@@ -282,8 +282,8 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
             @Override
             public void complete(Blog[] result) {
                 List<String> blogNames = new ArrayList<String>(result.length);
-                for (int i = 0; i < result.length; i++) {
-                    blogNames.add(result[i].getName());
+                for (Blog blog : result) {
+                    blogNames.add(blog.getName());
                 }
                 appSupport.setBlogList(blogNames);
                 fillBlogList(blogNames);

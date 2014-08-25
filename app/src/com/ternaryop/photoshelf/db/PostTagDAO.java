@@ -15,14 +15,14 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
-	public static final String TABLE_NAME = "POST_TAG";
-	
-	public static final String TAG = "TAG";
-	public static final String TUMBLR_NAME = "TUMBLR_NAME";
-	public static final String PUBLISH_TIMESTAMP = "PUBLISH_TIMESTAMP";
-	public static final String SHOW_ORDER = "SHOW_ORDER";
-	
-	public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
+    public static final String TABLE_NAME = "POST_TAG";
+    
+    public static final String TAG = "TAG";
+    public static final String TUMBLR_NAME = "TUMBLR_NAME";
+    public static final String PUBLISH_TIMESTAMP = "PUBLISH_TIMESTAMP";
+    public static final String SHOW_ORDER = "SHOW_ORDER";
+    
+    public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
     public static final String POST_COUNT_COLUMN = "post_count";
     public static final String UNIQUE_TAGS_COUNT_COLUMN = "unique_tags_count";
     public static final String UNIQUE_FIRST_TAG_COUNT_COLUMN = "unique_first_tag_count";
@@ -31,63 +31,63 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     public static final String RECORD_COUNT_COLUMN = "record_count";
 
     /**
-	 * Constructor is accessible only from package
-	 */
-	PostTagDAO(SQLiteOpenHelper dbHelper) {
-		super(dbHelper);
-	}
+     * Constructor is accessible only from package
+     */
+    PostTagDAO(SQLiteOpenHelper dbHelper) {
+        super(dbHelper);
+    }
 
-	protected void onCreate(SQLiteDatabase db) {
-		String sql = "CREATE TABLE {0} ("
-				+ "{1} BIGINT UNSIGNED NOT NULL,"
-				+ "{2} TEXT NOT NULL,"
-				+ "{3} TEXT NOT NULL,"
-				+ "{4} INT UNSIGNED NOT NULL,"
-				+ "{5} UNSIGNED NOT NULL,"
-				+ "PRIMARY KEY ( {1}, {2}));";
-		db.execSQL(MessageFormat.format(sql,
-				TABLE_NAME,
-				_ID,
-				TAG,
-				TUMBLR_NAME,
-				PUBLISH_TIMESTAMP,
-				SHOW_ORDER));
-	}
+    protected void onCreate(SQLiteDatabase db) {
+        String sql = "CREATE TABLE {0} ("
+                + "{1} BIGINT UNSIGNED NOT NULL,"
+                + "{2} TEXT NOT NULL,"
+                + "{3} TEXT NOT NULL,"
+                + "{4} INT UNSIGNED NOT NULL,"
+                + "{5} UNSIGNED NOT NULL,"
+                + "PRIMARY KEY ( {1}, {2}));";
+        db.execSQL(MessageFormat.format(sql,
+                TABLE_NAME,
+                _ID,
+                TAG,
+                TUMBLR_NAME,
+                PUBLISH_TIMESTAMP,
+                SHOW_ORDER));
+    }
 
-	protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-	    // no need to upgrade
-	    if (newVersion == 2) {
-	        return;
-	    }
+    protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // no need to upgrade
+        if (newVersion == 2) {
+            return;
+        }
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
 
-	public ContentValues getContentValues(PostTag postTag) {
-		ContentValues v = new ContentValues();
+    public ContentValues getContentValues(PostTag postTag) {
+        ContentValues v = new ContentValues();
 
-		v.put(_ID,  postTag.getId());
-		v.put(TUMBLR_NAME, postTag.getTumblrName());
-		v.put(TAG, postTag.getTag());
-		v.put(PUBLISH_TIMESTAMP, postTag.getPublishTimestamp());
-		v.put(SHOW_ORDER, postTag.getShowOrder());
-		
-		return v;
-	}
+        v.put(_ID,  postTag.getId());
+        v.put(TUMBLR_NAME, postTag.getTumblrName());
+        v.put(TAG, postTag.getTag());
+        v.put(PUBLISH_TIMESTAMP, postTag.getPublishTimestamp());
+        v.put(SHOW_ORDER, postTag.getShowOrder());
+        
+        return v;
+    }
 
-	public Cursor getCursorByTag(String tag, String tumblrName) {
-		SQLiteDatabase db = getDbHelper().getReadableDatabase();
+    public Cursor getCursorByTag(String tag, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
-		String sqlQuery = "SELECT %2$s, %3$s, count(*) as " + POST_COUNT_COLUMN + " FROM %1$s"
-				+ " WHERE %3$s LIKE ? AND %4$s=?"
-				+ " GROUP BY %3$s ORDER BY %3$s";
-		sqlQuery = String.format(sqlQuery,
-				TABLE_NAME,
-				_ID,
-				TAG,
-				TUMBLR_NAME);
-		 return db.rawQuery(sqlQuery, new String[] {"%" + tag + "%", tumblrName});
-	}
+        String sqlQuery = "SELECT %2$s, %3$s, count(*) as " + POST_COUNT_COLUMN + " FROM %1$s"
+                + " WHERE %3$s LIKE ? AND %4$s=?"
+                + " GROUP BY %3$s ORDER BY %3$s";
+        sqlQuery = String.format(sqlQuery,
+                TABLE_NAME,
+                _ID,
+                TAG,
+                TUMBLR_NAME);
+         return db.rawQuery(sqlQuery, new String[] {"%" + tag + "%", tumblrName});
+    }
 
     public PostTag getRandomPostByTag(String tag, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
@@ -115,20 +115,20 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         return null;
     }
     
-	public Map<String, Long> getMapTagLastPublishedTime(List<String> tags, String tumblrName) {
-		Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[] {TAG, PUBLISH_TIMESTAMP}); 
+    public Map<String, Long> getMapTagLastPublishedTime(List<String> tags, String tumblrName) {
+        Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[] {TAG, PUBLISH_TIMESTAMP}); 
 
-		HashMap<String, Long> map = new HashMap<String, Long>();
-		try {
-			while (c.moveToNext()) {
-				map.put(c.getString(c.getColumnIndex(TAG)).toLowerCase(Locale.US),
-						c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)));
-			}
-		} finally {
-			c.close();
-		}
-		return map;
-	}
+        HashMap<String, Long> map = new HashMap<String, Long>();
+        try {
+            while (c.moveToNext()) {
+                map.put(c.getString(c.getColumnIndex(TAG)).toLowerCase(Locale.US),
+                        c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)));
+            }
+        } finally {
+            c.close();
+        }
+        return map;
+    }
 
     public List<PostTag> getListTagsLastPublishedTime(List<String> tags, String tumblrName) {
         return cursorToList(getCursorLastPublishedTime(tags, tumblrName, COLUMNS));
@@ -184,17 +184,17 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         return list;
     }   
     
-	public PostTag findLastPublishedPost(String tumblrName) {
-		SQLiteDatabase db = getDbHelper().getReadableDatabase();
+    public PostTag findLastPublishedPost(String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
-		String sqlQuery = "SELECT " + TextUtils.join(",", COLUMNS) + ", max(" + PUBLISH_TIMESTAMP + ")"
-				+ " FROM " + TABLE_NAME + " WHERE " + TUMBLR_NAME + "=?";
+        String sqlQuery = "SELECT " + TextUtils.join(",", COLUMNS) + ", max(" + PUBLISH_TIMESTAMP + ")"
+                + " FROM " + TABLE_NAME + " WHERE " + TUMBLR_NAME + "=?";
 
-		Cursor c = db.rawQuery(sqlQuery, new String[] {tumblrName});
-		PostTag postTag = null;
-		try {
-		    // be sure at least one record is returned (table could be empty)
-			if (c.moveToNext() && !c.isNull(c.getColumnIndex(_ID))) {
+        Cursor c = db.rawQuery(sqlQuery, new String[] {tumblrName});
+        PostTag postTag = null;
+        try {
+            // be sure at least one record is returned (table could be empty)
+            if (c.moveToNext() && !c.isNull(c.getColumnIndex(_ID))) {
                 postTag = new PostTag(
                         c.getLong(c.getColumnIndex(_ID)),
                         c.getString(c.getColumnIndex(TUMBLR_NAME)),
@@ -202,12 +202,12 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                         c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
                         c.getLong(c.getColumnIndex(SHOW_ORDER))
                         );
-			}
-		} finally {
-			c.close();
-		}	
-		return postTag;
-	}
+            }
+        } finally {
+            c.close();
+        }    
+        return postTag;
+    }
 
     public Map<String, Long> getStatisticCounts(String tumblrName) {
         if (tumblrName == null) {

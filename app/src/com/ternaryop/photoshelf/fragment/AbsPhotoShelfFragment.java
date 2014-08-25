@@ -14,20 +14,20 @@ public abstract class AbsPhotoShelfFragment extends Fragment {
     protected FragmentActivityStatus fragmentActivityStatus;
     protected TaskWithUI task;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setRetainInstance(true);
-	}
-	
-	@Override
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+    
+    @Override
     public void onDetach() {
-		if (task != null) {
-			task.dismiss();
-		}
+        if (task != null) {
+            task.dismiss();
+        }
         super.onDetach();
     }
-	
+    
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -36,14 +36,14 @@ public abstract class AbsPhotoShelfFragment extends Fragment {
         fragmentActivityStatus = (FragmentActivityStatus)activity;
     }
     
-	protected boolean taskUIRecreated() {
+    protected boolean taskUIRecreated() {
         if (task != null && task.isRunning()) {
-        	task.recreateUI();
-        	return true;
+            task.recreateUI();
+            return true;
         }
-		return false;
-	}
-	
+        return false;
+    }
+    
     public String getBlogName() {
         return fragmentActivityStatus.getAppSupport().getSelectedBlogName();
     }

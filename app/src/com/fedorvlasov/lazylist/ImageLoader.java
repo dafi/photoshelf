@@ -30,13 +30,13 @@ import com.ternaryop.utils.ImageUtils;
 public class ImageLoader {
     public final static String IMAGE_PREFIX_DIRECTORY = "images" + File.separator;
     
-    private MemoryCache memoryCache = new MemoryCache();
-    private FileCache fileCache;
-    private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-    private ExecutorService executorService;
-    private Handler handler = new Handler(); // handler to display images in UI thread
+    private final MemoryCache memoryCache = new MemoryCache();
+    private final FileCache fileCache;
+    private final Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
+    private final ExecutorService executorService;
+    private final Handler handler = new Handler(); // handler to display images in UI thread
     private final int stub_id = R.drawable.stub;
-    private Context context;
+    private final Context context;
 
     public ImageLoader(Context context, String prefix) {
         this.context = context;
@@ -109,7 +109,6 @@ public class ImageLoader {
         
         //from web
         try {
-            Bitmap bitmap=null;
             URL imageUrl = new URL(url);
             HttpURLConnection conn = (HttpURLConnection)imageUrl.openConnection();
             conn.setConnectTimeout(30000);
@@ -120,8 +119,7 @@ public class ImageLoader {
             Utils.CopyStream(is, os);
             os.close();
             conn.disconnect();
-            bitmap = decodeFile(f);
-            return bitmap;
+            return decodeFile(f);
         } catch (Throwable ex){
            ex.printStackTrace();
            if(ex instanceof OutOfMemoryError)
@@ -159,7 +157,7 @@ public class ImageLoader {
             Bitmap bitmap=BitmapFactory.decodeStream(stream2, null, o2);
             stream2.close();
             return bitmap;
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException ignored) {
         } 
         catch (IOException e) {
             e.printStackTrace();
@@ -170,8 +168,8 @@ public class ImageLoader {
     //Task for the queue
     private class PhotoToLoad
     {
-        public String url;
-        public ImageView imageView;
+        public final String url;
+        public final ImageView imageView;
         public PhotoToLoad(String u, ImageView i){
             url=u; 
             imageView=i;
@@ -179,8 +177,8 @@ public class ImageLoader {
     }
     
     class PhotosLoader implements Runnable {
-        PhotoToLoad photoToLoad;
-        private boolean scaleForDefaultDisplay;
+        final PhotoToLoad photoToLoad;
+        private final boolean scaleForDefaultDisplay;
         PhotosLoader(PhotoToLoad photoToLoad, boolean scaleForDefaultDisplay) {
             this.photoToLoad = photoToLoad;
             this.scaleForDefaultDisplay = scaleForDefaultDisplay;
@@ -207,16 +205,14 @@ public class ImageLoader {
     
     boolean imageViewReused(PhotoToLoad photoToLoad){
         String tag=imageViews.get(photoToLoad.imageView);
-        if(tag==null || !tag.equals(photoToLoad.url))
-            return true;
-        return false;
+        return tag == null || !tag.equals(photoToLoad.url);
     }
     
     //Used to display bitmap in the UI thread
     class BitmapDisplayer implements Runnable {
         Bitmap bitmap;
-        PhotoToLoad photoToLoad;
-        private boolean scaleForDefaultDisplay;
+        final PhotoToLoad photoToLoad;
+        private final boolean scaleForDefaultDisplay;
 
         public BitmapDisplayer(Bitmap b, PhotoToLoad p, boolean scaleForDefaultDisplay) {
             bitmap = b;
@@ -272,8 +268,8 @@ public class ImageLoader {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try { if (os != null) os.close(); } catch (Exception ex) {}
-            try { if (conn != null) conn.disconnect(); } catch (Exception ex) {}
+            try { if (os != null) os.close(); } catch (Exception ignored) {}
+            try { if (conn != null) conn.disconnect(); } catch (Exception ignored) {}
         }
         return null;
     }

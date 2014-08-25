@@ -60,7 +60,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         prepareWebView(progressBar).loadData(data, "text/html", "UTF-8");
         try {
             getActionBar().setSubtitle(new URI(imageUrl).getHost());
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException ignored) {
         }
     }
 
@@ -194,7 +194,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
                 @Override
                 protected void onPostExecute(Void result) {
                     super.onPostExecute(result);
-                    if (getError() != null) {
+                    if (hasError()) {
                         return;
                     }
                     Toast.makeText(getContext(),
@@ -235,7 +235,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
                 @Override
                 protected void onPostExecute(Void result) {
                     super.onPostExecute(result);
-                    if (getError() != null) {
+                    if (hasError()) {
                         return;
                     }
                     String title = getIntent().getExtras().getString(IMAGE_TITLE);
@@ -295,8 +295,8 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     }
 
     private abstract class DownloadImageUrl extends AbsProgressBarAsyncTask<Void, Void, Void> {
-        private URL imageUrl;
-        private File destFile;
+        private final URL imageUrl;
+        private final File destFile;
 
         public DownloadImageUrl(Context context, String message, URL imageUrl, File destFile) {
             super(context, message);
@@ -318,11 +318,11 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
             } finally {
                 if (is != null) try {
                     is.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 if (os != null) try {
                     os.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
             return null;

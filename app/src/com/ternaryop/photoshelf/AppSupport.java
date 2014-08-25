@@ -20,14 +20,14 @@ import com.ternaryop.tumblr.Tumblr;
 
 public class AppSupport {
     private static final String SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf";
-
-    private final Context context;
     private static final String PREF_SELECTED_BLOG = "selectedBlog";
     private static final String PREF_BLOG_NAMES = "blogNames";
     private static final String PREF_SCHEDULE_TIME_SPAN = "schedule_time_span";
     private static final String LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime";
     private static final String AUTOMATIC_EXPORT = "automatic_export";
-    private SharedPreferences preferences;
+
+    private final Context context;
+    private final SharedPreferences preferences;
 
     public AppSupport(Context context) {
         this.context = context;
@@ -85,10 +85,10 @@ public class AppSupport {
             public void complete(Blog[] blogs) {
                 HashSet<String> blogNames = new HashSet<String>(blogs.length);
                 String primaryBlog = null;
-                for (int i = 0; i < blogs.length; i++) {
-                    blogNames.add(blogs[i].getName());
-                    if (blogs[i].isPrimary()) {
-                        primaryBlog = blogs[i].getName();
+                for (Blog blog : blogs) {
+                    blogNames.add(blog.getName());
+                    if (blog.isPrimary()) {
+                        primaryBlog = blog.getName();
                     }
                 }
                 setBlogList(blogNames);

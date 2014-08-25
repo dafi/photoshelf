@@ -30,9 +30,9 @@ public class TumblrHttpOAuthConsumer {
     private static final String PREF_OAUTH_SECRET = "oAuthSecret";
     private static final String PREF_OAUTH_TOKEN = "oAuthToken";
 
-    private OAuthService oAuthService;
-    private Token accessToken;
-    private String consumerKey;
+    private final OAuthService oAuthService;
+    private final Token accessToken;
+    private final String consumerKey;
 
     public TumblrHttpOAuthConsumer(Context context) {
         consumerKey = context.getString(R.string.CONSUMER_KEY);
@@ -141,10 +141,10 @@ public class TumblrHttpOAuthConsumer {
     /**
      * Return true if the uri scheme can be handled, false otherwise
      * The returned value indicated only the scheme can be handled, the method complete the access asynchronously
-     * @param context
-     * @param uri
+     * @param context the context
+     * @param uri the uri to check
      * @param callback can be null
-     * @return
+     * @return true if uri can be handled, false otherwise
      */
     public static boolean handleOpenURI(final Context context, final Uri uri, AuthenticationCallback callback) {
         String callbackUrl = context.getString(R.string.CALLBACK_URL);
@@ -173,7 +173,7 @@ public class TumblrHttpOAuthConsumer {
         return new MultipartConverter(oAuthReq, params).getRequest().send();
     }
 
-    public synchronized Response getSignedGetResponse(String url, Map<String, ?> params) throws IOException {
+    public synchronized Response getSignedGetResponse(String url, Map<String, ?> params) {
         OAuthRequest oAuthReq = new OAuthRequest(Verb.GET, url);
 
         if (params != null) {

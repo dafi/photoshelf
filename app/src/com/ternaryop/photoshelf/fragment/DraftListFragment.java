@@ -84,7 +84,7 @@ public class DraftListFragment extends AbsPostsListFragment {
             protected void onPostExecute(List<PhotoShelfPost> posts) {
                 super.onPostExecute(posts);
 
-                if (getError() == null) {
+                if (!hasError()) {
                     photoAdapter.addAll(posts);
                 }
                 refreshUI();

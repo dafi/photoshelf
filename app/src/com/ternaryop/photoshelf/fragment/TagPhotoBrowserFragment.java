@@ -77,7 +77,7 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnS
 
     @Override
     protected SearchView setupSearchView(Menu menu) {
-    	super.setupSearchView(menu);
+        super.setupSearchView(menu);
 
         searchView.setOnSuggestionListener(this);
         TagCursorAdapter adapter = new TagCursorAdapter(
@@ -104,8 +104,8 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnS
             @Override
             protected void onPostExecute(List<PhotoShelfPost> posts) {
                 super.onPostExecute(posts);
-                
-                if (getError() == null) {
+
+                if (!hasError()) {
                     photoAdapter.addAll(posts);
                     refreshUI();
                 }
@@ -179,8 +179,8 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnS
     @Override
     public void onPhotoBrowseClick(PhotoShelfPost post) {
         // do nothing if tags are equal otherwise a new TagBrowser on same tag is launched
-    	if (!postTag.equalsIgnoreCase(post.getFirstTag())) {
-    		super.onPhotoBrowseClick(post);
-    	}
+        if (!postTag.equalsIgnoreCase(post.getFirstTag())) {
+            super.onPhotoBrowseClick(post);
+        }
     }
 }

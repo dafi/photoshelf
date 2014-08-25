@@ -18,7 +18,7 @@ import org.json.JSONObject;
  * 
  */
 public class ImageDOMSelectorFinder {
-    private static HashMap<String, Object> domainMap = new HashMap<String, Object>();
+    private static final HashMap<String, Object> domainMap = new HashMap<String, Object>();
     private static boolean isUpgraded;
     private static final String SELECTORS_FILENAME = "domSelectors.json";
 
@@ -41,7 +41,7 @@ public class ImageDOMSelectorFinder {
                         // version may be not present on existing json file
                         try {
                             privateVersion = jsonPrivate.getInt("version");
-                        } catch (JSONException ex) {
+                        } catch (JSONException ignored) {
                         }
                         int assetsVersion = jsonAssets.getInt("version");
                         if (privateVersion < assetsVersion) {

@@ -14,10 +14,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 
 import com.ternaryop.photoshelf.AppSupport;
@@ -36,15 +34,15 @@ import org.json.JSONObject;
 
 public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
-    private EditText postTitle;
-    private AutoCompleteTextView postTags;
-    private Spinner blogList;
+    private final EditText postTitle;
+    private final AutoCompleteTextView postTags;
+    private final Spinner blogList;
+    private final AppSupport appSupport;
+    private final long postId;
+    private final TagCursorAdapter tagAdapter;
     private List<String> imageUrls;
     private List<File> imageFiles;
-    private AppSupport appSupport;
-    private long postId;
     private OnClickListener dialogClickListener;
-    private TagCursorAdapter tagAdapter;
     private boolean blockUIWhilePublish;
 
     public TumblrPostDialog(Context context) {
@@ -52,7 +50,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     }
     
     /**
-     * @param context
+     * @param context the context
      * @param postId, 0 to enable publish and draft otherwise edit the post
      */
     public TumblrPostDialog(Context context, long postId) {
@@ -66,8 +64,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
         blogList = (Spinner) findViewById(R.id.blog);
         
         appSupport = new AppSupport(context);
-        ((Button)findViewById(R.id.cancelButton)).setOnClickListener(this);
-        ((Button)findViewById(R.id.parse_title_button)).setOnClickListener(this);
+        findViewById(R.id.cancelButton).setOnClickListener(this);
+        findViewById(R.id.parse_title_button).setOnClickListener(this);
 
         tagAdapter = new TagCursorAdapter(
                 getContext(),
@@ -82,11 +80,11 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
             findViewById(R.id.draft_button).setVisibility(View.GONE);
             findViewById(R.id.blog_list).setVisibility(View.GONE);
             findViewById(R.id.edit_button).setVisibility(View.VISIBLE);
-            ((Button)findViewById(R.id.edit_button)).setOnClickListener(this);
+            findViewById(R.id.edit_button).setOnClickListener(this);
         } else {
-            ((Button)findViewById(R.id.publish_button)).setOnClickListener(new OnClickPublishListener());
-            ((Button)findViewById(R.id.draft_button)).setOnClickListener(new OnClickPublishListener());
-            ((ImageButton)findViewById(R.id.refreshBlogList)).setOnClickListener(this);
+            findViewById(R.id.publish_button).setOnClickListener(new OnClickPublishListener());
+            findViewById(R.id.draft_button).setOnClickListener(new OnClickPublishListener());
+            findViewById(R.id.refreshBlogList).setOnClickListener(this);
         }
     }
 
@@ -104,7 +102,6 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
                 return;
             case R.id.parse_title_button:
                 parseTitle();
-                return;
         }
     }
     
@@ -203,8 +200,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
             @Override
             public void complete(Blog[] result) {
                 List<String> blogNames = new ArrayList<String>(result.length);
-                for (int i = 0; i < result.length; i++) {
-                    blogNames.add(result[i].getName());
+                for (Blog blog : result) {
+                    blogNames.add(blog.getName());
                 }
                 appSupport.setBlogList(blogNames);
                 fillBlogList(blogNames);

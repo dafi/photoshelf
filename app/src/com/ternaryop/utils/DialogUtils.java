@@ -6,17 +6,17 @@ import android.content.DialogInterface;
 
 public class DialogUtils {
 
-	public static void showErrorDialog(Context context, Exception e) {
-		showErrorDialog(context, "Error", e);
-	}
+    public static void showErrorDialog(Context context, Exception e) {
+        showErrorDialog(context, "Error", e);
+    }
 
-	public static void showErrorDialog(Context context, String title, Exception e) {
-	    showSimpleMessageDialog(context, title, e.getLocalizedMessage());
-	}
+    public static void showErrorDialog(Context context, String title, Exception e) {
+        showSimpleMessageDialog(context, title, e.getLocalizedMessage());
+    }
 
-	public static void showErrorDialog(Context context, int resId, Exception e) {
+    public static void showErrorDialog(Context context, int resId, Exception e) {
         showSimpleMessageDialog(context, context.getString(resId), e.getLocalizedMessage());
-	}
+    }
 
     public static void showSimpleMessageDialog(Context context, int resId, String message) {
         showSimpleMessageDialog(context, context.getString(resId), message);

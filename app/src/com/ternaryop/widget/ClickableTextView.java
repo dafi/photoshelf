@@ -10,32 +10,32 @@ import android.widget.TextView;
 import com.ternaryop.photoshelf.R;
 
 public class ClickableTextView extends TextView implements OnTouchListener {
-	public ClickableTextView(Context context, AttributeSet attrs,
-			int defStyle) {
-		super(context, attrs, defStyle);
-		setup();
-	}
+    public ClickableTextView(Context context, AttributeSet attrs,
+            int defStyle) {
+        super(context, attrs, defStyle);
+        setup();
+    }
 
-	public ClickableTextView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		setup();
-	}
+    public ClickableTextView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        setup();
+    }
 
-	public ClickableTextView(Context context, int checkableId) {
-		super(context);
-		setup();
-	}
-	
-	public ClickableTextView(Context context) {
-		super(context);
-		setup();
-	}
+    public ClickableTextView(Context context, int checkableId) {
+        super(context);
+        setup();
+    }
+    
+    public ClickableTextView(Context context) {
+        super(context);
+        setup();
+    }
 
-	private void setup() {
-		setOnTouchListener(this);
-	}
+    private void setup() {
+        setOnTouchListener(this);
+    }
 
-	@Override
+    @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (hasOnClickListeners()) {
             switch (event.getAction()) {

@@ -27,7 +27,7 @@ public class ImageUrlRetriever {
     private final Context context;
     private String title;
     private Exception error = null;
-    private Map<String, String> urlSelectorMap = new HashMap<String, String>();
+    private final Map<String, String> urlSelectorMap = new HashMap<String, String>();
     private ActionMode actionMode;
     private final OnImagesRetrieved callback;
     private boolean useActionMode;
@@ -72,7 +72,7 @@ public class ImageUrlRetriever {
         this.title = title;
     }
 
-    private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.action_context, menu);
@@ -186,7 +186,7 @@ public class ImageUrlRetriever {
                             } else {
                                 imageUrls.add(link);
                             }
-                        } catch (URISyntaxException e) {
+                        } catch (URISyntaxException ignored) {
                         }
                     }
                     publishProgress(i++);

@@ -17,25 +17,25 @@ public class BootService extends Service {
     private AppSupport appSupport;
 
     public IBinder onBind(Intent intent) {
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public void onCreate() {
+    @Override
+    public void onCreate() {
         appSupport = new AppSupport(getApplicationContext());
-	}
+    }
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		if (BIRTHDAY_ACTION.equals(intent.getAction())) {
-			if (!hasAlreadyNotifiedToday()) {
-				BirthdayUtils.notifyBirthday(getApplicationContext());
-			}
-		} else if (EXPORT_ACTION.equals(intent.getAction())) {
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (BIRTHDAY_ACTION.equals(intent.getAction())) {
+            if (!hasAlreadyNotifiedToday()) {
+                BirthdayUtils.notifyBirthday(getApplicationContext());
+            }
+        } else if (EXPORT_ACTION.equals(intent.getAction())) {
             startExport();
         }
-		return START_NOT_STICKY;
-	}
+        return START_NOT_STICKY;
+    }
 
     private void startExport() {
         if (!appSupport.isAutomaticExportEnabled()) {
@@ -55,19 +55,19 @@ public class BootService extends Service {
     }
 
     private boolean hasAlreadyNotifiedToday() {
-		AppSupport appSupport = new AppSupport(getApplicationContext());
-		GregorianCalendar lastBirthdayShowTime = new GregorianCalendar();
-		lastBirthdayShowTime.setTimeInMillis(appSupport.getLastBirthdayShowTime());
-		GregorianCalendar nowMS = new GregorianCalendar();
-		if ((nowMS.get(Calendar.DAY_OF_MONTH) == lastBirthdayShowTime.get(Calendar.DAY_OF_MONTH))
-			&& (nowMS.get(Calendar.MONTH) == lastBirthdayShowTime.get(Calendar.MONTH))) {
-			return true;
-		}
-		appSupport.setLastBirthdayShowTime(nowMS.getTimeInMillis());
-		return false;
-	}
+        AppSupport appSupport = new AppSupport(getApplicationContext());
+        GregorianCalendar lastBirthdayShowTime = new GregorianCalendar();
+        lastBirthdayShowTime.setTimeInMillis(appSupport.getLastBirthdayShowTime());
+        GregorianCalendar nowMS = new GregorianCalendar();
+        if ((nowMS.get(Calendar.DAY_OF_MONTH) == lastBirthdayShowTime.get(Calendar.DAY_OF_MONTH))
+            && (nowMS.get(Calendar.MONTH) == lastBirthdayShowTime.get(Calendar.MONTH))) {
+            return true;
+        }
+        appSupport.setLastBirthdayShowTime(nowMS.getTimeInMillis());
+        return false;
+    }
 
-	@Override
-	public void onDestroy() {
-	}
+    @Override
+    public void onDestroy() {
+    }
 }

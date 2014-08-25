@@ -17,7 +17,7 @@ import com.ternaryop.tumblr.Blog;
  
 public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerAdapter {
     private static LayoutInflater inflater = null;
-    private ImageLoader imageLoader;
+    private final ImageLoader imageLoader;
  
     public BlogSpinnerAdapter(Context context, String prefix, List<String> blogNames) {
         super(context, 0, blogNames);
@@ -51,8 +51,8 @@ public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerA
     }
     
     private class ViewHolder {
-        TextView title;
-        ImageView image;
+        final TextView title;
+        final ImageView image;
 
         public ViewHolder(View vi) {
             title = (TextView)vi.findViewById(R.id.title1);

@@ -175,7 +175,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
     /**
      * Workaround for 4.4 bug 
      * http://code.google.com/p/android/issues/detail?id=62928
-     * @param url
+     * @param url the url to use use to add/remove to selected images
      */
     @JavascriptInterface
     public void setTargetHrefURL(final String url) {

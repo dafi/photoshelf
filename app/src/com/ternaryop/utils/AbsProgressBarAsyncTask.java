@@ -7,64 +7,68 @@ import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
 
 public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> implements TaskWithUI, OnCancelListener {
-	private ProgressDialog progressDialog;
-	private Exception error;
-	private Context context;
-	private String message;
-	
-	public AbsProgressBarAsyncTask(Context context, String message) {
-		this.context = context;
-		this.message = message;
-		initProgressDialog();
-	}
+    private ProgressDialog progressDialog;
+    private Exception error;
+    private final Context context;
+    private final String message;
+    
+    public AbsProgressBarAsyncTask(Context context, String message) {
+        this.context = context;
+        this.message = message;
+        initProgressDialog();
+    }
 
-	private void initProgressDialog() {
-		progressDialog = new ProgressDialog(context);
-		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progressDialog.setMessage(message);
-		progressDialog.setOnCancelListener(this);
-		progressDialog.show();
-	}
-	
-	public void recreateUI() {
-		initProgressDialog();
-		progressDialog.show();
-	}
+    private void initProgressDialog() {
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage(message);
+        progressDialog.setOnCancelListener(this);
+        progressDialog.show();
+    }
+    
+    public void recreateUI() {
+        initProgressDialog();
+        progressDialog.show();
+    }
 
-	public void dismiss() {
+    public void dismiss() {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-	}
+    }
 
-	protected void onPreExecute() {
-		progressDialog.show();
-	}
-	
-	@Override
-	protected void onPostExecute(Result result) {
-		progressDialog.dismiss();
-		
-		if (error != null) {
-			DialogUtils.showErrorDialog(context, error);
-		}
-	}
+    protected void onPreExecute() {
+        progressDialog.show();
+    }
+    
+    @Override
+    protected void onPostExecute(Result result) {
+        progressDialog.dismiss();
+        
+        if (error != null) {
+            DialogUtils.showErrorDialog(context, error);
+        }
+    }
 
-	public Exception getError() {
-		return error;
-	}
+    public boolean hasError() {
+        return error != null;
+    }
 
-	public void setError(Exception error) {
-		this.error = error;
-	}
+    public Exception getError() {
+        return error;
+    }
 
-	public ProgressDialog getProgressDialog() {
-		return progressDialog;
-	}
+    public void setError(Exception error) {
+        this.error = error;
+    }
 
-	public Context getContext() {
-		return context;
-	}
+    public ProgressDialog getProgressDialog() {
+        return progressDialog;
+    }
+
+    public Context getContext() {
+        return context;
+    }
 
     @Override
     public void onCancel(DialogInterface dialog) {
@@ -72,6 +76,6 @@ public abstract class AbsProgressBarAsyncTask<Params, Progress, Result> extends 
     }
     
     public boolean isRunning() {
-    	return !isCancelled() && getStatus().equals(AsyncTask.Status.RUNNING);
+        return !isCancelled() && getStatus().equals(AsyncTask.Status.RUNNING);
     }
 }

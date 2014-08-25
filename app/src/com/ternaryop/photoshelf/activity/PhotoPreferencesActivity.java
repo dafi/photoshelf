@@ -25,7 +25,7 @@ import com.ternaryop.tumblr.Tumblr;
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String TUMBLR_SERVICE_NAME = "Tumblr";
-	private static final String DROPBOX_SERVICE_NAME = "Dropbox";
+    private static final String DROPBOX_SERVICE_NAME = "Dropbox";
 
     private static final String KEY_TUMBLR_LOGIN = "tumblr_login";
     private static final String KEY_DROPBOX_LOGIN = "dropbox_login";
@@ -42,7 +42,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private static final String KEY_VERSION = "version";
     
     public static final int MAIN_PREFERENCES_RESULT = 1;
-	private static final int DROPBOX_RESULT = 2;
+    private static final int DROPBOX_RESULT = 2;
 
     private Preference preferenceTumblrLogin;
     private Preference preferenceImportPostsFromCSV;
@@ -55,11 +55,11 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private Preference preferenceScheduleTimeSpan;
     private Preference preferenceClearImageCache;
     private Preference preferenceExportMissingBirthdays;
-	private Preference preferenceDropboxLogin;
+    private Preference preferenceDropboxLogin;
 
     private AppSupport appSupport;
-	private DbxAccountManager dropboxManager;
-	private Importer importer;
+    private DbxAccountManager dropboxManager;
+    private Importer importer;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +83,9 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         
         preferenceDropboxLogin = preferenceScreen.findPreference(KEY_DROPBOX_LOGIN);
         if (dropboxManager.hasLinkedAccount()) {
-        	preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
+            preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
         } else {
-        	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+            preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
         }
         
         String csvPath = Importer.getPostsPath();
@@ -125,7 +125,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
     // Use instance field for listener
     // It will not be gc'd as long as this instance is kept referenced
-    private OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
+    private final OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if (key.equals(KEY_SCHEDULE_TIME_SPAN)) {
@@ -136,13 +136,13 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     };
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    	if (resultCode == RESULT_OK && requestCode == DROPBOX_RESULT) {
+        if (resultCode == RESULT_OK && requestCode == DROPBOX_RESULT) {
             if (dropboxManager.hasLinkedAccount()) {
-            	preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
+                preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
             } else {
-            	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+                preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
             }
-    	}
+        }
     }
     
     @Override
@@ -197,12 +197,12 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
                         appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceDropboxLogin) {
-            	if (dropboxManager.hasLinkedAccount()) {
-            		dropboxManager.unlink();
-                	preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
-            	} else {
-            		dropboxManager.startLink(this, DROPBOX_RESULT);
-            	}
+                if (dropboxManager.hasLinkedAccount()) {
+                    dropboxManager.unlink();
+                    preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+                } else {
+                    dropboxManager.startLink(this, DROPBOX_RESULT);
+                }
                 return true;
             }
         }
@@ -272,9 +272,9 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     }
 
     public Importer getImporter() {
-    	if (importer == null) {
-    		importer = new Importer(this, dropboxManager);
-    	}
-    	return importer;
+        if (importer == null) {
+            importer = new Importer(this, dropboxManager);
+        }
+        return importer;
     }
 }

@@ -71,7 +71,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
             @Override
             protected void onPostExecute(List<Pair<Birthday, TumblrPhotoPost>> posts) {
                 super.onPostExecute(null);
-                if (getError() == null) {
+                if (!hasError()) {
                     gridViewPhotoAdapter.clear();
                     gridViewPhotoAdapter.addAll(posts);
                     gridViewPhotoAdapter.notifyDataSetChanged();
@@ -136,7 +136,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
             
             protected void onPostExecute(List<TumblrPhotoPost> result) {
                 super.onPostExecute(null);
-                if (getError() == null) {
+                if (!hasError()) {
                     mode.finish();
                 }
             }

@@ -17,7 +17,6 @@ import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
 
 public class TagListFragment extends AbsPhotoShelfFragment implements OnItemClickListener {
-    private ListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -28,8 +27,8 @@ public class TagListFragment extends AbsPhotoShelfFragment implements OnItemClic
                 getActivity(),
                 android.R.layout.simple_list_item_1,
                 getBlogName());
-        
-        listView = (ListView) rootView.findViewById(R.id.list);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
         listView.setTextFilterEnabled(true);

@@ -44,7 +44,7 @@ import org.jsoup.select.Elements;
 
 public class BirthdayUtils {
     private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
-	private static final int BIRTHDAY_NOTIFICATION_ID = 1;
+    private static final int BIRTHDAY_NOTIFICATION_ID = 1;
     public static final String DESKTOP_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0";
 
     private final static BirthdaySearcher[] BIRTHDAY_SEARCHERS = new BirthdaySearcher[3];
@@ -56,89 +56,87 @@ public class BirthdayUtils {
     }
 
     public static boolean notifyBirthday(Context context) {
-		BirthdayDAO birthdayDatabaseHelper = DBHelper
-				.getInstance(context.getApplicationContext())
-				.getBirthdayDAO();
-		Calendar now = Calendar.getInstance(Locale.US);
-		List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(now.getTime());
-		if (list.isEmpty()) {
-			return false;
-		}
+        BirthdayDAO birthdayDatabaseHelper = DBHelper
+                .getInstance(context.getApplicationContext())
+                .getBirthdayDAO();
+        Calendar now = Calendar.getInstance(Locale.US);
+        List<Birthday> list = birthdayDatabaseHelper.getBirthdayByDate(now.getTime());
+        if (list.isEmpty()) {
+            return false;
+        }
 
-		int currYear = now.get(Calendar.YEAR);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(
-				context.getApplicationContext())
-				.setContentIntent(createPendingIntent(context))
-				.setSmallIcon(R.drawable.stat_notify_bday);
-		if (list.size() == 1) {
-			Birthday birthday = list.get(0);
-			builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size()));
-			Calendar cal = Calendar.getInstance(Locale.US);
-			cal.setTime(birthday.getBirthDate());
-			int years = currYear - cal.get(Calendar.YEAR);
-			builder.setContentText(context.getString(R.string.birthday_years_old, birthday.getName(), years));
-		} else {
+        int currYear = now.get(Calendar.YEAR);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(
+                context.getApplicationContext())
+                .setContentIntent(createPendingIntent(context))
+                .setSmallIcon(R.drawable.stat_notify_bday);
+        if (list.size() == 1) {
+            Birthday birthday = list.get(0);
+            builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size()));
+            Calendar cal = Calendar.getInstance(Locale.US);
+            cal.setTime(birthday.getBirthDate());
+            int years = currYear - cal.get(Calendar.YEAR);
+            builder.setContentText(context.getString(R.string.birthday_years_old, birthday.getName(), years));
+        } else {
             builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size(), list.size()));
-			NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-			inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title));
-			for (Birthday birthday : list) {
-				Calendar cal = Calendar.getInstance(Locale.US);
-				cal.setTime(birthday.getBirthDate());
-				int years = currYear - cal.get(Calendar.YEAR);
-			    inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.getName(), years));
-			}
-			builder.setStyle(inboxStyle);
-		}
+            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+            inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title));
+            for (Birthday birthday : list) {
+                Calendar cal = Calendar.getInstance(Locale.US);
+                cal.setTime(birthday.getBirthDate());
+                int years = currYear - cal.get(Calendar.YEAR);
+                inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.getName(), years));
+            }
+            builder.setStyle(inboxStyle);
+        }
 
-		// remove notification when user clicks on it
-		builder.setAutoCancel(true);
-		
-		Notification notification = builder.build();
-		NotificationManager notificationManager = (NotificationManager)context.getApplicationContext()
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.notify(BIRTHDAY_NOTIFICATION_TAG, BIRTHDAY_NOTIFICATION_ID, notification);
+        // remove notification when user clicks on it
+        builder.setAutoCancel(true);
+        
+        Notification notification = builder.build();
+        NotificationManager notificationManager = (NotificationManager)context.getApplicationContext()
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(BIRTHDAY_NOTIFICATION_TAG, BIRTHDAY_NOTIFICATION_ID, notification);
 
-		return true;
-	}
+        return true;
+    }
 
-	private static PendingIntent createPendingIntent(Context context) {
-		// Define Activity to start
-		Intent resultIntent = new Intent(context, BirthdaysPublisherActivity.class);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-		// Adds the back stack
-		stackBuilder.addParentStack(BirthdaysPublisherActivity.class);
-		// Adds the Intent to the top of the stack
-		stackBuilder.addNextIntent(resultIntent);
-		// Gets a PendingIntent containing the entire back stack
-		PendingIntent resultPendingIntent =
-		        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-		return resultPendingIntent;
-	}
-	
-	public static ArrayList<Pair<Birthday, TumblrPhotoPost>> getPhotoPosts(final Context context, Calendar birthDate) {
+    private static PendingIntent createPendingIntent(Context context) {
+        // Define Activity to start
+        Intent resultIntent = new Intent(context, BirthdaysPublisherActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        // Adds the back stack
+        stackBuilder.addParentStack(BirthdaysPublisherActivity.class);
+        // Adds the Intent to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        // Gets a PendingIntent containing the entire back stack
+        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+    
+    public static ArrayList<Pair<Birthday, TumblrPhotoPost>> getPhotoPosts(final Context context, Calendar birthDate) {
         DBHelper dbHelper = DBHelper
                 .getInstance(context.getApplicationContext());
         List<Birthday> birthDays = dbHelper
                 .getBirthdayDAO()
                 .getBirthdayByDate(birthDate.getTime());
-	    ArrayList<Pair<Birthday, TumblrPhotoPost>> posts = new ArrayList<Pair<Birthday, TumblrPhotoPost>>();
+        ArrayList<Pair<Birthday, TumblrPhotoPost>> posts = new ArrayList<Pair<Birthday, TumblrPhotoPost>>();
 
-	    PostTagDAO postTagDAO = dbHelper.getPostTagDAO();
-	    Map<String, String> params = new HashMap<String, String>(2);
-	    params.put("type", "photo");
-	    for (Birthday b : birthDays) {
-	        PostTag postTag = postTagDAO.getRandomPostByTag(b.getName(), b.getTumblrName());
-	        if (postTag != null) {
-	            params.put("id", String.valueOf(postTag.getId()));
-	            TumblrPhotoPost post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
-	                    .getPublicPosts(b.getTumblrName(), params).get(0);
+        PostTagDAO postTagDAO = dbHelper.getPostTagDAO();
+        Map<String, String> params = new HashMap<String, String>(2);
+        params.put("type", "photo");
+        for (Birthday b : birthDays) {
+            PostTag postTag = postTagDAO.getRandomPostByTag(b.getName(), b.getTumblrName());
+            if (postTag != null) {
+                params.put("id", String.valueOf(postTag.getId()));
+                TumblrPhotoPost post = (TumblrPhotoPost)Tumblr.getSharedTumblr(context)
+                        .getPublicPosts(b.getTumblrName(), params).get(0);
                 posts.add(Pair.create(b, post));
-	        }
+            }
         }
-	    return posts;
-	}
+        return posts;
+    }
 
-	public static void publishedInAgeRange(Context context, int fromAge, int toAge, int daysPeriod, String postTags, String tumblrName) {
+    public static void publishedInAgeRange(Context context, int fromAge, int toAge, int daysPeriod, String postTags, String tumblrName) {
         if (fromAge != 0 && toAge != 0) {
             throw new IllegalArgumentException("fromAge or toAge can't be both set to 0");
         }
@@ -171,9 +169,15 @@ public class BirthdayUtils {
                         .getPublicPosts(tumblrName, params).get(0);
             String imageUrl = post.getClosestPhotoByWidth(250).getUrl();
 
-            sb.append("<a href=\"" + post.getPostUrl() + "\">");
-            sb.append("<p>" + context.getString(R.string.name_with_age, post.getTags().get(0), info.get("age")) + "</p>");
-            sb.append("<img style=\"width: 250px !important\" src=\"" + imageUrl + "\"/>");
+            sb.append("<a href=\"")
+                    .append(post.getPostUrl())
+                    .append("\">");
+            sb.append("<p>")
+                    .append(context.getString(R.string.name_with_age, post.getTags().get(0), info.get("age")))
+                    .append("</p>");
+            sb.append("<img style=\"width: 250px !important\" src=\"")
+                    .append(imageUrl)
+                    .append("\"/>");
             sb.append("</a>");
             sb.append("<br/>");
 
@@ -288,7 +292,7 @@ public class BirthdayUtils {
                 if (birthday != null) {
                     return birthday;
                 }
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
             }
         }
 

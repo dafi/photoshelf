@@ -25,7 +25,7 @@ public class Utils {
               os.write(bytes, 0, count);
             }
         }
-        catch(Exception ex){}
+        catch(Exception ignored){}
     }
 
     //decodes image and scales it to reduce memory consumption
@@ -57,7 +57,7 @@ public class Utils {
             Bitmap bitmap=BitmapFactory.decodeStream(stream2, null, o2);
             stream2.close();
             return bitmap;
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException ignored) {
         } 
         catch (IOException e) {
             e.printStackTrace();

@@ -25,7 +25,7 @@ public class PublishedPostsListFragment extends AbsPostsListFragment {
         photoAdapter.setOnPhotoBrowseClick(this);
         
         if (taskUIRecreated()) {
-        	return;
+            return;
         }
 
         if (getBlogName() != null) {
@@ -57,8 +57,8 @@ public class PublishedPostsListFragment extends AbsPostsListFragment {
             @Override
             protected void onPostExecute(List<PhotoShelfPost> posts) {
                 super.onPostExecute(posts);
-                
-                if (getError() == null) {
+
+                if (!hasError()) {
                     photoAdapter.addAll(posts);
                     refreshUI();
                 }

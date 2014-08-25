@@ -23,22 +23,22 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
 import com.ternaryop.utils.StringUtils;
  
 public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.OnClickListener {
-	private static LayoutInflater inflater = null;
-    private ImageLoader imageLoader;
-	private OnPhotoBrowseClick onPhotoBrowseClick;
-	private boolean recomputeGroupIds;
-	private ArrayList<PhotoShelfPost> allPosts;
-	private boolean isFiltering;
+    private static LayoutInflater inflater = null;
+    private final ImageLoader imageLoader;
+    private final ArrayList<PhotoShelfPost> allPosts;
+    private OnPhotoBrowseClick onPhotoBrowseClick;
+    private boolean recomputeGroupIds;
+    private boolean isFiltering;
 
     public PhotoAdapter(Context context, String prefix) {
-		super(context, 0);
+        super(context, 0);
         inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
         allPosts = new ArrayList<PhotoShelfPost>();
     }
  
     public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
-		this.onPhotoBrowseClick = onPhotoBrowseClick;
+        this.onPhotoBrowseClick = onPhotoBrowseClick;
     }
     
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -50,22 +50,22 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             holder = new ViewHolder(vi);
             vi.setTag(holder);
         } else {
-        	holder = (ViewHolder) convertView.getTag();
+            holder = (ViewHolder) convertView.getTag();
         }
 
         final PhotoShelfPost post = getItem(position);
 
         switch (post.getScheduleTimeType()) {
-        	case POST_PUBLISH_NEVER:
-        		vi.setBackgroundResource(R.drawable.list_selector_post_never);
+            case POST_PUBLISH_NEVER:
+                vi.setBackgroundResource(R.drawable.list_selector_post_never);
                 break;
-        	case POST_PUBLISH_FUTURE:
-        		vi.setBackgroundResource(R.drawable.list_selector_post_future);
-        		break;
-        	default:
-			int groupId = post.getGroupId();
+            case POST_PUBLISH_FUTURE:
+                vi.setBackgroundResource(R.drawable.list_selector_post_future);
+                break;
+            default:
+            int groupId = post.getGroupId();
             vi.setBackgroundResource((groupId % 2) == 0 ? R.drawable.list_selector_post_group_even : R.drawable.list_selector_post_group_odd);
-			break;
+            break;
         }
 
         holder.title.setText(post.getFirstTag());
@@ -89,139 +89,137 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
-		String imageUrl = post.getClosestPhotoByWidth(75).getUrl();
+        String imageUrl = post.getClosestPhotoByWidth(75).getUrl();
         imageLoader.displayImage(imageUrl, holder.thumbImage);
         return vi;
     }
     
-	public void onClick(final View v) {
-		switch (v.getId()) {
-			case R.id.title_textview:
-				onPhotoBrowseClick.onPhotoBrowseClick((PhotoShelfPost)v.getTag());
-				break;
-			case R.id.thumbnail_image:
-				onPhotoBrowseClick.onThumbnailImageClick((PhotoShelfPost)v.getTag());
+    public void onClick(final View v) {
+        switch (v.getId()) {
+            case R.id.title_textview:
+                onPhotoBrowseClick.onPhotoBrowseClick((PhotoShelfPost)v.getTag());
+                break;
+            case R.id.thumbnail_image:
+                onPhotoBrowseClick.onThumbnailImageClick((PhotoShelfPost)v.getTag());
                 break;
             case R.id.menu:
                 onPhotoBrowseClick.onOverflowClick(v, (PhotoShelfPost) v.getTag());
                 break;
-		}
-	}
-	
-	public void calcGroupIds() {
-		int count = getCount();
-		
-		if (count > 0) {
-			int groupId = 0;
-			
-			String last = getItem(0).getFirstTag();
-			getItem(0).setGroupId(groupId);
-			
-			for (int i = 1; i < count; i++) {
-				// set same groupId for all identical tags
-				while (i < count && getItem(i).getFirstTag().equalsIgnoreCase(last)) {
-					getItem(i++).setGroupId(groupId);
-				}
-				if (i < count) {
-					++groupId;
-					getItem(i).setGroupId(groupId);
-					last = getItem(i).getFirstTag();
-				}
-			}
-		}
-	}
-	
-	public boolean isRecomputeGroupIds() {
-		return recomputeGroupIds;
-	}
+        }
+    }
+    
+    public void calcGroupIds() {
+        int count = getCount();
+        
+        if (count > 0) {
+            int groupId = 0;
+            
+            String last = getItem(0).getFirstTag();
+            getItem(0).setGroupId(groupId);
+            
+            for (int i = 1; i < count; i++) {
+                // set same groupId for all identical tags
+                while (i < count && getItem(i).getFirstTag().equalsIgnoreCase(last)) {
+                    getItem(i++).setGroupId(groupId);
+                }
+                if (i < count) {
+                    ++groupId;
+                    getItem(i).setGroupId(groupId);
+                    last = getItem(i).getFirstTag();
+                }
+            }
+        }
+    }
+    
+    public boolean isRecomputeGroupIds() {
+        return recomputeGroupIds;
+    }
 
-	public void setRecomputeGroupIds(boolean recomputeGroupIds) {
-		this.recomputeGroupIds = recomputeGroupIds;
-	}
-
-	@Override
-	public void add(PhotoShelfPost object) {
-		super.add(object);
-		if (!isFiltering) {
-			allPosts.add(object);
-		}
-		if (isRecomputeGroupIds()) {
-			calcGroupIds();
-		}
-	}
-
-	@Override
-	public void addAll(Collection<? extends PhotoShelfPost> collection) {
-		super.addAll(collection);
-		if (!isFiltering) {
-			allPosts.addAll(collection);
-		}
-		if (isRecomputeGroupIds()) {
-			calcGroupIds();
-		}
-	}
-
-	@Override
-	public void addAll(PhotoShelfPost... items) {
-		super.addAll(items);
-		if (!isFiltering) {
-			for (PhotoShelfPost post : items) {
-				allPosts.add(post);
-			}
-		}
-		if (isRecomputeGroupIds()) {
-			calcGroupIds();
-		}
-	}
-
-	@Override
-	public void insert(PhotoShelfPost object, int index) {
-		super.insert(object, index);
-		if (!isFiltering) {
-			allPosts.add(index, object);
-		}
-		if (isRecomputeGroupIds()) {
-			calcGroupIds();
-		}
-	}
+    public void setRecomputeGroupIds(boolean recomputeGroupIds) {
+        this.recomputeGroupIds = recomputeGroupIds;
+    }
 
     @Override
-	public void clear() {
-		super.clear();
-		if (!isFiltering) {
-			allPosts.clear();
-		}
-	}
-
-	@Override
-	public void remove(PhotoShelfPost object) {
-		super.remove(object);
-		if (!isFiltering) {
-			allPosts.remove(object);
-		}
-	}
+    public void add(PhotoShelfPost object) {
+        super.add(object);
+        if (!isFiltering) {
+            allPosts.add(object);
+        }
+        if (isRecomputeGroupIds()) {
+            calcGroupIds();
+        }
+    }
 
     @Override
-	public Filter getFilter() {
-		Filter filter = new Filter() {
+    public void addAll(Collection<? extends PhotoShelfPost> collection) {
+        super.addAll(collection);
+        if (!isFiltering) {
+            allPosts.addAll(collection);
+        }
+        if (isRecomputeGroupIds()) {
+            calcGroupIds();
+        }
+    }
+
+    @Override
+    public void addAll(PhotoShelfPost... items) {
+        super.addAll(items);
+        if (!isFiltering) {
+            Collections.addAll(allPosts, items);
+        }
+        if (isRecomputeGroupIds()) {
+            calcGroupIds();
+        }
+    }
+
+    @Override
+    public void insert(PhotoShelfPost object, int index) {
+        super.insert(object, index);
+        if (!isFiltering) {
+            allPosts.add(index, object);
+        }
+        if (isRecomputeGroupIds()) {
+            calcGroupIds();
+        }
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        if (!isFiltering) {
+            allPosts.clear();
+        }
+    }
+
+    @Override
+    public void remove(PhotoShelfPost object) {
+        super.remove(object);
+        if (!isFiltering) {
+            allPosts.remove(object);
+        }
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
 
             @SuppressWarnings("unchecked")
-			@Override
+            @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-            	isFiltering = true;
-            	clear();
-            	addAll((List<PhotoShelfPost>)results.values);
-            	isFiltering = false;
+                isFiltering = true;
+                clear();
+                addAll((List<PhotoShelfPost>)results.values);
+                isFiltering = false;
                 notifyDataSetChanged();
             }
 
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 ArrayList<PhotoShelfPost> filteredPosts = new ArrayList<PhotoShelfPost>();
-                
+
                 String pattern = constraint.toString().toLowerCase(Locale.US);
                 for (PhotoShelfPost post : allPosts) {
-                    if (post.getFirstTag().toLowerCase(Locale.US).indexOf(pattern) >= 0)  {
+                    if (post.getFirstTag().toLowerCase(Locale.US).contains(pattern))  {
                         filteredPosts.add(post);
                     }
                 }
@@ -233,9 +231,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
                 return results;
             }
         };
-
-        return filter;
-        }
+    }
 
     public void removeAndRecalcGroups(PhotoShelfPost item, Calendar lastPublishDateTime) {
         remove(item);
@@ -260,19 +256,19 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
     }
 
     private class ViewHolder {
-        TextView title;
-		TextView timeDesc;
-        TextView caption;
-		ImageView thumbImage;
-        ImageView menu;
+        final TextView title;
+        final TextView timeDesc;
+        final TextView caption;
+        final ImageView thumbImage;
+        final ImageView menu;
 
-		public ViewHolder(View vi) {
-	        title = (TextView)vi.findViewById(R.id.title_textview);
-	        timeDesc = (TextView)vi.findViewById(R.id.time_desc);
-	        caption = (TextView)vi.findViewById(R.id.caption);
+        public ViewHolder(View vi) {
+            title = (TextView)vi.findViewById(R.id.title_textview);
+            timeDesc = (TextView)vi.findViewById(R.id.time_desc);
+            caption = (TextView)vi.findViewById(R.id.caption);
             menu = (ImageView)vi.findViewById(R.id.menu);
 
-	        thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
-		}
-	}
+            thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
+        }
+    }
 }

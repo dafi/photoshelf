@@ -70,8 +70,8 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
     }
 
     private class ViewHolder {
-        TextView title;
-        TextView counter;
+        final TextView title;
+        final TextView counter;
         
         ViewHolder(View view) {
             title = (TextView) view.findViewById(android.R.id.text1);

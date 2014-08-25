@@ -17,7 +17,7 @@ public class TumblrUtils {
         // do not use Tumblr.getQueue() because it creates unused TumblrPost
         String apiUrl = tumblr.getApiUrl(tumblrName, "/posts/queue");
         long count = 0;
-        long readCount = 0;
+        long readCount;
 
         try {
             Map<String, String> params = new HashMap<String, String>(1);
@@ -57,7 +57,7 @@ public class TumblrUtils {
 
     public static List<TumblrPost> getQueueAll(Tumblr tumblr, final String tumblrName) {
         ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
-        long readCount = 0;
+        long readCount;
 
         try {
             Map<String, String> params = new HashMap<String, String>(1);

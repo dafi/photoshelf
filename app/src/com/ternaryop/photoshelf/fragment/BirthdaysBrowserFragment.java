@@ -33,7 +33,8 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
     protected enum ITEM_ACTION {
         MARK_AS_IGNORED,
         DELETE
-    };
+    }
+
     private ListView listView;
     private BirthdayCursorAdapter birthdayAdapter;
     private int[] singleSelectionMenuIds;

@@ -58,7 +58,7 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
 
             protected void onPostExecute(List<TumblrPhotoPost> posts) {
                 super.onPostExecute(null);
-                if (getError() == null) {
+                if (!hasError()) {
 //                    gridViewPhotoAdapter.clear();
 //                    gridViewPhotoAdapter.addAll(posts);
 //                    gridViewPhotoAdapter.notifyDataSetChanged();
@@ -110,7 +110,7 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
 
             protected void onPostExecute(List<TumblrPhotoPost> result) {
                 super.onPostExecute(null);
-                if (getError() == null) {
+                if (!hasError()) {
                     mode.finish();
                 }
             }

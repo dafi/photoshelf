@@ -10,26 +10,26 @@ import android.widget.ImageView;
 
 public class ClickableImageView extends ImageView implements OnTouchListener {
 
-	public ClickableImageView(Context context, AttributeSet attrs,
-			int defStyle) {
-		super(context, attrs, defStyle);
-		setOnTouchListener(this);
-	}
+    public ClickableImageView(Context context, AttributeSet attrs,
+            int defStyle) {
+        super(context, attrs, defStyle);
+        setOnTouchListener(this);
+    }
 
-	public ClickableImageView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		setOnTouchListener(this);
-	}
+    public ClickableImageView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        setOnTouchListener(this);
+    }
 
-	public ClickableImageView(Context context, int checkableId) {
-		super(context);
-		setOnTouchListener(this);
-	}
-	
-	public ClickableImageView(Context context) {
-		super(context);
-		setOnTouchListener(this);
-	}
+    public ClickableImageView(Context context, int checkableId) {
+        super(context);
+        setOnTouchListener(this);
+    }
+    
+    public ClickableImageView(Context context) {
+        super(context);
+        setOnTouchListener(this);
+    }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {

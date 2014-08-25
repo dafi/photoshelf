@@ -6,7 +6,7 @@ package com.ternaryop.utils;
  *
  */
 public interface TaskWithUI {
-	public void recreateUI();
-	public void dismiss();
+    public void recreateUI();
+    public void dismiss();
     public boolean isRunning();
 }

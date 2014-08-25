@@ -43,6 +43,7 @@ public class HomeFragment extends AbsPhotoShelfFragment {
 
         handler = new Handler(Looper.getMainLooper()) {
             @Override
+            @SuppressWarnings("unchecked")
             public void handleMessage(Message msg) {
                 if (msg.what == STATS_DATA_OK) {
                     fillStatsUI((Map<String, Long>) msg.obj);

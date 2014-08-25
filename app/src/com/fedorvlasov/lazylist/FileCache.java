@@ -7,18 +7,18 @@ import android.content.Context;
 
 public class FileCache {
     
-    private File cacheDir;
-    private String prefix;
+    private final File cacheDir;
+    private final String prefix;
 
     public FileCache(Context context) {
-    	this(context, null);
+        this(context, null);
     }
     
     public FileCache(Context context, String prefix) {
-    	this.prefix = new File(prefix).getName();
-		cacheDir = new File(context.getCacheDir(), prefix).getParentFile();
+        this.prefix = new File(prefix).getName();
+        cacheDir = new File(context.getCacheDir(), prefix).getParentFile();
         
-		if (!cacheDir.exists()) {
+        if (!cacheDir.exists()) {
             cacheDir.mkdirs();
         }
     }
@@ -29,7 +29,7 @@ public class FileCache {
         //Another possible solution (thanks to grantland)
         //String filename = URLEncoder.encode(url);
         if (prefix != null) {
-        	filename = prefix + filename;
+            filename = prefix + filename;
         }
         return new File(cacheDir, filename);
     }
@@ -38,19 +38,19 @@ public class FileCache {
         File[] files;
         
         if (prefix == null) {
-        	files = cacheDir.listFiles();
+            files = cacheDir.listFiles();
         } else {
-        	files = cacheDir.listFiles(new FilenameFilter() {
-				@Override
-				public boolean accept(File dir, String filename) {
-					return filename.startsWith(prefix);
-				}
-			});
+            files = cacheDir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String filename) {
+                    return filename.startsWith(prefix);
+                }
+            });
         }
         if (files != null) {
-        	for (File f : files) {
-        		f.delete();
-        	}
+            for (File f : files) {
+                f.delete();
+            }
         }
     }
 
