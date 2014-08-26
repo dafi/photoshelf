@@ -20,7 +20,6 @@ import android.os.Environment;
 import android.widget.Toast;
 
 import com.dropbox.sync.android.DbxAccountManager;
-import com.dropbox.sync.android.DbxException;
 import com.dropbox.sync.android.DbxFile;
 import com.dropbox.sync.android.DbxFileSystem;
 import com.dropbox.sync.android.DbxPath;
@@ -357,18 +356,23 @@ public class Importer {
             DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
             File exportFile = new File(exportPath);
             DbxPath dbxPath = new DbxPath(exportFile.getName());
-            DbxFile file;
+            DbxFile file = null;
 
             try {
-                file = dbxFs.create(dbxPath);
-            } catch (DbxException.Exists ex) {
-                file = dbxFs.open(dbxPath);
-                file.readString();
-                file.getSyncStatus();
-                file.update();
+                if (dbxFs.exists(dbxPath)) {
+                    file = dbxFs.open(dbxPath);
+                    file.readString();
+                    file.getSyncStatus();
+                    file.update();
+                } else {
+                    file = dbxFs.create(dbxPath);
+                }
+                file.writeFromExistingFile(exportFile, false);
+            } finally {
+                if (file != null) {
+                    try { file.close(); } catch (Exception ignored) {}
+                }
             }
-            file.writeFromExistingFile(exportFile, false);
-            file.close();
         }
     }
 
