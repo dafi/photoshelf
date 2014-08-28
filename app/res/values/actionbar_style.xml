@@ -24,6 +24,10 @@
         <item name="android:background">@color/actionbar_bg</item>
         <item name="android:titleTextStyle">@style/Theme.PhotoShelf.ActionBar.TitleText</item>
         <item name="android:subtitleTextStyle">@style/Theme.PhotoShelf.ActionBar.TitleTextStyle</item>
+
+        <!-- Hide app icon -->
+        <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
+        <item name="android:icon">@color/transparent</item>
     </style>
 
     <!-- ActionBar title text -->
