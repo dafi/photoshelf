@@ -16,6 +16,8 @@ dependencies {
     // https://www.dropbox.com/developers/blog/57/using-the-sync-api-with-android-studio
     compile files('libs/dropbox-sync-sdk-android.jar')
     compile files("$buildDir/native-libs/native-libs.jar")
+
+    compile "com.android.support:support-v4:19.1.+"
 }
 
 android {
