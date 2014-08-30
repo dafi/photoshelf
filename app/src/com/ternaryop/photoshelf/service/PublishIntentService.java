@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -18,6 +19,8 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Pair;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
@@ -25,6 +28,7 @@ import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.DateTimeUtils;
 
 /**
@@ -41,9 +45,16 @@ public class PublishIntentService extends IntentService {
     public static final String BLOG_NAME = "blogName";
     public static final String POST_TITLE = "postTitle";
     public static final String POST_TAGS = "postTags";
-    public static final String PUBLISH_ACTION = "action";
+    public static final String ACTION = "action";
     public static final String PUBLISH_ACTION_DRAFT = "draft";
     public static final String PUBLISH_ACTION_PUBLISH = "publish";
+
+    public static final String BIRTHDAY_LIST_BY_DATE_ACTION = "birthdayListByDate";
+    public static final String BIRTHDAY_DATE = "birthDate";
+    public static final String RESULT_LIST1 = "list1";
+
+    // Intents returned using local broadcast
+    public static final String BIRTHDAY_INTENT = "birthdayIntent";
 
     public PublishIntentService() {
         super("publishIntent");
@@ -55,7 +66,7 @@ public class PublishIntentService extends IntentService {
         String selectedBlogName = intent.getStringExtra(BLOG_NAME);
         String postTitle = intent.getStringExtra(POST_TITLE);
         String postTags = intent.getStringExtra(POST_TAGS);
-        String action = intent.getStringExtra(PUBLISH_ACTION);
+        String action = intent.getStringExtra(ACTION);
 
         try {
             addBithdateFromTags(postTags, selectedBlogName);
@@ -65,6 +76,8 @@ public class PublishIntentService extends IntentService {
             } else if (PUBLISH_ACTION_PUBLISH.equals(action)) {
                 Tumblr.getSharedTumblr(getApplicationContext()).publishPhotoPost(selectedBlogName,
                         url, postTitle, postTags);
+            } else if (BIRTHDAY_LIST_BY_DATE_ACTION.equals(action)) {
+                broadcastBirthdaysByDate(intent);
             }
         } catch (Exception ex) {
             try {
@@ -171,7 +184,7 @@ public class PublishIntentService extends IntentService {
         intent.putExtra(BLOG_NAME, blogName);
         intent.putExtra(POST_TITLE, postTitle);
         intent.putExtra(POST_TAGS, postTags);
-        intent.putExtra(PUBLISH_ACTION, publishAction);
+        intent.putExtra(ACTION, publishAction);
 
         context.startService(intent);
     }
@@ -190,5 +203,31 @@ public class PublishIntentService extends IntentService {
                                               String postTitle,
                                               String postTags) {
         startActionIntent(context, urlOrFile, blogName, postTitle, postTags, PUBLISH_ACTION_PUBLISH);
+    }
+
+    public static void startBirthdayListIntent(Context context,
+                                               Calendar date) {
+        Intent intent = new Intent(context, PublishIntentService.class);
+        intent.putExtra(BIRTHDAY_DATE, date);
+        intent.putExtra(ACTION, BIRTHDAY_LIST_BY_DATE_ACTION);
+
+        context.startService(intent);
+    }
+
+    private void broadcastBirthdaysByDate(Intent intent) {
+        Calendar birthday = (Calendar) intent.getSerializableExtra(BIRTHDAY_DATE);
+        if (birthday == null) {
+            birthday = Calendar.getInstance(Locale.US);
+        }
+        ArrayList<Pair<Birthday, TumblrPhotoPost>> list;
+        try {
+            list = BirthdayUtils.getPhotoPosts(getApplicationContext(), birthday);
+        } catch (Exception ex) {
+            // we can't use Collections.emptyList() because java.util.List isn't Serializable
+            list = new ArrayList<Pair<Birthday, TumblrPhotoPost>>();
+        }
+        Intent countIntent = new Intent(BIRTHDAY_INTENT);
+        countIntent.putExtra(RESULT_LIST1, list);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(countIntent);
     }
 }

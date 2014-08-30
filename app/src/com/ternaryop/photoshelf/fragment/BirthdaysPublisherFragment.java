@@ -7,10 +7,15 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -30,15 +35,18 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
+import com.ternaryop.photoshelf.service.PublishIntentService;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressBarAsyncTask;
 
-public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener {
+public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
     private static final String LOADER_PREFIX = "mediumThumb";
 
     private GridView gridView;
     private GridViewPhotoAdapter gridViewPhotoAdapter;
+    private SwipeRefreshLayout swipeLayout;
+    private boolean waitingResult;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,7 +59,15 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         gridView.setAdapter(gridViewPhotoAdapter);
         gridView.setOnItemClickListener(this);
         gridView.setMultiChoiceModeListener(this);
-        
+
+        swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        swipeLayout.setOnRefreshListener(this);
+        swipeLayout.setColorScheme(
+                R.color.progressbar_bg,
+                R.color.actionbar_popup_bg,
+                R.color.actionbar_text,
+                R.color.progressbar_progress_bg);
+        swipeLayout.setRefreshing(true);
         refresh();
 
         setHasOptionsMenu(true);
@@ -59,25 +75,22 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         return rootView;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, new IntentFilter(PublishIntentService.BIRTHDAY_INTENT));
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
+    }
+
     private void refresh() {
-        new AbsProgressBarAsyncTask<Void, Void, List<Pair<Birthday, TumblrPhotoPost>>>(getActivity(), getString(R.string.shaking_images_title)) {
-
-            @Override
-            protected List<Pair<Birthday, TumblrPhotoPost>> doInBackground(Void... voidParams) {
-                Calendar now = Calendar.getInstance(Locale.US);
-                return BirthdayUtils.getPhotoPosts(getActivity(), now);
-            }
-
-            @Override
-            protected void onPostExecute(List<Pair<Birthday, TumblrPhotoPost>> posts) {
-                super.onPostExecute(null);
-                if (!hasError()) {
-                    gridViewPhotoAdapter.clear();
-                    gridViewPhotoAdapter.addAll(posts);
-                    gridViewPhotoAdapter.notifyDataSetChanged();
-                }
-            }
-        }.execute();
+        Calendar now = Calendar.getInstance(Locale.US);
+        PublishIntentService.startBirthdayListIntent(getActivity(), now);
+        waitingResult = true;
     }
 
     @Override
@@ -204,4 +217,30 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         int selectCount = gridView.getCheckedItemCount();
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, selectCount));
     }
+
+    @Override
+    public void onRefresh() {
+        // do not start another refresh if the current one is running
+        if (!waitingResult) {
+            refresh();
+        }
+    }
+
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (PublishIntentService.BIRTHDAY_INTENT.equals(action)) {
+                @SuppressWarnings("unchecked") List<Pair<Birthday, TumblrPhotoPost>> posts = (List<Pair<Birthday, TumblrPhotoPost>>) intent
+                        .getSerializableExtra(PublishIntentService.RESULT_LIST1);
+
+                swipeLayout.setRefreshing(false);
+                waitingResult = false;
+                gridViewPhotoAdapter.clear();
+                gridViewPhotoAdapter.addAll(posts);
+                gridViewPhotoAdapter.notifyDataSetChanged();
+            }
+        }
+    };
 }
