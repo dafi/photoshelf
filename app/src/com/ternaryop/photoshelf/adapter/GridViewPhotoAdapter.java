@@ -15,21 +15,22 @@ import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.tumblr.TumblrPhotoPost;
- 
+
 public class GridViewPhotoAdapter extends ArrayAdapter<Pair<Birthday, TumblrPhotoPost>> {
     private final ImageLoader imageLoader;
- 
+    private final LayoutInflater inflater;
+
     public GridViewPhotoAdapter(Context context, String prefix) {
         super(context, 0);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
+        inflater = LayoutInflater.from(context);
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
-        
+
         if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.gridview_photo_item, null);
+            convertView = inflater.inflate(R.layout.gridview_photo_item, parent, false);
             holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         } else {
@@ -48,14 +49,14 @@ public class GridViewPhotoAdapter extends ArrayAdapter<Pair<Birthday, TumblrPhot
 
     public void updatePostByTag(TumblrPhotoPost newPost, boolean notifyChange) {
         String name = newPost.getTags().get(0);
-        
+
         for (int i = 0; i < getCount(); i++) {
             Pair<Birthday, TumblrPhotoPost> item = getItem(i);
             TumblrPhotoPost post = item.second;
             if (post.getTags().get(0).equalsIgnoreCase(name)) {
                 remove(item);
                 insert(Pair.create(item.first, newPost), i);
-                
+
                 if (notifyChange) {
                     notifyDataSetChanged();
                 }
@@ -63,7 +64,7 @@ public class GridViewPhotoAdapter extends ArrayAdapter<Pair<Birthday, TumblrPhot
             }
         }
     }
-    
+
     private class ViewHolder {
         final TextView caption;
         final ImageView thumbImage;

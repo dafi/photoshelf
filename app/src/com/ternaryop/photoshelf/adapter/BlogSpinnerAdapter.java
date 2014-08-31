@@ -14,22 +14,22 @@ import android.widget.TextView;
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.Blog;
- 
+
 public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerAdapter {
     private static LayoutInflater inflater = null;
     private final ImageLoader imageLoader;
- 
+
     public BlogSpinnerAdapter(Context context, String prefix, List<String> blogNames) {
         super(context, 0, blogNames);
-        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = LayoutInflater.from(context);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
     }
- 
+
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.blog_spinner_item, null);
+            convertView = inflater.inflate(R.layout.blog_spinner_item, parent, false);
             holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         } else {
@@ -49,7 +49,7 @@ public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerA
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
         return getView(position, convertView, parent);
     }
-    
+
     private class ViewHolder {
         final TextView title;
         final ImageView image;

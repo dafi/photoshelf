@@ -15,26 +15,29 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
 
     public DrawerAdapter(Context context) {
         super(context, 0);
-        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = LayoutInflater.from(context);
     }
-    
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         DrawerItem item = getItem(position);
         ViewHolder holder;
-        
+
         if (convertView == null) {
             if (item.isHeader()) {
-                convertView = inflater.inflate(R.layout.drawer_header_list_item, null);
+                convertView = inflater.inflate(R.layout.drawer_header_list_item, parent, false);
             } else {
-                convertView = inflater.inflate(R.layout.drawer_list_item, null);
+                convertView = inflater.inflate(R.layout.drawer_list_item, parent, false);
             }
             holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.title.setText(item.getTitle());
+        // the header hasn't title
+        if (holder.title != null) {
+            holder.title.setText(item.getTitle());
+        }
         // the header hasn't counter
         if (holder.counter != null) {
             holder.counter.setVisibility(View.GONE);
@@ -60,7 +63,7 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
         // header and normal row
         return 2;
     }
-    
+
     public boolean isSelectionEnabled() {
         return isSelectionEnabled;
     }
@@ -72,7 +75,7 @@ public class DrawerAdapter extends ArrayAdapter<DrawerItem> {
     private class ViewHolder {
         final TextView title;
         final TextView counter;
-        
+
         ViewHolder(View view) {
             title = (TextView) view.findViewById(android.R.id.text1);
             counter = (TextView) view.findViewById(R.id.counter);

@@ -21,7 +21,7 @@ import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
 import com.ternaryop.utils.StringUtils;
- 
+
 public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.OnClickListener {
     private static LayoutInflater inflater = null;
     private final ImageLoader imageLoader;
@@ -32,21 +32,21 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 
     public PhotoAdapter(Context context, String prefix) {
         super(context, 0);
-        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = LayoutInflater.from(context);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
         allPosts = new ArrayList<PhotoShelfPost>();
     }
- 
+
     public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
         this.onPhotoBrowseClick = onPhotoBrowseClick;
     }
-    
+
     public View getView(int position, View convertView, ViewGroup parent) {
         View vi = convertView;
         ViewHolder holder;
 
         if (convertView == null) {
-            vi = inflater.inflate(R.layout.list_row, null);
+            vi = inflater.inflate(R.layout.list_row, parent, false);
             holder = new ViewHolder(vi);
             vi.setTag(holder);
         } else {
@@ -79,21 +79,21 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
                 holder.title.setOnClickListener(this);
                 holder.title.setTag(post);
             }
-            
+
             holder.thumbImage.setOnClickListener(this);
             holder.thumbImage.setTag(post);
 
             holder.menu.setOnClickListener(this);
             holder.menu.setTag(post);
         }
-        
+
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
         String imageUrl = post.getClosestPhotoByWidth(75).getUrl();
         imageLoader.displayImage(imageUrl, holder.thumbImage);
         return vi;
     }
-    
+
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.title_textview:
@@ -107,16 +107,16 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
                 break;
         }
     }
-    
+
     public void calcGroupIds() {
         int count = getCount();
-        
+
         if (count > 0) {
             int groupId = 0;
-            
+
             String last = getItem(0).getFirstTag();
             getItem(0).setGroupId(groupId);
-            
+
             for (int i = 1; i < count; i++) {
                 // set same groupId for all identical tags
                 while (i < count && getItem(i).getFirstTag().equalsIgnoreCase(last)) {
@@ -130,7 +130,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             }
         }
     }
-    
+
     public boolean isRecomputeGroupIds() {
         return recomputeGroupIds;
     }
