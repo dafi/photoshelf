@@ -43,6 +43,10 @@ public class TitleData {
         // remove all non alpha chars from the end
         location = location.replaceAll("[^\\p{Alpha}]*$", "").trim();
 
+        if (location.isEmpty()) {
+        	this.location = null;
+        	return;
+        }
         boolean hasLocationPrefix = false;
         for (String prefix : locationPrefixes) {
             if (location.toLowerCase(Locale.ENGLISH).startsWith(prefix)) {
@@ -121,8 +125,7 @@ public class TitleData {
         if (location != null || when != null || city != null) {
             sb.append(descTagOpen);
             if (location != null) {
-                sb
-                .append(location);
+                sb.append(location);
                 if (city == null) {
                     sb.append(" ");
                 } else {

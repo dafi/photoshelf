@@ -1,0 +1,9 @@
+{
+    "version":1,
+    "blackList":{
+            "regExprs":[
+            "-?\\s?\\bHawtCelebs\\b",
+            "-?\\s?Carreck Celebrity Pictures » Blog Archive »"
+            ]
+    }
+}

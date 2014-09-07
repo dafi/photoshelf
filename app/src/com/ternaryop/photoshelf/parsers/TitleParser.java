@@ -1,14 +1,23 @@
 package com.ternaryop.photoshelf.parsers;
 
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.content.Context;
+import android.text.TextUtils;
+
+import com.ternaryop.utils.JSONUtils;
 import com.ternaryop.utils.StringUtils;
+import org.json.JSONObject;
 
 public class TitleParser {
     private static final Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
@@ -41,8 +50,12 @@ public class TitleParser {
         monthsShort.put("dec", "December");
     }
 
-    private static final TitleParser instance = new TitleParser();
-    
+    private static TitleParser instance;
+    private static final String TITLEPARSER_FILENAME = "titleParser.json";
+
+    private Pattern blackListRegExpr;
+    private static boolean isUpgraded;
+
     /**
      * Fill parseInfo with day, month, year, matched
      */
@@ -111,13 +124,50 @@ public class TitleParser {
         return dateComponents;
     }
 
-    private TitleParser() {
-        
+    private TitleParser(Context context) {
+        InputStream is = null;
+        try {
+            if (blackListRegExpr != null) {
+                return;
+            }
+            try {
+                is = context.openFileInput(TITLEPARSER_FILENAME);
+                // if an imported file exists and its version is minor than the file in assets we delete it
+                if (!isUpgraded) {
+                    isUpgraded = true;
+                    JSONObject jsonPrivate = JSONUtils.jsonFromInputStream(is);
+                    JSONObject jsonAssets = JSONUtils.jsonFromInputStream(context.getAssets().open(TITLEPARSER_FILENAME));
+                    int privateVersion = jsonPrivate.getInt("version");
+                    int assetsVersion = jsonAssets.getInt("version");
+                    if (privateVersion < assetsVersion) {
+                        is.close();
+                        context.deleteFile(TITLEPARSER_FILENAME);
+                    }
+                    createBlackListRegExpr(jsonAssets);
+                    return;
+                }
+            } catch (FileNotFoundException ex) {
+                if (is != null) try { is.close(); is = null; } catch (Exception ignored) {}
+                is = context.getAssets().open(TITLEPARSER_FILENAME);
+            }
+            createBlackListRegExpr(JSONUtils.jsonFromInputStream(is));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) try { is.close(); } catch (Exception ignored) {}
+        }
+    }
+
+    private void createBlackListRegExpr(JSONObject jsonAssets) throws Exception {
+        List<Object> blackList = new ArrayList<Object>();
+        blackList.addAll(JSONUtils.toList(jsonAssets.getJSONObject("blackList").getJSONArray("regExprs")));
+        blackListRegExpr = Pattern.compile("(" + TextUtils.join("|", blackList) + ")", Pattern.CASE_INSENSITIVE);
     }
 
     public TitleData parseTitle(String title) {
         TitleData titleData = new TitleData();
 
+        title = blackListRegExpr.matcher(title).replaceAll("");
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
 
         Matcher m = titleRE.matcher(title);
@@ -136,7 +186,7 @@ public class TitleParser {
             loc = title.substring(0, dateMatcher.start());
         }
         // city names can be multi words so allow whitespaces
-        m = Pattern.compile("\\s*(.*)\\s+in\\s+([a-z.\\s]*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
+        m = Pattern.compile("\\s?(.*)?\\s?\\bin\\b([a-z.\\s]*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
         if (m.find() && m.groupCount() > 1) {
             titleData.setLocation(m.group(1));
             titleData.setCity(m.group(2).trim());
@@ -159,7 +209,14 @@ public class TitleParser {
         return titleData;
     }
 
-    public static TitleParser instance() {
+    public static TitleParser instance(Context context) {
+        if (instance == null) {
+            synchronized (TitleParser.class) {
+                if (instance == null) {
+                    instance = new TitleParser(context);
+                }
+            }
+        }
         return instance;
     }
 }

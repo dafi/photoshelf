@@ -318,7 +318,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     }
 
     private void parseTitle() {
-        TitleData titleData = TitleParser.instance().parseTitle(postTitle.getText().toString());
+        TitleData titleData = TitleParser.instance(getContext()).parseTitle(postTitle.getText().toString());
         setPostTitle(titleData.toHtml());
         setPostTags(titleData.getTags());
     }
