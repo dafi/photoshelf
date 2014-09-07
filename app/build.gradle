@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
+        classpath 'com.android.tools.build:gradle:0.12.2'
     }
 }
 apply plugin: 'com.android.application'
@@ -17,7 +17,7 @@ dependencies {
     compile files('libs/dropbox-sync-sdk-android.jar')
     compile files("$buildDir/native-libs/native-libs.jar")
 
-    compile "com.android.support:support-v4:19.1.+"
+    compile "com.android.support:support-v4:19.1.0"
 }
 
 android {
@@ -93,5 +93,11 @@ tasks.withType(JavaCompile) {
 tasks.whenTaskAdded { task ->
     if (task.name == 'generateReleaseBuildConfig') {
         task.dependsOn 'increaseVersionCode'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
     }
 }
