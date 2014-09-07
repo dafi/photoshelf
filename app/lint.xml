@@ -6,6 +6,6 @@
 
     <issue id="HardcodedText">
         <!-- Ignore on incomplete files, they will change/be removed in the future -->
-        <ignore path="res/layout/fragment_best_of.xml" />
+        <ignore path="**/res/layout/fragment_best_of.xml" />
     </issue>
 </lint>
