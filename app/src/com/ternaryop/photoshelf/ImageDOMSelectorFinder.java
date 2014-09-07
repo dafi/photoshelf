@@ -23,12 +23,12 @@ public class ImageDOMSelectorFinder {
     private static final String SELECTORS_FILENAME = "domSelectors.json";
 
     public ImageDOMSelectorFinder(Context context) {
+        InputStream is = null;
         try {
             synchronized (domainMap) {
                 if (!domainMap.isEmpty()) {
                     return;
                 }
-                InputStream is;
                 try {
                     is = context.openFileInput(SELECTORS_FILENAME);
                     // if an imported file exists and its version is minor than the file in assets we delete it
@@ -52,6 +52,7 @@ public class ImageDOMSelectorFinder {
                         return;
                     }
                 } catch (FileNotFoundException ex) {
+                    if (is != null) try { is.close(); is = null; } catch (Exception ignored) {}
                     is = context.getAssets().open(SELECTORS_FILENAME);
                 }
                 JSONObject jsonAssets = JSONUtils.jsonFromInputStream(is);
@@ -59,6 +60,8 @@ public class ImageDOMSelectorFinder {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (is != null) try { is.close(); } catch (Exception ignored) {}
         }
     }
 
