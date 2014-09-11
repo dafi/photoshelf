@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
     <issue id="InvalidPackage" severity="error">
-        <ignore path="libs/scribe*.jar" />
+        <ignore path="**/scribe*.jar" />
     </issue>
 
     <issue id="HardcodedText">

@@ -1,13 +1,5 @@
 import java.util.regex.Pattern
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.2'
-    }
-}
 apply plugin: 'com.android.application'
 
 dependencies {
@@ -18,39 +10,19 @@ dependencies {
     compile files("$buildDir/native-libs/native-libs.jar")
 
     compile "com.android.support:support-v4:19.1.0"
+
+    compile "org.scribe:scribe:1.3.5"
+    compile "org.jsoup:jsoup:1.7.3"
 }
 
 android {
     compileSdkVersion 18
     buildToolsVersion "19.1.0"
 
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
-            aidl.srcDirs = ['src']
-            renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
-        }
-
-        // Move the tests to tests/java, tests/res, etc...
-        instrumentTest.setRoot('tests')
-
-        // Move the build types to build-types/<type>
-        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
-        // This moves them out of them default location under src/<type>/... which would
-        // conflict with src/ being used by the main source set.
-        // Adding new build types or product flavors should be accompanied
-        // by a similar customization.
-        debug.setRoot('build-types/debug')
-        release.setRoot('build-types/release')
-    }
     signingConfigs {
         release {
             def props = new Properties()
-            props.load(new FileInputStream("build-keystore.properties"))
+            props.load(new FileInputStream("$rootDir/app/build-keystore.properties"))
             storeFile file(props.get("key.store"))
             storePassword props.get("key.store.password")
             keyAlias props.get("key.alias")
@@ -68,7 +40,7 @@ android {
 }
 
 task('increaseVersionCode') << {
-    def manifestFile = file("AndroidManifest.xml")
+    def manifestFile = file("src/main/AndroidManifest.xml")
     def pattern = Pattern.compile("(android:versionCode=\")([0-9]+)(\")")
     def manifestText = manifestFile.getText()
     def matcher = pattern.matcher(manifestText)
@@ -93,11 +65,5 @@ tasks.withType(JavaCompile) {
 tasks.whenTaskAdded { task ->
     if (task.name == 'generateReleaseBuildConfig') {
         task.dependsOn 'increaseVersionCode'
-    }
-}
-
-allprojects {
-    repositories {
-        jcenter()
     }
 }

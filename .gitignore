@@ -34,4 +34,4 @@ build
 app/build-keystore.properties
 
 # PhotoShelf files
-app/res/values/tumblr.xml
+app/src/main/res/values/tumblr.xml
