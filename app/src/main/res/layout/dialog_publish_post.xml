@@ -102,7 +102,16 @@
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/parse_title" />
-        
+
+        <Button
+            android:id="@+id/source_title_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/source_title" />
+
     </LinearLayout>
 
 </LinearLayout>

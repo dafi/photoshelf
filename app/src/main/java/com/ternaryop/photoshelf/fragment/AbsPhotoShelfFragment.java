@@ -74,7 +74,8 @@ public abstract class AbsPhotoShelfFragment extends Fragment {
                 }
             }
         };
-        editDialog.setPostTitle(item.getCaption());
+        // pass the same HTML text for source title
+        editDialog.setPostTitle(item.getCaption(), item.getCaption());
         editDialog.setPostTags(item.getTags());
         editDialog.setEditButton(dialogClickListener);
         

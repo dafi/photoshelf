@@ -166,7 +166,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
         } else {
             dialog.setImageFiles(imageUrlRetriever.getImageFiles());
         }
-        dialog.setPostTitle(titleData.toHtml());
+        dialog.setPostTitle(titleData.toHtml(), imageUrlRetriever.getTitle());
         dialog.setPostTags(titleData.getTags());
         
         dialog.show();

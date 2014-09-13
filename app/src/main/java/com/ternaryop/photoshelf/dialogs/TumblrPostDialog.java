@@ -44,6 +44,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     private List<File> imageFiles;
     private OnClickListener dialogClickListener;
     private boolean blockUIWhilePublish;
+    private String sourceTitle;
 
     public TumblrPostDialog(Context context) {
         this(context, 0);
@@ -66,6 +67,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
         appSupport = new AppSupport(context);
         findViewById(R.id.cancelButton).setOnClickListener(this);
         findViewById(R.id.parse_title_button).setOnClickListener(this);
+        findViewById(R.id.source_title_button).setOnClickListener(this);
 
         tagAdapter = new TagCursorAdapter(
                 getContext(),
@@ -102,9 +104,12 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
                 return;
             case R.id.parse_title_button:
                 parseTitle();
+                return;
+            case R.id.source_title_button:
+                fillWithSourceTitle();
         }
     }
-    
+
     @Override
     public void show() {
         ((CheckBox)findViewById(R.id.block_ui)).setChecked(blockUIWhilePublish);
@@ -145,8 +150,14 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
         return Html.toHtml(postTitle.getText());
     }
 
-    public void setPostTitle(String title) {
-        this.postTitle.setText(Html.fromHtml(title));
+    /**
+     * Set the formatted and the source unformatted titles
+     * @param htmlTitle the formatted title
+     * @param sourceTitle the source title, can be in HTML format
+     */
+    public void setPostTitle(String htmlTitle, String sourceTitle) {
+        this.sourceTitle = sourceTitle;
+        this.postTitle.setText(Html.fromHtml(htmlTitle));
     }
 
     public String getPostTags() {
@@ -319,7 +330,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
     private void parseTitle() {
         TitleData titleData = TitleParser.instance(getContext()).parseTitle(postTitle.getText().toString());
-        setPostTitle(titleData.toHtml());
+        // only the edited title is updated, the sourceTitle remains unchanged
+        setPostTitle(titleData.toHtml(), sourceTitle);
         setPostTags(titleData.getTags());
     }
 
@@ -348,6 +360,11 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
     public void setBlockUIWhilePublish(boolean blockUIWhilePublish) {
         this.blockUIWhilePublish = blockUIWhilePublish;
+    }
+
+    private void fillWithSourceTitle() {
+        // treat the sourceTitle always as HTML
+        this.postTitle.setText(Html.fromHtml(sourceTitle));
     }
 
 }
