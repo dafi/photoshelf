@@ -120,7 +120,7 @@ public class Importer {
         importFromTumblr(blogName, null, null);
     }
 
-    public PostRetriever importFromTumblr(final String blogName, TextView textView, final ImportCompleteCallback callback) {
+    public PostRetriever importFromTumblr(final String blogName, final TextView textView, final ImportCompleteCallback callback) {
         PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
         long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
         Callback<List<TumblrPost>> wrapperCallback = new Callback<List<TumblrPost>>() {
@@ -139,6 +139,7 @@ public class Importer {
                     allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));
                 }
                 new DbImportAsyncTask<PostTag>(context,
+                        textView,
                         allPostTags.iterator(),
                         DBHelper.getInstance(context).getPostTagDAO(),
                         false) {
@@ -152,12 +153,7 @@ public class Importer {
                 }.execute();
             }
         };
-        PostRetriever postRetriever;
-        if (textView != null) {
-            postRetriever = new PostRetriever(context, publishTimestamp, textView, wrapperCallback);
-        } else {
-            postRetriever = new PostRetriever(context, publishTimestamp, wrapperCallback);
-        }
+        PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, textView, wrapperCallback);
         postRetriever.readPhotoPosts(blogName, null);
         return postRetriever;
     }

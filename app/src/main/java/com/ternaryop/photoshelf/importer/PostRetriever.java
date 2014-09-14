@@ -20,9 +20,7 @@ public class PostRetriever extends AbsProgressIndicatorAsyncTask<Void, Integer, 
     private String tumblrName;
 
     public PostRetriever(Context context, long publishTimestamp, Callback<List<TumblrPost>> callback) {
-        super(context, context.getString(R.string.start_import_title));
-        this.callback = callback;
-        this.lastPublishTimestamp = publishTimestamp;
+        this(context, publishTimestamp, null, callback);
     }
 
     public PostRetriever(Context context, long publishTimestamp, TextView textView, Callback<List<TumblrPost>> callback) {

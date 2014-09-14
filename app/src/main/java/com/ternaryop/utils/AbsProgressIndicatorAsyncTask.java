@@ -15,16 +15,19 @@ public abstract class AbsProgressIndicatorAsyncTask<Params, Progress, Result> ex
     private TextView textView;
 
     public AbsProgressIndicatorAsyncTask(Context context, String message) {
-        this.context = context;
-        this.message = message;
-        initProgressDialog();
+        this(context, message, null);
     }
 
     public AbsProgressIndicatorAsyncTask(Context context, String message, TextView textView) {
         this.context = context;
         this.message = message;
         this.textView = textView;
-        textView.setText(message);
+
+        if (textView != null) {
+            textView.setText(message);
+        } else {
+            initProgressDialog();
+        }
     }
 
     private void initProgressDialog() {
