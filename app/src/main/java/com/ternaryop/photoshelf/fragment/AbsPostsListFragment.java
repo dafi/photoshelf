@@ -40,7 +40,7 @@ import com.ternaryop.photoshelf.counter.CountProvider;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 
 public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick, OnQueryTextListener  {
@@ -329,7 +329,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         photoAdapter.notifyDataSetChanged();
     }
     
-    abstract class ActionExecutor extends AbsProgressBarAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
+    abstract class ActionExecutor extends AbsProgressIndicatorAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
         private final ActionMode mode;
         private final List<PhotoShelfPost> postList;
 
@@ -343,7 +343,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         protected void onProgressUpdate(PhotoShelfPost... values) {
             PhotoShelfPost post = values[0];
             photoAdapter.remove(post);
-            getProgressDialog().setMessage(post.getTagsAsString());
+            setProgressMessage(post.getTagsAsString());
         }
         
         @Override

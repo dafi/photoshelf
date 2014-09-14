@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
+import android.widget.TextView;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 
-public class PostRetriever extends AbsProgressBarAsyncTask<Void, Integer, List<TumblrPost> > {
+public class PostRetriever extends AbsProgressIndicatorAsyncTask<Void, Integer, List<TumblrPost> > {
     private final Callback<List<TumblrPost>> callback;
     private final long lastPublishTimestamp;
     private HashMap<String, String> params;
@@ -20,6 +21,12 @@ public class PostRetriever extends AbsProgressBarAsyncTask<Void, Integer, List<T
 
     public PostRetriever(Context context, long publishTimestamp, Callback<List<TumblrPost>> callback) {
         super(context, context.getString(R.string.start_import_title));
+        this.callback = callback;
+        this.lastPublishTimestamp = publishTimestamp;
+    }
+
+    public PostRetriever(Context context, long publishTimestamp, TextView textView, Callback<List<TumblrPost>> callback) {
+        super(context, context.getString(R.string.start_import_title), textView);
         this.callback = callback;
         this.lastPublishTimestamp = publishTimestamp;
     }
@@ -71,7 +78,7 @@ public class PostRetriever extends AbsProgressBarAsyncTask<Void, Integer, List<T
     @Override
     protected void onPostExecute(List<TumblrPost> allPosts) {
         // do not call super.onPostExecute() because it shows the alert message
-        getProgressDialog().dismiss();
+        dismiss();
         if (!hasError()) {
             callback.complete(allPosts);
         } else {
@@ -80,6 +87,6 @@ public class PostRetriever extends AbsProgressBarAsyncTask<Void, Integer, List<T
     }
 
     protected void onProgressUpdate(Integer... values) {
-        getProgressDialog().setMessage(getContext().getString(R.string.posts_read_count_title, values[0]));
+        setProgressMessage(getContext().getString(R.string.posts_read_count_title, values[0]));
     }
 }

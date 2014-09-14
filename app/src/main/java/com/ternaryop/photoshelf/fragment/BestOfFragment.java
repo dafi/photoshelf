@@ -16,7 +16,7 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 
 public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
@@ -48,7 +48,7 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
     }
 
     private void refresh() {
-        new AbsProgressBarAsyncTask<Void, Void, List<TumblrPhotoPost>>(getActivity(), getString(R.string.shaking_images_title)) {
+        new AbsProgressIndicatorAsyncTask<Void, Void, List<TumblrPhotoPost>>(getActivity(), getString(R.string.shaking_images_title)) {
 
             @Override
             protected List<TumblrPhotoPost> doInBackground(Void... voidParams) {
@@ -97,10 +97,10 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
     }
 
     private void publish(final ActionMode mode, final boolean saveAsDraft) {
-        new AbsProgressBarAsyncTask<Void, String, List<TumblrPhotoPost>>(getActivity(), "") {
+        new AbsProgressIndicatorAsyncTask<Void, String, List<TumblrPhotoPost>>(getActivity(), "") {
             @Override
             protected void onProgressUpdate(String... values) {
-                getProgressDialog().setMessage(values[0]);
+                setProgressMessage(values[0]);
             }
 
             @Override

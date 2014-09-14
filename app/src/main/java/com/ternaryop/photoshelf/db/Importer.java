@@ -17,6 +17,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dropbox.sync.android.DbxAccountManager;
@@ -30,7 +31,7 @@ import com.ternaryop.photoshelf.importer.CSVIterator.CSVBuilder;
 import com.ternaryop.photoshelf.importer.PostRetriever;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.IOUtils;
 
@@ -75,7 +76,7 @@ public class Importer {
 
     public void exportPostsToCSV(final String exportPath) {
         try {
-            new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
+            new AbsProgressIndicatorAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
                 @Override
                 protected Void doInBackground(Void... voidParams) {
                     try {
@@ -116,13 +117,13 @@ public class Importer {
     }
 
     public void importFromTumblr(final String blogName) {
-        importFromTumblr(blogName, null);
+        importFromTumblr(blogName, null, null);
     }
 
-    public PostRetriever importFromTumblr(final String blogName, final ImportCompleteCallback callback) {
+    public PostRetriever importFromTumblr(final String blogName, TextView textView, final ImportCompleteCallback callback) {
         PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
         long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
-        PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, new Callback<List<TumblrPost>>() {
+        Callback<List<TumblrPost>> wrapperCallback = new Callback<List<TumblrPost>>() {
 
             @Override
             public void failure(Exception error) {
@@ -150,7 +151,13 @@ public class Importer {
                     }
                 }.execute();
             }
-        });
+        };
+        PostRetriever postRetriever;
+        if (textView != null) {
+            postRetriever = new PostRetriever(context, publishTimestamp, textView, wrapperCallback);
+        } else {
+            postRetriever = new PostRetriever(context, publishTimestamp, wrapperCallback);
+        }
         postRetriever.readPhotoPosts(blogName, null);
         return postRetriever;
     }
@@ -197,7 +204,7 @@ public class Importer {
 
     public void exportBirthdaysToCSV(final String exportPath) {
         try {
-            new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
+            new AbsProgressIndicatorAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
                 @Override
                 protected Void doInBackground(Void... voidParams) {
                     try {
@@ -242,11 +249,11 @@ public class Importer {
     }
 
     public void importMissingBirthdaysFromWikipedia(final String blogName) {
-        new AbsProgressBarAsyncTask<Void, String, String>(context,
+        new AbsProgressIndicatorAsyncTask<Void, String, String>(context,
                 context.getString(R.string.import_missing_birthdays_from_wikipedia_title)) {
             @Override
             protected void onProgressUpdate(String... values) {
-                getProgressDialog().setMessage(values[0]);
+                setProgressMessage(values[0]);
             }
 
             @Override
@@ -309,7 +316,7 @@ public class Importer {
 
     public void exportMissingBirthdaysToCSV(final String exportPath, final String tumblrName) {
         try {
-            new AbsProgressBarAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
+            new AbsProgressIndicatorAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
                 @Override
                 protected Void doInBackground(Void... voidParams) {
                     List<String> list = DBHelper.getInstance(context).getBirthdayDAO().getNameWithoutBirthDays(tumblrName);

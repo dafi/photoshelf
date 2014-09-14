@@ -10,9 +10,14 @@ import java.util.Map;
 
 import android.os.Bundle;
 import android.view.ActionMode;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 
 import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
@@ -24,12 +29,30 @@ import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
+import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
-public class DraftListFragment extends AbsPostsListFragment {
+public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
     private HashMap<String, TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
+    private TextView progressTextView;
+    private WaitingResultSwipeRefreshLayout swipeLayout;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+
+        progressTextView = (TextView) rootView.findViewById(android.R.id.empty);
+        photoListView.setEmptyView(progressTextView);
+
+        swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        swipeLayout.setColorScheme(R.array.progress_swipe_colors);
+        swipeLayout.setOnRefreshListener(this);
+
+        return rootView;
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -62,7 +85,12 @@ public class DraftListFragment extends AbsPostsListFragment {
     }
 
     private void refreshCache() {
-        task = new Importer(getActivity(), null).importFromTumblr(getBlogName(), new ImportCompleteCallback() {
+        // do not start another refresh if the current one is running
+        if (swipeLayout.isWaitingResult()) {
+            return;
+        }
+        onRefreshStarted();
+        task = new Importer(getActivity(), null).importFromTumblr(getBlogName(), progressTextView, new ImportCompleteCallback() {
             @Override
             public void complete() {
                 readPhotoPosts();
@@ -70,16 +98,26 @@ public class DraftListFragment extends AbsPostsListFragment {
         });
     }
 
+    private void onRefreshStarted() {
+        progressTextView.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
+        swipeLayout.setRefreshingAndWaintingResult(true);
+    }
+
+    private void onRefreshCompleted() {
+        swipeLayout.setRefreshingAndWaintingResult(false);
+        progressTextView.clearAnimation();
+    }
+
     @Override
     protected void readPhotoPosts() {
         photoAdapter.clear();
         
-        task = (TaskWithUI) new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts)) {
+        task = (TaskWithUI) new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts), progressTextView) {
             @Override
             protected void onProgressUpdate(String... values) {
-                getProgressDialog().setMessage(values[0]);
+                setProgressMessage(values[0]);
             }
-            
+
             @Override
             protected void onPostExecute(List<PhotoShelfPost> posts) {
                 super.onPostExecute(posts);
@@ -87,12 +125,20 @@ public class DraftListFragment extends AbsPostsListFragment {
                 if (!hasError()) {
                     photoAdapter.addAll(posts);
                 }
+                onRefreshCompleted();
                 refreshUI();
+            }
+
+            @Override
+            public void recreateUI() {
+                super.recreateUI();
+                onRefreshStarted();
             }
 
             @Override
             protected List<PhotoShelfPost> doInBackground(Void... params) {
                 try {
+                    // reading drafts
                     HashMap<String, List<TumblrPost> > tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
                     queuedPosts = new HashMap<String, TumblrPost>();
                     DraftPostHelper publisher = new DraftPostHelper();
@@ -182,5 +228,10 @@ public class DraftListFragment extends AbsPostsListFragment {
                 return true;
         }
         return super.handleMenuItem(item, postList, mode);
+    }
+
+    @Override
+    public void onRefresh() {
+        refreshCache();
     }
 }

@@ -23,7 +23,7 @@ import com.ternaryop.photoshelf.db.TagCursorAdapter;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 
 public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnSuggestionListener {
     private String postTag;
@@ -95,10 +95,10 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnS
         refreshUI();
         isScrolling = true;
 
-        new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_tags_title, postTag)) {
+        new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_tags_title, postTag)) {
             @Override
             protected void onProgressUpdate(String... values) {
-                getProgressDialog().setMessage(values[0]);
+                setProgressMessage(values[0]);
             }
             
             @Override

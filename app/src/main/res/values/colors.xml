@@ -37,4 +37,10 @@
     <color name="progressbar_bg">#c5cae9</color>
     <color name="progressbar_progress_bg">#8c9eff</color>
 
+    <array name="progress_swipe_colors">
+        <item>@color/actionbar_text</item>
+        <item>@color/progressbar_bg</item>
+        <item>@color/progressbar_progress_bg</item>
+        <item>@color/actionbar_popup_bg</item>
+    </array>
 </resources>

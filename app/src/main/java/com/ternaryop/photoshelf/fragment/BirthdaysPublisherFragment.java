@@ -37,7 +37,8 @@ import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.service.PublishIntentService;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
+import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
 public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
@@ -45,8 +46,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
 
     private GridView gridView;
     private GridViewPhotoAdapter gridViewPhotoAdapter;
-    private SwipeRefreshLayout swipeLayout;
-    private boolean waitingResult;
+    private WaitingResultSwipeRefreshLayout swipeLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,13 +60,9 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         gridView.setOnItemClickListener(this);
         gridView.setMultiChoiceModeListener(this);
 
-        swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        swipeLayout.setColorScheme(R.array.progress_swipe_colors);
         swipeLayout.setOnRefreshListener(this);
-        swipeLayout.setColorScheme(
-                R.color.progressbar_bg,
-                R.color.actionbar_popup_bg,
-                R.color.actionbar_text,
-                R.color.progressbar_progress_bg);
         swipeLayout.setRefreshing(true);
         refresh();
 
@@ -88,9 +84,13 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     private void refresh() {
+        // do not start another refresh if the current one is running
+        if (swipeLayout.isWaitingResult()) {
+            return;
+        }
         Calendar now = Calendar.getInstance(Locale.US);
         PublishIntentService.startBirthdayListIntent(getActivity(), now);
-        waitingResult = true;
+        swipeLayout.setWaitingResult(true);
     }
 
     @Override
@@ -123,10 +123,10 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     private void publish(final ActionMode mode, final boolean saveAsDraft) {
-        new AbsProgressBarAsyncTask<Void, String, List<TumblrPhotoPost>>(getActivity(), "") {
+        new AbsProgressIndicatorAsyncTask<Void, String, List<TumblrPhotoPost>>(getActivity(), "") {
             @Override
             protected void onProgressUpdate(String... values) {
-                getProgressDialog().setMessage(values[0]);
+                setProgressMessage(values[0]);
             }
 
             @Override
@@ -220,10 +220,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
 
     @Override
     public void onRefresh() {
-        // do not start another refresh if the current one is running
-        if (!waitingResult) {
-            refresh();
-        }
+        refresh();
     }
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -235,8 +232,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
                 @SuppressWarnings("unchecked") List<Pair<Birthday, TumblrPhotoPost>> posts = (List<Pair<Birthday, TumblrPhotoPost>>) intent
                         .getSerializableExtra(PublishIntentService.RESULT_LIST1);
 
-                swipeLayout.setRefreshing(false);
-                waitingResult = false;
+                swipeLayout.setRefreshingAndWaintingResult(false);
                 gridViewPhotoAdapter.clear();
                 gridViewPhotoAdapter.addAll(posts);
                 gridViewPhotoAdapter.notifyDataSetChanged();

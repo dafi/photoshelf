@@ -32,7 +32,7 @@ import android.widget.Toast;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.IOUtils;
 import com.ternaryop.utils.ImageUtils;
@@ -258,7 +258,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     }
 
     private void setWallpaper() {
-        new AbsProgressBarAsyncTask<Void, Void, Bitmap>(this, getString(R.string.downloading_image)) {
+        new AbsProgressIndicatorAsyncTask<Void, Void, Bitmap>(this, getString(R.string.downloading_image)) {
             @Override
             protected Bitmap doInBackground(Void... params) {
                 try {
@@ -294,7 +294,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         }.execute();
     }
 
-    private abstract class DownloadImageUrl extends AbsProgressBarAsyncTask<Void, Void, Void> {
+    private abstract class DownloadImageUrl extends AbsProgressIndicatorAsyncTask<Void, Void, Void> {
         private final URL imageUrl;
         private final File destFile;
 

@@ -14,7 +14,7 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressBarAsyncTask;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
 
 public class ScheduledListFragment extends AbsPostsListFragment {
@@ -48,10 +48,10 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         refreshUI();
         isScrolling = true;
 
-        task = (TaskWithUI) new AbsProgressBarAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_scheduled_posts)) {
+        task = (TaskWithUI) new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_scheduled_posts)) {
             @Override
             protected void onProgressUpdate(String... values) {
-                getProgressDialog().setMessage(values[0]);
+                setProgressMessage(values[0]);
             }
             
             @Override
