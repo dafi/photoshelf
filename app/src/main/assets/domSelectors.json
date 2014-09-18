@@ -20,6 +20,7 @@
 	"http:\/\/imgearn.net":".pic",
 	"http:\/\/storeimgs.net":".centred_resized",
 	"http:\/\/www.imagegaga.net":"#full_image",
-	"http:\/\/www.sawfirst.com\/wp-content":""
+	"http:\/\/www.sawfirst.com\/wp-content":"",
+	"http:\/\/imgbox.com":"#img"
 	}
 }
