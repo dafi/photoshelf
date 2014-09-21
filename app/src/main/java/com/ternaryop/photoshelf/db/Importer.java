@@ -361,9 +361,13 @@ public class Importer {
             DbxPath dbxPath = new DbxPath(exportFile.getName());
             DbxFile file = null;
 
+            // This will block until we can sync metadata the first time
+            dbxFs.listFolder(DbxPath.ROOT);
+
             try {
                 if (dbxFs.exists(dbxPath)) {
                     file = dbxFs.open(dbxPath);
+                    // sync file so it's updated then remove it
                     file.readString();
                     file.getSyncStatus();
                     file.update();
