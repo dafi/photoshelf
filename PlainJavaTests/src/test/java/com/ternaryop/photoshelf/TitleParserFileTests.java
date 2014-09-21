@@ -50,7 +50,7 @@ public class TitleParserFileTests {
 
     @Test
     public void testTitle() {
-        TitleData titleData = TitleParser.instance().parseTitle(inputTitle);
+        TitleData titleData = TitleParser.instance(null).parseTitle(inputTitle);
         String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
         assertEquals(expectedTitle, formattedInput);
     }
