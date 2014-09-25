@@ -99,6 +99,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     }
 
     private void onRefreshStarted() {
+        photoAdapter.clear();
         progressTextView.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
         swipeLayout.setRefreshingAndWaintingResult(true);
     }
@@ -110,8 +111,6 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     @Override
     protected void readPhotoPosts() {
-        photoAdapter.clear();
-        
         task = (TaskWithUI) new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts), progressTextView) {
             @Override
             protected void onProgressUpdate(String... values) {
