@@ -75,6 +75,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         webView.getSettings().setUseWideViewPort(true);
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setSupportZoom(true);
+        webView.getSettings().setDisplayZoomControls(false);
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
