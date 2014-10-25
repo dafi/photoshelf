@@ -37,6 +37,7 @@ import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.counter.CountChangedListener;
 import com.ternaryop.photoshelf.counter.CountProvider;
+import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -140,6 +141,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             protected void executeAction(PhotoShelfPost post) {
                 Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
                         post.getPostId());
+                DBHelper.getInstance(getContext()).getPostTagDAO().deleteById(post.getPostId());
             }
         }.execute();
     }

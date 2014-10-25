@@ -11,6 +11,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.text.Html;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -168,9 +169,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
     }
 
     public void setPostTags(List<String> tags) {
-        // show only first tag
         final String firstTag = tags.isEmpty() ? "" : tags.get(0);
-        this.postTags.setText(firstTag);
+        this.postTags.setText(TextUtils.join(", ", tags));
 
         if (!firstTag.isEmpty()) {
             // if tag doesn't exist then show the textfield in red
@@ -343,6 +343,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
             @Override
             public void complete(JSONObject result) {
                 dismiss();
+                newValues.put("tumblrName", appSupport.getSelectedBlogName());
+                DBHelper.getInstance(getContext()).getPostTagDAO().update(newValues);
                 if (dialogClickListener != null) {
                     dialogClickListener.onClick(TumblrPostDialog.this, BUTTON_POSITIVE);
                 }

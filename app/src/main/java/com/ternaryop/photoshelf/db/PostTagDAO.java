@@ -253,4 +253,63 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     public String getTableName() {
         return TABLE_NAME;
     }
+
+    public void update(Map<String, String> newValues) {
+        String id = newValues.get("id");
+        String tumblrName = newValues.get("tumblrName");
+        String tags = newValues.get("tags");
+
+        if (id == null) {
+            throw new IllegalArgumentException("Post id is mandatory for update");
+        }
+        if (tumblrName == null || tumblrName.isEmpty()) {
+            throw new IllegalArgumentException("Tumblr name is mandatory for update");
+        }
+        if (tags == null || tags.isEmpty()) {
+            throw new IllegalArgumentException("Tag is mandatory for update");
+        }
+
+        long longId = Long.parseLong(id);
+        List<PostTag> postTags = getPostsById(longId, tumblrName);
+        if (postTags.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = getDbHelper().getWritableDatabase();
+        try {
+            db.beginTransaction();
+            deleteById(longId);
+            // insert using existing postTag so we can modify only some fields leaving the others with previous values
+            PostTag postTag = postTags.get(0);
+            int showOrder = 1;
+            for (String tag : tags.split(",")) {
+                postTag.setTag(tag.trim());
+                postTag.setShowOrder(showOrder++);
+                insert(postTag);
+            }
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public int deleteById(long id) {
+        SQLiteDatabase db = getDbHelper().getWritableDatabase();
+        return db.delete(TABLE_NAME, _ID + "=?", new String[] {String.valueOf(id)});
+    }
+
+    public List<PostTag> getPostsById(long id, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+
+        Cursor c = db.query(TABLE_NAME,
+                COLUMNS,
+                _ID + " =? and " + TUMBLR_NAME + " =?",
+                new String[] {String.valueOf(id), tumblrName},
+                null,
+                null,
+                null);
+        return cursorToList(c);
+    }
 }
