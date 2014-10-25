@@ -9,6 +9,7 @@ import java.util.Map;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -236,6 +237,16 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
             c.close();
         }
         return map;
+    }
+
+    public long getPostCountByTag(String tag, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+
+        return DatabaseUtils.queryNumEntries(db,
+                TABLE_NAME,
+                "lower(" + TAG + ") = lower(?)"
+                + " and " + TUMBLR_NAME + " = ?",
+                new String[]{tag, tumblrName});
     }
 
     @Override

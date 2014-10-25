@@ -8,6 +8,8 @@ import java.util.List;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.os.Handler;
 import android.text.Html;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +23,7 @@ import android.widget.Spinner;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.ImageInfo;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
@@ -166,7 +169,30 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
     public void setPostTags(List<String> tags) {
         // show only first tag
-        this.postTags.setText(tags.isEmpty() ? "" : tags.get(0));
+        final String firstTag = tags.isEmpty() ? "" : tags.get(0);
+        this.postTags.setText(firstTag);
+
+        if (!firstTag.isEmpty()) {
+            // if tag doesn't exist then show the textfield in red
+            final Handler handler = new Handler();
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    long count = DBHelper.getInstance(getContext()).getPostTagDAO()
+                            .getPostCountByTag(firstTag, appSupport.getSelectedBlogName());
+                    if (count == 0) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                postTags.setTextColor(Color.WHITE);
+                                postTags.setBackgroundColor(Color.RED);
+                            }
+                        });
+                    }
+                }
+            };
+            new Thread(runnable).start();
+        }
     }
     
     @Override
