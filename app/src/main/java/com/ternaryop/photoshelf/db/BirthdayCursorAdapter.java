@@ -28,10 +28,14 @@ import com.ternaryop.utils.StringUtils;
  *
  */
 public class BirthdayCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, ViewBinder {
+    public static final int SHOW_BIRTHDAYS_ALL = 1 << 0;
+    public static final int SHOW_BIRTHDAYS_IGNORED = 1 << 1;
+    public static final int SHOW_BIRTHDAYS_IN_SAME_DAY = 1 << 2;
+
     private final DBHelper dbHelper;
     private final Context context;
     private final SimpleDateFormat dateFormat;
-    private boolean showIgnored;
+    private int showFlags = SHOW_BIRTHDAYS_ALL;
     private String blogName;
     private String pattern = "";
     private int month;
@@ -55,8 +59,10 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     @Override
     public Cursor runQuery(CharSequence constraint) {
         this.pattern = constraint == null ? "" : constraint.toString().trim();
-        if (showIgnored) {
+        if (isShowIgnored()) {
             return dbHelper.getBirthdayDAO().getIgnoredBirthdayCursor(pattern, blogName);
+        } else if (isShowInSameDay()) {
+            return dbHelper.getBirthdayDAO().getBirthdaysInSameDay(pattern, blogName);
         }
         return dbHelper.getBirthdayDAO().getBirthdayCursorByName(pattern, month, blogName);
     }
@@ -176,11 +182,26 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     }
 
     public boolean isShowIgnored() {
-        return showIgnored;
+        return (showFlags & SHOW_BIRTHDAYS_IGNORED) != 0;
     }
 
-    public void setShowIgnored(boolean showIgnored) {
-        this.showIgnored = showIgnored;
+    public boolean isShowInSameDay() {
+        return (showFlags & SHOW_BIRTHDAYS_IN_SAME_DAY) != 0;
+    }
+
+    public boolean isShowFlag(int value) {
+        return (showFlags & value) != 0;
+    }
+
+    public void setShow(int value, boolean show) {
+        if ((value & SHOW_BIRTHDAYS_ALL) != 0) {
+            // SHOW_BIRTHDAYS_ALL is the default value and it can't be hidden
+            showFlags = SHOW_BIRTHDAYS_ALL;
+        } else if ((value & SHOW_BIRTHDAYS_IGNORED) != 0) {
+            showFlags = show ? SHOW_BIRTHDAYS_IGNORED : SHOW_BIRTHDAYS_ALL;
+        } else if ((value & SHOW_BIRTHDAYS_IN_SAME_DAY) != 0) {
+            showFlags = show ? SHOW_BIRTHDAYS_IN_SAME_DAY : SHOW_BIRTHDAYS_ALL;
+        }
     }
 
 }

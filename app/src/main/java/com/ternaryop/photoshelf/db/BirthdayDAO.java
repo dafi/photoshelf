@@ -15,6 +15,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
     public static final String NAME = "NAME";
@@ -275,5 +276,19 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 
         v.put(BIRTH_DATE, (String)null);
         return getDbHelper().getWritableDatabase().update(TABLE_NAME, v, _ID + "=?", new String[] {String.valueOf(id)}) == 1;
+    }
+
+    public Cursor getBirthdaysInSameDay(String pattern, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        String likeClause = "%" + pattern + "%";
+
+        String query = "select " + TextUtils.join(",", COLUMNS) + " from birthday where name like ?" +
+                " and TUMBLR_NAME = ?" +
+                " and strftime('%m%d', birth_date) in" +
+                " (SELECT strftime('%m%d', birth_date) FROM birthday where name like ?" +
+                " and TUMBLR_NAME = ? and birth_date is not null group by strftime('%m%d', birth_date) having count(*) > 1 order by count(*) ) order by strftime('%m%d', birth_date), name";
+
+        return db.rawQuery(query,
+                new String[]{likeClause, tumblrName, likeClause, tumblrName});
     }
 }

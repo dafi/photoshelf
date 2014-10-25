@@ -222,16 +222,30 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        boolean isChecked = !item.isChecked();
+        int showFlag = -1;
+
         switch (item.getItemId()) {
+            case R.id.action_show_all:
+                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_ALL;
+                break;
             case R.id.action_show_ignored:
-                boolean isChecked = !item.isChecked();
-                item.setChecked(isChecked);
-                birthdayAdapter.setShowIgnored(isChecked);
-                birthdayAdapter.refresh(null);
-                return true;
+                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IGNORED;
+                break;
+            case R.id.action_show_birthdays_in_same_day:
+                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IN_SAME_DAY;
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
+
+        // if selected item is already selected don't change anything
+        if (showFlag != -1 && !birthdayAdapter.isShowFlag(showFlag)) {
+            item.setChecked(isChecked);
+            birthdayAdapter.setShow(showFlag, isChecked);
+            birthdayAdapter.refresh(null);
+        }
+        return true;
     }
 
     @Override
