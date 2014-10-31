@@ -11,18 +11,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.fedorvlasov.lazylist.ImageLoader;
+import com.squareup.picasso.Picasso;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 
 public class GridViewPhotoAdapter extends ArrayAdapter<Pair<Birthday, TumblrPhotoPost>> {
-    private final ImageLoader imageLoader;
     private final LayoutInflater inflater;
 
-    public GridViewPhotoAdapter(Context context, String prefix) {
+    public GridViewPhotoAdapter(Context context) {
         super(context, 0);
-        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
         inflater = LayoutInflater.from(context);
     }
 
@@ -42,7 +40,10 @@ public class GridViewPhotoAdapter extends ArrayAdapter<Pair<Birthday, TumblrPhot
         Calendar c = Calendar.getInstance();
         int age = c.get(Calendar.YEAR) - birthday.getBirthDateCalendar().get(Calendar.YEAR);
         holder.caption.setText(post.getTags().get(0) + ", " + age);
-        imageLoader.displayImage(post.getClosestPhotoByWidth(250).getUrl(), holder.thumbImage);
+        Picasso.with(getContext().getApplicationContext())
+                .load(post.getClosestPhotoByWidth(250).getUrl())
+                .placeholder(R.drawable.stub)
+                .into(holder.thumbImage);
 
         return convertView;
     }

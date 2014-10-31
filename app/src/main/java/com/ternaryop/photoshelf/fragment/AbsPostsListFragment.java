@@ -50,8 +50,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         DELETE
     }
 
-    private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
-
     protected PhotoAdapter photoAdapter;
     protected int offset;
     protected boolean hasMorePosts;
@@ -71,7 +69,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(getPostListViewResource(), container, false);
         
-        photoAdapter = new PhotoAdapter(getActivity(), LOADER_PREFIX_POSTS_THUMB);
+        photoAdapter = new PhotoAdapter(getActivity());
 
         photoListView = (ListView)rootView.findViewById(R.id.list);
         photoListView.setOnItemClickListener(this);

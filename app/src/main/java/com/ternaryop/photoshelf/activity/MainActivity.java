@@ -51,7 +51,6 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 
 public class MainActivity extends Activity implements AuthenticationCallback, FragmentActivityStatus {
-    private static final String LOADER_PREFIX_AVATAR = "avatar";
     private AppSupport appSupport;
 
     private DrawerLayout drawerLayout;
@@ -296,7 +295,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     }
 
     private void fillBlogList(List<String> blogNames) {
-        BlogSpinnerAdapter adapter = new BlogSpinnerAdapter(this, LOADER_PREFIX_AVATAR, blogNames);
+        BlogSpinnerAdapter adapter = new BlogSpinnerAdapter(this, blogNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         blogList.setAdapter(adapter);
 
