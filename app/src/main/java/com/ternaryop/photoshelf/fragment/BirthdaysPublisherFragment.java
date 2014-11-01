@@ -42,7 +42,6 @@ import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
 public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
-    private static final String LOADER_PREFIX = "mediumThumb";
 
     private GridView gridView;
     private GridViewPhotoAdapter gridViewPhotoAdapter;
@@ -53,7 +52,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_birthdays_publisher, container, false);
 
-        gridViewPhotoAdapter = new GridViewPhotoAdapter(getActivity(), LOADER_PREFIX);
+        gridViewPhotoAdapter = new GridViewPhotoAdapter(getActivity());
         
         gridView = (GridView)rootView.findViewById(R.id.gridview);
         gridView.setAdapter(gridViewPhotoAdapter);

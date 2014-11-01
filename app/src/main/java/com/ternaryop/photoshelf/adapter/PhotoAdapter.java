@@ -17,23 +17,21 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.fedorvlasov.lazylist.ImageLoader;
+import com.squareup.picasso.Picasso;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
 import com.ternaryop.utils.StringUtils;
 
 public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.OnClickListener {
     private static LayoutInflater inflater = null;
-    private final ImageLoader imageLoader;
     private final ArrayList<PhotoShelfPost> allPosts;
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private boolean recomputeGroupIds;
     private boolean isFiltering;
 
-    public PhotoAdapter(Context context, String prefix) {
+    public PhotoAdapter(Context context) {
         super(context, 0);
         inflater = LayoutInflater.from(context);
-        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
         allPosts = new ArrayList<PhotoShelfPost>();
     }
 
@@ -90,7 +88,10 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
         String imageUrl = post.getClosestPhotoByWidth(75).getUrl();
-        imageLoader.displayImage(imageUrl, holder.thumbImage);
+        Picasso.with(getContext().getApplicationContext())
+                .load(imageUrl)
+                .placeholder(R.drawable.stub)
+                .into(holder.thumbImage);
         return vi;
     }
 
