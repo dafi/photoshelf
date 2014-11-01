@@ -360,7 +360,9 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
         TitleData titleData = TitleParser.instance(getContext()).parseTitle(postTitle.getText().toString());
         // only the edited title is updated, the sourceTitle remains unchanged
         setPostTitle(titleData.toHtml(), sourceTitle);
-        setPostTags(titleData.getTags());
+        // get only first tag
+        List<String> firstTag = titleData.getTags().isEmpty() ? titleData.getTags() : titleData.getTags().subList(0, 1);
+        setPostTags(firstTag);
     }
 
     public List<File> getImageFiles() {
