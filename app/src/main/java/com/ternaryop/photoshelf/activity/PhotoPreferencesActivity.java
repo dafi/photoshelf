@@ -4,12 +4,10 @@ import java.io.File;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -18,6 +16,7 @@ import android.preference.PreferenceScreen;
 import android.view.MenuItem;
 
 import com.dropbox.sync.android.DbxAccountManager;
+import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
@@ -224,26 +223,28 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         };
         
         new AlertDialog.Builder(this)
-        .setMessage(getString(R.string.are_you_sure))
+        .setMessage("Are you sure?")
         .setPositiveButton(android.R.string.yes, dialogClickListener)
         .setNegativeButton(android.R.string.no, null)
         .show();
     }
     
     private void clearImageCache() {
-        // copied from https://github.com/UweTrottmann/SeriesGuide/
-        // try to open app info where user can clear app cache folders
-        Intent intent = new Intent(
-                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.parse("package:" + getPackageName()));
-        try {
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            // open all apps view
-            intent = new Intent(
-                    android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
-            startActivity(intent);
-        }
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    ImageLoader.clearImageCache(PhotoPreferencesActivity.this);
+                    break;
+                }
+            }
+        };
+        new AlertDialog.Builder(this)
+        .setMessage(R.string.clear_cache_confirm)
+        .setPositiveButton(android.R.string.yes, dialogClickListener)
+        .setNegativeButton(android.R.string.no, null)
+        .show();        
     }
 
     public static void startPreferencesActivityForResult(Activity caller) {

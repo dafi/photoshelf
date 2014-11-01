@@ -11,17 +11,18 @@ import android.widget.ImageView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.Blog;
-import com.ternaryop.utils.image.ScaleForDefaultDisplayTransformer;
 
 public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerAdapter {
     private static LayoutInflater inflater = null;
+    private final ImageLoader imageLoader;
 
-    public BlogSpinnerAdapter(Context context, List<String> blogNames) {
+    public BlogSpinnerAdapter(Context context, String prefix, List<String> blogNames) {
         super(context, 0, blogNames);
         inflater = LayoutInflater.from(context);
+        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -39,11 +40,7 @@ public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerA
         holder.title.setText(blogName);
 
         String imageUrl = Blog.getAvatarUrlBySize(blogName, 96);
-        Picasso.with(getContext().getApplicationContext())
-                .load(imageUrl)
-                .placeholder(R.drawable.stub)
-                .transform(new ScaleForDefaultDisplayTransformer(getContext().getApplicationContext()))
-                .into(holder.image);
+        imageLoader.displayImage(imageUrl, holder.image, true);
 
         return convertView;
     }
