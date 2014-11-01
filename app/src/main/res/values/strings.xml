@@ -171,5 +171,6 @@
     <string name="content_description_blog_avatar">Blog Avatar</string>
     <string name="source_title">Source Title</string>
     <string name="show_birthdays_in_same_day">Show Birthdays In Same Day</string>
+    <string name="are_you_sure">Are you sure?</string>
 
 </resources>
