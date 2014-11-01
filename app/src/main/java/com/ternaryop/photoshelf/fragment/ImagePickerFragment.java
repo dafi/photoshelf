@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -169,9 +168,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
             dialog.setImageFiles(imageUrlRetriever.getImageFiles());
         }
         dialog.setPostTitle(titleData.toHtml(), imageUrlRetriever.getTitle());
-        // use only first tag, generally other tags are poorly determinated
-        List<String> firstTag = titleData.getTags().isEmpty() ? titleData.getTags() : titleData.getTags().subList(0, 1);
-        dialog.setPostTags(firstTag);
+        dialog.setPostTags(titleData.getTags());
         
         dialog.show();
     }
