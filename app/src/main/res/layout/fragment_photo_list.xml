@@ -17,12 +17,4 @@
             android:dividerHeight="0dp"/>
 
     </com.ternaryop.widget.WaitingResultSwipeRefreshLayout>
-
-    <TextView
-        android:id="@android:id/empty"
-        android:textAppearance="@android:style/TextAppearance.Large"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
 </RelativeLayout>

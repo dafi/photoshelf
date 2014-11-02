@@ -31,21 +31,25 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
+import com.ternaryop.widget.ProgressHighlightViewLayout;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
     private HashMap<String, TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
-    private TextView progressTextView;
     private WaitingResultSwipeRefreshLayout swipeLayout;
+
+    private ProgressHighlightViewLayout progressHighlightViewLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
 
-        progressTextView = (TextView) rootView.findViewById(android.R.id.empty);
-        photoListView.setEmptyView(progressTextView);
+        View view = View.inflate(getActivity(), R.layout.draft_empty_list, (ViewGroup) rootView);
+        progressHighlightViewLayout = (ProgressHighlightViewLayout) view.findViewById(android.R.id.empty);
+        progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
+        photoListView.setEmptyView(progressHighlightViewLayout);
 
         swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
         swipeLayout.setColorScheme(R.array.progress_swipe_colors);
@@ -90,31 +94,36 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
             return;
         }
         onRefreshStarted();
-        task = new Importer(getActivity(), null).importFromTumblr(getBlogName(), progressTextView, new ImportCompleteCallback() {
+        task = new Importer(getActivity(), null).importFromTumblr(getBlogName(), getCurrentTextView(), new ImportCompleteCallback() {
             @Override
             public void complete() {
+                progressHighlightViewLayout.incrementProgress();
                 readPhotoPosts();
             }
         });
     }
 
+    public TextView getCurrentTextView() {
+        return (TextView) progressHighlightViewLayout.getCurrentView();
+    }
+
     private void onRefreshStarted() {
         photoAdapter.clear();
-        progressTextView.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
+        progressHighlightViewLayout.startProgress();
         swipeLayout.setRefreshingAndWaintingResult(true);
     }
 
     private void onRefreshCompleted() {
         swipeLayout.setRefreshingAndWaintingResult(false);
-        progressTextView.clearAnimation();
+        progressHighlightViewLayout.stopProgress();
     }
 
     @Override
     protected void readPhotoPosts() {
-        task = (TaskWithUI) new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts), progressTextView) {
+        task = (TaskWithUI) new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_draft_posts), getCurrentTextView()) {
             @Override
             protected void onProgressUpdate(String... values) {
-                setProgressMessage(values[0]);
+                progressHighlightViewLayout.incrementProgress();
             }
 
             @Override
