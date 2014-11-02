@@ -134,6 +134,12 @@ public class Importer {
 
             @Override
             public void complete(List<TumblrPost> allPosts) {
+                if (allPosts.isEmpty()) {
+                    if (callback != null) {
+                        callback.complete();
+                    }
+                    return;
+                }
                 List<PostTag> allPostTags = new ArrayList<PostTag>();
                 for (TumblrPost tumblrPost : allPosts) {
                     allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));

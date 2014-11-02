@@ -120,7 +120,16 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         }
         return list;
     }
-    
+
+    public Cursor getMissingBirthDaysCursor(String patternName, String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        return db.rawQuery("select name " + NAME + ", " + TUMBLR_NAME + ", -1 " + _ID + ", null " + BIRTH_DATE + " from VW_MISSING_BIRTHDAYS" +
+                        " where " + NAME + " like ?" +
+                        " and " + TUMBLR_NAME + "= ?" +
+                        " order by " + NAME,
+                new String[]{"%" + patternName + "%", tumblrName});
+    }
+
     private List<Birthday> cursorToBirtdayList(Cursor c) {
         ArrayList<Birthday> list = new ArrayList<Birthday>();
         try {

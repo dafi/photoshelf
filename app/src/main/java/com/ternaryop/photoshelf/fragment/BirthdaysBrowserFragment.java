@@ -93,6 +93,11 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
     }
 
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        // no actions are supported in show missing bdays mode
+        if (birthdayAdapter.isShowMissing()) {
+            return false;
+        }
+
         mode.setTitle(R.string.select_items);
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
         MenuInflater inflater = mode.getMenuInflater();
@@ -234,6 +239,9 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                 break;
             case R.id.action_show_birthdays_in_same_day:
                 showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IN_SAME_DAY;
+                break;
+            case R.id.action_show_birthdays_missing:
+                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_MISSING;
                 break;
             default:
                 return super.onOptionsItemSelected(item);

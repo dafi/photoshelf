@@ -12,6 +12,9 @@
         <item
             android:id="@+id/action_show_birthdays_in_same_day"
             android:title="@string/show_birthdays_in_same_day"/>
+        <item
+            android:id="@+id/action_show_birthdays_missing"
+            android:title="@string/show_birthdays_missing"/>
     </group>
 
 </menu>
