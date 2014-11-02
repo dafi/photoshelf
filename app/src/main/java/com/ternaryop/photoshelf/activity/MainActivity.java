@@ -69,6 +69,8 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     
     private Spinner blogList;
 
+    private int lastClickedMenuIndex = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -245,6 +247,10 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     }
 
     private void selectItem(int position) {
+        if (lastClickedMenuIndex == position) {
+            return;
+        }
+        lastClickedMenuIndex = position;
         try {
             DrawerItem drawerItem = adapter.getItem(position);
             Fragment fragment = Fragment.instantiate(getApplicationContext(),
