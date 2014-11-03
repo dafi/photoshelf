@@ -10,13 +10,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityOptions;
 import android.app.WallpaperManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Menu;
@@ -117,7 +117,9 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         }
         intent.putExtras(bundle);
 
-        context.startActivity(intent);
+        Bundle animBundle = ActivityOptions.makeCustomAnimation(context,
+                R.anim.slide_in_left, R.anim.slide_out_left).toBundle();
+        context.startActivity(intent, animBundle);
     }
 
     @JavascriptInterface
@@ -214,7 +216,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         String imageUrl = bundle.getString(IMAGE_URL);
 
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newRawUri(getString(R.string.image_url_description), Uri.parse(imageUrl));
+        ClipData clip = ClipData.newPlainText(getString(R.string.image_url_description), imageUrl);
         clipboardManager.setPrimaryClip(clip);
         Toast.makeText(this,
                 R.string.url_copied_to_clipboard_title,
@@ -328,5 +330,11 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
             }
             return null;
         }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right);
     }
 }
