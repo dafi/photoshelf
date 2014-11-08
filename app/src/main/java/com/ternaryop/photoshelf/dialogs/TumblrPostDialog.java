@@ -16,9 +16,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 
 import com.ternaryop.photoshelf.AppSupport;
@@ -39,7 +39,7 @@ import org.json.JSONObject;
 public class TumblrPostDialog extends Dialog implements View.OnClickListener {
 
     private final EditText postTitle;
-    private final AutoCompleteTextView postTags;
+    private final MultiAutoCompleteTextView postTags;
     private final Spinner blogList;
     private final AppSupport appSupport;
     private final long postId;
@@ -65,7 +65,7 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
         this.postId = postId;
 
         postTitle = (EditText)findViewById(R.id.post_title);
-        postTags = (AutoCompleteTextView)findViewById(R.id.post_tags);
+        postTags = (MultiAutoCompleteTextView)findViewById(R.id.post_tags);
         blogList = (Spinner) findViewById(R.id.blog);
         
         appSupport = new AppSupport(context);
@@ -79,6 +79,8 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
                 "");
         tagAdapter.setBlogName(appSupport.getSelectedBlogName());
         postTags.setAdapter(tagAdapter);
+        postTags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());        
         
         if (postId > 0) {
