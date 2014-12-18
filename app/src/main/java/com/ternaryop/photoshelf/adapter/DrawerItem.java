@@ -1,11 +1,13 @@
 package com.ternaryop.photoshelf.adapter;
 
+
+import android.app.Fragment;
+
 import com.ternaryop.photoshelf.counter.CountRetriever;
-import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment;
 
 public class DrawerItem {
     private String title;
-    private Class<? extends AbsPhotoShelfFragment> fragmentClass;
+    private Class<? extends Fragment> fragmentClass;
     private boolean counterVisible;
     private CountRetriever countRetriever;
 
@@ -13,11 +15,11 @@ public class DrawerItem {
         this(title, null, false, null);
     }
     
-    public DrawerItem(String title, Class<? extends AbsPhotoShelfFragment> fragmentClass) {
+    public DrawerItem(String title, Class<? extends Fragment> fragmentClass) {
         this(title, fragmentClass, false, null);
     }
 
-    public DrawerItem(String title, Class<? extends AbsPhotoShelfFragment> fragmentClass, boolean showCounter, CountRetriever countRetriever) {
+    public DrawerItem(String title, Class<? extends Fragment> fragmentClass, boolean showCounter, CountRetriever countRetriever) {
         this.title = title;
         this.fragmentClass = fragmentClass;
         this.counterVisible = showCounter;
@@ -32,11 +34,11 @@ public class DrawerItem {
         this.title = title;
     }
 
-    public Class<? extends AbsPhotoShelfFragment> getFragmentClass() {
+    public Class<? extends Fragment> getFragmentClass() {
         return fragmentClass;
     }
 
-    public void setFragmentClass(Class<? extends AbsPhotoShelfFragment> fragmentClass) {
+    public void setFragmentClass(Class<? extends Fragment> fragmentClass) {
         this.fragmentClass = fragmentClass;
     }
 
