@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.activity;
+package com.ternaryop.photoshelf.fragment;
 
 import java.io.File;
 
@@ -12,10 +12,9 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.view.MenuItem;
 
 import com.dropbox.sync.android.DbxAccountManager;
 import com.ternaryop.photoshelf.AppSupport;
@@ -24,7 +23,7 @@ import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.tumblr.Tumblr;
 
 @SuppressWarnings("deprecation")
-public class PhotoPreferencesActivity extends PreferenceActivity {
+public class PhotoPreferencesFragment extends PreferenceFragment {
     private static final String TUMBLR_SERVICE_NAME = "Tumblr";
     private static final String DROPBOX_SERVICE_NAME = "Dropbox";
 
@@ -64,20 +63,20 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     private Importer importer;
     
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_main);
 
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(prefListener);
-        appSupport = new AppSupport(this);
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(prefListener);
+        appSupport = new AppSupport(getActivity());
         dropboxManager = appSupport.getDbxAccountManager();
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         preferenceTumblrLogin = preferenceScreen.findPreference(KEY_TUMBLR_LOGIN);
 
-        if (Tumblr.isLogged(this)) {
+        if (Tumblr.isLogged(getActivity())) {
             preferenceTumblrLogin.setTitle(getString(R.string.logout_title, TUMBLR_SERVICE_NAME));
         } else {
             preferenceTumblrLogin.setTitle(getString(R.string.login_title, TUMBLR_SERVICE_NAME));
@@ -116,7 +115,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceImportBirthdaysFromWikipedia = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA);
         
         preferenceScheduleTimeSpan = preferenceScreen.findPreference(KEY_SCHEDULE_TIME_SPAN);
-        prefListener.onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(this), KEY_SCHEDULE_TIME_SPAN);
+        prefListener.onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), KEY_SCHEDULE_TIME_SPAN);
 
         preferenceClearImageCache = preferenceScreen.findPreference(KEY_CLEAR_IMAGE_CACHE);
 
@@ -137,8 +136,8 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         }
     };
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK && requestCode == DROPBOX_RESULT) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK && requestCode == DROPBOX_RESULT) {
             if (dropboxManager.hasLinkedAccount()) {
                 preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
             } else {
@@ -148,25 +147,12 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     }
     
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case android.R.id.home:
-            // clicked the actionbar
-            // close and return to caller
-            finish();
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
-        }
-    }
-    
-    @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         if (preference == preferenceTumblrLogin) {
-            if (Tumblr.isLogged(this)) {
+            if (Tumblr.isLogged(getActivity())) {
                 logout();        
             } else {
-                Tumblr.login(this);
+                Tumblr.login(getActivity());
             }
             return true;
         } else if (preference == preferenceImportPostsFromCSV) {
@@ -217,13 +203,13 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
-                    Tumblr.logout(getApplicationContext());
+                    Tumblr.logout(getActivity().getApplicationContext());
                     break;
                 }
             }
         };
         
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(getActivity())
         .setMessage(getString(R.string.are_you_sure))
         .setPositiveButton(android.R.string.yes, dialogClickListener)
         .setNegativeButton(android.R.string.no, null)
@@ -235,7 +221,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         // try to open app info where user can clear app cache folders
         Intent intent = new Intent(
                 android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.parse("package:" + getPackageName()));
+        intent.setData(Uri.parse("package:" + getActivity().getPackageName()));
         try {
             startActivity(intent);
         } catch (ActivityNotFoundException e) {
@@ -247,7 +233,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
     }
 
     public static void startPreferencesActivityForResult(Activity caller) {
-        Intent intent = new Intent(caller, PhotoPreferencesActivity.class);
+        Intent intent = new Intent(caller, PhotoPreferencesFragment.class);
         Bundle bundle = new Bundle();
 
         intent.putExtras(bundle);
@@ -260,10 +246,10 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
         preferenceVersion.setTitle(getString(R.string.version_title, getString(R.string.app_name)));
         String version;
         try {
-            String versionName = getPackageManager().getPackageInfo(
-                    getPackageName(), 0).versionName;
-            int versionCode = getPackageManager().getPackageInfo(
-                    getPackageName(), 0).versionCode;
+            String versionName = getActivity().getPackageManager().getPackageInfo(
+                    getActivity().getPackageName(), 0).versionName;
+            int versionCode = getActivity().getPackageManager().getPackageInfo(
+                    getActivity().getPackageName(), 0).versionCode;
             version = String.valueOf(versionName + " build " + versionCode);
         } catch (Exception e) {
             version = "N/A";
@@ -278,7 +264,7 @@ public class PhotoPreferencesActivity extends PreferenceActivity {
 
     public Importer getImporter() {
         if (importer == null) {
-            importer = new Importer(this, dropboxManager);
+            importer = new Importer(getActivity(), dropboxManager);
         }
         return importer;
     }

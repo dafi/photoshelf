@@ -8,9 +8,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
-import android.view.Menu;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -40,6 +39,7 @@ import com.ternaryop.photoshelf.fragment.DraftListFragment;
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus;
 import com.ternaryop.photoshelf.fragment.HomeFragment;
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment;
+import com.ternaryop.photoshelf.fragment.PhotoPreferencesFragment;
 import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment;
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment;
 import com.ternaryop.photoshelf.fragment.TagListFragment;
@@ -95,7 +95,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         drawerToggle = new ActionBarDrawerToggle(
                 this,
                 drawerLayout,
-                R.drawable.ic_drawer,
+                null,
                 R.string.drawer_open,
                 R.string.drawer_close) {
             public void onDrawerClosed(View view) {
@@ -112,12 +112,25 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
 
         blogList = (Spinner) findViewById(R.id.blogs_spinner);
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());
-        
+
+        boolean logged = Tumblr.isLogged(this);
         if (savedInstanceState == null) {
-            selectItem(0);
-            drawerLayout.openDrawer(drawerLinearLayout);
+            if (logged) {
+                showHome();
+            } else {
+                showSettings();
+            }
         }
-        enableUI(Tumblr.isLogged(this));
+        enableUI(logged);
+    }
+
+    private void showHome() {
+        selectItem(0);
+        drawerLayout.openDrawer(drawerLinearLayout);
+    }
+
+    private void showSettings() {
+        selectItem(adapter.getCount() - 1);
     }
 
     private DrawerAdapter initDrawerAdapter() {
@@ -142,7 +155,11 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
                 true, new BirthdaysCountRetriever(this, getBlogName(), adapter)));
         adapter.add(new DrawerItem(getString(R.string.best_of), BestOfFragment.class));
         adapter.add(new DrawerItem(getString(R.string.test_page_title), ImagePickerFragment.class));
-        
+
+        // Settings
+        adapter.add(new DrawerItem("", null));
+        adapter.add(new DrawerItem(getString(R.string.settings), PhotoPreferencesFragment.class));
+
         return adapter;
     }
 
@@ -169,8 +186,10 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
             boolean handled = Tumblr.handleOpenURI(this, getIntent().getData(), this);
 
             // show the preference only if we aren't in the middle of URI handling and not already logged in
-            if (!handled) {
-                PhotoPreferencesActivity.startPreferencesActivityForResult(this);
+            if (handled) {
+                showHome();
+            } else {
+                showSettings();
             }
         }
     }
@@ -198,15 +217,9 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         if (enabled) {
             fetchBlogNames();
         }
+        drawerToggle.setDrawerIndicatorEnabled(enabled);
         adapter.setSelectionEnabled(enabled);
         adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-
-        return true;
     }
 
     @Override
@@ -214,13 +227,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        switch (item.getItemId()) {
-        case R.id.action_settings:
-            PhotoPreferencesActivity.startPreferencesActivityForResult(this);
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
