@@ -57,7 +57,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         Bundle bundle = getIntent().getExtras();
         String imageUrl = bundle.getString(IMAGE_URL);
         String data = "<body><img src=\"" + imageUrl + "\"/></body>";
-        prepareWebView(progressBar).loadData(data, "text/html", "UTF-8");
+        prepareWebView(progressBar).loadDataWithBaseURL(null, data, "text/html", "UTF-8", null);
         try {
             getActionBar().setSubtitle(new URI(imageUrl).getHost());
         } catch (URISyntaxException ignored) {
