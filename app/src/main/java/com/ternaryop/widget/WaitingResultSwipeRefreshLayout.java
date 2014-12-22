@@ -22,7 +22,7 @@ public class WaitingResultSwipeRefreshLayout extends android.support.v4.widget.S
 
     public void setColorScheme(int arrayResId) {
         final TypedArray colorScheme = getResources().obtainTypedArray(arrayResId);
-        setColorScheme(
+        setColorSchemeResources(
                 colorScheme.getResourceId(0, 0),
                 colorScheme.getResourceId(1, 0),
                 colorScheme.getResourceId(2, 0),
