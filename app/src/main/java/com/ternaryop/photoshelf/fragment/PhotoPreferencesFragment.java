@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -23,7 +24,7 @@ import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.tumblr.Tumblr;
 
 @SuppressWarnings("deprecation")
-public class PhotoPreferencesFragment extends PreferenceFragment {
+public class PhotoPreferencesFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
     private static final String TUMBLR_SERVICE_NAME = "Tumblr";
     private static final String DROPBOX_SERVICE_NAME = "Dropbox";
 
@@ -41,6 +42,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment {
     private static final String KEY_CLEAR_IMAGE_CACHE = "clear_image_cache";
     private static final String KEY_VERSION = "version";
     private static final String KEY_DROPBOX_VERSION = "dropbox_version";
+    private static final String KEY_THUMBNAIL_WIDTH = "thumbnail_width";
 
     public static final int MAIN_PREFERENCES_RESULT = 1;
     private static final int DROPBOX_RESULT = 2;
@@ -57,6 +59,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment {
     private Preference preferenceClearImageCache;
     private Preference preferenceExportMissingBirthdays;
     private Preference preferenceDropboxLogin;
+    private ListPreference preferenceThumbnailWidth;
 
     private AppSupport appSupport;
     private DbxAccountManager dropboxManager;
@@ -67,7 +70,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_main);
 
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(prefListener);
         appSupport = new AppSupport(getActivity());
         dropboxManager = appSupport.getDbxAccountManager();
 
@@ -115,26 +117,43 @@ public class PhotoPreferencesFragment extends PreferenceFragment {
         preferenceImportBirthdaysFromWikipedia = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA);
         
         preferenceScheduleTimeSpan = preferenceScreen.findPreference(KEY_SCHEDULE_TIME_SPAN);
-        prefListener.onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), KEY_SCHEDULE_TIME_SPAN);
+        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), KEY_SCHEDULE_TIME_SPAN);
 
         preferenceClearImageCache = preferenceScreen.findPreference(KEY_CLEAR_IMAGE_CACHE);
 
         preferenceExportMissingBirthdays = preferenceScreen.findPreference(KEY_EXPORT_MISSING_BIRTHDAYS);
-        
+
+        preferenceThumbnailWidth = (ListPreference) preferenceScreen.findPreference(KEY_THUMBNAIL_WIDTH);
+        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), KEY_THUMBNAIL_WIDTH);
+
         setupVersionInfo(preferenceScreen);
     }
 
-    // Use instance field for listener
-    // It will not be gc'd as long as this instance is kept referenced
-    private final OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            if (key.equals(KEY_SCHEDULE_TIME_SPAN)) {
-                int hours = sharedPreferences.getInt(key, 0);
-                preferenceScheduleTimeSpan.setSummary(getResources().getQuantityString(R.plurals.hour_title, hours, hours));
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(KEY_SCHEDULE_TIME_SPAN)) {
+            int hours = sharedPreferences.getInt(key, 0);
+            preferenceScheduleTimeSpan.setSummary(getResources().getQuantityString(R.plurals.hour_title, hours, hours));
+        } else if (key.equals(KEY_THUMBNAIL_WIDTH)) {
+            String value = sharedPreferences.getString(key, getResources().getString(R.string.thumbnail_width_value_default));
+            int index = preferenceThumbnailWidth.findIndexOfValue(value);
+            if (index > -1) {
+                preferenceThumbnailWidth.setSummary(preferenceThumbnailWidth.getEntries()[index]);
             }
         }
-    };
+    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == DROPBOX_RESULT) {

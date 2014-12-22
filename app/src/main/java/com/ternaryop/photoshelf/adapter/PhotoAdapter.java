@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.text.Html;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import android.widget.TextView;
 import com.fedorvlasov.lazylist.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
+import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.utils.StringUtils;
 
 public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.OnClickListener {
@@ -29,12 +32,14 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private boolean recomputeGroupIds;
     private boolean isFiltering;
+    private int thumbnailWidth;
 
     public PhotoAdapter(Context context, String prefix) {
         super(context, 0);
         inflater = LayoutInflater.from(context);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
         allPosts = new ArrayList<PhotoShelfPost>();
+        thumbnailWidth = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_width", "75"));
     }
 
     public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
@@ -89,8 +94,14 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
-        String imageUrl = post.getClosestPhotoByWidth(75).getUrl();
-        imageLoader.displayImage(imageUrl, holder.thumbImage);
+        TumblrAltSize altSize = post.getClosestPhotoByWidth(thumbnailWidth);
+        ViewGroup.LayoutParams imageLayoutParams = holder.thumbImage.getLayoutParams();
+        int minThumbnainWidth = Math.max(thumbnailWidth, altSize.getWidth());
+        // convert from pixel to DIP
+        imageLayoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, minThumbnainWidth, getContext().getResources().getDisplayMetrics());
+        imageLayoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, altSize.getHeight(), getContext().getResources().getDisplayMetrics());
+
+        imageLoader.displayImage(altSize.getUrl(), holder.thumbImage);
         return vi;
     }
 

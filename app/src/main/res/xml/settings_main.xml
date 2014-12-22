@@ -80,6 +80,15 @@
             android:title="@string/clear_image_cache_title" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="pref_key_thumbnail_width"
+        android:title="@string/pref_thumbnail_width" >
+        <ListPreference
+            android:title="@string/pref_thumbnail_width"
+            android:key="thumbnail_width"
+            android:entries="@array/list_thumbnail_width_entries_default"
+            android:entryValues="@array/list_thumbnail_width_values_default" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="pref_key_developer"
         android:title="@string/pref_developer" >
         <Preference

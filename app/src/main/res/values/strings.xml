@@ -173,5 +173,7 @@
     <string name="show_birthdays_in_same_day">Show Birthdays In Same Day</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="show_birthdays_missing">Missing Birthdays</string>
+    <string name="pref_thumbnail_width">Thumbnail Image Width</string>
+    <string name="largest_image">Largest</string>
 
 </resources>
