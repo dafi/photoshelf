@@ -9,6 +9,7 @@
         android:id="@android:id/text1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:textColor="#de000000"
         android:layout_marginTop="1dip"
         android:textAppearance="?android:attr/textAppearanceListItem" />
 
@@ -17,6 +18,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@android:id/text1"
+        android:textColor="#8a000000"
         android:paddingTop="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 </com.ternaryop.widget.CheckableRelativeLayout>
