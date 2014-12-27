@@ -9,12 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.view.ActionMode;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -49,16 +49,16 @@ public class ImageUrlRetriever {
         }
         if (useActionMode) {
             if (urlSelectorMap.size() == 0) {
-                getActionMode((Activity) context).finish();
+                getActionMode((ActionBarActivity) context).finish();
             } else {
-                getActionMode((Activity) context).invalidate();
+                getActionMode((ActionBarActivity) context).invalidate();
             }
         }
     }
 
-    protected ActionMode getActionMode(Activity activity) {
+    protected ActionMode getActionMode(ActionBarActivity activity) {
         if (actionMode == null) {
-            actionMode = activity.startActionMode(mActionModeCallback);
+            actionMode = activity.startSupportActionMode(mActionModeCallback);
         }
         return actionMode;
     }

@@ -8,13 +8,12 @@ import java.util.List;
 import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
-import android.widget.SearchView.OnSuggestionListener;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
@@ -25,7 +24,7 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 
-public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnSuggestionListener {
+public class TagPhotoBrowserFragment extends AbsPostsListFragment implements SearchView.OnSuggestionListener {
     private String postTag;
     private boolean allowSearch;
 
@@ -81,7 +80,7 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements OnS
 
         searchView.setOnSuggestionListener(this);
         TagCursorAdapter adapter = new TagCursorAdapter(
-                getActivity().getActionBar().getThemedContext(),
+                getSupportActionBar().getThemedContext(),
                 R.layout.ab_simple_dropdown_item_1line,
                 getBlogName());
         searchView.setSuggestionsAdapter(adapter);

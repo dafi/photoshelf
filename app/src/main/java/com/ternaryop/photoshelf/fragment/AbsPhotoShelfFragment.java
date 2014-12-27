@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.ActionMode;
 
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
@@ -80,5 +82,9 @@ public abstract class AbsPhotoShelfFragment extends Fragment {
         editDialog.setEditButton(dialogClickListener);
         
         editDialog.show();
+    }
+
+    public ActionBar getSupportActionBar() {
+        return ((ActionBarActivity)getActivity()).getSupportActionBar();
     }
 }

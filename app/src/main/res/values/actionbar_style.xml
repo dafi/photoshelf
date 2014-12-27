@@ -1,73 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.PhotoShelf"
-           parent="@android:style/Theme.Holo.Light.DarkActionBar">
-        <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
-        <item name="android:itemTextAppearance">@style/TextAppearance</item>
+           parent="@style/Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
 
-        <item name="android:actionBarStyle">@style/Theme.PhotoShelf.ActionBar</item>
-        <item name="android:actionBarTabTextStyle">@style/Theme.PhotoShelf.ActionBar.TabText</item>
-        <item name="android:actionMenuTextColor">@color/actionbar_text</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
 
-        <item name="android:actionModeStyle">@style/Theme.PhotoShelf.ActionMode</item>
+        <item name="actionModeBackground">@color/actionmode_bg</item>
+        <item name="actionBarPopupTheme">@style/Theme.PhotoShelf.ActionMode.PopupMenu</item>
 
-        <item name="android:dropDownListViewStyle">@style/Theme.PhotoShelf.Spinner.DropDownListView</item>
-        <item name="android:actionDropDownStyle">@style/Theme.PhotoShelf.Spinner.DropDownNav</item>
+        <item name="popupMenuStyle">@style/Theme.PhotoShelf.ContextPopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ContextPopupMenuStyle</item>
 
-        <!-- Light.DarkActionBar specific -->
-        <item name="android:actionBarWidgetTheme">@style/Theme.PhotoShelf.ActionBar.Widget</item>
+        <item name="textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceLarge</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceLarge</item>
+
+        <item name="textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall</item>
     </style>
 
-    <!-- ActionBar styles -->
-    <style name="Theme.PhotoShelf.ActionBar"
-           parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/actionbar_bg</item>
-        <item name="android:titleTextStyle">@style/Theme.PhotoShelf.ActionBar.TitleText</item>
-        <item name="android:subtitleTextStyle">@style/Theme.PhotoShelf.ActionBar.TitleTextStyle</item>
-
-        <!-- Hide app icon -->
-        <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
-        <item name="android:icon">@color/transparent</item>
+    <style name="Theme.PhotoShelf.ContextPopupMenuStyle" parent="@style/Widget.AppCompat.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/bug_fix</item>
     </style>
 
-    <!-- ActionBar title text -->
-    <style name="Theme.PhotoShelf.ActionBar.TitleText"
-           parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
-        <item name="android:textColor">@color/actionbar_text</item>
-    </style>
-
-    <!-- ActionBar subtitle text -->
-    <style name="Theme.PhotoShelf.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle">
-        <item name="android:textColor">@color/actionbar_subtitletext</item>
-    </style>
-
-    <!-- ActionBar tabs text styles -->
-    <style name="Theme.PhotoShelf.ActionBar.TabText"
-           parent="@android:style/Widget.Holo.ActionBar.TabText">
-        <item name="android:textColor">@color/actionbar_text</item>
-    </style>
-
-    <!-- Popup Menu Background Color styles -->
-    <style name="Theme.PhotoShelf.ActionBar.PopupMenu"
-           parent="@android:style/Widget.Holo.ListPopupWindow">
-        <item name="android:popupBackground">@color/actionbar_popup_bg</item>
-    </style>
-
-    <!-- Popup Menu Text Color styles -->
-    <style name="TextAppearance">
+    <style name="Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">
         <item name="android:textColor">@color/actionbar_popup_text</item>
     </style>
 
-    <!-- Spinner list items -->
-    <style name="Theme.PhotoShelf.Spinner.DropDownListView" parent="@android:style/Widget.Holo.ListView.DropDown">
-        <item name="android:listSelector">@drawable/ab_selector_spinner</item>
-        <item name="android:divider">@color/actionbar_divider_bg</item>
-        <item name="android:dividerHeight">1dp</item>
+    <style name="Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceLarge" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Large">
+        <item name="android:textColor">@color/actionbar_popup_text</item>
     </style>
 
-    <style name="Theme.PhotoShelf.Spinner.DropDownNav" parent="@android:style/Widget.Holo.Spinner">
-        <item name="android:popupBackground">@color/actionbar_bg</item>
-        <item name="android:dropDownSelector">@drawable/ab_selector_spinner</item>
+    <!-- Popup Menu Background Color styles -->
+    <style name="Theme.PhotoShelf.ActionBar.PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:background">@color/actionbar_popup_bg</item>
+        <item name="android:textColorPrimary">@color/actionbar_text</item>
+        <item name="colorAccent">@color/actionbar_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Spinner.DropDownNav" parent="Widget.AppCompat.Spinner.DropDown">
+        <item name="android:popupBackground">@drawable/bug_fix</item>
+        <item name="android:divider">@color/actionbar_divider_bg</item>
+        <item name="android:dividerHeight">1dp</item>
     </style>
 
     <!-- AutoComplete list items -->
@@ -78,32 +54,23 @@
         <item name="android:dividerHeight">1dp</item>
     </style>
 
-    <!-- this style is only referenced in a Light.DarkActionBar based theme -->
-    <style name="Theme.PhotoShelf.ActionBar.Widget" parent="@android:style/Theme.Holo">
-        <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ActionBar.PopupMenu</item>
-        <item name="android:textColorHint">@color/actionbar_text</item>
-        <!-- Styling the autocomplete list items collides with popup menu background so it can't be used -->
-        <!-- The workaround consists to duplicate the file R.layout.simple_dropdown_item_1line and change the style attribute -->
-        <!--<item name="android:dropDownListViewStyle">@style/Theme.PhotoShelf.SearchView.AutoCompleteTextView</item>-->
-    </style>
-
     <!-- ActionMode styles -->
-    <style name="Theme.PhotoShelf.ActionMode"
-           parent="@android:style/Widget.Holo.Light.ActionMode.Inverse">
-        <item name="android:background">@color/actionmode_bg</item>
-        <item name="android:titleTextStyle">@style/Theme.PhotoShelf.ActionMode.TitleText</item>
-        <item name="android:subtitleTextStyle">@style/Theme.PhotoShelf.ActionMode.TitleTextStyle</item>
+    <!-- The overflow menu shown when action mode is visible -->
+    <style name="Theme.PhotoShelf.ActionMode.PopupMenu" parent="style/Widget.AppCompat.Light.ActionMode.Inverse">
+        <item name="android:background">@color/actionmode_popup_bg</item>
+        <item name="android:textColor">@color/actionmode_popup_text</item>
     </style>
 
-    <!-- ActionMode title text -->
-    <style name="Theme.PhotoShelf.ActionMode.TitleText"
-           parent="@android:style/TextAppearance.Holo.Widget.ActionMode.Title">
-        <item name="android:textColor">@color/actionmode_text</item>
+    <style name="Theme.PhotoShelf.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="popupTheme">@style/Theme.PhotoShelf.Toolbar.PopupMenu</item>
+        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
     </style>
 
-    <!-- ActionMode subtitle text -->
-    <style name="Theme.PhotoShelf.ActionMode.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionMode.Subtitle">
-        <item name="android:textColor">@color/actionmode_subtitletext</item>
+    <style name="Theme.PhotoShelf.Toolbar.PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:background">@color/actionbar_popup_bg</item>
+        <item name="android:textColorPrimary">@color/actionbar_text</item>
+        <item name="colorAccent">@color/actionbar_text</item>
     </style>
 
 </resources>

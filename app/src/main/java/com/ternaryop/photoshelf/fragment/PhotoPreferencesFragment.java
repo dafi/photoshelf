@@ -16,6 +16,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 
 import com.dropbox.sync.android.DbxAccountManager;
 import com.ternaryop.photoshelf.AppSupport;
@@ -73,7 +75,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         appSupport = new AppSupport(getActivity());
         dropboxManager = appSupport.getDbxAccountManager();
 
-        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         preferenceTumblrLogin = preferenceScreen.findPreference(KEY_TUMBLR_LOGIN);
@@ -286,5 +288,9 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
             importer = new Importer(getActivity(), dropboxManager);
         }
         return importer;
+    }
+
+    public ActionBar getSupportActionBar() {
+        return ((ActionBarActivity)getActivity()).getSupportActionBar();
     }
 }

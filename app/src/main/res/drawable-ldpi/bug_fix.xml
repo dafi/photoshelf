@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+***** This workaround is necessary to fix the bug present with appcompat and 5.0
+***** See http://stackoverflow.com/questions/26770848/popupbackground-glitches-with-material-design
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:shape="rectangle">
+    <stroke
+        android:width="2dp"
+        android:color="@color/actionbar_popup_bg"/>
+    <solid android:color="@color/actionbar_popup_bg"/>
+
+    <corners
+        android:bottomRightRadius="2dp"
+        android:bottomLeftRadius="2dp"
+        android:topLeftRadius="2dp"
+        android:topRightRadius="2dp"/>
+</shape>

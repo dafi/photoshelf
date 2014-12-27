@@ -2,10 +2,10 @@ package com.ternaryop.photoshelf;
 
 import java.io.ByteArrayInputStream;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -60,7 +60,7 @@ public class ImagePickerWebViewClient extends WebViewClient {
     public void onPageFinished(WebView view, String url) {
         progressBar.setVisibility(View.GONE);
         if (view.getTitle() != null) {
-            ((Activity)view.getContext()).getActionBar().setSubtitle(view.getTitle());
+            ((ActionBarActivity)view.getContext()).getSupportActionBar().setSubtitle(view.getTitle());
         }
     }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/showDialog"
@@ -7,7 +8,7 @@
     </item>
     <item
         android:id="@+id/create_from_file"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/create_from_file_title">
     </item>
 

@@ -2,12 +2,11 @@ package com.ternaryop.photoshelf.db;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
 import android.widget.FilterQueryProvider;
-import android.widget.SimpleCursorAdapter;
-import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.R;
@@ -18,7 +17,7 @@ import com.ternaryop.utils.StringUtils;
  * @author dave
  *
  */
-public class TagCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, ViewBinder {
+public class TagCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, SimpleCursorAdapter.ViewBinder {
     private String blogName;
     private final DBHelper dbHelper;
     private String pattern = "";

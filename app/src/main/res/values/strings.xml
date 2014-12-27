@@ -165,12 +165,12 @@
     <string name="select_items">Select items</string>
     <string name="all">All</string>
     <string name="mark_as_ignored">Mark as ignored</string>
-    <string name="show_ignored">Show Ignored</string>
+    <string name="show_ignored_birthdays">Ignored Birthdays</string>
     <string name="content_description_item_menu">Item Menu</string>
     <string name="content_description_empty_list">Empty List</string>
     <string name="content_description_blog_avatar">Blog Avatar</string>
     <string name="source_title">Source Title</string>
-    <string name="show_birthdays_in_same_day">Show Birthdays In Same Day</string>
+    <string name="show_birthdays_in_same_day">Birthdays In Same Day</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="show_birthdays_missing">Missing Birthdays</string>
     <string name="pref_thumbnail_width">Thumbnail Image Width</string>

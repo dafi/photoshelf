@@ -4,8 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <include layout="@layout/toolbar_app"/>
-
     <ProgressBar
         android:id="@+id/webview_progressbar"
         style="@style/Theme.PhotoShelf.ProgressBar.Horizontal"

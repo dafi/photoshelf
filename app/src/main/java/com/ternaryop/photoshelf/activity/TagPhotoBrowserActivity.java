@@ -7,12 +7,17 @@ import android.os.Bundle;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment;
 
 public class TagPhotoBrowserActivity extends AbsPhotoShelfActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tag_photo_browser);
+    public int getContentViewLayoutId() {
+        return R.layout.activity_tag_photo_browser;
+    }
+
+    @Override
+    public Fragment createFragment() {
+        return new TagPhotoBrowserFragment();
     }
 
     public static void startPhotoBrowserActivity(Context context, String blogName, String postTag, boolean allowSearch) {

@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -23,13 +23,18 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayCursorAdapter;
 import com.ternaryop.photoshelf.db.DBHelper;
 
-public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements AdapterView.OnItemClickListener, AbsListView.MultiChoiceModeListener, ActionBar.OnNavigationListener {
+public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements AdapterView.OnItemClickListener, AbsListView.MultiChoiceModeListener, AdapterView.OnItemSelectedListener {
+
+    private Spinner toolbarSpinner;
+    private int currentSelectedItemId = R.id.action_show_all;
+
     protected enum ITEM_ACTION {
         MARK_AS_IGNORED,
         DELETE
@@ -39,6 +44,8 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
     private BirthdayCursorAdapter birthdayAdapter;
     private int[] singleSelectionMenuIds;
     private boolean alreadyScrolledToFirstBirthday;
+
+    private CharSequence subTitle;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -227,51 +234,81 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // if selected item is already selected don't change anything
+        if (currentSelectedItemId == item.getItemId()) {
+            return true;
+        }
         boolean isChecked = !item.isChecked();
-        int showFlag = -1;
+        int showFlag;
+
+        currentSelectedItemId = item.getItemId();
 
         switch (item.getItemId()) {
             case R.id.action_show_all:
+                setSpinnerVisibility(true);
                 showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_ALL;
+                subTitle = null;
                 break;
             case R.id.action_show_ignored:
+                setSpinnerVisibility(false);
+                subTitle = item.getTitle();
                 showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IGNORED;
                 break;
             case R.id.action_show_birthdays_in_same_day:
+                setSpinnerVisibility(false);
+                subTitle = item.getTitle();
                 showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IN_SAME_DAY;
                 break;
             case R.id.action_show_birthdays_missing:
+                setSpinnerVisibility(false);
+                subTitle = item.getTitle();
                 showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_MISSING;
                 break;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
-        // if selected item is already selected don't change anything
-        if (showFlag != -1 && !birthdayAdapter.isShowFlag(showFlag)) {
-            item.setChecked(isChecked);
-            birthdayAdapter.setShow(showFlag, isChecked);
-            birthdayAdapter.refresh(null);
-        }
+        getSupportActionBar().setSubtitle(subTitle);
+        item.setChecked(isChecked);
+        birthdayAdapter.setShow(showFlag, isChecked);
+        birthdayAdapter.refresh(null);
         return true;
+    }
+
+    private void setSpinnerVisibility(boolean visible) {
+        if (visible) {
+            toolbarSpinner.setVisibility(View.VISIBLE);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        } else {
+            toolbarSpinner.setVisibility(View.GONE);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+        }
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        ActionBar actionBar = getActivity().getActionBar();
+        ActionBar actionBar = getSupportActionBar();
 
         if (fragmentActivityStatus.isDrawerOpen()) {
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            fragmentActivityStatus.getToolbar().removeView(toolbarSpinner);
             actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setSubtitle(null);
         } else {
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-            actionBar.setDisplayShowTitleEnabled(false);
+            // check if view is already added (eg when the overflow menu is opened)
+            if (birthdayAdapter.isShowFlag(BirthdayCursorAdapter.SHOW_BIRTHDAYS_ALL) && fragmentActivityStatus.getToolbar().indexOfChild(toolbarSpinner) == -1) {
+                fragmentActivityStatus.getToolbar().addView(toolbarSpinner);
+                actionBar.setDisplayShowTitleEnabled(false);
+            }
+            actionBar.setSubtitle(subTitle);
+            menu.findItem(currentSelectedItemId).setChecked(true);
         }
         super.onPrepareOptionsMenu(menu);
     }
 
     private void setupActionBar() {
-        ActionBar actionBar = getActivity().getActionBar();
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
+
         String months[] = new String[13];
         months[0] = getString(R.string.all);
         System.arraycopy(new DateFormatSymbols().getMonths(), 0, months, 1, 12);
@@ -281,15 +318,18 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                 months);
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setListNavigationCallbacks(monthAdapter, this);
-        actionBar.setSelectedNavigationItem(Calendar.getInstance().get(Calendar.MONTH) + 1);
+        toolbarSpinner = (Spinner) LayoutInflater.from(actionBar.getThemedContext())
+                .inflate(R.layout.toolbar_spinner,
+                        fragmentActivityStatus.getToolbar(),
+                        false);
+        toolbarSpinner.setAdapter(monthAdapter);
+        toolbarSpinner.setSelection(Calendar.getInstance().get(Calendar.MONTH) + 1);
+        toolbarSpinner.setOnItemSelectedListener(this);
     }
 
     @Override
-    public boolean onNavigationItemSelected(final int itemPosition, long itemId) {
-        birthdayAdapter.setMonth(itemPosition);
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        birthdayAdapter.setMonth(pos);
         birthdayAdapter.refresh(new Filter.FilterListener() {
             public void onFilterComplete(int count) {
                 // when month changes scroll to first item unless must be scroll to first birthday item
@@ -304,7 +344,9 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                 }
             }
         });
+    }
 
-        return true;
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
     }
 }

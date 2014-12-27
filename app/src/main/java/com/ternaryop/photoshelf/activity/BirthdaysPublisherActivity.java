@@ -1,13 +1,17 @@
 package com.ternaryop.photoshelf.activity;
 
-import android.os.Bundle;
+import android.app.Fragment;
 
 import com.ternaryop.photoshelf.R;
 
 public class BirthdaysPublisherActivity extends AbsPhotoShelfActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_birthdays_publisher);
+    public int getContentViewLayoutId() {
+        return R.layout.activity_birthdays_publisher;
+    }
+
+    @Override
+    public Fragment createFragment() {
+        return null;
     }
 }

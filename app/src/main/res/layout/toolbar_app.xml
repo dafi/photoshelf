@@ -1,0 +1,8 @@
+<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+                                   android:id="@+id/photoshelf_toolbar"
+                                   android:layout_width="match_parent"
+                                   android:layout_height="?actionBarSize"
+                                   style="@style/Theme.PhotoShelf.Toolbar">
+
+    <!-- theme and popupTheme attributes look Toolbar like 'DarkActionBar' (dark content, light overflow menu) -->
+</android.support.v7.widget.Toolbar>

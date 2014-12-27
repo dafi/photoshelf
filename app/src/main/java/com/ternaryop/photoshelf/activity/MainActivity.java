@@ -3,13 +3,14 @@ package com.ternaryop.photoshelf.activity;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -50,7 +51,7 @@ import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 
-public class MainActivity extends Activity implements AuthenticationCallback, FragmentActivityStatus {
+public class MainActivity extends ActionBarActivity implements AuthenticationCallback, FragmentActivityStatus {
     private static final String LOADER_PREFIX_AVATAR = "avatar";
     private AppSupport appSupport;
 
@@ -75,6 +76,7 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupActionBar();
 
         appSupport = new AppSupport(this);
         
@@ -89,8 +91,8 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
         drawerList.setAdapter(initDrawerAdapter());
 
         // enabling action bar app icon and behaving it as toggle button
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -99,12 +101,12 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
                 R.string.drawer_open,
                 R.string.drawer_close) {
             public void onDrawerClosed(View view) {
-                getActionBar().setTitle(title);
+                getSupportActionBar().setTitle(title);
                 invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
-                getActionBar().setTitle(drawerTitle);
+                getSupportActionBar().setTitle(drawerTitle);
                 invalidateOptionsMenu();
             }
         };
@@ -325,7 +327,14 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     @Override
     public void setTitle(CharSequence title) {
         this.title = title;
-        getActionBar().setTitle(title);
+        getSupportActionBar().setTitle(title);
+    }
+
+    private Toolbar setupActionBar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.photoshelf_toolbar);
+        setSupportActionBar(toolbar);
+
+        return toolbar;
     }
 
     @Override
@@ -336,5 +345,10 @@ public class MainActivity extends Activity implements AuthenticationCallback, Fr
     @Override
     public AppSupport getAppSupport() {
         return appSupport;
+    }
+
+    @Override
+    public Toolbar getToolbar() {
+        return (Toolbar) findViewById(R.id.photoshelf_toolbar);
     }
 }

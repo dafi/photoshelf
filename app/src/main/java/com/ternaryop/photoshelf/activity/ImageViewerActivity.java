@@ -11,6 +11,7 @@ import java.net.URL;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.app.Fragment;
 import android.app.WallpaperManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -49,7 +50,6 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_webview);
         setTitle(R.string.image_viewer_activity_title);
 
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
@@ -59,9 +59,19 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         String data = "<body><img src=\"" + imageUrl + "\"/></body>";
         prepareWebView(progressBar).loadDataWithBaseURL(null, data, "text/html", "UTF-8", null);
         try {
-            getActionBar().setSubtitle(new URI(imageUrl).getHost());
+            getSupportActionBar().setSubtitle(new URI(imageUrl).getHost());
         } catch (URISyntaxException ignored) {
         }
+    }
+
+    @Override
+    public int getContentViewLayoutId() {
+        return R.layout.activity_webview;
+    }
+
+    @Override
+    public Fragment createFragment() {
+        return null;
     }
 
     private WebView prepareWebView(final ProgressBar progressBar) {
@@ -126,7 +136,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     public void setDimensions(final int w, final int h) {
         runOnUiThread(new Runnable() {
             public void run() {
-                getActionBar().setSubtitle(getActionBar().getSubtitle() + String.format(" (%1dx%2d)", w, h));
+                getSupportActionBar().setSubtitle(getSupportActionBar().getSubtitle() + String.format(" (%1dx%2d)", w, h));
             }
         });
     }

@@ -43,7 +43,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_webview, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_webview, container, false);
         getActivity().setTitle(R.string.image_picker_activity_title);
 
         imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);

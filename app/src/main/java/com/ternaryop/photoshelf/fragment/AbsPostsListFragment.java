@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -25,8 +27,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.PopupMenu;
-import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
@@ -44,7 +44,7 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 
-public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick, OnQueryTextListener  {
+public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick, SearchView.OnQueryTextListener {
     protected enum POST_ACTION {
         PUBLISH,
         DELETE
@@ -91,13 +91,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     public void onPrepareOptionsMenu(Menu menu) {
         if (fragmentActivityStatus.isDrawerOpen()) {
-            getActivity().getActionBar().setSubtitle(null);
+            getSupportActionBar().setSubtitle(null);
         } else {
-            getActivity().getActionBar().setSubtitle(subTitle);
+            getSupportActionBar().setSubtitle(subTitle);
         }
         boolean isMenuVisible = !fragmentActivityStatus.isDrawerOpen();
         menu.setGroupVisible(R.id.menu_photo_action_bar, isMenuVisible);
-        setupSearchView(menu);      
+        setupSearchView(menu);
         super.onPrepareOptionsMenu(menu);
     }
 
@@ -317,13 +317,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             subTitle = getString(R.string.post_count_1_of_x,
                     photoAdapter.getCount(),
                     totalPosts);
-            getActivity().getActionBar().setSubtitle(subTitle);
+            getSupportActionBar().setSubtitle(subTitle);
         } else {
             subTitle = getResources().getQuantityString(
                     R.plurals.posts_count,
                     photoAdapter.getCount(),
                     photoAdapter.getCount());
-            getActivity().getActionBar().setSubtitle(subTitle);
+            getSupportActionBar().setSubtitle(subTitle);
             if (countChangedListener != null) {
                 countChangedListener.onChangeCount(this, photoAdapter.getCount());
             }
@@ -453,7 +453,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     protected SearchView setupSearchView(Menu menu) {
         MenuItem searchMenu = menu.findItem(R.id.action_search);
         if (searchMenu != null) {
-            searchView = (SearchView)searchMenu.getActionView();
+            searchView = (SearchView)MenuItemCompat.getActionView(searchMenu);
             searchView.setQueryHint(getString(R.string.enter_tag_hint));
             searchView.setOnQueryTextListener(this);
         }
