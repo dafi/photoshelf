@@ -3,6 +3,7 @@ package com.ternaryop.widget;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 
 /**
  * Created by dave on 13/09/14.
@@ -14,10 +15,12 @@ public class WaitingResultSwipeRefreshLayout extends android.support.v4.widget.S
 
     public WaitingResultSwipeRefreshLayout(Context context) {
         super(context);
+        adjustPosition(context);
     }
 
     public WaitingResultSwipeRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        adjustPosition(context);
     }
 
     public void setColorScheme(int arrayResId) {
@@ -41,5 +44,17 @@ public class WaitingResultSwipeRefreshLayout extends android.support.v4.widget.S
     public void setRefreshingAndWaintingResult(boolean refreshing) {
         setRefreshing(refreshing);
         setWaitingResult(refreshing);
+    }
+
+    /**
+     * Starting since android.support.v4 v 21.0.0 the swipe refresh is shown under the toolbar (ie not visible!!)
+     * so we adjust its position based on actionBar size
+     * @param context
+     */
+    private void adjustPosition(Context context) {
+        TypedValue typedValue = new TypedValue();
+        if (context.getTheme().resolveAttribute(android.support.v7.appcompat.R.attr.actionBarSize, typedValue, true)) {
+            setProgressViewOffset(false, 0, getResources().getDimensionPixelSize(typedValue.resourceId));
+        }
     }
 }
