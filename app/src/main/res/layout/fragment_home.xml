@@ -16,6 +16,7 @@
         <TextView
             android:text="@string/total_posts"
             android:layout_width="wrap_content"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="10dp"
             android:layout_height="wrap_content"/>
@@ -34,6 +35,7 @@
         <TextView
             android:text="@string/total_records"
             android:layout_width="wrap_content"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="10dp"
             android:layout_height="wrap_content"/>
@@ -52,6 +54,7 @@
         <TextView
             android:text="@string/total_unique_tags"
             android:layout_width="wrap_content"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="10dp"
             android:layout_height="wrap_content"/>
@@ -70,6 +73,7 @@
         <TextView
             android:text="@string/total_unique_first_tags"
             android:layout_width="wrap_content"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="10dp"
             android:layout_height="wrap_content"/>
@@ -88,6 +92,7 @@
         <TextView
             android:text="@string/birthdays_count"
             android:layout_width="wrap_content"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="10dp"
             android:layout_height="wrap_content"/>
@@ -106,6 +111,7 @@
         <TextView
             android:text="@string/missing_birthdays_count"
             android:layout_width="wrap_content"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="10dp"
             android:layout_height="wrap_content"/>

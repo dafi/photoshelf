@@ -7,8 +7,8 @@
         android:id="@+id/post_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
         android:layout_marginTop="4dp"
         android:hint="@string/post_title_hint"
         android:maxLines="3" />
@@ -17,8 +17,8 @@
         android:id="@+id/post_tags"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
         android:layout_marginTop="4dp"
         android:hint="@string/post_tags_hint"
         android:inputType="text" />
@@ -62,7 +62,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/cancel_title" />
 
@@ -71,7 +71,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/draft_title" />
 
@@ -80,7 +80,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/edit_post_title"
             android:visibility="gone" />
@@ -90,7 +90,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/publish_title" />
 
@@ -99,7 +99,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/parse_title" />
 
@@ -108,7 +108,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/source_title" />
 

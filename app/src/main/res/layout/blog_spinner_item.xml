@@ -11,15 +11,17 @@
         android:layout_width="48dip"
         android:layout_height="48dip"
         android:contentDescription="@string/content_description_blog_avatar"
-        android:paddingLeft="3dp" />
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp" />
 
     <TextView
         android:id="@+id/title1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/image1"
-        android:paddingLeft="4dp"
+        android:layout_toEndOf="@+id/image1"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:textColor="#555555" />
 
 </RelativeLayout>
