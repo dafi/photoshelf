@@ -251,7 +251,6 @@ public class ImageLoader {
             File f = fileCache.getFile(url);
             Bitmap bitmap = Utils.decodeFile(f);
 
-            System.out.println("ImageLoader.drawableFromUrl " + url + " bitmap " + bitmap);
             if (bitmap == null) {
                 conn = URLUtils.openConnectionFollowingDifferentProtocols(url);
                 conn.setConnectTimeout(30000);
