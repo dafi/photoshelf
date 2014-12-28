@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -26,6 +25,7 @@ import android.widget.ImageView;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.utils.ImageUtils;
+import com.ternaryop.utils.URLUtils;
 
 public class ImageLoader {
     public final static String IMAGE_PREFIX_DIRECTORY = "images" + File.separator;
@@ -98,23 +98,22 @@ public class ImageLoader {
         executorService.submit(new PhotosLoader(p, scaleForDefaultDisplay));
     }
     
-    private Bitmap getBitmap(String url) 
-    {
-        File f=fileCache.getFile(url);
+    private Bitmap getBitmap(String url)  {
+        File f = fileCache.getFile(url);
         
         //from SD cache
         Bitmap b = decodeFile(f);
-        if(b!=null)
+        if (b != null) {
             return b;
-        
+        }
+
         //from web
         try {
-            URL imageUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection)imageUrl.openConnection();
+            HttpURLConnection conn = URLUtils.openConnectionFollowingDifferentProtocols(url);
             conn.setConnectTimeout(30000);
             conn.setReadTimeout(30000);
-            conn.setInstanceFollowRedirects(true);
-            InputStream is=conn.getInputStream();
+            conn.connect();
+            InputStream is = conn.getInputStream();
             OutputStream os = new FileOutputStream(f);
             Utils.CopyStream(is, os);
             os.close();
@@ -251,10 +250,12 @@ public class ImageLoader {
         try {
             File f = fileCache.getFile(url);
             Bitmap bitmap = Utils.decodeFile(f);
-            
+
+            System.out.println("ImageLoader.drawableFromUrl " + url + " bitmap " + bitmap);
             if (bitmap == null) {
-                conn = (HttpURLConnection) new URL(url).openConnection();
-                conn.setInstanceFollowRedirects(true);
+                conn = URLUtils.openConnectionFollowingDifferentProtocols(url);
+                conn.setConnectTimeout(30000);
+                conn.setReadTimeout(30000);
                 conn.connect();
                 os = new FileOutputStream(f);
                 Utils.CopyStream(conn.getInputStream(), os);
@@ -273,7 +274,7 @@ public class ImageLoader {
         }
         return null;
     }
-    
+
     public interface ImageLoaderCallback {
         public void display(Drawable drawable);
     }
