@@ -283,9 +283,12 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
             PostTag postTag = postTags.get(0);
             int showOrder = 1;
             for (String tag : tags.split(",")) {
-                postTag.setTag(tag.trim());
-                postTag.setShowOrder(showOrder++);
-                insert(postTag);
+                String trimmedTag = tag.trim();
+                if (!trimmedTag.isEmpty()) {
+                    postTag.setTag(trimmedTag);
+                    postTag.setShowOrder(showOrder++);
+                    insert(postTag);
+                }
             }
             db.setTransactionSuccessful();
         } catch (Exception e) {
