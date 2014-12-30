@@ -62,8 +62,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     private int[] singleSelectionMenuIds;
 
-    private CharSequence subTitle;
-
     private CountChangedListener countChangedListener;
 
     @Override
@@ -90,11 +88,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
-        if (fragmentActivityStatus.isDrawerOpen()) {
-            getSupportActionBar().setSubtitle(null);
-        } else {
-            getSupportActionBar().setSubtitle(subTitle);
-        }
         boolean isMenuVisible = !fragmentActivityStatus.isDrawerOpen();
         menu.setGroupVisible(R.id.menu_photo_action_bar, isMenuVisible);
         setupSearchView(menu);
@@ -314,16 +307,14 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     protected void refreshUI() {
         if (hasMorePosts) {
-            subTitle = getString(R.string.post_count_1_of_x,
+            getSupportActionBar().setSubtitle(getString(R.string.post_count_1_of_x,
                     photoAdapter.getCount(),
-                    totalPosts);
-            getSupportActionBar().setSubtitle(subTitle);
+                    totalPosts));
         } else {
-            subTitle = getResources().getQuantityString(
+            getSupportActionBar().setSubtitle(getResources().getQuantityString(
                     R.plurals.posts_count,
                     photoAdapter.getCount(),
-                    photoAdapter.getCount());
-            getSupportActionBar().setSubtitle(subTitle);
+                    photoAdapter.getCount()));
             if (countChangedListener != null) {
                 countChangedListener.onChangeCount(this, photoAdapter.getCount());
             }

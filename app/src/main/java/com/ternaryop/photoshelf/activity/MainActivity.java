@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -67,6 +66,7 @@ public class MainActivity extends ActionBarActivity implements AuthenticationCal
 
     // used to store app title
     private CharSequence title;
+    private CharSequence subtitle;
     
     private Spinner blogList;
 
@@ -102,11 +102,15 @@ public class MainActivity extends ActionBarActivity implements AuthenticationCal
                 R.string.drawer_close) {
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(title);
+                getSupportActionBar().setSubtitle(subtitle);
                 invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
                 getSupportActionBar().setTitle(drawerTitle);
+                // save current subtitle
+                subtitle = getSupportActionBar().getSubtitle();
+                getSupportActionBar().setSubtitle(null);
                 invalidateOptionsMenu();
             }
         };
@@ -277,13 +281,12 @@ public class MainActivity extends ActionBarActivity implements AuthenticationCal
                 fragment.setArguments(args);
             }
 
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.content_frame, fragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
 
             drawerList.setItemChecked(position, true);
             drawerList.setSelection(position);
             setTitle(drawerItem.getTitle());
+            subtitle = null;
             drawerLayout.closeDrawer(drawerLinearLayout);
         } catch (Exception e) {
             DialogUtils.showErrorDialog(getApplication(), e);

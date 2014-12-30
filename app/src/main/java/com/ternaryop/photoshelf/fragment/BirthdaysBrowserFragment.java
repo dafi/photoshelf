@@ -292,14 +292,12 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
         if (fragmentActivityStatus.isDrawerOpen()) {
             fragmentActivityStatus.getToolbar().removeView(toolbarSpinner);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setSubtitle(null);
         } else {
             // check if view is already added (eg when the overflow menu is opened)
             if (birthdayAdapter.isShowFlag(BirthdayCursorAdapter.SHOW_BIRTHDAYS_ALL) && fragmentActivityStatus.getToolbar().indexOfChild(toolbarSpinner) == -1) {
                 fragmentActivityStatus.getToolbar().addView(toolbarSpinner);
                 actionBar.setDisplayShowTitleEnabled(false);
             }
-            actionBar.setSubtitle(subTitle);
             menu.findItem(currentSelectedItemId).setChecked(true);
         }
         super.onPrepareOptionsMenu(menu);
