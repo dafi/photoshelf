@@ -12,7 +12,7 @@
 
     <color name="drawer_color_bg">#f1f1f2</color>
     <color name="drawer_item_text">#555</color>
-    <color name="drawer_item_bg">@android:color/transparent</color>
+    <color name="drawer_item_bg">@color/transparent</color>
 
     <color name="drawer_item_selected_text">#ffffff</color>
     <color name="drawer_item_selected_bg">#3949ab</color>
@@ -25,6 +25,9 @@
 
     <color name="primary">#3f51b5</color>
     <color name="primary_dark">#1a237e</color>
+
+    <color name="autocomplete_actionbar_bg">#1a237e</color>
+    <color name="autocomplete_actionbar_popup_bg">#536dfe</color>
 
     <color name="actionbar_bg">#1a237e</color>
     <color name="actionbar_text">#ffffff</color>
