@@ -35,6 +35,8 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
     @Override
     public void setBlogName(String blogName) {
         this.blogName = blogName;
+        // clear cached value
+        lastCount = null;
     }
 
     /**
