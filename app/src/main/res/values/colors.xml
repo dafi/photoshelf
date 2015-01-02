@@ -10,7 +10,9 @@
     <!-- Some devices override the @android:color/transparent so we define our version -->
     <color name="transparent">#00000000</color>
 
-    <color name="drawer_color_bg">#f1f1f2</color>
+    <color name="drawer_frame_bg">#f1f1f2</color>
+    <color name="drawer_divider_bg">#e5e5e5</color>
+
     <color name="drawer_item_text">#555</color>
     <color name="drawer_item_bg">@color/transparent</color>
 

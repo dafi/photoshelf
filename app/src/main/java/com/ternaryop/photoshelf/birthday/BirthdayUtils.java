@@ -302,7 +302,7 @@ public class BirthdayUtils {
     public static void createBirthdayPost(Context context, Bitmap cakeImage, TumblrPhotoPost post, String blogName, boolean saveAsDraft)
             throws IOException {
         String imageUrl = post.getClosestPhotoByWidth(400).getUrl();
-        Bitmap image = ImageUtils.readImage(imageUrl);
+        Bitmap image = ImageUtils.readImageFromUrl(imageUrl);
 
         final int IMAGE_SEPARATOR_HEIGHT = 10;
         int canvasWidth = image.getWidth();

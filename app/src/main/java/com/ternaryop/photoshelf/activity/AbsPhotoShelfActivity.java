@@ -76,7 +76,7 @@ public abstract class AbsPhotoShelfActivity extends ActionBarActivity implements
     }
 
     private Toolbar setupActionBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.photoshelf_toolbar);
+        Toolbar toolbar = getToolbar();
         setSupportActionBar(toolbar);
 
         return toolbar;
@@ -84,6 +84,6 @@ public abstract class AbsPhotoShelfActivity extends ActionBarActivity implements
 
     @Override
     public Toolbar getToolbar() {
-        return (Toolbar) findViewById(R.id.photoshelf_toolbar);
+        return (Toolbar) findViewById(R.id.drawer_toolbar);
     }
 }

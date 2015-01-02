@@ -276,7 +276,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
             protected Bitmap doInBackground(Void... params) {
                 try {
                     final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
-                    return ImageUtils.readImage(imageUrl);
+                    return ImageUtils.readImageFromUrl(imageUrl);
                 } catch (Exception e) {
                     setError(e);
                 }

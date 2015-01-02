@@ -20,7 +20,7 @@
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/drawer_color_bg"
+        android:background="?topColorDrawerBackgroundFrame"
         android:orientation="vertical">
 
         <Spinner

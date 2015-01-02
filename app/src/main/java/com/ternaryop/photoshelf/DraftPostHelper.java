@@ -19,7 +19,7 @@ import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.TumblrUtils;
+import com.ternaryop.tumblr.TumblrUtils;
 
 public class DraftPostHelper {
 

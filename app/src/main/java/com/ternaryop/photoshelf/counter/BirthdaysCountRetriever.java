@@ -14,7 +14,7 @@ public class BirthdaysCountRetriever extends AbsCountRetriever {
     }
 
     @Override
-    protected Long getCount() {
+    public Long getCount() {
         return DBHelper
                 .getInstance(getContext())
                 .getBirthdayDAO()

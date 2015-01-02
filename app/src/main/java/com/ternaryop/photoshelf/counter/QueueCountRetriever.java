@@ -4,7 +4,7 @@ import android.content.Context;
 import android.widget.BaseAdapter;
 
 import com.ternaryop.tumblr.Tumblr;
-import com.ternaryop.utils.TumblrUtils;
+import com.ternaryop.tumblr.TumblrUtils;
 
 public class QueueCountRetriever extends AbsCountRetriever {
     public QueueCountRetriever(Context context, String blogName, BaseAdapter adapter) {
@@ -12,7 +12,7 @@ public class QueueCountRetriever extends AbsCountRetriever {
     }
 
     @Override
-    protected Long getCount() {
+    public Long getCount() {
         return TumblrUtils.getQueueCount(Tumblr.getSharedTumblr(getContext()), getBlogName());
     }    
 }

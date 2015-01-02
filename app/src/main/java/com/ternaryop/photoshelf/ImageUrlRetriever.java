@@ -19,7 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.ternaryop.utils.IOUtils;
+import com.ternaryop.utils.URLUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -178,7 +178,7 @@ public class ImageUrlRetriever {
                                 File file = new File(context.getCacheDir(), String.valueOf(link.hashCode()));
                                 FileOutputStream fos = new FileOutputStream(file);
                                 try {
-                                    IOUtils.saveURL(link, fos);
+                                    URLUtils.saveURL(link, fos);
                                     imageFiles.add(file);
                                 } finally {
                                     fos.close();

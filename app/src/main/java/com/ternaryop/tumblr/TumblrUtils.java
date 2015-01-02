@@ -1,16 +1,12 @@
-package com.ternaryop.utils;
+package com.ternaryop.tumblr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ternaryop.tumblr.TumblrPost;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.ternaryop.tumblr.Tumblr;
-import com.ternaryop.tumblr.TumblrException;
 
 public class TumblrUtils {
     public static long getQueueCount(Tumblr tumblr, final String tumblrName) {

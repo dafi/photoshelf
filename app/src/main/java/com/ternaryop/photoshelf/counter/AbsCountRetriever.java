@@ -6,6 +6,10 @@ import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.ternaryop.utils.drawer.counter.CountChangedListener;
+import com.ternaryop.utils.drawer.counter.CountProvider;
+import com.ternaryop.utils.drawer.counter.CountRetriever;
+
 public abstract class AbsCountRetriever implements CountRetriever, CountChangedListener {
     private Context context;
     private String blogName;
@@ -27,12 +31,10 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
         this.context = context;
     }
 
-    @Override
     public String getBlogName() {
         return blogName;
     }
 
-    @Override
     public void setBlogName(String blogName) {
         this.blogName = blogName;
         // clear cached value
@@ -43,7 +45,7 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
      * This method will be executed always asynchronously
      * @return the number of items for counter or null if error occurred
      */
-    protected abstract Long getCount();
+    public abstract Long getCount();
     
     @Override
     public void updateCount(final TextView textView) {
