@@ -9,23 +9,27 @@
     </item>
     <item
         android:id="@+id/post_publish"
+        android:showAsAction="never"
         app:showAsAction="never"
         android:title="@string/publish_post">
     </item>
     <item
         android:id="@+id/group_menu_image_dimension"
         app:showAsAction="never"
+        android:showAsAction="never"
         android:title="@string/menu_show_image">
         <menu />
     </item>
     <item
         android:id="@+id/post_edit"
         app:showAsAction="never"
+        android:showAsAction="never"
         android:title="@string/edit_post_title">
     </item>
     <item
         android:id="@+id/post_delete"
         app:showAsAction="never"
+        android:showAsAction="never"
         android:title="@string/delete_post">
     </item>
 

@@ -8,6 +8,7 @@
     </item>
     <item
         android:id="@+id/create_from_file"
+        android:showAsAction="never"
         app:showAsAction="never"
         android:title="@string/create_from_file_title">
     </item>

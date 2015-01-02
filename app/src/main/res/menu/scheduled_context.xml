@@ -12,17 +12,20 @@
     </item>
     <item
         android:id="@+id/group_menu_image_dimension"
+        android:showAsAction="never"
         app:showAsAction="never"
         android:title="@string/menu_show_image">
         <menu />
     </item>
     <item
         android:id="@+id/post_edit"
+        android:showAsAction="never"
         app:showAsAction="never"
         android:title="@string/edit_post_title">
     </item>
     <item
         android:id="@+id/post_delete"
+        android:showAsAction="never"
         app:showAsAction="never"
         android:title="@string/delete_post">
     </item>
