@@ -90,7 +90,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }
         Calendar now = Calendar.getInstance(Locale.US);
         PublishIntentService.startBirthdayListIntent(getActivity(), now);
-        swipeLayout.setWaitingResult(true);
+        swipeLayout.setRefreshingAndWaintingResult(true);
     }
 
     @Override
@@ -176,7 +176,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         mode.setTitle(R.string.select_images);
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 0, 0));
         MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.birtdays_publisher_action, menu);
+        inflater.inflate(R.menu.birtdays_publisher_context, menu);
         return true;
     }
     

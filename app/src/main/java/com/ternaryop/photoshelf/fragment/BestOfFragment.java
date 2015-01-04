@@ -121,7 +121,7 @@ public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.Mu
         mode.setTitle(R.string.select_images);
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
         MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.birtdays_publisher_action, menu);
+        inflater.inflate(R.menu.birtdays_publisher_context, menu);
         return true;
     }
     
