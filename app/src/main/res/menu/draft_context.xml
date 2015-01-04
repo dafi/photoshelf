@@ -4,32 +4,29 @@
 
     <item
         android:id="@+id/post_schedule"
+        android:icon="@drawable/ic_action_schedule"
         app:showAsAction="ifRoom"
         android:title="@string/schedule_post">
     </item>
     <item
         android:id="@+id/post_publish"
-        android:showAsAction="never"
-        app:showAsAction="never"
+        android:icon="@drawable/ic_action_publish"
         android:title="@string/publish_post">
     </item>
     <item
         android:id="@+id/group_menu_image_dimension"
-        app:showAsAction="never"
-        android:showAsAction="never"
+        android:icon="@drawable/ic_action_show_image"
         android:title="@string/menu_show_image">
-        <menu />
+        <menu/>
     </item>
     <item
         android:id="@+id/post_edit"
-        app:showAsAction="never"
-        android:showAsAction="never"
+        android:icon="@drawable/ic_action_edit"
         android:title="@string/edit_post_title">
     </item>
     <item
         android:id="@+id/post_delete"
-        app:showAsAction="never"
-        android:showAsAction="never"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/delete_post">
     </item>
 

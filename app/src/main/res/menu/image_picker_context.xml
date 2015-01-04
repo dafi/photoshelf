@@ -4,6 +4,7 @@
 
     <item
         android:id="@+id/showDialog"
+        android:icon="@drawable/ic_action_cloud_upload"
         android:title="@string/go_title">
     </item>
     <item

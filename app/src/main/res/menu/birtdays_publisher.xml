@@ -1,12 +1,16 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:id="@+id/menu_photo_action_bar" >
         <item
             android:id="@+id/action_selectall"
+            android:icon="@drawable/ic_action_select_all"
+            app:showAsAction="ifRoom"
             android:title="@string/select_all"/>
         <item
             android:id="@+id/action_refresh"
             android:icon="@drawable/ic_action_refresh"
+            app:showAsAction="ifRoom"
             android:title="@string/refresh"/>
     </group>
 

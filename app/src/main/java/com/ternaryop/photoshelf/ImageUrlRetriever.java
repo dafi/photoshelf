@@ -75,7 +75,7 @@ public class ImageUrlRetriever {
     private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.action_context, menu);
+            inflater.inflate(R.menu.image_picker_context, menu);
             return true;
         }
 

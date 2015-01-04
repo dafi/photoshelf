@@ -3,11 +3,13 @@
 
     <item
         android:id="@+id/item_delete"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/delete_post">
     </item>
 
     <item
         android:id="@+id/item_mark_as_ignored"
+        android:icon="@drawable/ic_action_mark_ignored"
         android:title="@string/mark_as_ignored">
     </item>
 </menu>

@@ -4,14 +4,17 @@
 
     <item
         android:id="@+id/post_publish"
+        android:icon="@drawable/ic_action_publish"
         android:title="@string/publish_post">
     </item>
     <item
         android:id="@+id/post_save_draft"
+        android:icon="@drawable/ic_action_draft"
         android:title="@string/save_draft_post">
     </item>
     <item
         android:id="@+id/group_menu_image_dimension"
+        android:icon="@drawable/ic_action_show_image"
         android:showAsAction="never"
         app:showAsAction="never"
         android:title="@string/menu_show_image">
@@ -19,14 +22,12 @@
     </item>
     <item
         android:id="@+id/post_edit"
-        android:showAsAction="never"
-        app:showAsAction="never"
+        android:icon="@drawable/ic_action_edit"
         android:title="@string/edit_post_title">
     </item>
     <item
         android:id="@+id/post_delete"
-        android:showAsAction="never"
-        app:showAsAction="never"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/delete_post">
     </item>
 
