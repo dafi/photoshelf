@@ -19,7 +19,7 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.fedorvlasov.lazylist.ImageLoader;
+import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
 import com.ternaryop.tumblr.TumblrAltSize;
@@ -37,7 +37,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
     public PhotoAdapter(Context context, String prefix) {
         super(context, 0);
         inflater = LayoutInflater.from(context);
-        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
+        imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
         allPosts = new ArrayList<PhotoShelfPost>();
         thumbnailWidth = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_width", "75"));
     }

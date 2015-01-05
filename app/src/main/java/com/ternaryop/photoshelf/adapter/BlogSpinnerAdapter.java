@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.fedorvlasov.lazylist.ImageLoader;
+import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.Blog;
 
@@ -22,7 +22,7 @@ public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerA
     public BlogSpinnerAdapter(Context context, String prefix, List<String> blogNames) {
         super(context, 0, blogNames);
         inflater = LayoutInflater.from(context);
-        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
+        imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {

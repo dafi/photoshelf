@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.fedorvlasov.lazylist.ImageLoader;
+import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -22,7 +22,7 @@ public class GridViewPhotoAdapter extends ArrayAdapter<Pair<Birthday, TumblrPhot
 
     public GridViewPhotoAdapter(Context context, String prefix) {
         super(context, 0);
-        imageLoader = new ImageLoader(context.getApplicationContext(), prefix);
+        imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
         inflater = LayoutInflater.from(context);
     }
 
