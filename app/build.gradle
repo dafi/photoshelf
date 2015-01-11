@@ -24,6 +24,7 @@ android {
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 21
+        versionCode versionCodeByTask()
     }
 
     signingConfigs {
@@ -46,17 +47,6 @@ android {
     }
 }
 
-task('increaseVersionCode') << {
-    def manifestFile = file("src/main/AndroidManifest.xml")
-    def pattern = Pattern.compile("(android:versionCode=\")([0-9]+)(\")")
-    def manifestText = manifestFile.getText()
-    def matcher = pattern.matcher(manifestText)
-    matcher.find()
-    def versionCode = Integer.parseInt(matcher.group(2)) + 1
-    def manifestContent = matcher.replaceAll("\$1" + versionCode + "\$3")
-    manifestFile.write(manifestContent)
-}
-
 task nativeLibsToJar(type: Zip) {
     destinationDir file("$buildDir/native-libs")
     baseName 'native-libs'
@@ -70,8 +60,22 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-tasks.whenTaskAdded { task ->
-    if (task.name == 'generateReleaseBuildConfig') {
-        task.dependsOn 'increaseVersionCode'
+def versionCodeByTask() {
+    def props = new Properties()
+    def versionFile = new File("$rootDir/app/version.properties")
+    def versionCode = 0;
+    if (versionFile.exists()) {
+        props.load(new FileReader(versionFile))
+        versionCode = props["versionCode"]?.isInteger() ? props["versionCode"].toInteger() : 0
     }
+
+    // Increment the versionCode only for specific tasks (eg the assemble release tasks)
+    def runTasks = gradle.startParameter.taskNames
+    def incrementableTaskNames = ["aR", "assembleRelease"]
+    if (incrementableTaskNames.find {name -> name in runTasks}) {
+        ++versionCode
+        props["versionCode"] = versionCode.toString()
+        props.store(new FileWriter(versionFile), null)
+    }
+    return versionCode;
 }

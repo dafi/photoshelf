@@ -30,8 +30,9 @@ build
 # OSX files
 .DS_Store
 
-# keystore files
+# keystore and version files
 app/build-keystore.properties
+app/version.properties
 
 # PhotoShelf files
 app/src/main/res/values/tumblr.xml
