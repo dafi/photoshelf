@@ -76,7 +76,6 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                 return true;
             }
         });
-        rootView.findViewById(R.id.searchView1).requestFocus();
 
         setupActionBar();
         setHasOptionsMenu(true);
