@@ -384,7 +384,10 @@ public class Tumblr {
     public TumblrFollowers getFollowers(final String tumblrName, final Map<String, String> params, final TumblrFollowers followers) {
         String apiUrl = getApiUrl(tumblrName, "/followers");
 
-        Map<String, String> modifiedParams = new HashMap<String, String>(params);
+        Map<String, String> modifiedParams = new HashMap<String, String>();
+        if (params != null) {
+            modifiedParams.putAll(params);
+        }
         modifiedParams.put("base-hostname", tumblrName + ".tumblr.com");
 
         try {
