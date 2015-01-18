@@ -9,7 +9,6 @@ import java.util.Set;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
@@ -25,6 +24,8 @@ public class AppSupport {
     private static final String PREF_SCHEDULE_TIME_SPAN = "schedule_time_span";
     private static final String LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime";
     private static final String AUTOMATIC_EXPORT = "automatic_export";
+    private static final String MIN_DAYS_BEFORE_UPDATE = "minDaysBeforeUpdate";
+    private static final String LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime";
 
     private final Context context;
     private final SharedPreferences preferences;
@@ -39,9 +40,7 @@ public class AppSupport {
     }
     
     public void setSelectedBlogName(String blogName) {
-        Editor edit = preferences.edit();
-        edit.putString(PREF_SELECTED_BLOG, blogName);
-        edit.apply();
+        preferences.edit().putString(PREF_SELECTED_BLOG, blogName).apply();
     }
     
     public List<String> getBlogList() {
@@ -59,9 +58,7 @@ public class AppSupport {
     }
 
     public void setBlogList(Set<String> blogNames) {
-        Editor edit = preferences.edit();
-        edit.putStringSet(PREF_BLOG_NAMES, blogNames);
-        edit.apply();
+        preferences.edit().putStringSet(PREF_BLOG_NAMES, blogNames).apply();
     }
 
     public int getDefaultScheduleHoursSpan() {
@@ -118,9 +115,7 @@ public class AppSupport {
     }
     
     public void setLastBirthdayShowTime(long timems) {
-        Editor editor = preferences.edit();
-        editor.putLong(LAST_BIRTHDAY_SHOW_TIME, timems);
-        editor.apply();
+        preferences.edit().putLong(LAST_BIRTHDAY_SHOW_TIME, timems).apply();
     }
 
     public static File getPicturesDirectory() {
@@ -142,4 +137,17 @@ public class AppSupport {
                 context.getString(R.string.DROPBOX_APP_SECRET));
 
     }
+
+    public long getMinDaysBeforeUpdate() {
+        return preferences.getLong(MIN_DAYS_BEFORE_UPDATE, 7);
+    }
+
+    public void setLastFollowersUpdateTime(long millisecs) {
+        preferences.edit().putLong(LAST_FOLLOWERS_UPDATE_TIME, millisecs).apply();
+    }
+
+    public long getLastFollowersUpdateTime() {
+        return preferences.getLong(LAST_FOLLOWERS_UPDATE_TIME, -1);
+    }
+
 }

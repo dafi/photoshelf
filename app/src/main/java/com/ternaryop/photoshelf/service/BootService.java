@@ -10,6 +10,7 @@ import android.os.IBinder;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Importer;
+import com.ternaryop.utils.DateTimeUtils;
 
 public class BootService extends Service {
     public static final String BIRTHDAY_ACTION = "birthday";
@@ -49,6 +50,16 @@ public class BootService extends Service {
         }
         try {
             importer.syncExportBirthdaysToCSV(Importer.getBirthdaysPath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            final long minDaysBeforeUpdate = appSupport.getMinDaysBeforeUpdate();
+            final long lastUpdate = appSupport.getLastFollowersUpdateTime();
+            if (lastUpdate < 0 || minDaysBeforeUpdate <= DateTimeUtils.daysSinceTimestamp(lastUpdate)) {
+                importer.syncExportTotalUsersToCSV(Importer.getTotalUsersPath(), appSupport.getSelectedBlogName());
+                appSupport.setLastFollowersUpdateTime(Calendar.getInstance().getTimeInMillis());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,7 +1,9 @@
 package com.ternaryop.photoshelf.db;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,6 +11,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -30,6 +33,7 @@ import com.ternaryop.photoshelf.importer.CSVIterator;
 import com.ternaryop.photoshelf.importer.CSVIterator.CSVBuilder;
 import com.ternaryop.photoshelf.importer.PostRetriever;
 import com.ternaryop.tumblr.Callback;
+import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
@@ -40,6 +44,9 @@ public class Importer {
     private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
     private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
     private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
+    private static final String TOTAL_USERS_FILE_NAME = "totalUsers.csv";
+
+    private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd");
 
     private final Context context;
     private final DbxAccountManager dropboxManager;
@@ -417,4 +424,25 @@ public class Importer {
     public static String getBirthdaysPath() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + BIRTHDAYS_FILE_NAME;
     }
+
+    public static String getTotalUsersPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + TOTAL_USERS_FILE_NAME;
+    }
+
+    public void syncExportTotalUsersToCSV(final String exportPath, final String blogName) throws IOException {
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(exportPath, true)));
+            String time = ISO_8601_DATE.format(Calendar.getInstance().getTimeInMillis());
+            long totalUsers = Tumblr.getSharedTumblr(context)
+                    .getFollowers(blogName, null, null)
+                    .getTotalUsers();
+            pw.println(time + ";" + blogName + ";" + totalUsers);
+            pw.flush();
+            copyFileToDropbox(exportPath);
+        } finally {
+            if (pw != null) try { pw.close(); } catch (Exception ignored) {}
+        }
+    }
+
 }
