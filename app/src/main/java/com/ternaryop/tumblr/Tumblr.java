@@ -379,8 +379,36 @@ public class Tumblr {
         } catch (Exception e) {
             throw new TumblrException(e);
         }
-    }        
-    
+    }
+
+    public TumblrFollowers getFollowers(final String tumblrName, final Map<String, String> params, final TumblrFollowers followers) {
+        String apiUrl = getApiUrl(tumblrName, "/followers");
+
+        Map<String, String> modifiedParams = new HashMap<String, String>(params);
+        modifiedParams.put("base-hostname", tumblrName + ".tumblr.com");
+
+        try {
+            JSONObject json = consumer.jsonFromGet(apiUrl, modifiedParams);
+            TumblrFollowers resultFollowers = followers;
+            if (resultFollowers == null) {
+                resultFollowers = new TumblrFollowers();
+            }
+            resultFollowers.add(json.getJSONObject("response"));
+
+            return resultFollowers;
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
+    }
+
+    public TumblrFollowers getFollowers(final String tumblrName, final int offset, final int limit, final TumblrFollowers followers) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("offset", Integer.toString(offset));
+        params.put("limit", Integer.toString(limit));
+
+        return getFollowers(tumblrName, params, followers);
+    }
+
     public static TumblrPost build(JSONObject json) throws JSONException {
         String type = json.getString("type");
         
