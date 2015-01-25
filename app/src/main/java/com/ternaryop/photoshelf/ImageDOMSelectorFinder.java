@@ -48,7 +48,7 @@ public class ImageDOMSelectorFinder {
                             is.close();
                             context.deleteFile(SELECTORS_FILENAME);
                         }
-                        domainMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("selectors")));
+                        domainMap.putAll(JSONUtils.toMap(jsonPrivate.getJSONObject("selectors")));
                         return;
                     }
                 } catch (FileNotFoundException ex) {
