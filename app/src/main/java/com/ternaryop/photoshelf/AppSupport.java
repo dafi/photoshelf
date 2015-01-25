@@ -19,13 +19,15 @@ import com.ternaryop.tumblr.Tumblr;
 
 public class AppSupport {
     private static final String SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf";
-    private static final String PREF_SELECTED_BLOG = "selectedBlog";
-    private static final String PREF_BLOG_NAMES = "blogNames";
-    private static final String PREF_SCHEDULE_TIME_SPAN = "schedule_time_span";
     private static final String LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime";
     private static final String AUTOMATIC_EXPORT = "automatic_export";
-    private static final String MIN_DAYS_BEFORE_UPDATE = "minDaysBeforeUpdate";
-    private static final String LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime";
+
+    // Preferences keys
+    public static final String PREF_SELECTED_BLOG = "selectedBlog";
+    public static final String PREF_BLOG_NAMES = "blogNames";
+    public static final String PREF_SCHEDULE_TIME_SPAN = "schedule_time_span";
+    public static final String PREF_EXPORT_DAYS_PERIOD = "exportDaysPeriod";
+    public static final String PREF_LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime";
 
     private final Context context;
     private final SharedPreferences preferences;
@@ -138,16 +140,17 @@ public class AppSupport {
 
     }
 
-    public long getMinDaysBeforeUpdate() {
-        return preferences.getLong(MIN_DAYS_BEFORE_UPDATE, 7);
+    public int getExportDaysPeriod() {
+        return preferences.getInt(PREF_EXPORT_DAYS_PERIOD,
+                context.getResources().getInteger(R.integer.export_days_period_default));
     }
 
     public void setLastFollowersUpdateTime(long millisecs) {
-        preferences.edit().putLong(LAST_FOLLOWERS_UPDATE_TIME, millisecs).apply();
+        preferences.edit().putLong(PREF_LAST_FOLLOWERS_UPDATE_TIME, millisecs).apply();
     }
 
     public long getLastFollowersUpdateTime() {
-        return preferences.getLong(LAST_FOLLOWERS_UPDATE_TIME, -1);
+        return preferences.getLong(PREF_LAST_FOLLOWERS_UPDATE_TIME, -1);
     }
 
 }

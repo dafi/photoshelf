@@ -114,6 +114,14 @@
         <item quantity="one">One hour</item>
         <item quantity="other">%1$d hours</item>
     </plurals>
+    <plurals name="day_title">
+        <item quantity="one">One day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="next_in_day">
+        <item quantity="one">next in one day</item>
+        <item quantity="other">next in %1$d days</item>
+    </plurals>
     <plurals name="general_posts_error">
         <item quantity="one">Unable to process the post</item>
         <item quantity="other">Unable to process %1$d posts</item>
@@ -175,5 +183,6 @@
     <string name="show_birthdays_missing">Missing Birthdays</string>
     <string name="pref_thumbnail_width">Thumbnail Image Width</string>
     <string name="largest_image">Largest</string>
+    <string name="pref_export_days_period">Export period</string>
 
 </resources>

@@ -42,27 +42,32 @@ public class BootService extends Service {
         if (!appSupport.isAutomaticExportEnabled()) {
             return;
         }
-        Importer importer = new Importer(getApplicationContext(), appSupport.getDbxAccountManager());
-        try {
-            importer.syncExportPostsToCSV(Importer.getPostsPath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            importer.syncExportBirthdaysToCSV(Importer.getBirthdaysPath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            final long minDaysBeforeUpdate = appSupport.getMinDaysBeforeUpdate();
-            final long lastUpdate = appSupport.getLastFollowersUpdateTime();
-            if (lastUpdate < 0 || minDaysBeforeUpdate <= DateTimeUtils.daysSinceTimestamp(lastUpdate)) {
-                importer.syncExportTotalUsersToCSV(Importer.getTotalUsersPath(), appSupport.getSelectedBlogName());
-                appSupport.setLastFollowersUpdateTime(Calendar.getInstance().getTimeInMillis());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Importer importer = new Importer(getApplicationContext(), appSupport.getDbxAccountManager());
+                try {
+                    importer.syncExportPostsToCSV(Importer.getPostsPath());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    importer.syncExportBirthdaysToCSV(Importer.getBirthdaysPath());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                final long exportDaysPeriod = appSupport.getExportDaysPeriod();
+                final long lastUpdate = appSupport.getLastFollowersUpdateTime();
+                if (lastUpdate < 0 || exportDaysPeriod <= DateTimeUtils.daysSinceTimestamp(lastUpdate)) {
+                    try {
+                        importer.syncExportTotalUsersToCSV(Importer.getTotalUsersPath(), appSupport.getSelectedBlogName());
+                        appSupport.setLastFollowersUpdateTime(Calendar.getInstance().getTimeInMillis());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     private boolean hasAlreadyNotifiedToday() {

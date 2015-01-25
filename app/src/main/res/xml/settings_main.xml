@@ -60,6 +60,14 @@
                     android:persistent="false"
                     android:title="@string/export_missing_birthdays_title" />
             </PreferenceCategory>
+            <PreferenceCategory
+                android:key="pref_key_export_days_period"
+                android:title="@string/pref_export_days_period" >
+                <com.ternaryop.preference.IntegerEditTextPreference
+                    android:defaultValue="@integer/export_days_period_default"
+                    android:key="exportDaysPeriod"
+                    android:maxLength="2" />
+            </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory

@@ -24,6 +24,7 @@ import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.utils.DateTimeUtils;
 
 @SuppressWarnings("deprecation")
 public class PhotoPreferencesFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
@@ -40,7 +41,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
     private static final String KEY_EXPORT_MISSING_BIRTHDAYS = "export_missing_birthdays";
     private static final String KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia";
-    private static final String KEY_SCHEDULE_TIME_SPAN = "schedule_time_span";
     private static final String KEY_CLEAR_IMAGE_CACHE = "clear_image_cache";
     private static final String KEY_VERSION = "version";
     private static final String KEY_DROPBOX_VERSION = "dropbox_version";
@@ -62,6 +62,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private Preference preferenceExportMissingBirthdays;
     private Preference preferenceDropboxLogin;
     private ListPreference preferenceThumbnailWidth;
+    private Preference preferenceExportDaysPeriod;
 
     private AppSupport appSupport;
     private DbxAccountManager dropboxManager;
@@ -118,8 +119,8 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
         preferenceImportBirthdaysFromWikipedia = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA);
         
-        preferenceScheduleTimeSpan = preferenceScreen.findPreference(KEY_SCHEDULE_TIME_SPAN);
-        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), KEY_SCHEDULE_TIME_SPAN);
+        preferenceScheduleTimeSpan = preferenceScreen.findPreference(AppSupport.PREF_SCHEDULE_TIME_SPAN);
+        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), AppSupport.PREF_SCHEDULE_TIME_SPAN);
 
         preferenceClearImageCache = preferenceScreen.findPreference(KEY_CLEAR_IMAGE_CACHE);
 
@@ -127,6 +128,9 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
         preferenceThumbnailWidth = (ListPreference) preferenceScreen.findPreference(KEY_THUMBNAIL_WIDTH);
         onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), KEY_THUMBNAIL_WIDTH);
+
+        preferenceExportDaysPeriod = preferenceScreen.findPreference(AppSupport.PREF_EXPORT_DAYS_PERIOD);
+        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), AppSupport.PREF_EXPORT_DAYS_PERIOD);
 
         setupVersionInfo(preferenceScreen);
     }
@@ -145,7 +149,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(KEY_SCHEDULE_TIME_SPAN)) {
+        if (key.equals(AppSupport.PREF_SCHEDULE_TIME_SPAN)) {
             int hours = sharedPreferences.getInt(key, 0);
             preferenceScheduleTimeSpan.setSummary(getResources().getQuantityString(R.plurals.hour_title, hours, hours));
         } else if (key.equals(KEY_THUMBNAIL_WIDTH)) {
@@ -154,6 +158,12 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
             if (index > -1) {
                 preferenceThumbnailWidth.setSummary(preferenceThumbnailWidth.getEntries()[index]);
             }
+        } else if (key.equals(AppSupport.PREF_EXPORT_DAYS_PERIOD)) {
+            int days = sharedPreferences.getInt(key, appSupport.getExportDaysPeriod());
+            int remainingDays = (int)(days - DateTimeUtils.daysSinceTimestamp(appSupport.getLastBirthdayShowTime()));
+            System.out.println("PhotoPreferencesFragment.onSharedPreferenceChanged " + remainingDays);
+            preferenceExportDaysPeriod.setSummary(getResources().getQuantityString(R.plurals.day_title, days, days)
+                    + " (" + getResources().getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays) + ")");
         }
     }
 
