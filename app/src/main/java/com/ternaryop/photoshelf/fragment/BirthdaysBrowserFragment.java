@@ -3,9 +3,11 @@ package com.ternaryop.photoshelf.fragment;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -20,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.Filter;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -34,6 +37,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
 
     private Spinner toolbarSpinner;
     private int currentSelectedItemId = R.id.action_show_all;
+    private final static int[] MISSING_BIRTHDAYS_ITEMS = new int[] {R.id.item_edit};
 
     protected enum ITEM_ACTION {
         MARK_AS_IGNORED,
@@ -99,11 +103,6 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
     }
 
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        // no actions are supported in show missing bdays mode
-        if (birthdayAdapter.isShowMissing()) {
-            return false;
-        }
-
         mode.setTitle(R.string.select_items);
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
         MenuInflater inflater = mode.getMenuInflater();
@@ -135,10 +134,48 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
             case R.id.item_mark_as_ignored:
                 showConfirmDialog(ITEM_ACTION.MARK_AS_IGNORED, mode);
                 return true;
+            case R.id.item_edit:
+                showEditBirthdateDialog(mode);
+                return true;
             default:
                 return false;
         }
     }
+
+    private void showEditBirthdateDialog(final ActionMode mode) {
+        final List<Birthday> birthdays = getSelectedPosts();
+        if (birthdays.size() != 1) {
+            return;
+        }
+        final Calendar c = Calendar.getInstance();
+        final Birthday birthday = birthdays.get(0);
+        final Date date = birthday.getBirthDate();
+        if (date != null) {
+            c.setTime(date);
+        }
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        int day = c.get(Calendar.DAY_OF_MONTH);
+
+        new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int day) {
+                c.set(Calendar.YEAR, year);
+                c.set(Calendar.MONTH, month);
+                c.set(Calendar.DAY_OF_MONTH, day);
+
+                birthday.setBirthDate(c.getTime());
+                if (birthday.getId() < 0) {
+                    DBHelper.getInstance(getActivity()).getBirthdayDAO().insert(birthday);
+                } else {
+                    DBHelper.getInstance(getActivity()).getBirthdayDAO().update(birthday);
+                }
+                birthdayAdapter.refresh(null);
+                mode.finish();
+            }
+        }, year, month, day).show();
+    }
+
     public void onDestroyActionMode(ActionMode mode) {
     }
 
@@ -147,8 +184,23 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
         int selectCount = listView.getCheckedItemCount();
         boolean singleSelection = selectCount == 1;
 
+        Menu menu = mode.getMenu();
+        if (birthdayAdapter.isShowMissing()) {
+            for (int i = 0; i < menu.size(); i++) {
+                int itemId = menu.getItem(i).getItemId();
+                boolean showMenu = false;
+                for (int mitemId : MISSING_BIRTHDAYS_ITEMS) {
+                    if (mitemId == itemId) {
+                        showMenu = true;
+                        break;
+                    }
+                }
+                menu.getItem(i).setVisible(showMenu);
+            }
+        }
+
         for (int itemId : getSingleSelectionMenuIds()) {
-            MenuItem item = mode.getMenu().findItem(itemId);
+            MenuItem item = menu.findItem(itemId);
             if (item != null) {
                 item.setVisible(singleSelection);
             }
@@ -162,7 +214,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
 
     protected int[] getSingleSelectionMenuIds() {
         if (singleSelectionMenuIds == null) {
-            singleSelectionMenuIds = new int[] {};
+            singleSelectionMenuIds = new int[] {R.id.item_edit};
         }
         return singleSelectionMenuIds;
     }
@@ -176,7 +228,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                     case DialogInterface.BUTTON_POSITIVE:
                         switch (postAction) {
                             case DELETE:
-                                deletePost(birthdays, mode);
+                                deleteBirthdays(birthdays, mode);
                                 break;
                             case MARK_AS_IGNORED:
                                 markAsIgnored(birthdays, mode);
@@ -217,7 +269,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
         mode.finish();
     }
 
-    private void deletePost(List<Birthday> list, final ActionMode mode) {
+    private void deleteBirthdays(List<Birthday> list, final ActionMode mode) {
         for (Birthday b : list) {
             DBHelper.getInstance(getActivity()).getBirthdayDAO().remove(b.getId());
         }

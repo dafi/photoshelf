@@ -287,6 +287,11 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
         return getDbHelper().getWritableDatabase().update(TABLE_NAME, v, _ID + "=?", new String[] {String.valueOf(id)}) == 1;
     }
 
+    public boolean update(Birthday birthday) {
+        ContentValues v = getContentValues(birthday);
+        return getDbHelper().getWritableDatabase().update(TABLE_NAME, v, _ID + "=?", new String[] {String.valueOf(birthday.getId())}) == 1;
+    }
+
     public Cursor getBirthdaysInSameDay(String pattern, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
         String likeClause = "%" + pattern + "%";
