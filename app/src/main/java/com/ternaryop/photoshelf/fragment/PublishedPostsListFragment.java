@@ -5,10 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.tumblr.Tumblr;
@@ -17,29 +13,7 @@ import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
 
-public class PublishedPostsListFragment extends AbsPostsListFragment {
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        
-        photoAdapter.setOnPhotoBrowseClick(this);
-        
-        if (taskUIRecreated()) {
-            return;
-        }
-
-        if (getBlogName() != null) {
-            offset = 0;
-            hasMorePosts = true;
-            readPhotoPosts();
-        }
-    }
-
-    @Override
-    protected int getActionModeMenuId() {
-        return R.menu.scheduled_context;
-    }
-    
+public class PublishedPostsListFragment extends ScheduledListFragment {
     @Override
     protected void readPhotoPosts() {
         if (isScrolling) {
@@ -53,7 +27,7 @@ public class PublishedPostsListFragment extends AbsPostsListFragment {
             protected void onProgressUpdate(String... values) {
                 setProgressMessage(values[0]);
             }
-            
+
             @Override
             protected void onPostExecute(List<PhotoShelfPost> posts) {
                 super.onPostExecute(posts);
@@ -95,12 +69,5 @@ public class PublishedPostsListFragment extends AbsPostsListFragment {
                 return Collections.emptyList();
             }
         }.execute();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.scheduler, menu);
-
-        super.onCreateOptionsMenu(menu, inflater);
     }
 }
