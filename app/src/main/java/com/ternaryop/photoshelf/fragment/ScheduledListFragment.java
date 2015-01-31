@@ -8,6 +8,7 @@ import java.util.List;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
@@ -26,6 +27,12 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         
         if (taskUIRecreated()) {
             return;
+        }
+
+        // disable swipe until we implement the refresh
+        View swipe = getView() == null ? null : getView().findViewById(R.id.swipe_container);
+        if (swipe != null) {
+            swipe.setEnabled(false);
         }
 
         if (getBlogName() != null) {
