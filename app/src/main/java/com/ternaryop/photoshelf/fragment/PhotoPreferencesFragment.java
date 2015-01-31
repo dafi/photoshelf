@@ -160,8 +160,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
             }
         } else if (key.equals(AppSupport.PREF_EXPORT_DAYS_PERIOD)) {
             int days = sharedPreferences.getInt(key, appSupport.getExportDaysPeriod());
-            int remainingDays = (int)(days - DateTimeUtils.daysSinceTimestamp(appSupport.getLastBirthdayShowTime()));
-            System.out.println("PhotoPreferencesFragment.onSharedPreferenceChanged " + remainingDays);
+            int remainingDays = (int)(days - DateTimeUtils.daysSinceTimestamp(appSupport.getLastFollowersUpdateTime()));
             preferenceExportDaysPeriod.setSummary(getResources().getQuantityString(R.plurals.day_title, days, days)
                     + " (" + getResources().getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays) + ")");
         }
