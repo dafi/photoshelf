@@ -53,11 +53,17 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 TUMBLR_NAME,
                 PUBLISH_TIMESTAMP,
                 SHOW_ORDER));
+        // lollipop warns about index problems so add it
+        db.execSQL("CREATE INDEX TAG_IDX ON POST_TAG(TAG)");
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // no need to upgrade
         if (newVersion == 2) {
+            return;
+        }
+        if (newVersion == 3) {
+            db.execSQL("CREATE INDEX TAG_IDX ON POST_TAG(TAG)");
             return;
         }
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);

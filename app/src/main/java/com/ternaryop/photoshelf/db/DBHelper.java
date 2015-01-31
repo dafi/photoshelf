@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "photoshelf.db";
-     private static final int SCHEMA_VERSION = 2;
+     private static final int SCHEMA_VERSION = 3;
 
      private static DBHelper instance = null;
 

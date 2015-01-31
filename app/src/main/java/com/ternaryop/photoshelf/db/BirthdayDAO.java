@@ -52,9 +52,15 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
                 + " select distinct t.TAG AS name, t.tumblr_name from POST_TAG t"
                 + " where ((t.SHOW_ORDER = 1)"
                 + " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY))))");
+        // lollipop warns about index problems so add it
+        db.execSQL("CREATE INDEX TUMBLR_NAME_IDX ON BIRTHDAY(TUMBLR_NAME)");
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (newVersion == 3) {
+            db.execSQL("CREATE INDEX TUMBLR_NAME_IDX ON BIRTHDAY(TUMBLR_NAME)");
+            return;
+        }
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         db.execSQL("DROP VIEW IF EXISTS VW_MISSING_BIRTHDAYS");
         onCreate(db);
