@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="link_text_color">#040404</color>
-    <color name="link_text_color_bg">#00000000</color>
     <color name="link_text_color_clicked">#0000FF</color>
     <color name="link_text_color_clicked_bg">#ffffff</color>
     <color name="menu_pressed">#ddd</color>
+
+    <color name="post_odd_text_color">#444444</color>
+    <color name="post_odd_background_color">#aaaaaa</color>
+    <color name="post_even_text_color">#444444</color>
+    <color name="post_even_background_color">#cccccc</color>
+    <color name="post_future_text_color">#ffffff</color>
+    <color name="post_future_background_color">#009688</color>
+    <color name="post_never_text_color">#444444</color>
+    <color name="post_never_background_color">#ffc400</color>
 
     <!-- Some devices override the @android:color/transparent so we define our version -->
     <color name="transparent">#00000000</color>

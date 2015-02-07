@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="post_odd">
+        <!-- view background  -->
+        <item>@drawable/list_selector_post_group_odd</item>
+        <!-- title text color -->
+        <item>@color/post_title_group_odd</item>
+        <!-- timeDesc text color -->
+        <item>@color/post_title_group_odd</item>
+        <!-- caption text Color -->
+        <item>@color/post_title_group_odd</item>
+        <!-- menu overflow -->
+        <item>@drawable/ic_overflow_dark</item>
+    </array>
+    <array name="post_even">
+        <item>@drawable/list_selector_post_group_even</item>
+        <item>@color/post_title_group_even</item>
+        <item>@color/post_title_group_even</item>
+        <item>@color/post_title_group_even</item>
+        <item>@drawable/ic_overflow_dark</item>
+    </array>
+    <array name="post_future">
+        <item>@drawable/list_selector_post_future</item>
+        <item>@color/post_title_future</item>
+        <item>@color/post_title_future</item>
+        <item>@color/post_title_future</item>
+        <item>@drawable/ic_overflow_light</item>
+    </array>
+    <array name="post_never">
+        <item>@drawable/list_selector_post_never</item>
+        <item>@color/post_title_never</item>
+        <item>@color/post_title_never</item>
+        <item>@color/post_title_never</item>
+        <item>@drawable/ic_overflow_dark</item>
+    </array>
+</resources>

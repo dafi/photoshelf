@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.TypedValue;
@@ -32,7 +33,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private boolean recomputeGroupIds;
     private boolean isFiltering;
-    private int thumbnailWidth;
+    private final int thumbnailWidth;
 
     public PhotoAdapter(Context context, String prefix) {
         super(context, 0);
@@ -62,15 +63,14 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
 
         switch (post.getScheduleTimeType()) {
             case POST_PUBLISH_NEVER:
-                vi.setBackgroundResource(R.drawable.list_selector_post_never);
+                holder.setColors(R.array.post_never);
                 break;
             case POST_PUBLISH_FUTURE:
-                vi.setBackgroundResource(R.drawable.list_selector_post_future);
+                holder.setColors(R.array.post_future);
                 break;
             default:
-            int groupId = post.getGroupId();
-            vi.setBackgroundResource((groupId % 2) == 0 ? R.drawable.list_selector_post_group_even : R.drawable.list_selector_post_group_odd);
-            break;
+                holder.setColors(post.getGroupId() % 2 == 0 ? R.array.post_even : R.array.post_odd);
+                break;
         }
 
         holder.title.setText(post.getFirstTag());
@@ -272,14 +272,26 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         final TextView caption;
         final ImageView thumbImage;
         final ImageView menu;
+        final View view;
 
         public ViewHolder(View vi) {
+            view = vi;
             title = (TextView)vi.findViewById(R.id.title_textview);
             timeDesc = (TextView)vi.findViewById(R.id.time_desc);
             caption = (TextView)vi.findViewById(R.id.caption);
             menu = (ImageView)vi.findViewById(R.id.menu);
 
             thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
+        }
+
+        public void setColors(int resArray) {
+            TypedArray array = getContext().getResources().obtainTypedArray(resArray);
+            view.setBackground(array.getDrawable(0));
+            title.setTextColor(array.getColorStateList(1));
+            timeDesc.setTextColor(array.getColorStateList(2));
+            caption.setTextColor(array.getColorStateList(3));
+            menu.setImageDrawable(array.getDrawable(4));
+            array.recycle();
         }
     }
 }
