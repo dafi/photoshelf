@@ -92,6 +92,17 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             holder.menu.setTag(post);
         }
 
+        int noteCount = (int) post.getNoteCount();
+        if (noteCount > 0) {
+            holder.noteCount.setVisibility(View.VISIBLE);
+            holder.noteCount.setText(getContext().getResources().getQuantityString(
+                    R.plurals.note_title,
+                    noteCount,
+                    noteCount));
+        } else {
+            holder.noteCount.setVisibility(View.GONE);
+        }
+
         holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
 
         TumblrAltSize altSize = post.getClosestPhotoByWidth(thumbnailWidth);
@@ -273,6 +284,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         final ImageView thumbImage;
         final ImageView menu;
         final View view;
+        final TextView noteCount;
 
         public ViewHolder(View vi) {
             view = vi;
@@ -280,6 +292,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             timeDesc = (TextView)vi.findViewById(R.id.time_desc);
             caption = (TextView)vi.findViewById(R.id.caption);
             menu = (ImageView)vi.findViewById(R.id.menu);
+            noteCount = (TextView)vi.findViewById(R.id.note_count);
 
             thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
         }
@@ -291,6 +304,7 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             timeDesc.setTextColor(array.getColorStateList(2));
             caption.setTextColor(array.getColorStateList(3));
             menu.setImageDrawable(array.getDrawable(4));
+            noteCount.setTextColor(array.getColorStateList(3));
             array.recycle();
         }
     }

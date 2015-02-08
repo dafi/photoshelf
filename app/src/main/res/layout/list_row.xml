@@ -54,6 +54,16 @@
         android:textColor="#343434"
         android:textSize="12sp" />
 
+    <TextView
+        android:id="@+id/note_count"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/caption"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:layout_toStartOf="@+id/menu"
+        android:paddingTop="4dp"
+        android:textSize="12sp" />
+
     <ImageView
         android:id="@+id/menu"
         android:background="@drawable/overflow_menu_selector"

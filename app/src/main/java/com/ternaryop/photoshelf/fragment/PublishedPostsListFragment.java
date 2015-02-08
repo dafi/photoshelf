@@ -45,6 +45,7 @@ public class PublishedPostsListFragment extends ScheduledListFragment {
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put("offset", String.valueOf(offset));
                     params.put("type", "photo");
+                    params.put("notes_info", "true");
                     List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(getContext())
                             .getPublicPosts(getBlogName(), params);
 

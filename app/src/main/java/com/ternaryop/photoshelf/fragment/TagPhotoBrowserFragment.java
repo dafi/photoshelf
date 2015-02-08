@@ -116,11 +116,12 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
                 try {
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put("tag", postTag);
+                    params.put("notes_info", "true");
                     params.put("offset", String.valueOf(offset));
                     List<TumblrPhotoPost> photoPosts = Tumblr.getSharedTumblr(getContext())
                             .getPhotoPosts(getBlogName(), params);
 
-                    List<PhotoShelfPost> photoList = new ArrayList<PhotoShelfPost>(); 
+                    List<PhotoShelfPost> photoList = new ArrayList<PhotoShelfPost>();
                     for (TumblrPost post : photoPosts) {
                         photoList.add(new PhotoShelfPost((TumblrPhotoPost)post,
                                 post.getTimestamp() * 1000));
