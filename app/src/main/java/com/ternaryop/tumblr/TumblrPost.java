@@ -84,6 +84,7 @@ public class TumblrPost implements Serializable {
         liked = post.liked;
         state = post.state;
         totalPosts = post.totalPosts;
+        noteCount = post.noteCount;
 
         tags = post.tags;
         scheduledPublishTime = post.getScheduledPublishTime();
