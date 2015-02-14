@@ -49,8 +49,6 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
     private int[] singleSelectionMenuIds;
     private boolean alreadyScrolledToFirstBirthday;
 
-    private CharSequence subTitle;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
@@ -294,6 +292,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
 
         currentSelectedItemId = item.getItemId();
 
+        CharSequence subTitle;
         switch (item.getItemId()) {
             case R.id.action_show_all:
                 setSpinnerVisibility(true);

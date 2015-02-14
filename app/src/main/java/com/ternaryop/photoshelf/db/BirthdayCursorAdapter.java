@@ -28,7 +28,7 @@ import com.ternaryop.utils.StringUtils;
  *
  */
 public class BirthdayCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider, ViewBinder {
-    public static final int SHOW_BIRTHDAYS_ALL = 1 << 0;
+    public static final int SHOW_BIRTHDAYS_ALL = 1;
     public static final int SHOW_BIRTHDAYS_IGNORED = 1 << 1;
     public static final int SHOW_BIRTHDAYS_IN_SAME_DAY = 1 << 2;
     public static final int SHOW_BIRTHDAYS_MISSING = 1 << 3;
