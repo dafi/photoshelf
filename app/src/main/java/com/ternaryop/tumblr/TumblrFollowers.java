@@ -2,6 +2,7 @@ package com.ternaryop.tumblr;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +14,7 @@ import org.json.JSONObject;
  */
 public class TumblrFollowers implements Serializable {
     private long totalUsers;
-    ArrayList<TumblrUser> usersList;
+    private ArrayList<TumblrUser> usersList;
 
     public TumblrFollowers() {
         usersList = new ArrayList<>();
@@ -25,6 +26,10 @@ public class TumblrFollowers implements Serializable {
         for (int i = 0; i < users.length(); i++) {
             usersList.add(new TumblrUser(users.getJSONObject(i)));
         }
+    }
+
+    public List<TumblrUser> getUsersList() {
+        return usersList;
     }
 
     public long getTotalUsers() {
