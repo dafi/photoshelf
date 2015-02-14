@@ -46,7 +46,7 @@ public class Importer {
     private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
     private static final String TOTAL_USERS_FILE_NAME = "totalUsers.csv";
 
-    private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     private final Context context;
     private final DbxAccountManager dropboxManager;
