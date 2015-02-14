@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="app_name">Photo Shelf</string>
     <string name="publish_title">Publish</string>
     <string name="post_tags_hint">Tags</string>
     <string name="post_title_hint">Title</string>
-    <string name="tumblr_post_title">Post Image</string>
-    <string name="tumblr_multiple_post_title">Post %1$d Images</string>
     <string name="url_not_found">URL not found</string>
     <string name="url_not_found_description">Unable to find an URL in the text \'%1$s\'</string>
     <string name="parsing_error">Parsing error</string>
@@ -54,14 +52,13 @@
     <string name="export_birthdays_title">Export Birthdays to CSV File</string>
     <string name="exporting_to_csv">Exporting to CSV&#8230;</string>
     <string name="start_import_title">Start Import&#8230;</string>
-    <string name="import_progress_title">Imported %1$d items</string>
+    <string name="import_progress_title" tools:ignore="PluralsCandidate">Imported %1$d items</string>
     <string name="enter_tag_hint">Enter tag to search</string>
     <string name="tag_with_post_count">%1$s (%2$d)</string>
-    <string name="posts_read_count_title">%1$d posts read&#8230;</string>
     <string name="generic_error">Error</string>
     <string name="importSuccess">Data imported successfully</string>
     <string name="birthday_notification_title">Birthdays list</string>
-    <string name="birthday_years_old">%1$s is %2$d years old</string>
+    <string name="birthday_years_old" tools:ignore="PluralsCandidate">%1$s is %2$d years old</string>
     <string name="pref_service_login_title">Services Access</string>
     <string name="pref_import_category_title">Import and Export</string>
     <string name="pref_schedule_title">Schedule</string>
@@ -72,7 +69,6 @@
     <string name="scheduled_time_is_in_the_past_continue_title">Scheduled time is in the past, continue?</string>
     <string name="pref_clear_cache">Clear Cache</string>
     <string name="clear_image_cache_title">Clear Image Cache</string>
-    <string name="clear_cache_confirm">Clear cache, are you sure?</string>
     <string name="pref_posts_title">Posts</string>
     <string name="pref_birthdays_title">Birthdays</string>
     <string name="export_missing_birthdays_title">Export Missing Birthdays</string>
@@ -82,6 +78,14 @@
     <string name="select_all">Select All</string>
     <string name="pref_import_screen_title">Filters, Posts and Birthdays</string>
 
+    <plurals name="post_image">
+        <item quantity="one">Post Image</item>
+        <item quantity="other">Post %1$d Images</item>
+    </plurals>
+    <plurals name="posts_read_count">
+        <item quantity="one">%1$d post read&#8230;</item>
+        <item quantity="other">%1$d posts read&#8230;</item>
+    </plurals>
     <plurals name="selected_items">
         <item quantity="one">%1$d selected</item>
         <item quantity="other">%1$d selected</item>
@@ -147,16 +151,14 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="pref_developer">Developer</string>
     <string name="version_title">%1$s version</string>
-    <string name="tags_title">Tags</string>
-    <string name="extras_title">Extras</string>
     <string name="birthdays_today_title">Today birthdays</string>
-    <string name="post_count_1_of_x">%1$d/%2$d posts</string>
+    <string name="post_count_1_of_x" tools:ignore="PluralsCandidate">%1$d/%2$d posts</string>
     <string name="upload_immediately">Upload immediately</string>
     <string name="upload_error_ticker">PhotoShelf upload error</string>
     <string name="published_post">Published</string>
     <string name="automatic_export">Automatic export</string>
-    <string name="week_selection_under_age">A selection of the most beautiful women under %1$d published last week</string>
-    <string name="week_selection_over_age">A selection of the most beautiful women over %1$d published last week</string>
+    <string name="week_selection_under_age" tools:ignore="PluralsCandidate">A selection of the most beautiful women under %1$d published last week</string>
+    <string name="week_selection_over_age" tools:ignore="PluralsCandidate">A selection of the most beautiful women over %1$d published last week</string>
     <string name="name_with_age">%1$s (age %2$s)</string>
     <string name="name_with_date_age">%1$s: %2$s (%3$s)</string>
     <string name="best_of">Best Of</string>

@@ -124,11 +124,10 @@ public class TumblrPostDialog extends Dialog implements View.OnClickListener {
             setTitle(R.string.edit_post_title);
         } else {
             int size = imageUrls != null ? imageUrls.size() : imageFiles.size();
-            if (size == 1) {
-                setTitle(R.string.tumblr_post_title);
-            } else {
-                setTitle(getContext().getString(R.string.tumblr_multiple_post_title, size));
-            }
+            setTitle(getContext().getResources().getQuantityString(
+                    R.plurals.post_image,
+                    size,
+                    size));
         }
         // move caret to end
         postTitle.setSelection(postTitle.length());

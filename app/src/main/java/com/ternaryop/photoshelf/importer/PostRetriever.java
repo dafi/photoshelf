@@ -85,6 +85,9 @@ public class PostRetriever extends AbsProgressIndicatorAsyncTask<Void, Integer, 
     }
 
     protected void onProgressUpdate(Integer... values) {
-        setProgressMessage(getContext().getString(R.string.posts_read_count_title, values[0]));
+        setProgressMessage((getContext().getResources().getQuantityString(
+                R.plurals.posts_read_count,
+                values[0],
+                values[0])));
     }
 }
