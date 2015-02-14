@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:tools="http://schemas.android.com/tools"
+      xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
@@ -7,11 +8,13 @@
         android:icon="@drawable/ic_action_cloud_upload"
         android:title="@string/go_title">
     </item>
+    <!-- AppCompat ignores showAsAction="never" in action mode menus, to fix this issue is necessary to specify both showAsAction -->
     <item
         android:id="@+id/create_from_file"
         android:showAsAction="never"
         app:showAsAction="never"
-        android:title="@string/create_from_file_title">
+        android:title="@string/create_from_file_title"
+        tools:ignore="AppCompatResource">
     </item>
 
 </menu>
