@@ -17,7 +17,6 @@
         android:id="@+id/group_menu_image_dimension"
         android:icon="@drawable/ic_action_show_image"
         android:title="@string/menu_show_image">
-        <menu/>
     </item>
     <item
         android:id="@+id/post_edit"
