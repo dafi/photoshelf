@@ -1,7 +1,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical" >
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize" />
 
     <EditText
         android:id="@+id/post_title"
@@ -11,7 +15,7 @@
         android:layout_marginEnd="4dp"
         android:layout_marginTop="4dp"
         android:hint="@string/post_title_hint"
-        android:maxLines="3" />
+        android:maxLines="4" />
 
     <MultiAutoCompleteTextView
         android:id="@+id/post_tags"
@@ -47,12 +51,6 @@
             android:src="@drawable/navigation_refresh" />
     </LinearLayout>
 
-    <CheckBox
-        android:id="@+id/block_ui"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/upload_immediately"
-        />
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="wrap_content"
@@ -96,24 +94,6 @@
             android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/publish_title" />
-
-        <Button
-            android:id="@+id/parse_title_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/parse_title" />
-
-        <Button
-            android:id="@+id/source_title_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/source_title" />
 
     </LinearLayout>
 

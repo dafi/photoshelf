@@ -82,4 +82,36 @@
         <item name="colorAccent">@color/actionbar_text</item>
     </style>
 
+    <!-- Used to style the overflow menu shown is dialogfragment's toolbar -->
+    <style name="Theme.PhotoShelf.Dialog"
+           parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall</item>
+
+        <item name="textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge</item>
+
+        <!-- Not yet used but can be used to customize the autocomplete edittext color -->
+        <!--<item name="android:autoCompleteTextViewStyle">@style/Theme.PhotoShelf.Dialog.AutoCompleteTextView</item>-->
+
+        <!-- It's necessary to style the autocomplete dropdown -->
+        <item name="android:dropDownItemStyle">@style/Theme.PhotoShelf.Dialog.Widget.DropDownItem</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">
+        <item name="android:textColor">@color/dialog_popup_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Large">
+        <item name="android:textColor">@color/dialog_popup_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.AutoCompleteTextView" parent="@style/Widget.AppCompat.Light.AutoCompleteTextView">
+        <item name="android:textColor">#00FF00</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.Widget.DropDownItem" parent="@style/Widget.AppCompat.Light.DropDownItem.Spinner">
+        <item name="android:textColor">@color/dialog_popup_text</item>
+    </style>
+
 </resources>

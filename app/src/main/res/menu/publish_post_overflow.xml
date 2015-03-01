@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/source_title"
+        android:title="@string/source_title" />
+    <item
+        android:id="@+id/parse_title"
+        android:title="@string/parse_title" />
+    <item
+        android:id="@+id/block_ui"
+        android:title="@string/upload_immediately"
+        android:checkable="true" />
+
+</menu>

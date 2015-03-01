@@ -1,5 +1,7 @@
 package com.ternaryop.photoshelf.fragment;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -161,19 +163,26 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
     @Override
     public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
         TitleData titleData = TitleParser.instance(getActivity()).parseTitle(imageUrlRetriever.getTitle());
-        TumblrPostDialog dialog = new TumblrPostDialog(getActivity());
-        dialog.setBlockUIWhilePublish(false);
+        Bundle args = new Bundle();
+
         if (imageUrlRetriever.getImageUrls() != null) {
-            dialog.setImageUrls(imageUrlRetriever.getImageUrls());
+            args.putStringArrayList(TumblrPostDialog.ARG_IMAGE_URLS, new ArrayList<String>(imageUrlRetriever.getImageUrls()));
         } else {
-            dialog.setImageFiles(imageUrlRetriever.getImageFiles());
+            ArrayList<String> paths = new ArrayList<>(imageUrlRetriever.getImageFiles().size());
+            for (File f : imageUrlRetriever.getImageFiles()) {
+                paths.add(f.getAbsolutePath());
+            }
+            args.putStringArrayList(TumblrPostDialog.ARG_IMAGE_PATHS, paths);
         }
-        dialog.setPostTitle(titleData.toHtml(), imageUrlRetriever.getTitle());
+        args.putBoolean(TumblrPostDialog.ARG_BLOCK_UI_WHILE_PUBLISH, false);
+        args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml());
+        args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, imageUrlRetriever.getTitle());
+
         // use only first tag, generally other tags are poorly determinated
         List<String> firstTag = titleData.getTags().isEmpty() ? titleData.getTags() : titleData.getTags().subList(0, 1);
-        dialog.setPostTags(firstTag);
-        
-        dialog.show();
+        args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<String>(new ArrayList<String>(firstTag)));
+
+        TumblrPostDialog.newInstance(args, null).show(getFragmentManager(), "dialog");
     }
 
     /**
