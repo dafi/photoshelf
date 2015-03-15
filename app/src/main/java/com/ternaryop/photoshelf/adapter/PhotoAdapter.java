@@ -15,7 +15,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,20 +26,23 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.utils.StringUtils;
 
-public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.OnClickListener {
+public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     private static LayoutInflater inflater = null;
     private final ImageLoader imageLoader;
+    private final ArrayList<PhotoShelfPost> visiblePosts;
     private final ArrayList<PhotoShelfPost> allPosts;
+    private final Context context;
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private boolean recomputeGroupIds;
     private boolean isFiltering;
     private final int thumbnailWidth;
 
     public PhotoAdapter(Context context, String prefix) {
-        super(context, 0);
+        this.context = context;
         inflater = LayoutInflater.from(context);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
         allPosts = new ArrayList<PhotoShelfPost>();
+        visiblePosts = new ArrayList<PhotoShelfPost>();
         thumbnailWidth = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_width", "75"));
     }
 
@@ -130,6 +133,21 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         }
     }
 
+    @Override
+    public PhotoShelfPost getItem(int position) {
+        return visiblePosts.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getCount() {
+        return visiblePosts.size();
+    }
+
     public void calcGroupIds() {
         int count = getCount();
 
@@ -161,20 +179,12 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         this.recomputeGroupIds = recomputeGroupIds;
     }
 
-    @Override
-    public void add(PhotoShelfPost object) {
-        super.add(object);
-        if (!isFiltering) {
-            allPosts.add(object);
-        }
-        if (isRecomputeGroupIds()) {
-            calcGroupIds();
-        }
+    public int getPosition(PhotoShelfPost post) {
+        return visiblePosts.indexOf(post);
     }
 
-    @Override
     public void addAll(Collection<? extends PhotoShelfPost> collection) {
-        super.addAll(collection);
+        visiblePosts.addAll(collection);
         if (!isFiltering) {
             allPosts.addAll(collection);
         }
@@ -183,45 +193,20 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
         }
     }
 
-    @Override
-    public void addAll(PhotoShelfPost... items) {
-        super.addAll(items);
-        if (!isFiltering) {
-            Collections.addAll(allPosts, items);
-        }
-        if (isRecomputeGroupIds()) {
-            calcGroupIds();
-        }
-    }
-
-    @Override
-    public void insert(PhotoShelfPost object, int index) {
-        super.insert(object, index);
-        if (!isFiltering) {
-            allPosts.add(index, object);
-        }
-        if (isRecomputeGroupIds()) {
-            calcGroupIds();
-        }
-    }
-
-    @Override
     public void clear() {
-        super.clear();
+        visiblePosts.clear();
         if (!isFiltering) {
             allPosts.clear();
         }
     }
 
-    @Override
     public void remove(PhotoShelfPost object) {
-        super.remove(object);
+        visiblePosts.remove(object);
         if (!isFiltering) {
             allPosts.remove(object);
         }
     }
 
-    @Override
     public Filter getFilter() {
         return new Filter() {
 
@@ -275,6 +260,10 @@ public class PhotoAdapter extends ArrayAdapter<PhotoShelfPost> implements View.O
             addAll(list);
             calcGroupIds();
         }
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     private class ViewHolder {
