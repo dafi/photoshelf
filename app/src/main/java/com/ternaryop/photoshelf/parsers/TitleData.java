@@ -40,8 +40,8 @@ public class TitleData {
     }
 
     public void setLocation(String location) {
-        // remove all non alpha chars from the end
-        location = location.replaceAll("[^\\p{Alpha}]*$", "").trim();
+        // remove all non alpha chars (except single and double quotes) from the end
+        location = location.replaceAll("[^\\p{Alpha}|\"|']*$", "").trim();
 
         if (location.isEmpty()) {
             this.location = null;
@@ -70,7 +70,8 @@ public class TitleData {
     public void setCity(String city) {
         String decodedCity = cities.get(city.toUpperCase(Locale.getDefault()));
         if (decodedCity == null) {
-            this.city = city.trim();
+            String trimmed = city.trim();
+            this.city = trimmed.isEmpty() ? null : trimmed;
         } else {
             this.city = decodedCity;
         }
