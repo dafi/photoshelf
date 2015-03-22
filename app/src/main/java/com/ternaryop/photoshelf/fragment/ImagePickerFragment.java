@@ -30,6 +30,7 @@ import com.ternaryop.photoshelf.ImageUrlRetriever;
 import com.ternaryop.photoshelf.ImageUrlRetriever.OnImagesRetrieved;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
+import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.utils.URLUtils;
@@ -162,7 +163,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnLong
 
     @Override
     public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
-        TitleData titleData = TitleParser.instance(getActivity()).parseTitle(imageUrlRetriever.getTitle());
+        TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(imageUrlRetriever.getTitle());
         Bundle args = new Bundle();
 
         if (imageUrlRetriever.getImageUrls() != null) {

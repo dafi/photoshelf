@@ -1,26 +1,19 @@
 package com.ternaryop.photoshelf.parsers;
 
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.content.Context;
-import android.text.TextUtils;
-
-import com.ternaryop.utils.JSONUtils;
 import com.ternaryop.utils.StringUtils;
-import org.json.JSONObject;
 
 public class TitleParser {
     private static final Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
+    // used to capture the whole name when is all uppercase
+    private static final Pattern uppercaseNameRE = Pattern.compile("(^[A-Z ]*\\b)\\s(?i)(at the|at|[-–|~@]|attends|arrives|leaves)?\\s?");
 
     private static final String[] months = {"", "January",
                   "February",
@@ -51,10 +44,11 @@ public class TitleParser {
     }
 
     private static TitleParser instance;
-    private static final String TITLEPARSER_FILENAME = "titleParser.json";
+    private TitleParserConfig config;
 
-    private Pattern blackListRegExpr;
-    private static boolean isUpgraded;
+    private TitleParser(TitleParserConfig config) {
+        this.config = config;
+    }
 
     /**
      * Fill parseInfo with day, month, year, matched
@@ -124,58 +118,26 @@ public class TitleParser {
         return dateComponents;
     }
 
-    private TitleParser(Context context) {
-        InputStream is = null;
-        try {
-            if (blackListRegExpr != null) {
-                return;
-            }
-            try {
-                is = context.openFileInput(TITLEPARSER_FILENAME);
-                // if an imported file exists and its version is minor than the file in assets we delete it
-                if (!isUpgraded) {
-                    isUpgraded = true;
-                    JSONObject jsonPrivate = JSONUtils.jsonFromInputStream(is);
-                    JSONObject jsonAssets = JSONUtils.jsonFromInputStream(context.getAssets().open(TITLEPARSER_FILENAME));
-                    int privateVersion = jsonPrivate.getInt("version");
-                    int assetsVersion = jsonAssets.getInt("version");
-                    if (privateVersion < assetsVersion) {
-                        is.close();
-                        context.deleteFile(TITLEPARSER_FILENAME);
-                    }
-                    createBlackListRegExpr(jsonAssets);
-                    return;
-                }
-            } catch (FileNotFoundException ex) {
-                if (is != null) try { is.close(); is = null; } catch (Exception ignored) {}
-                is = context.getAssets().open(TITLEPARSER_FILENAME);
-            }
-            createBlackListRegExpr(JSONUtils.jsonFromInputStream(is));
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) try { is.close(); } catch (Exception ignored) {}
-        }
-    }
-
-    private void createBlackListRegExpr(JSONObject jsonAssets) throws Exception {
-        List<Object> blackList = new ArrayList<Object>();
-        blackList.addAll(JSONUtils.toList(jsonAssets.getJSONObject("blackList").getJSONArray("regExprs")));
-        blackListRegExpr = Pattern.compile("(" + TextUtils.join("|", blackList) + ")", Pattern.CASE_INSENSITIVE);
-    }
-
     public TitleData parseTitle(String title) {
         TitleData titleData = new TitleData();
 
-        title = blackListRegExpr.matcher(title).replaceAll("");
+        title = config.getBlackListRegExpr().matcher(title).replaceAll("");
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
 
-        Matcher m = titleRE.matcher(title);
+        Matcher m = uppercaseNameRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
-          titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
-          // remove the 'who' chunk
-          title = title.substring(m.regionStart() + m.group(0).length());
+            titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
+            // remove the 'who' chunk
+            title = title.substring(m.regionStart() + m.group(0).length());
+        } else {
+            m = titleRE.matcher(title);
+            if (m.find() && m.groupCount() > 1) {
+                titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
+                // remove the 'who' chunk
+                title = title.substring(m.regionStart() + m.group(0).length());
+            }
         }
+
         Map<String, Object> dateComponents = parseDate(title);
         Matcher dateMatcher = (Matcher) dateComponents.get("matched");
         String loc;
@@ -209,11 +171,11 @@ public class TitleParser {
         return titleData;
     }
 
-    public static TitleParser instance(Context context) {
+    public static TitleParser instance(TitleParserConfig config) {
         if (instance == null) {
             synchronized (TitleParser.class) {
                 if (instance == null) {
-                    instance = new TitleParser(context);
+                    instance = new TitleParser(config);
                 }
             }
         }

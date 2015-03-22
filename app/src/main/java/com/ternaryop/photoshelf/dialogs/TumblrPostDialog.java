@@ -33,6 +33,7 @@ import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
+import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.photoshelf.service.PublishIntentService;
@@ -429,7 +430,7 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
     }
 
     private void parseTitle() {
-        TitleData titleData = TitleParser.instance(getActivity()).parseTitle(postTitle.getText().toString());
+        TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(postTitle.getText().toString());
         // only the edited title is updated, the sourceTitle remains unchanged
         htmlTitle = titleData.toHtml();
         this.postTitle.setText(Html.fromHtml(htmlTitle));
