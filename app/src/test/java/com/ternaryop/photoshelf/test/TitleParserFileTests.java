@@ -1,6 +1,7 @@
-package com.ternaryop.photoshelf;
+package com.ternaryop.photoshelf.test;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
+
 
 @RunWith(Parameterized.class)
 public class TitleParserFileTests {
@@ -50,8 +52,14 @@ public class TitleParserFileTests {
 
     @Test
     public void testTitle() {
-        TitleData titleData = TitleParser.instance(null).parseTitle(inputTitle);
-        String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
-        assertEquals(expectedTitle, formattedInput);
+        try {
+            String configPath = new File(new File(".").getAbsoluteFile(), "app/src/main/assets/titleParser.json").getAbsolutePath();
+            TitleData titleData = TitleParser.instance(new TitleParserConfigMockup(configPath)).parseTitle(inputTitle);
+
+            String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
+            assertEquals(expectedTitle, formattedInput);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
