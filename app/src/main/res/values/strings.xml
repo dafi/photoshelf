@@ -190,5 +190,6 @@
     <string name="pref_thumbnail_width">Thumbnail Image Width</string>
     <string name="largest_image">Largest</string>
     <string name="pref_export_days_period">Export period</string>
+    <string name="details">Details</string>
 
 </resources>

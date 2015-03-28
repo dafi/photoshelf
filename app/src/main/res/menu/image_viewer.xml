@@ -15,4 +15,8 @@
     <item
         android:id="@+id/action_image_viewer_download"
         android:title="@string/download_title"/>
+
+    <item
+        android:id="@+id/action_image_viewer_details"
+        android:title="@string/details"/>
 </menu>

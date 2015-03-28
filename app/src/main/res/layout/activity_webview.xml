@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
-
-    <include layout="@layout/toolbar_app"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:baselineAligned="false"
+                android:orientation="vertical">
 
     <ProgressBar
         android:id="@+id/webview_progressbar"
@@ -17,7 +16,28 @@
 
     <WebView
         android:id="@+id/webview_view"
+        android:layout_below="@+id/webview_progressbar"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/details_text"
+        android:background="#50000000"
+        android:layout_alignParentBottom="true"
+        android:layout_width="fill_parent"
+        android:layout_height="32dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        android:textColor="@android:color/white"/>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/drawer_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:background="@color/transparent"
+        style="?topDrawerToolbarPopupTheme" />
+
+</RelativeLayout>

@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ternaryop.photoshelf.AppSupport;
@@ -46,20 +48,23 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     private static final String IMAGE_TAG = "imageTag";
     private boolean webViewLoaded;
     private Menu optionsMenu;
+    private String imageHostUrl;
+    private TextView detailsText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.image_viewer_activity_title);
+        setTitle("");
 
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
+        detailsText = (TextView) findViewById(R.id.details_text);
 
         Bundle bundle = getIntent().getExtras();
         String imageUrl = bundle.getString(IMAGE_URL);
         String data = "<body><img src=\"" + imageUrl + "\"/></body>";
         prepareWebView(progressBar).loadDataWithBaseURL(null, data, "text/html", "UTF-8", null);
         try {
-            getSupportActionBar().setSubtitle(new URI(imageUrl).getHost());
+            imageHostUrl = new URI(imageUrl).getHost();
         } catch (URISyntaxException ignored) {
         }
     }
@@ -136,7 +141,14 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     public void setDimensions(final int w, final int h) {
         runOnUiThread(new Runnable() {
             public void run() {
-                getSupportActionBar().setSubtitle(getSupportActionBar().getSubtitle() + String.format(" (%1dx%2d)", w, h));
+                detailsText.setVisibility(View.VISIBLE);
+                detailsText.setText(imageHostUrl + String.format(" (%1dx%2d)", w, h));
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        detailsText.setVisibility(View.GONE);
+                    }
+                }, 5 * 1000);
             }
         });
     }
@@ -161,6 +173,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         menu.findItem(R.id.action_image_viewer_share).setVisible(isVisible);
         menu.findItem(R.id.action_image_viewer_download).setVisible(isVisible);
         menu.findItem(R.id.action_image_viewer_copy_url).setVisible(isVisible);
+        menu.findItem(R.id.action_image_viewer_details).setVisible(isVisible);
     }
 
     @Override
@@ -178,9 +191,16 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
             case R.id.action_image_viewer_copy_url:
                 copyURL();
                 return true;
+            case R.id.action_image_viewer_details:
+                toogleDetails();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void toogleDetails() {
+        detailsText.setVisibility(detailsText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
     }
 
     private void download() {
