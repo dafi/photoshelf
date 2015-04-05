@@ -92,7 +92,9 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
                 if (date.get(Calendar.DAY_OF_MONTH) == dayOfMonth && date.get(Calendar.MONTH) == month) {
                     view.setBackgroundResource(R.drawable.list_selector_post_never);
                 } else {
-                    view.setBackgroundResource(R.drawable.list_selector_post_group_even);
+                    // group by day, not perfect by better than nothing
+                    boolean isEven = (date.get(Calendar.DAY_OF_MONTH) & 1) == 0;
+                    view.setBackgroundResource(isEven ? R.drawable.list_selector_post_group_even : R.drawable.list_selector_post_group_odd);
                 }
             }
         } catch (ParseException ignored) {
