@@ -461,4 +461,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     public boolean onQueryTextSubmit(String query) {
         return true;
     }
+
+    protected void resetAndReloadPhotoPosts() {
+        offset = 0;
+        totalPosts = 0;
+        hasMorePosts = true;
+        photoAdapter.clear();
+        readPhotoPosts();
+    }
+
 }

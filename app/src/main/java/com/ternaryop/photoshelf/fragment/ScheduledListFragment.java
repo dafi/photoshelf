@@ -8,6 +8,7 @@ import java.util.List;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.ternaryop.photoshelf.R;
@@ -36,9 +37,7 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         }
 
         if (getBlogName() != null) {
-            offset = 0;
-            hasMorePosts = true;
-            readPhotoPosts();
+            resetAndReloadPhotoPosts();
         }
     }
 
@@ -111,5 +110,16 @@ public class ScheduledListFragment extends AbsPostsListFragment {
         inflater.inflate(R.menu.scheduler, menu);
 
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                resetAndReloadPhotoPosts();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
