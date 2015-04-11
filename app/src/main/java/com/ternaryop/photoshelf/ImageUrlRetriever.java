@@ -5,19 +5,12 @@ import java.io.FileOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.view.ActionMode;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import com.ternaryop.utils.URLUtils;
 import org.jsoup.Jsoup;
@@ -27,10 +20,7 @@ public class ImageUrlRetriever {
     private final Context context;
     private String title;
     private Exception error = null;
-    private final Map<String, String> urlSelectorMap = new HashMap<String, String>();
-    private ActionMode actionMode;
     private final OnImagesRetrieved callback;
-    private boolean useActionMode;
     private boolean useFile;
     private ArrayList<String> imageUrls;
     private ArrayList<File> imageFiles;
@@ -38,29 +28,6 @@ public class ImageUrlRetriever {
     public ImageUrlRetriever(Context context, OnImagesRetrieved callback) {
         this.context = context;
         this.callback = callback;
-        useActionMode = true;
-    }
-
-    public void addOrRemoveUrl(String domSelector, String url) {
-        if (urlSelectorMap.get(url) == null) {
-            urlSelectorMap.put(url, domSelector);
-        } else {
-            urlSelectorMap.remove(url);
-        }
-        if (useActionMode) {
-            if (urlSelectorMap.size() == 0) {
-                getActionMode((ActionBarActivity) context).finish();
-            } else {
-                getActionMode((ActionBarActivity) context).invalidate();
-            }
-        }
-    }
-
-    protected ActionMode getActionMode(ActionBarActivity activity) {
-        if (actionMode == null) {
-            actionMode = activity.startSupportActionMode(mActionModeCallback);
-        }
-        return actionMode;
     }
 
     public String getTitle() {
@@ -72,55 +39,13 @@ public class ImageUrlRetriever {
         this.title = title;
     }
 
-    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.image_picker_context, menu);
-            return true;
-        }
-
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            mode.setTitle(context.getString(R.string.select_images));
-            mode.setSubtitle(context.getResources().getQuantityString(
-                    R.plurals.selected_items,
-                    urlSelectorMap.size(),
-                    urlSelectorMap.size()));
-            return true;
-        }
-
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            useFile = item.getItemId() == R.id.create_from_file;
-
-            switch (item.getItemId()) {
-            case R.id.showDialog:
-                retrieve();
-                return true;
-            case R.id.create_from_file:
-                retrieve();
-                return true;
-            default:
-                return false;
-            }
-        }
-
-        // Called when the user exits the action mode
-        public void onDestroyActionMode(ActionMode mode) {
-            actionMode = null;
-            // remove selection to ensures it's empty if the user clicks on 'done' actionbar's button
-            urlSelectorMap.clear();
-        }
-    };
-
-    public void retrieve() {
-        new UrlRetrieverAsyncTask().execute(urlSelectorMap);
+    public void retrieve(List<ImageInfo> list, boolean useFile) {
+        this.useFile = useFile;
+        new UrlRetrieverAsyncTask(list).execute();
     }
 
-    public boolean isUseActionMode() {
-        return useActionMode;
-    }
-
-    public void setUseActionMode(boolean useActionMode) {
-        this.useActionMode = useActionMode;
+    public void retrieve(List<ImageInfo> list) {
+        retrieve(list, false);
     }
 
     public interface OnImagesRetrieved {
@@ -129,13 +54,18 @@ public class ImageUrlRetriever {
 
     class UrlRetrieverAsyncTask extends AsyncTask<Object, Integer, Void> {
         private ProgressDialog progressDialog;
+        private final List<ImageInfo> list;
+
+        public UrlRetrieverAsyncTask(List<ImageInfo> list) {
+            this.list = list;
+        }
 
         @Override
         protected void onPreExecute() {
             progressDialog = new ProgressDialog(context);
             progressDialog.setMessage(context.getString(R.string.image_retriever_title));
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.setMax(urlSelectorMap.size());
+            progressDialog.setMax(list.size());
             progressDialog.show();
         }
 
@@ -149,22 +79,26 @@ public class ImageUrlRetriever {
                 imageFiles = null;
             }
             try {
-                @SuppressWarnings("unchecked")
-                Map<String, String> urls = (Map<String, String>) params[0];
                 int i = 1;
-                for (String url : urls.keySet()) {
-                    String selector = urls.get(url);
+                for (ImageInfo imageInfo : list) {
+                    String selector = imageInfo.getSelector();
+                    String url = imageInfo.getDestinationDocumentURL();
                     String link;
                     // if the selector is empty then 'url' is an image
                     // and doesn't need to be parsed
                     if (selector.trim().length() == 0) {
                         link = url;
                     } else {
-                        Document htmlDocument = Jsoup.connect(url).get();
-                        if (title == null) {
-                            title = htmlDocument.title();
+                        // parse document on if the imageURL is not set
+                        if (imageInfo.getImageURL() == null) {
+                            Document htmlDocument = Jsoup.connect(url).get();
+                            if (title == null) {
+                                title = htmlDocument.title();
+                            }
+                            link = htmlDocument.select(selector).attr("src");
+                        } else {
+                            link = imageInfo.getImageURL();
                         }
-                        link = htmlDocument.select(selector).attr("src");
                     }
                     if (!link.isEmpty()) {
                         // if necessary resolve relative urls
@@ -209,11 +143,6 @@ public class ImageUrlRetriever {
                 progressDialog.dismiss();
                 if (error == null) {
                     callback.onImagesRetrieved(ImageUrlRetriever.this);
-                    // close the actionbar only after the callback call otherwise onImagesRetrieved receives
-                    // an empty list cleared inside onDestroyActionMode
-                    if (actionMode != null) {
-                        actionMode.finish();
-                    }
                 } else {
                     new AlertDialog.Builder(context)
                     .setTitle(R.string.url_not_found)

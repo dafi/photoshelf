@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.ternaryop.widget.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <com.ternaryop.widget.CheckableImageView
+        android:id="@+id/thumbnail_image"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/stub" />
+
+    <com.ternaryop.widget.ClickableTextView
+        android:id="@+id/caption"
+        android:background="#aaaaaa"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/thumbnail"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:layout_below="@+id/thumbnail_image"
+        android:layout_centerHorizontal="true" />
+
+</com.ternaryop.widget.CheckableRelativeLayout>
