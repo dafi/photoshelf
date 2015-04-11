@@ -148,7 +148,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
                     public void run() {
                         detailsText.setVisibility(View.GONE);
                     }
-                }, 5 * 1000);
+                }, 3 * 1000);
             }
         });
     }
