@@ -164,7 +164,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
         ArrayList<ImageInfo> list = new ArrayList<ImageInfo>();
         for (int i = 0; i < checkedItemPositions.size(); i++) {
-            list.add(imagePickerAdapter.getItem(checkedItemPositions.keyAt(i)));
+            int key = checkedItemPositions.keyAt(i);
+            if (checkedItemPositions.get(key)) {
+                list.add(imagePickerAdapter.getItem(key));
+            }
         }
         return list;
     }
