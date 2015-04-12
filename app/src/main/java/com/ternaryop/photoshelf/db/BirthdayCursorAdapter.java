@@ -8,6 +8,7 @@ import java.util.Locale;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
@@ -70,13 +71,13 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         return dbHelper.getBirthdayDAO().getBirthdayCursorByName(pattern, month, blogName);
     }
 
-    public String convertToString(final Cursor cursor) {
+    public String convertToString(@NonNull final Cursor cursor) {
         final int columnIndex = cursor.getColumnIndexOrThrow(BirthdayDAO.NAME);
         return cursor.getString(columnIndex);
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(@NonNull View view, Context context, @NonNull Cursor cursor) {
         super.bindView(view, context, cursor);
         Calendar now = Calendar.getInstance();
         int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);

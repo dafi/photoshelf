@@ -2,6 +2,7 @@ package com.ternaryop.preference;
 
 import android.content.Context;
 import android.preference.EditTextPreference;
+import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.View;
@@ -25,7 +26,7 @@ public class IntegerEditTextPreference extends EditTextPreference {
     }
 
     @Override
-    protected void onAddEditTextToDialogView(View dialogView, EditText editText) {
+    protected void onAddEditTextToDialogView(@NonNull View dialogView, @NonNull EditText editText) {
         super.onAddEditTextToDialogView(dialogView, editText);
         editText.selectAll();
     }

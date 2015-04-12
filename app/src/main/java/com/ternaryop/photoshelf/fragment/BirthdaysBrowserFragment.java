@@ -96,6 +96,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
         // so we ignore any call
     }
 
+    @SuppressWarnings("SameReturnValue")
     protected int getActionModeMenuId() {
         return R.menu.birthdays_context;
     }

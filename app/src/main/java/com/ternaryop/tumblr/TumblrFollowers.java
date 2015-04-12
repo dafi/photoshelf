@@ -14,7 +14,7 @@ import org.json.JSONObject;
  */
 public class TumblrFollowers implements Serializable {
     private long totalUsers;
-    private ArrayList<TumblrUser> usersList;
+    private final ArrayList<TumblrUser> usersList;
 
     public TumblrFollowers() {
         usersList = new ArrayList<>();
