@@ -20,7 +20,7 @@
 	"http:\/\/imgearn.net":".pic",
 	"http:\/\/storeimgs.net":".centred_resized",
 	"http:\/\/www.imagegaga.net":"#full_image",
-	"http:\/\/www.sawfirst.com\/wp-content":"",
+	"http:\/\/www.sawfirst.com":"pageSel:.entry-title a selAttr:href",
     "http:\/\/imgbox.com":"#img",
     "http:\/\/someimage.com":"#viewimage",
 	  "http://imgpit.com/":".centred_resized"

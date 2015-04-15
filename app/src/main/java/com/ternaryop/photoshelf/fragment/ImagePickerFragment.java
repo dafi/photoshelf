@@ -137,6 +137,8 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.image_picker_context, menu);
+        imagePickerAdapter.setShowButtons(true);
+        imagePickerAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -173,6 +175,8 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     }
 
     public void onDestroyActionMode(ActionMode mode) {
+        imagePickerAdapter.setShowButtons(false);
+        imagePickerAdapter.notifyDataSetChanged();
     }
 
     public void onItemCheckedStateChanged(ActionMode mode, int position,

@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.ImageInfo;
@@ -20,6 +19,7 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
 	private final LayoutInflater inflater;
 	private OnPhotoPickerClick onPhotoPickerClick;
 	private ArrayList<ImageInfo> items;
+    private boolean showButtons;
 
 	public ImagePickerAdapter(Context context) {
         imageLoader = new ImageLoader(context.getApplicationContext(), "picker", R.drawable.stub);
@@ -38,10 +38,12 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		if (onPhotoPickerClick != null) {
-			holder.caption.setOnClickListener(this);
-			holder.caption.setTag(position);
+		if (showButtons && onPhotoPickerClick != null) {
+			holder.showImageAction.setOnClickListener(this);
+			holder.showImageAction.setTag(position);
 		}
+        holder.showImageAction.setVisibility(showButtons ? View.VISIBLE : View.INVISIBLE);
+        holder.bgAction.setVisibility(showButtons ? View.VISIBLE : View.INVISIBLE);
 
 		ImageInfo imageInfo = getItem(position);
 		imageLoader.displayImage(imageInfo.getThumbnailURL(), holder.thumbImage);
@@ -75,18 +77,28 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
 
 	public void onClick(final View v) {
 		switch (v.getId()) {
-			case R.id.caption:
+			case R.id.ic_show_image_action:
 				onPhotoPickerClick.viewClick((Integer) v.getTag());
 				break;
 		}
 	}
 
-	private class ViewHolder {
-		final TextView caption;
+    public boolean isShowButtons() {
+        return showButtons;
+    }
+
+    public void setShowButtons(boolean showButtons) {
+        this.showButtons = showButtons;
+    }
+
+    private class ViewHolder {
+		final ImageView showImageAction;
 		final ImageView thumbImage;
+		final ImageView bgAction;
 
 		public ViewHolder(View vi) {
-			caption = (TextView)vi.findViewById(R.id.caption);
+			bgAction = (ImageView)vi.findViewById(R.id.bg_actions);
+			showImageAction = (ImageView)vi.findViewById(R.id.ic_show_image_action);
 			thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
 		}
 	}

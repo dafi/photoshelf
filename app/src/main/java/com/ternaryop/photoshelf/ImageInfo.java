@@ -1,15 +1,20 @@
 package com.ternaryop.photoshelf;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ImageInfo {
     private String thumbnailURL;
     private String destinationDocumentURL;
     private String imageURL;
     private String selector;
+    private static final Pattern pageSelRE = Pattern.compile("pageSel:(.*)\\s+selAttr:(.*)");
+    private String selAttr;
 
     public ImageInfo(String thumbnailURL, String destinationDocumentURL, String selector) {
         this.thumbnailURL = thumbnailURL;
         this.destinationDocumentURL = destinationDocumentURL;
-        this.selector = selector;
+        setSelector(selector);
     }
 
     /**
@@ -46,8 +51,21 @@ public class ImageInfo {
         return selector;
     }
 
+    /**
+     * The CSS selector to use to find the imageUrl.
+     * @param selector if the image link is available inside a secondary url the selector can contain expressions in the form
+     *                 of pageSel:**css selector** selAttr:**attribute** where "css selector" is used to select the element
+     *                 and "attribute" is the element's attribute to use to get the image url.
+     */
     public void setSelector(String selector) {
-        this.selector = selector;
+        Matcher matcher = pageSelRE.matcher(selector);
+        if (matcher.find() && matcher.groupCount() == 2) {
+            this.selector = matcher.group(1);
+            this.selAttr = matcher.group(2);
+        } else {
+            this.selector = selector;
+            this.selAttr = null;
+        }
     }
 
     /**
@@ -68,4 +86,11 @@ public class ImageInfo {
         return "thumb " + thumbnailURL + " doc " + destinationDocumentURL;
     }
 
+    public String getSelAttr() {
+        return selAttr;
+    }
+
+    public boolean hasPageSel() {
+        return selAttr != null;
+    }
 }

@@ -84,9 +84,12 @@ public class ImageUrlRetriever {
                     String selector = imageInfo.getSelector();
                     String url = imageInfo.getDestinationDocumentURL();
                     String link;
-                    // if the selector is empty then 'url' is an image
-                    // and doesn't need to be parsed
-                    if (selector.trim().length() == 0) {
+                    if (imageInfo.hasPageSel()) {
+                        Document htmlDocument = Jsoup.connect(url).get();
+                        link = htmlDocument.select(selector).attr(imageInfo.getSelAttr());
+                    } else if (selector.trim().length() == 0) {
+                        // if the selector is empty then 'url' is an image
+                        // and doesn't need to be parsed
                         link = url;
                     } else {
                         // parse document on if the imageURL is not set
