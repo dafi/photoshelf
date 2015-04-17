@@ -31,12 +31,15 @@ android {
 
     signingConfigs {
         release {
-            def props = new Properties()
-            props.load(new FileInputStream("$rootDir/app/build-keystore.properties"))
-            storeFile file(props.get("key.store"))
-            storePassword props.get("key.store.password")
-            keyAlias props.get("key.alias")
-            keyPassword props.get("key.alias.password")
+            def keystoreFile = new File("$rootDir/app/build-keystore.properties")
+            if (keystoreFile.exists()) {
+                def props = new Properties()
+                props.load(new FileInputStream(keystoreFile))
+                storeFile file(props.get("key.store"))
+                storePassword props.get("key.store.password")
+                keyAlias props.get("key.alias")
+                keyPassword props.get("key.alias.password")
+            }
         }
     }
     lintOptions {
