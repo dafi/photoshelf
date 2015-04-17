@@ -109,6 +109,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     private void onRefreshStarted() {
         photoAdapter.clear();
+        photoAdapter.notifyDataSetInvalidated();
         progressHighlightViewLayout.startProgress();
         swipeLayout.setRefreshingAndWaintingResult(true);
     }
