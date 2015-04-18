@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -23,9 +24,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.ImageDOMSelectorFinder;
@@ -38,8 +40,11 @@ import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
+import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
+import com.ternaryop.utils.TaskWithUI;
 import com.ternaryop.utils.URLUtils;
 import com.ternaryop.utils.dialog.DialogUtils;
+import com.ternaryop.widget.ProgressHighlightViewLayout;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -47,7 +52,7 @@ import org.jsoup.select.Elements;
 
 public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, AdapterView.OnItemClickListener, ImageUrlRetriever.OnImagesRetrieved, ImagePickerAdapter.OnPhotoPickerClick {
     private GridView gridView;
-    private ProgressBar progressBar;
+    private ProgressHighlightViewLayout progressHighlightViewLayout;
 
     private ImageUrlRetriever imageUrlRetriever;
     private ImagePickerAdapter imagePickerAdapter;
@@ -61,14 +66,17 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
         imagePickerAdapter = new ImagePickerAdapter(getActivity());
         imagePickerAdapter.setOnPhotoPickerClick(this);
-        progressBar = (ProgressBar) rootView.findViewById(R.id.webview_progressbar);
         domSelectorFinder = new ImageDOMSelectorFinder(getActivity());
         imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
+
+        progressHighlightViewLayout = (ProgressHighlightViewLayout) rootView.findViewById(android.R.id.empty);
+        progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
 
         gridView = (GridView) rootView.findViewById(R.id.gridview);
         gridView.setAdapter(imagePickerAdapter);
         gridView.setOnItemClickListener(this);
         gridView.setMultiChoiceModeListener(this);
+        gridView.setEmptyView(progressHighlightViewLayout);
 
         return rootView;
     }
@@ -109,6 +117,9 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         if (textWithUrl == null) {
             return;
         }
+        progressHighlightViewLayout.startProgress();
+        final String message = getResources().getQuantityString(R.plurals.download_url_with_count, 1, 0);
+        getCurrentTextView().setText(message);
         final Matcher m = Pattern.compile("(http:.*)").matcher(textWithUrl);
 
         if (m.find()) {
@@ -123,7 +134,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
                 @Override
                 protected void onPostExecute(String url) {
-                    new ImageUrlExtractor().execute(url);
+                    task = (TaskWithUI) new ImageUrlExtractor(getActivity(), message, getCurrentTextView()).execute(url);
                 }
             }.execute(url);
         } else {
@@ -132,6 +143,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                     .setMessage(getString(R.string.url_not_found_description, textWithUrl))
                     .show();
         }
+    }
+
+    public TextView getCurrentTextView() {
+        return (TextView) progressHighlightViewLayout.getCurrentView();
     }
 
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -218,19 +233,22 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
      *
      * @author dave
      */
-    class ImageUrlExtractor extends AsyncTask<String, Integer, List<ImageInfo>> {
+    class ImageUrlExtractor extends AbsProgressIndicatorAsyncTask<String, String, List<ImageInfo>> {
         Exception error;
 
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
+        public ImageUrlExtractor(Context context, String message, TextView textView) {
+            super(context, message, textView);
         }
 
         @Override
-        protected void onProgressUpdate(Integer... progress) {
-            progressBar.setIndeterminate(false);
-            progressBar.setMax(100);
-            progressBar.setProgress(progress[0]);
+        protected void onProgressUpdate(String... message) {
+            // if the first element is null do not increment the progress and get the message from index 1
+            if (message[0] == null) {
+                getCurrentTextView().setText(message[1]);
+            } else {
+                progressHighlightViewLayout.incrementProgress();
+                getCurrentTextView().setText(message[0]);
+            }
         }
 
         @Override
@@ -252,7 +270,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                     input = connection.getInputStream();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-                    byte data[] = new byte[8192];
+                    byte data[] = new byte[32768];
                     long total = 0;
                     int count;
                     while ((count = input.read(data)) != -1) {
@@ -261,14 +279,18 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                         }
                         total += count;
                         if (fileLength > 0) {
-                            publishProgress((int) (total * 100 / fileLength));
+                            publishProgress(null, "" + (total * 100 / fileLength));
+                        } else {
+                            // quantity must be int so instead of casting total simply pass 2
+                            String message = getResources().getQuantityString(R.plurals.download_url_with_count, 2, total);
+                            publishProgress(null, message);
                         }
                         baos.write(data, 0, count);
                     }
-
                     Document htmlDocument = Jsoup.parse(baos.toString());
                     imageUrlRetriever.setTitle(htmlDocument.title());
                     Elements thumbnailImages = htmlDocument.select("a img[src*=jpg]");
+                    publishProgress(getResources().getQuantityString(R.plurals.image_found, thumbnailImages.size(), thumbnailImages.size()));
                     for (int i = 0; i < thumbnailImages.size(); i++) {
                         Element thumbnailImage = thumbnailImages.get(i);
                         String thumbnailURL = thumbnailImage.attr("src");
@@ -292,8 +314,9 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
         @Override
         protected void onPostExecute(List<ImageInfo> result) {
-            progressBar.setVisibility(View.GONE);
+            super.onPostExecute(null);
             if (error == null) {
+                progressHighlightViewLayout.stopProgress();
                 getSupportActionBar().setSubtitle(imageUrlRetriever.getTitle());
                 imagePickerAdapter.addAll(result);
                 imagePickerAdapter.notifyDataSetChanged();

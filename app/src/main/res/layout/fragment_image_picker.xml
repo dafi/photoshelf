@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
-
-    <ProgressBar
-        android:id="@+id/webview_progressbar"
-        style="@style/Theme.PhotoShelf.ProgressBar.Horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="@dimen/webview_progressbar_height"
-        android:maxHeight="@dimen/webview_progressbar_height"
-        android:minHeight="@dimen/webview_progressbar_height"
-        android:visibility="gone"/>
-
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical" >
 
     <GridView
         android:id="@+id/gridview"
@@ -27,4 +17,24 @@
         android:stretchMode="columnWidth"
         android:verticalSpacing="4dp"/>
 
-</LinearLayout>
+    <com.ternaryop.widget.ProgressHighlightViewLayout
+        android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:text="@string/extracting_images"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </com.ternaryop.widget.ProgressHighlightViewLayout>
+
+</RelativeLayout>

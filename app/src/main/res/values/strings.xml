@@ -142,6 +142,14 @@
         <item quantity="one">%1$d note</item>
         <item quantity="other">%1$d notes</item>
     </plurals>
+    <plurals name="image_found">
+        <item quantity="one">Found %1$d image</item>
+        <item quantity="other">Found %1$d images</item>
+    </plurals>
+    <plurals name="download_url_with_count">
+        <item quantity="one">Download URL</item>
+        <item quantity="other">Download URL, bytes read %1$d</item>
+    </plurals>
 
     <string name="saving_posts_to_draft_title">Saving posts to draft&#8230;</string>
     <string name="deleting_posts_title">Deleting posts&#8230;</string>
@@ -193,5 +201,6 @@
     <string name="details">Details</string>
     <string name="app_name_share_label">A Photo Shelf</string>
     <string name="never_run">Never run</string>
+    <string name="extracting_images">Extracting images</string>
 
 </resources>
