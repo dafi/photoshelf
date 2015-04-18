@@ -192,5 +192,6 @@
     <string name="pref_export_days_period">Export period</string>
     <string name="details">Details</string>
     <string name="app_name_share_label">A Photo Shelf</string>
+    <string name="never_run">Never run</string>
 
 </resources>

@@ -47,7 +47,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private static final String KEY_DROPBOX_VERSION = "dropbox_version";
     private static final String KEY_THUMBNAIL_WIDTH = "thumbnail_width";
 
-    public static final int MAIN_PREFERENCES_RESULT = 1;
     private static final int DROPBOX_RESULT = 2;
 
     private Preference preferenceTumblrLogin;
@@ -161,9 +160,16 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
             }
         } else if (key.equals(AppSupport.PREF_EXPORT_DAYS_PERIOD)) {
             int days = sharedPreferences.getInt(key, appSupport.getExportDaysPeriod());
-            int remainingDays = (int)(days - DateTimeUtils.daysSinceTimestamp(appSupport.getLastFollowersUpdateTime()));
+            long lastFollowersUpdateTime = appSupport.getLastFollowersUpdateTime();
+            String remainingMessage;
+            if (lastFollowersUpdateTime < 0) {
+                remainingMessage = getResources().getString(R.string.never_run);
+            } else {
+                int remainingDays = (int)(days - DateTimeUtils.daysSinceTimestamp(lastFollowersUpdateTime));
+                remainingMessage = getResources().getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays);
+            }
             preferenceExportDaysPeriod.setSummary(getResources().getQuantityString(R.plurals.day_title, days, days)
-                    + " (" + getResources().getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays) + ")");
+                    + " (" + remainingMessage + ")");
         }
     }
 
@@ -261,15 +267,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
                     android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
             startActivity(intent);
         }
-    }
-
-    public static void startPreferencesActivityForResult(Activity caller) {
-        Intent intent = new Intent(caller, PhotoPreferencesFragment.class);
-        Bundle bundle = new Bundle();
-
-        intent.putExtras(bundle);
-
-        caller.startActivityForResult(intent, MAIN_PREFERENCES_RESULT);
     }
 
     private void setupVersionInfo(PreferenceScreen preferenceScreen) {
