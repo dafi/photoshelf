@@ -242,24 +242,19 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
 
     public void removeAndRecalcGroups(PhotoShelfPost item, Calendar lastPublishDateTime) {
         remove(item);
-        ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>(getCount());
-        boolean isRegroupNeeded = false;
+        boolean isSortNeeded = false;
         String tag = item.getFirstTag();
 
-        for (int i = 0; i < getCount(); i++) {
-            PhotoShelfPost post = getItem(i);
-            list.add(post);
+        for (PhotoShelfPost post : visiblePosts) {
             if (post.getFirstTag().equalsIgnoreCase(tag)) {
-                isRegroupNeeded = true;
+                isSortNeeded = true;
                 post.setLastPublishedTimestamp(lastPublishDateTime.getTimeInMillis());
             }
         }
-        if (isRegroupNeeded) {
-            Collections.sort(list, new LastPublishedTimestampComparator());
-            clear();
-            addAll(list);
-            calcGroupIds();
+        if (isSortNeeded) {
+            Collections.sort(visiblePosts, new LastPublishedTimestampComparator());
         }
+        calcGroupIds();
     }
 
     public Context getContext() {

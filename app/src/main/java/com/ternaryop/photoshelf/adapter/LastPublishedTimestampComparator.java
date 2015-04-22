@@ -2,6 +2,14 @@ package com.ternaryop.photoshelf.adapter;
 
 import java.util.Comparator;
 
+import org.joda.time.DateTimeComparator;
+
+/**
+ * Sort using the order from top to bottom shown below
+ * 1. Never Published
+ * 2. Older published
+ * 3. In the future (ie scheduled)
+ */
 public class LastPublishedTimestampComparator implements
         Comparator<PhotoShelfPost> {
     @Override
@@ -9,22 +17,33 @@ public class LastPublishedTimestampComparator implements
         long lhsTimestamp = lhs.getLastPublishedTimestamp();
         long rhsTimestamp = rhs.getLastPublishedTimestamp();
 
-        long ldiff = lhsTimestamp - rhsTimestamp;
-        int diff = ldiff == 0 ? 0 : ldiff < 0 ? -1 : 1;
-
-        if (diff == 0) {
-            String lhsTag = lhs.getFirstTag();
-            String rhsTag = rhs.getFirstTag();
-            diff = lhsTag.compareToIgnoreCase(rhsTag);
-        } else {
-            if (lhsTimestamp == Long.MAX_VALUE) {
-                return -1;
-            }
-            if (rhsTimestamp == Long.MAX_VALUE) {
-                return 1;
-            }
+        if (lhsTimestamp == rhsTimestamp) {
+            return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+        }
+        // never published item goes on top
+        if (lhsTimestamp == Long.MAX_VALUE) {
+            return -1;
+        }
+        if (rhsTimestamp == Long.MAX_VALUE) {
+            return 1;
+        }
+        long now = System.currentTimeMillis();
+        if (lhsTimestamp > now && rhsTimestamp > now) {
+            return lhsTimestamp < rhsTimestamp ? -1 : 1;
+        }
+        // item in the future goes to bottom
+        if (lhsTimestamp > now) {
+            return 1;
+        }
+        if (rhsTimestamp > now) {
+            return -1;
         }
 
-        return diff;
+        // compare only the date part
+        int compare = DateTimeComparator.getDateOnlyInstance().compare(lhsTimestamp, rhsTimestamp);
+        if (compare == 0) {
+            return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+        }
+        return compare;
     }
 }

@@ -1,9 +1,5 @@
 package com.ternaryop.photoshelf.adapter;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.DateTimeUtils;
 
@@ -12,7 +8,6 @@ public class PhotoShelfPost extends TumblrPhotoPost {
      * 
      */
     private static final long serialVersionUID = -6670033021694674250L;
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
     private long lastPublishedTimestamp;
     private int groupId;
 
@@ -51,13 +46,7 @@ public class PhotoShelfPost extends TumblrPhotoPost {
     
     public String getLastPublishedTimestampAsString() {
         long tt = getScheduledPublishTime() > 0 ? getScheduledPublishTime() * 1000 : lastPublishedTimestamp;
-        long days = DateTimeUtils.daysSinceTimestamp(tt);
-        String daysString = DateTimeUtils.formatPublishDaysAgo(tt);
-        if (days != Long.MAX_VALUE && days > 0) {
-            String string = DATE_FORMAT.format(new Date(tt));
-            daysString += " (" + string + ")";
-        }
-        return daysString;
+        return DateTimeUtils.formatPublishDaysAgo(tt, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT);
     }
 
     public int getGroupId() {

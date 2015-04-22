@@ -1,10 +1,7 @@
 package com.ternaryop.photoshelf;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -14,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.ternaryop.photoshelf.adapter.LastPublishedTimestampComparator;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
@@ -116,7 +114,7 @@ public class DraftPostHelper {
             Map<String, List<TumblrPost> > draftPosts,
             Map<String, TumblrPost> queuedPosts,
             Map<String, Long> lastPublished) {
-        ArrayList<TimestampPosts> temp = new ArrayList<TimestampPosts>();
+        ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>();
 
         for (String tag : draftPosts.keySet()) {
             List<TumblrPost> draftPostList = draftPosts.get(tag);
@@ -135,73 +133,16 @@ public class DraftPostHelper {
             } else {
                 timestampToSave = lastPublishedTimestamp;
             }
-            List<PhotoShelfPost> photoList = new ArrayList<PhotoShelfPost>(); 
             for (TumblrPost post : draftPostList) {
                 // preserve schedule time when present
                 post.setScheduledPublishTime(queuedTimestamp / 1000);
-                photoList.add(new PhotoShelfPost((TumblrPhotoPost) post, timestampToSave));
+                list.add(new PhotoShelfPost((TumblrPhotoPost) post, timestampToSave));
             }
-            if (timestampToSave != Long.MAX_VALUE) {
-                // remove time to allow sort only by date
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(new Date(timestampToSave));
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                timestampToSave = cal.getTimeInMillis();
-            }
-            temp.add(new TimestampPosts(timestampToSave, photoList));
         }
-        // sort following order from top to bottom
-        // Never Published
-        // Older published
-        // In Queue
-        Collections.sort(temp, new Comparator<TimestampPosts>() {
-
-            @Override
-            public int compare(TimestampPosts lhs, TimestampPosts rhs) {
-                long lhsTimestamp = lhs.timestamp;
-                long rhsTimestamp = rhs.timestamp;
-
-                long ldiff = lhsTimestamp - rhsTimestamp;
-                int diff = ldiff == 0 ? 0 : ldiff < 0 ? -1 : 1;
-
-                if (diff == 0) {
-                    TumblrPost lhsPost = lhs.posts.get(0);
-                    TumblrPost rhsPost = rhs.posts.get(0);
-                    String lhsTag = lhsPost.getTags().get(0);
-                    String rhsTag = rhsPost.getTags().get(0);
-                    diff = lhsTag.compareToIgnoreCase(rhsTag);
-                } else {
-                    if (lhsTimestamp == Long.MAX_VALUE) {
-                        return -1;
-                    }
-                    if (rhsTimestamp == Long.MAX_VALUE) {
-                        return 1;
-                    }
-                }
-
-                return diff;
-            }
-        });
-        ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>();
-        for (TimestampPosts tsp : temp) {
-            list.addAll(tsp.posts);
-        }
+        Collections.sort(list, new LastPublishedTimestampComparator());
         return list;
     }
 
-    public class TimestampPosts {
-        final long timestamp;
-        final List<PhotoShelfPost> posts;
-        public TimestampPosts(long timestamp, List<PhotoShelfPost> posts) {
-            super();
-            this.timestamp = timestamp;
-            this.posts = posts;
-        }
-    }
-   
     /**
      * Get in parallel tagsForDraftPosts and tagsForQueuedPosts, wait until all is retrieved
      * Expired scheduled posts are removed
