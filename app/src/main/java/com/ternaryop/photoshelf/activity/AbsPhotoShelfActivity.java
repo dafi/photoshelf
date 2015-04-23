@@ -2,7 +2,7 @@ package com.ternaryop.photoshelf.activity;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
@@ -11,7 +11,7 @@ import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus;
 
-public abstract class AbsPhotoShelfActivity extends ActionBarActivity implements FragmentActivityStatus  {
+public abstract class AbsPhotoShelfActivity extends AppCompatActivity implements FragmentActivityStatus  {
     protected AppSupport appSupport;
     private String blogName;
 

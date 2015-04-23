@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.ActionMode;
 
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
@@ -70,6 +70,6 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
     }
 
     public ActionBar getSupportActionBar() {
-        return ((ActionBarActivity)getActivity()).getSupportActionBar();
+        return ((AppCompatActivity)getActivity()).getSupportActionBar();
     }
 }

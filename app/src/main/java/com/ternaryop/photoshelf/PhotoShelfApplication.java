@@ -7,6 +7,7 @@ import net.danlew.android.joda.JodaTimeAndroid;
 
 /**
  * Created by dave on 17/04/15.
+ * Make extra global init
  */
 public class PhotoShelfApplication extends Application {
     @Override
