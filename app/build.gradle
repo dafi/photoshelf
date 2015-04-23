@@ -23,6 +23,20 @@ android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
 
+    signingConfigs {
+        release {
+            def keystoreFile = new File("$rootDir/app/build-keystore.properties")
+//            if (keystoreFile.exists()) {
+                def props = new Properties()
+                props.load(new FileInputStream(keystoreFile))
+                storeFile file(props.get("key.store"))
+                storePassword props.get("key.store.password")
+                keyAlias props.get("key.alias")
+                keyPassword props.get("key.alias.password")
+//            }
+        }
+    }
+
     defaultConfig {
         applicationId "com.ternaryop.photoshelf"
         minSdkVersion 18
@@ -30,19 +44,6 @@ android {
         versionCode versionCodeByTask()
     }
 
-    signingConfigs {
-        release {
-            def keystoreFile = new File("$rootDir/app/build-keystore.properties")
-            if (keystoreFile.exists()) {
-                def props = new Properties()
-                props.load(new FileInputStream(keystoreFile))
-                storeFile file(props.get("key.store"))
-                storePassword props.get("key.store.password")
-                keyAlias props.get("key.alias")
-                keyPassword props.get("key.alias.password")
-            }
-        }
-    }
     lintOptions {
         abortOnError false
     }
