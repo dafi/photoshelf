@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.fragment;
 
+import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.util.Map;
 
@@ -41,15 +42,7 @@ public class HomeFragment extends AbsPhotoShelfFragment {
 
         refresh();
 
-        handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            @SuppressWarnings("unchecked")
-            public void handleMessage(Message msg) {
-                if (msg.what == STATS_DATA_OK) {
-                    fillStatsUI((Map<String, Long>) msg.obj);
-                }
-            }
-        };
+        handler = new UIFillerHandler(this);
 
         return rootView;
     }
@@ -73,5 +66,23 @@ public class HomeFragment extends AbsPhotoShelfFragment {
                 handler.obtainMessage(STATS_DATA_OK, statsMap).sendToTarget();
             }
         }).start();
+    }
+
+    private final static class UIFillerHandler extends Handler {
+        private final WeakReference<HomeFragment> homeFragment;
+
+        UIFillerHandler(HomeFragment homeFragment) {
+            super(Looper.getMainLooper());
+            this.homeFragment = new WeakReference<HomeFragment>(homeFragment);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void handleMessage(Message msg) {
+            HomeFragment homeFragment = this.homeFragment.get();
+            if (msg.what == STATS_DATA_OK && homeFragment != null) {
+                homeFragment.fillStatsUI((Map<String, Long>) msg.obj);
+            }
+        }
     }
 }
