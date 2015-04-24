@@ -44,7 +44,7 @@ public class TitleParser {
     }
 
     private static TitleParser instance;
-    private TitleParserConfig config;
+    private final TitleParserConfig config;
 
     private TitleParser(TitleParserConfig config) {
         this.config = config;

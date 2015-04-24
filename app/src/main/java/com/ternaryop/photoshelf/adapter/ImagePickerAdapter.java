@@ -18,7 +18,7 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
     private final ImageLoader imageLoader;
 	private final LayoutInflater inflater;
 	private OnPhotoPickerClick onPhotoPickerClick;
-	private ArrayList<ImageInfo> items;
+	private final ArrayList<ImageInfo> items;
     private boolean showButtons;
 
 	public ImagePickerAdapter(Context context) {
