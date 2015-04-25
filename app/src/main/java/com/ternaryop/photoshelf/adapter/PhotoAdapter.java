@@ -85,14 +85,14 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
                 holder.title.setOnClickListener(null);
             } else {
                 holder.title.setOnClickListener(this);
-                holder.title.setTag(post);
+                holder.title.setTag(position);
             }
 
             holder.thumbImage.setOnClickListener(this);
-            holder.thumbImage.setTag(post);
+            holder.thumbImage.setTag(position);
 
             holder.menu.setOnClickListener(this);
-            holder.menu.setTag(post);
+            holder.menu.setTag(position);
         }
 
         int noteCount = (int) post.getNoteCount();
@@ -122,13 +122,13 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.title_textview:
-                onPhotoBrowseClick.onPhotoBrowseClick((PhotoShelfPost)v.getTag());
+                onPhotoBrowseClick.onPhotoBrowseClick((Integer)v.getTag());
                 break;
             case R.id.thumbnail_image:
-                onPhotoBrowseClick.onThumbnailImageClick((PhotoShelfPost)v.getTag());
+                onPhotoBrowseClick.onThumbnailImageClick((Integer)v.getTag());
                 break;
             case R.id.menu:
-                onPhotoBrowseClick.onOverflowClick(v, (PhotoShelfPost) v.getTag());
+                onPhotoBrowseClick.onOverflowClick(v, (Integer)v.getTag());
                 break;
         }
     }

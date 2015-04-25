@@ -17,7 +17,7 @@ import com.ternaryop.photoshelf.R;
 public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListener {
     private final ImageLoader imageLoader;
 	private final LayoutInflater inflater;
-	private OnPhotoPickerClick onPhotoPickerClick;
+	private OnPhotoBrowseClick onPhotoBrowseClick;
 	private final ArrayList<ImageInfo> items;
     private boolean showButtons;
 
@@ -38,7 +38,7 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		if (showButtons && onPhotoPickerClick != null) {
+		if (showButtons && onPhotoBrowseClick != null) {
 			holder.showImageAction.setOnClickListener(this);
 			holder.showImageAction.setTag(position);
 		}
@@ -78,7 +78,7 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
 	public void onClick(final View v) {
 		switch (v.getId()) {
 			case R.id.ic_show_image_action:
-				onPhotoPickerClick.viewClick((Integer) v.getTag());
+				onPhotoBrowseClick.onThumbnailImageClick((Integer) v.getTag());
 				break;
 		}
 	}
@@ -103,11 +103,7 @@ public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListe
 		}
 	}
 
-	public void setOnPhotoPickerClick(OnPhotoPickerClick onPhotoPickerClick) {
-		this.onPhotoPickerClick = onPhotoPickerClick;
-	}
-
-	public interface OnPhotoPickerClick {
-		public void viewClick(int position);
+	public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
+		this.onPhotoBrowseClick = onPhotoBrowseClick;
 	}
 }

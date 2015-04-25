@@ -384,17 +384,20 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     @Override
-    public void onPhotoBrowseClick(PhotoShelfPost post) {
+    public void onPhotoBrowseClick(int position) {
+        final PhotoShelfPost post = photoAdapter.getItem(position);
         TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), post.getFirstTag(), false);
     }
 
     @Override
-    public void onThumbnailImageClick(PhotoShelfPost post) {
+    public void onThumbnailImageClick(int position) {
+        final PhotoShelfPost post = photoAdapter.getItem(position);
         ImageViewerActivity.startImageViewer(getActivity(), post.getFirstPhotoAltSize().get(0).getUrl(), post);
     }
 
     @Override
-    public void onOverflowClick(View view, final PhotoShelfPost post) {
+    public void onOverflowClick(View view, int position) {
+        final PhotoShelfPost post = photoAdapter.getItem(position);
         PopupMenu popupMenu = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(getActionModeMenuId(), popupMenu.getMenu());

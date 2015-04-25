@@ -36,6 +36,7 @@ import com.ternaryop.photoshelf.ImageUrlRetriever;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImageViewerActivity;
 import com.ternaryop.photoshelf.adapter.ImagePickerAdapter;
+import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
@@ -50,7 +51,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, AdapterView.OnItemClickListener, ImageUrlRetriever.OnImagesRetrieved, ImagePickerAdapter.OnPhotoPickerClick {
+public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, AdapterView.OnItemClickListener, ImageUrlRetriever.OnImagesRetrieved, OnPhotoBrowseClick {
     private GridView gridView;
     private ProgressHighlightViewLayout progressHighlightViewLayout;
 
@@ -65,7 +66,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         getActivity().setTitle(R.string.image_picker_activity_title);
 
         imagePickerAdapter = new ImagePickerAdapter(getActivity());
-        imagePickerAdapter.setOnPhotoPickerClick(this);
+        imagePickerAdapter.setOnPhotoBrowseClick(this);
         domSelectorFinder = new ImageDOMSelectorFinder(getActivity());
         imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
 
@@ -329,11 +330,15 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        viewClick(position);
+        onThumbnailImageClick(position);
     }
 
     @Override
-    public void viewClick(int position) {
+    public void onPhotoBrowseClick(int position) {
+    }
+
+    @Override
+    public void onThumbnailImageClick(int position) {
         final ImageInfo imageInfo = imagePickerAdapter.getItem(position);
         if (imageInfo.getImageURL() == null) {
             List<ImageInfo> imageInfoList = new ArrayList<ImageInfo>();
@@ -351,4 +356,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         }
     }
 
+    @Override
+    public void onOverflowClick(View view, int position) {
+    }
 }
