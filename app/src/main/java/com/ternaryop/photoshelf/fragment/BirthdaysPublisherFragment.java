@@ -33,6 +33,7 @@ import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
+import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.service.PublishIntentService;
@@ -40,7 +41,7 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
-public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClick {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
     private static final String LOADER_PREFIX = "mediumThumb";
 
@@ -54,7 +55,8 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         View rootView = inflater.inflate(R.layout.fragment_birthdays_publisher, container, false);
 
         gridViewPhotoAdapter = new GridViewPhotoAdapter(getActivity(), LOADER_PREFIX);
-        
+        gridViewPhotoAdapter.setOnPhotoBrowseClick(this);
+
         gridView = (GridView)rootView.findViewById(R.id.gridview);
         gridView.setAdapter(gridViewPhotoAdapter);
         gridView.setOnItemClickListener(this);
@@ -157,11 +159,24 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+        onThumbnailImageClick(position);
+    }
+
+    @Override
+    public void onPhotoBrowseClick(int position) {
+    }
+
+    @Override
+    public void onThumbnailImageClick(int position) {
         TumblrPhotoPost post = gridViewPhotoAdapter.getItem(position).second;
         TagPhotoBrowserActivity.startPhotoBrowserActivityForResult(this, getBlogName(),
                 post.getTags().get(0),
                 PICK_IMAGE_REQUEST_CODE,
                 false);
+    }
+
+    @Override
+    public void onOverflowClick(View view, int position) {
     }
 
     @Override
@@ -177,6 +192,8 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 0, 0));
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.birtdays_publisher_context, menu);
+        gridViewPhotoAdapter.setShowButtons(true);
+        gridViewPhotoAdapter.notifyDataSetChanged();
         return true;
     }
     
@@ -210,6 +227,8 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
     
     public void onDestroyActionMode(ActionMode mode) {
+        gridViewPhotoAdapter.setShowButtons(false);
+        gridViewPhotoAdapter.notifyDataSetChanged();
     }
 
     public void onItemCheckedStateChanged(ActionMode mode, int position,

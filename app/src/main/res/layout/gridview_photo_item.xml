@@ -5,19 +5,47 @@
     android:background="@drawable/gridview_selector"
     android:orientation="vertical" >
 
-    <com.ternaryop.widget.CheckableImageView
-        android:id="@+id/thumbnail_image"
+    <RelativeLayout
+        android:id="@+id/thumbnail_image_layout"
         android:layout_width="@dimen/grid_layout_thumb_width"
-        android:layout_height="@dimen/grid_layout_thumb_height"
-        android:layout_margin="1dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/stub" />
+        android:layout_height="@dimen/grid_layout_thumb_height">
+
+        <com.ternaryop.widget.CheckableImageView
+            android:id="@+id/thumbnail_image"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="1dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/stub" />
+
+        <ImageView
+            android:id="@+id/bg_actions"
+            android:layout_width="fill_parent"
+            android:layout_height="35dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/bg_actions"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/ic_show_image_action"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="5dp"
+            android:contentDescription="@string/menu_show_image"
+            android:src="@drawable/ic_action_show_image"
+            android:visibility="invisible" />
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/thumbnail_image"
+        android:layout_below="@+id/thumbnail_image_layout"
         android:layout_centerHorizontal="true" />
 
 </com.ternaryop.widget.CheckableRelativeLayout>
