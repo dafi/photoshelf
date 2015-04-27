@@ -23,10 +23,9 @@ import android.os.Environment;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dropbox.sync.android.DbxAccountManager;
-import com.dropbox.sync.android.DbxFile;
-import com.dropbox.sync.android.DbxFileSystem;
-import com.dropbox.sync.android.DbxPath;
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.importer.CSVIterator;
@@ -49,9 +48,9 @@ public class Importer {
     private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     private final Context context;
-    private final DbxAccountManager dropboxManager;
+    private final DropboxAPI<AndroidAuthSession> dropboxManager;
 
-    public Importer(final Context context, DbxAccountManager dropboxManager) {
+    public Importer(final Context context, DropboxAPI<AndroidAuthSession> dropboxManager) {
         this.context = context;
         this.dropboxManager = dropboxManager;
     }
@@ -366,31 +365,27 @@ public class Importer {
         void complete();
     }
 
-    private void copyFileToDropbox(final String exportPath)
-            throws IOException {
-        if (dropboxManager.hasLinkedAccount()) {
-            DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
-            File exportFile = new File(exportPath);
-            DbxPath dbxPath = new DbxPath(exportFile.getName());
-            DbxFile file = null;
-
-            // This will block until we can sync metadata the first time
-            dbxFs.listFolder(DbxPath.ROOT);
-
+    private void copyFileToDropbox(final String exportPath) {
+        if (dropboxManager.getSession().isLinked()) {
+            FileInputStream inputStream = null;
             try {
-                if (dbxFs.exists(dbxPath)) {
-                    file = dbxFs.open(dbxPath);
-                    // sync file so it's updated then remove it
-                    file.readString();
-                    file.getSyncStatus();
-                    file.update();
-                } else {
-                    file = dbxFs.create(dbxPath);
+                File exportFile = new File(exportPath);
+                inputStream = new FileInputStream(exportFile);
+
+                String dropboxPath = "/" + exportFile.getName();
+                String parentRev = null;
+
+                try {
+                    // if the file exists then use the parentRev to overwrite and prevent conflicts
+                    parentRev = dropboxManager.metadata(dropboxPath, 1, null, false, null).rev;
+                } catch (DropboxException ignored) {
                 }
-                file.writeFromExistingFile(exportFile, false);
+                dropboxManager.putFile(dropboxPath, inputStream, exportFile.length(), parentRev, null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             } finally {
-                if (file != null) {
-                    try { file.close(); } catch (Exception ignored) {}
+                if (inputStream != null) {
+                    try { inputStream.close(); } catch (Exception ignored) {}
                 }
             }
         }

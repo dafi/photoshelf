@@ -2,12 +2,8 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    // Copy dropbox native libraries as described at
-    // https://www.dropbox.com/developers/blog/57/using-the-sync-api-with-android-studio
-    compile files('libs/dropbox-sync-sdk-android.jar')
-    compile files("$buildDir/native-libs/native-libs.jar")
 
-    compile 'com.android.support:appcompat-v7:22.1.0'
+    compile 'com.android.support:appcompat-v7:22.1.1'
 
     compile "org.scribe:scribe:1.3.5"
     compile "org.jsoup:jsoup:1.7.3"
@@ -26,14 +22,14 @@ android {
     signingConfigs {
         release {
             def keystoreFile = new File("$rootDir/app/build-keystore.properties")
-//            if (keystoreFile.exists()) {
+            if (keystoreFile.exists()) {
                 def props = new Properties()
                 props.load(new FileInputStream(keystoreFile))
                 storeFile file(props.get("key.store"))
                 storePassword props.get("key.store.password")
                 keyAlias props.get("key.alias")
                 keyPassword props.get("key.alias.password")
-//            }
+            }
         }
     }
 

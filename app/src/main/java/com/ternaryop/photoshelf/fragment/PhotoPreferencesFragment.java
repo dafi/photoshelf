@@ -2,7 +2,6 @@ package com.ternaryop.photoshelf.fragment;
 
 import java.io.File;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -18,12 +17,15 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 
-import com.dropbox.sync.android.DbxAccountManager;
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.SdkVersion;
+import com.dropbox.client2.android.AndroidAuthSession;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
+import com.ternaryop.photoshelf.dropbox.AndroidAuthSessionWrapper;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DateTimeUtils;
 
@@ -65,7 +67,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private Preference preferenceExportDaysPeriod;
 
     private AppSupport appSupport;
-    private DbxAccountManager dropboxManager;
+    private DropboxAPI<AndroidAuthSession> dropboxManager;
     private Importer importer;
     
     @Override
@@ -88,7 +90,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         }
         
         preferenceDropboxLogin = preferenceScreen.findPreference(KEY_DROPBOX_LOGIN);
-        if (dropboxManager.hasLinkedAccount()) {
+        if (dropboxManager.getSession().isLinked()) {
             preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
         } else {
             preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
@@ -174,15 +176,20 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK && requestCode == DROPBOX_RESULT) {
-            if (dropboxManager.hasLinkedAccount()) {
-                preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
-            } else {
-                preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+        if (requestCode == DROPBOX_RESULT) {
+            AndroidAuthSession session = appSupport.getDbxAccountManager().getSession();
+            if (session.authenticationSuccessful()) {
+                try {
+                    // Required to complete auth, sets the access token on the session
+                    session.finishAuthentication();
+                    preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
+                } catch (IllegalStateException e) {
+                    preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
+                }
             }
         }
     }
-    
+
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, @NonNull Preference preference) {
         if (preference == preferenceTumblrLogin) {
@@ -222,11 +229,11 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
                         appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceDropboxLogin) {
-                if (dropboxManager.hasLinkedAccount()) {
-                    dropboxManager.unlink();
+                if (dropboxManager.getSession().isLinked()) {
+                    dropboxManager.getSession().unlink();
                     preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
                 } else {
-                    dropboxManager.startLink(this, DROPBOX_RESULT);
+                    ((AndroidAuthSessionWrapper)dropboxManager.getSession()).startOAuth2AuthenticationForResult(this, DROPBOX_RESULT);
                 }
                 return true;
             }
@@ -286,8 +293,8 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
         // dropbox
         preferenceVersion = preferenceScreen.findPreference(KEY_DROPBOX_VERSION);
-        preferenceVersion.setTitle(getString(R.string.version_title, "Dropbox Sync"));
-        preferenceVersion.setSummary(DbxAccountManager.SDK_VERSION_NAME);
+        preferenceVersion.setTitle(getString(R.string.version_title, "Dropbox Core"));
+        preferenceVersion.setSummary(SdkVersion.get());
     }
 
     public Importer getImporter() {
@@ -298,6 +305,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     }
 
     public ActionBar getSupportActionBar() {
-        return ((ActionBarActivity)getActivity()).getSupportActionBar();
+        return ((AppCompatActivity)getActivity()).getSupportActionBar();
     }
 }

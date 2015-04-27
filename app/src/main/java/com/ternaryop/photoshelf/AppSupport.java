@@ -12,7 +12,9 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
-import com.dropbox.sync.android.DbxAccountManager;
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.ternaryop.photoshelf.dropbox.AndroidAuthSessionWrapper;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -104,7 +106,7 @@ public class AppSupport {
                 if (callback != null) {
                     callback.onComplete(AppSupport.this, e);
                 }
-            } 
+            }
         });
     }
     
@@ -133,11 +135,8 @@ public class AppSupport {
         return preferences.getBoolean(AUTOMATIC_EXPORT, false);
     }
 
-    public DbxAccountManager getDbxAccountManager() {
-        return DbxAccountManager.getInstance(context.getApplicationContext(),
-                context.getString(R.string.DROPBOX_APP_KEY),
-                context.getString(R.string.DROPBOX_APP_SECRET));
-
+    public DropboxAPI<AndroidAuthSession> getDbxAccountManager() {
+        return AndroidAuthSessionWrapper.getInstance(context);
     }
 
     public int getExportDaysPeriod() {
