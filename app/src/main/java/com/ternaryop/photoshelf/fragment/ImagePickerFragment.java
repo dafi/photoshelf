@@ -301,6 +301,8 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                             imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, selector));
                         }
                     }
+                } else {
+                    throw new RuntimeException("Unable to read page, HTTP error " + connection.getResponseCode());
                 }
             } catch (Exception e) {
                 error = e;
