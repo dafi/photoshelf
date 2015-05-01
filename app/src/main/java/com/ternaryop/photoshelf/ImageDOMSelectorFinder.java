@@ -19,6 +19,7 @@ import org.json.JSONObject;
  */
 public class ImageDOMSelectorFinder {
     private static final HashMap<String, Object> domainMap = new HashMap<String, Object>();
+    private static final HashMap<String, Object> containerSelectorsMap = new HashMap<String, Object>();
     private static boolean isUpgraded;
     private static final String SELECTORS_FILENAME = "domSelectors.json";
 
@@ -44,11 +45,12 @@ public class ImageDOMSelectorFinder {
                         } catch (JSONException ignored) {
                         }
                         int assetsVersion = jsonAssets.getInt("version");
-                        if (privateVersion < assetsVersion) {
+                        if (privateVersion <= assetsVersion) {
                             is.close();
                             context.deleteFile(SELECTORS_FILENAME);
                         }
                         domainMap.putAll(JSONUtils.toMap(jsonPrivate.getJSONObject("selectors")));
+                        containerSelectorsMap.putAll(JSONUtils.toMap(jsonPrivate.getJSONObject("containerSelectors")));
                         return;
                     }
                 } catch (FileNotFoundException ex) {
@@ -57,6 +59,7 @@ public class ImageDOMSelectorFinder {
                 }
                 JSONObject jsonAssets = JSONUtils.jsonFromInputStream(is);
                 domainMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("selectors")));
+                containerSelectorsMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("containerSelectors")));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,7 +72,18 @@ public class ImageDOMSelectorFinder {
         if (url != null) {
             for (String domainRE : domainMap.keySet()) {
                 if (Pattern.compile(domainRE).matcher(url).find()) {
-                    return (String) domainMap.get(domainRE);
+                    return domainMap.get(domainRE).toString();
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getContainerSelectorFromUrl(String url) {
+        if (url != null) {
+            for (String re : containerSelectorsMap.keySet()) {
+                if (Pattern.compile(re).matcher(url).find()) {
+                    return containerSelectorsMap.get(re).toString();
                 }
             }
         }

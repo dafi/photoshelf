@@ -1,28 +1,30 @@
 {
-    "version":2,
-    "selectors":
-    {
-	"http:\/\/images.bangtidy.net\/.*\/attachment":"#theimage",
-	"http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/":"#theimage",
-	"http:\/\/x05.org":"#img_obj",
-	"http:\/\/www.imagebam.com":"[onclick*=scale]",
-	"http:\/\/www.pixtreat.com":"#img_obj",
-	"http:\/\/www.imagesion.com":"#full_image",
-	"http:\/\/www.picturesion.com":"#full_image",
-    "http:\/\/.*.imagevenue.com":"#thepic",
-    "http:\/\/imagetwist.com":".pic",
-    "http:/\/\www.hotcelebshome.com":"#thepic",
-    "http:\/\/eyeprime.net":".attachment-810x810",
-	"hollywoodtuna.com\/.*page_id":"p a img",
-	"imgchili\.net":"#show_image",
-	"http:\/\/celebmafia.com":"",
-	"http:\/\/www.hawtcelebs.com\/wp-content":"",
-	"http:\/\/imgearn.net":".pic",
-	"http:\/\/storeimgs.net":".centred_resized",
-	"http:\/\/www.imagegaga.net":"#full_image",
-	"http:\/\/www.sawfirst.com":"pageSel:.entry-title a selAttr:href",
-    "http:\/\/imgbox.com":"#img",
-    "http:\/\/someimage.com":"#viewimage",
-	  "http://imgpit.com/":".centred_resized"
-	}
+  "version": 3,
+  "selectors": {
+    "http:\/\/images.bangtidy.net\/.*\/attachment": "#theimage",
+    "http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/": "#theimage",
+    "http:\/\/x05.org": "#img_obj",
+    "http:\/\/www.imagebam.com": "[onclick*=scale]",
+    "http:\/\/www.pixtreat.com": "#img_obj",
+    "http:\/\/www.imagesion.com": "#full_image",
+    "http:\/\/www.picturesion.com": "#full_image",
+    "http:\/\/.*.imagevenue.com": "#thepic",
+    "http:\/\/imagetwist.com": ".pic",
+    "http:\/\/www.hotcelebshome.com": "#thepic",
+    "http:\/\/eyeprime.net": ".attachment-810x810",
+    "hollywoodtuna.com\/.*page_id": "p a img",
+    "imgchili.net": "#show_image",
+    "http:\/\/celebmafia.com": "",
+    "http:\/\/www.hawtcelebs.com\/wp-content": "",
+    "http:\/\/imgearn.net": ".pic",
+    "http:\/\/storeimgs.net": ".centred_resized",
+    "http:\/\/www.imagegaga.net": "#full_image",
+    "http:\/\/www.sawfirst.com": "pageSel:.entry-title a selAttr:href",
+    "http:\/\/imgbox.com": "#img",
+    "http:\/\/someimage.com": "#viewimage",
+    "http://imgpit.com/": ".centred_resized"
+  },
+  "containerSelectors": {
+    "http:\/\/www.sawfirst.com": "#gallery-1 a img[src*=jpg]"
+  }
 }

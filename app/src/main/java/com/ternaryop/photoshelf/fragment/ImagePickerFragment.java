@@ -290,7 +290,11 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                     }
                     Document htmlDocument = Jsoup.parse(baos.toString());
                     imageUrlRetriever.setTitle(htmlDocument.title());
-                    Elements thumbnailImages = htmlDocument.select("a img[src*=jpg]");
+                    String containerSelector = domSelectorFinder.getContainerSelectorFromUrl(urls[0]);
+                    if (containerSelector == null) {
+                        containerSelector = "a img[src*=jpg]";
+                    }
+                    Elements thumbnailImages = htmlDocument.select(containerSelector);
                     publishProgress(getResources().getQuantityString(R.plurals.image_found, thumbnailImages.size(), thumbnailImages.size()));
                     for (int i = 0; i < thumbnailImages.size(); i++) {
                         Element thumbnailImage = thumbnailImages.get(i);
