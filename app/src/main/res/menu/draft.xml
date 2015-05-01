@@ -13,6 +13,26 @@
             android:icon="@drawable/ic_action_search"
             app:showAsAction="ifRoom|collapseActionView"
             android:title="@string/search_tag"/>
+        <item
+            android:id="@+id/action_sort"
+            android:icon="@drawable/ic_action_sort"
+            app:showAsAction="ifRoom"
+            android:title="@string/sort">
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/sort_tag_name"
+                        android:title="@string/tag_name"/>
+                    <item
+                        android:id="@+id/sort_published_tag"
+                        android:checked="true"
+                        android:title="@string/last_published_tag"/>
+                    <item
+                        android:id="@+id/sort_upload_time"
+                        android:title="@string/upload_time"/>
+                </group>
+            </menu>
+        </item>
     </group>
 
 </menu>

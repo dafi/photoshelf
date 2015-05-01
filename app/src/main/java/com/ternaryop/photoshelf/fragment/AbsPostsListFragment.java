@@ -306,17 +306,19 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     protected void refreshUI() {
-        if (hasMorePosts) {
-            getSupportActionBar().setSubtitle(getString(R.string.post_count_1_of_x,
-                    photoAdapter.getCount(),
-                    totalPosts));
-        } else {
-            getSupportActionBar().setSubtitle(getResources().getQuantityString(
-                    R.plurals.posts_count,
-                    photoAdapter.getCount(),
-                    photoAdapter.getCount()));
-            if (countChangedListener != null) {
-                countChangedListener.onChangeCount(this, photoAdapter.getCount());
+        if (searchView != null && searchView.isIconified()) {
+            if (hasMorePosts) {
+                getSupportActionBar().setSubtitle(getString(R.string.post_count_1_of_x,
+                        photoAdapter.getCount(),
+                        totalPosts));
+            } else {
+                getSupportActionBar().setSubtitle(getResources().getQuantityString(
+                        R.plurals.posts_count,
+                        photoAdapter.getCount(),
+                        photoAdapter.getCount()));
+                if (countChangedListener != null) {
+                    countChangedListener.onChangeCount(this, photoAdapter.getCount());
+                }
             }
         }
         photoAdapter.notifyDataSetChanged();

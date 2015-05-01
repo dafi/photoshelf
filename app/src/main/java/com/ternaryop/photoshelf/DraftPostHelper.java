@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -11,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.ternaryop.photoshelf.adapter.LastPublishedTimestampComparator;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
@@ -110,8 +108,8 @@ public class DraftPostHelper {
         return lastPublish;
     }
     
-    public List<PhotoShelfPost> getDraftPostSortedByPublishDate(
-            Map<String, List<TumblrPost> > draftPosts,
+    public List<PhotoShelfPost> getDraftPosts(
+            Map<String, List<TumblrPost>> draftPosts,
             Map<String, TumblrPost> queuedPosts,
             Map<String, Long> lastPublished) {
         ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>();
@@ -139,7 +137,6 @@ public class DraftPostHelper {
                 list.add(new PhotoShelfPost((TumblrPhotoPost) post, timestampToSave));
             }
         }
-        Collections.sort(list, new LastPublishedTimestampComparator());
         return list;
     }
 

@@ -202,5 +202,9 @@
     <string name="app_name_share_label">A Photo Shelf</string>
     <string name="never_run">Never run</string>
     <string name="extracting_images">Extracting images</string>
+    <string name="sort">Sort</string>
+    <string name="tag_name">Tag Name</string>
+    <string name="last_published_tag">Last Published Tag</string>
+    <string name="upload_time">Upload Time</string>
 
 </resources>

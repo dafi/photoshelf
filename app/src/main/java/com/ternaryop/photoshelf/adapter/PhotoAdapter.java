@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Locale;
 
 import android.content.Context;
@@ -27,22 +27,27 @@ import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.utils.StringUtils;
 
 public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
+    public static final int SORT_NONE = 0;
+    public static final int SORT_TAG_NAME = 1;
+    public static final int SORT_LAST_PUBLISHED_TAG = 2;
+    public static final int SORT_UPLOAD_TIME = 3;
+
     private static LayoutInflater inflater = null;
     private final ImageLoader imageLoader;
-    private final ArrayList<PhotoShelfPost> visiblePosts;
+    private ArrayList<PhotoShelfPost> visiblePosts;
     private final ArrayList<PhotoShelfPost> allPosts;
     private final Context context;
     private OnPhotoBrowseClick onPhotoBrowseClick;
-    private boolean recomputeGroupIds;
-    private boolean isFiltering;
     private final int thumbnailWidth;
+    private int currentSort = SORT_LAST_PUBLISHED_TAG;
+    private boolean sortAscending = true;
 
     public PhotoAdapter(Context context, String prefix) {
         this.context = context;
         inflater = LayoutInflater.from(context);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
         allPosts = new ArrayList<PhotoShelfPost>();
-        visiblePosts = new ArrayList<PhotoShelfPost>();
+        visiblePosts = allPosts;
         thumbnailWidth = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_width", "75"));
     }
 
@@ -122,13 +127,13 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.title_textview:
-                onPhotoBrowseClick.onPhotoBrowseClick((Integer)v.getTag());
+                onPhotoBrowseClick.onPhotoBrowseClick((Integer) v.getTag());
                 break;
             case R.id.thumbnail_image:
-                onPhotoBrowseClick.onThumbnailImageClick((Integer)v.getTag());
+                onPhotoBrowseClick.onThumbnailImageClick((Integer) v.getTag());
                 break;
             case R.id.menu:
-                onPhotoBrowseClick.onOverflowClick(v, (Integer)v.getTag());
+                onPhotoBrowseClick.onOverflowClick(v, (Integer) v.getTag());
                 break;
         }
     }
@@ -171,40 +176,22 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
         }
     }
 
-    public boolean isRecomputeGroupIds() {
-        return recomputeGroupIds;
-    }
-
-    public void setRecomputeGroupIds(boolean recomputeGroupIds) {
-        this.recomputeGroupIds = recomputeGroupIds;
-    }
-
     public int getPosition(PhotoShelfPost post) {
         return visiblePosts.indexOf(post);
     }
 
     public void addAll(Collection<? extends PhotoShelfPost> collection) {
-        visiblePosts.addAll(collection);
-        if (!isFiltering) {
-            allPosts.addAll(collection);
-        }
-        if (isRecomputeGroupIds()) {
-            calcGroupIds();
-        }
+        allPosts.addAll(collection);
     }
 
     public void clear() {
         visiblePosts.clear();
-        if (!isFiltering) {
-            allPosts.clear();
-        }
+        allPosts.clear();
     }
 
     public void remove(PhotoShelfPost object) {
         visiblePosts.remove(object);
-        if (!isFiltering) {
-            allPosts.remove(object);
-        }
+        allPosts.remove(object);
     }
 
     public Filter getFilter() {
@@ -213,27 +200,36 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
             @SuppressWarnings("unchecked")
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                isFiltering = true;
-                clear();
-                addAll((List<PhotoShelfPost>)results.values);
-                isFiltering = false;
+                if (results.values == allPosts) {
+                    visiblePosts = allPosts;
+                } else {
+                    visiblePosts = (ArrayList<PhotoShelfPost>) results.values;
+                    calcGroupIds();
+                }
                 notifyDataSetChanged();
             }
 
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-                ArrayList<PhotoShelfPost> filteredPosts = new ArrayList<PhotoShelfPost>();
-
-                String pattern = constraint.toString().toLowerCase(Locale.US);
-                for (PhotoShelfPost post : allPosts) {
-                    if (post.getFirstTag().toLowerCase(Locale.US).contains(pattern))  {
-                        filteredPosts.add(post);
-                    }
-                }
-
                 FilterResults results = new FilterResults();
-                results.count = filteredPosts.size();
-                results.values = filteredPosts;
+                String pattern = constraint.toString().trim();
+
+                if (pattern.length() == 0) {
+                    results.count = allPosts.size();
+                    results.values = allPosts;
+                } else {
+                    ArrayList<PhotoShelfPost> filteredPosts = new ArrayList<PhotoShelfPost>();
+
+                    pattern = pattern.toLowerCase(Locale.US);
+                    for (PhotoShelfPost post : allPosts) {
+                        if (post.getFirstTag().toLowerCase(Locale.US).contains(pattern)) {
+                            filteredPosts.add(post);
+                        }
+                    }
+
+                    results.count = filteredPosts.size();
+                    results.values = filteredPosts;
+                }
 
                 return results;
             }
@@ -251,14 +247,82 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
                 post.setLastPublishedTimestamp(lastPublishDateTime.getTimeInMillis());
             }
         }
-        if (isSortNeeded) {
-            Collections.sort(visiblePosts, new LastPublishedTimestampComparator());
+        if (isSortNeeded && currentSort == SORT_LAST_PUBLISHED_TAG) {
+            sort();
+        } else {
+            calcGroupIds();
         }
-        calcGroupIds();
     }
 
     public Context getContext() {
         return context;
+    }
+
+    private void updateCurrentSortType(int type) {
+        if (currentSort == type) {
+            sortAscending = !sortAscending;
+        } else {
+            sortAscending = true;
+            currentSort = type;
+        }
+    }
+
+    public void sortByTagName() {
+        updateCurrentSortType(SORT_TAG_NAME);
+        Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
+            @Override
+            public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
+                return LastPublishedTimestampComparator.compareTag(lhs, rhs, sortAscending);
+            }
+        });
+        calcGroupIds();
+    }
+
+    public void sortByLastPublishedTag() {
+        if (currentSort == SORT_LAST_PUBLISHED_TAG) {
+            return;
+        }
+        currentSort = SORT_LAST_PUBLISHED_TAG;
+        Collections.sort(visiblePosts, new LastPublishedTimestampComparator());
+        calcGroupIds();
+    }
+
+    public void sortByUploadTime() {
+        updateCurrentSortType(SORT_UPLOAD_TIME);
+        Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
+            @Override
+            public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
+                long diff = lhs.getTimestamp() - rhs.getTimestamp();
+                int compare = diff < -1 ? -1 : diff > 1 ? 1 : 0;
+                if (compare == 0) {
+                    return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+                }
+                return sortAscending ? compare : -compare;
+            }
+        });
+        calcGroupIds();
+    }
+
+    /**
+     * Sort the list using the last used sort method
+     */
+    public void sort() {
+        int temp = currentSort;
+
+        // reset the flag to force the sort
+        currentSort = SORT_NONE;
+
+        switch (temp) {
+            case SORT_TAG_NAME:
+                sortByTagName();
+                break;
+            case SORT_LAST_PUBLISHED_TAG:
+                sortByLastPublishedTag();
+                break;
+            case SORT_UPLOAD_TIME:
+                sortByUploadTime();
+                break;
+        }
     }
 
     private class ViewHolder {
@@ -272,13 +336,13 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
 
         public ViewHolder(View vi) {
             view = vi;
-            title = (TextView)vi.findViewById(R.id.title_textview);
-            timeDesc = (TextView)vi.findViewById(R.id.time_desc);
-            caption = (TextView)vi.findViewById(R.id.caption);
-            menu = (ImageView)vi.findViewById(R.id.menu);
-            noteCount = (TextView)vi.findViewById(R.id.note_count);
+            title = (TextView) vi.findViewById(R.id.title_textview);
+            timeDesc = (TextView) vi.findViewById(R.id.time_desc);
+            caption = (TextView) vi.findViewById(R.id.caption);
+            menu = (ImageView) vi.findViewById(R.id.menu);
+            noteCount = (TextView) vi.findViewById(R.id.note_count);
 
-            thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
+            thumbImage = (ImageView) vi.findViewById(R.id.thumbnail_image);
         }
 
         public void setColors(int resArray) {

@@ -18,7 +18,7 @@ public class LastPublishedTimestampComparator implements
         long rhsTimestamp = rhs.getLastPublishedTimestamp();
 
         if (lhsTimestamp == rhsTimestamp) {
-            return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+            return compareTag(lhs, rhs, true);
         }
         // never published item goes on top
         if (lhsTimestamp == Long.MAX_VALUE) {
@@ -42,8 +42,18 @@ public class LastPublishedTimestampComparator implements
         // compare only the date part
         int compare = DateTimeComparator.getDateOnlyInstance().compare(lhsTimestamp, rhsTimestamp);
         if (compare == 0) {
-            return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+            compare = compareTag(lhs, rhs, true);
         }
         return compare;
+    }
+
+    public static int compareTag(PhotoShelfPost lhs, PhotoShelfPost rhs, boolean ascending) {
+        int compare = lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+        if (compare == 0) {
+            long diff = lhs.getTimestamp() - rhs.getTimestamp();
+            // always ascending
+            return diff < -1 ? -1 : diff > 1 ? 1 : 0;
+        }
+        return ascending ? compare : -compare;
     }
 }

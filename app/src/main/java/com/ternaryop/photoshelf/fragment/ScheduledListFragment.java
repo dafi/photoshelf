@@ -90,7 +90,7 @@ public class ScheduledListFragment extends AbsPostsListFragment {
                         // tumblr doesn't return the total posts count for scheduled posts
                         // so we set to the photoList count
                         totalPosts = photoList.size();
-                        hasMorePosts = true;
+                        hasMorePosts = photoList.size() == Tumblr.MAX_POST_PER_REQUEST;
                     } else {
                         totalPosts = photoAdapter.getCount() + photoList.size();
                         hasMorePosts = false;
