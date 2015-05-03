@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.Importer;
@@ -74,6 +75,23 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.draft, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+
+        switch (photoAdapter.getCurrentSort()) {
+            case PhotoAdapter.SORT_TAG_NAME:
+                menu.findItem(R.id.sort_tag_name).setChecked(true);
+                break;
+            case PhotoAdapter.SORT_LAST_PUBLISHED_TAG:
+                menu.findItem(R.id.sort_published_tag).setChecked(true);
+                break;
+            case PhotoAdapter.SORT_UPLOAD_TIME:
+                menu.findItem(R.id.sort_upload_time).setChecked(true);
+                break;
+        }
     }
 
     @Override

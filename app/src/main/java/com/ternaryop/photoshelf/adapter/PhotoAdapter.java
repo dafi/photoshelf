@@ -39,6 +39,7 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     private final Context context;
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private final int thumbnailWidth;
+
     private int currentSort = SORT_LAST_PUBLISHED_TAG;
     private boolean sortAscending = true;
 
@@ -323,6 +324,10 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
                 sortByUploadTime();
                 break;
         }
+    }
+
+    public int getCurrentSort() {
+        return currentSort;
     }
 
     private class ViewHolder {
