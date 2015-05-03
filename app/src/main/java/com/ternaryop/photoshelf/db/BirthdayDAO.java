@@ -107,22 +107,19 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
     
     public List<String> getNameWithoutBirthDays(String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        Cursor c = db.query("VW_MISSING_BIRTHDAYS",
-                new String[] {NAME},
-                TUMBLR_NAME + " = ?",
-                new String[] {tumblrName},
-                null,
-                null,
-                NAME);
         ArrayList<String> list = new ArrayList<String>();
-        try {
+        try (Cursor c = db.query("VW_MISSING_BIRTHDAYS",
+                new String[]{NAME},
+                TUMBLR_NAME + " = ?",
+                new String[]{tumblrName},
+                null,
+                null,
+                NAME)) {
             while (c.moveToNext()) {
                 list.add(c.getString(0));
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            c.close();
         }
         return list;
     }
@@ -173,13 +170,12 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 
     public Birthday getBirthdayByName(String name, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        
-        Cursor c = db.query(TABLE_NAME,
-                new String[] {BIRTH_DATE},
+
+        try (Cursor c = db.query(TABLE_NAME,
+                new String[]{BIRTH_DATE},
                 "lower(" + NAME + ") = lower(?) and " + TUMBLR_NAME + "=?",
-                new String[] {name, tumblrName},
-                null, null, null);
-        try {
+                new String[]{name, tumblrName},
+                null, null, null)) {
             if (c.moveToNext()) {
                 return new Birthday(
                         name,
@@ -188,8 +184,6 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            c.close();
         }
         return null;
     }
@@ -216,11 +210,9 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
                     " and t.TUMBLR_NAME=?" +
                     " order by tag";
 
-        Cursor c = db.rawQuery(dateQuery,
-                new String[]{tumblrName});
-
         ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        try {
+        try (Cursor c = db.rawQuery(dateQuery,
+                new String[]{tumblrName})) {
             while (c.moveToNext()) {
                 HashMap<String, String> map = new HashMap<String, String>();
                 map.put("postId", c.getString(0));
@@ -230,8 +222,6 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            c.close();
         }
         return list;
     }

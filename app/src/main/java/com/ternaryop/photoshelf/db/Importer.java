@@ -101,8 +101,7 @@ public class Importer {
 
     public void syncExportPostsToCSV(final String exportPath) throws Exception {
         SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
-        Cursor c = db.query(PostTagDAO.TABLE_NAME, null, null, null, null, null, PostTagDAO._ID);
-        try {
+        try (Cursor c = db.query(PostTagDAO.TABLE_NAME, null, null, null, null, null, PostTagDAO._ID)) {
             PrintWriter pw = new PrintWriter(exportPath);
             while (c.moveToNext()) {
                 pw.println(String.format("%1$d;%2$s;%3$s;%4$d;%5$d",
@@ -117,8 +116,6 @@ public class Importer {
             pw.close();
 
             copyFileToDropbox(exportPath);
-        } finally {
-            c.close();
         }
     }
 
@@ -231,8 +228,7 @@ public class Importer {
 
     public void syncExportBirthdaysToCSV(final String exportPath) throws Exception {
         SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
-        Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME);
-        try {
+        try (Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME)) {
             PrintWriter pw = new PrintWriter(exportPath);
             long id = 1;
             while (c.moveToNext()) {
@@ -251,8 +247,6 @@ public class Importer {
             pw.close();
 
             copyFileToDropbox(exportPath);
-        } finally {
-            c.close();
         }
     }
 

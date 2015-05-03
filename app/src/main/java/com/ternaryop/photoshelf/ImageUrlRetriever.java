@@ -113,12 +113,9 @@ public class ImageUrlRetriever {
                             }
                             if (imageFiles != null) {
                                 File file = new File(context.getCacheDir(), String.valueOf(link.hashCode()));
-                                FileOutputStream fos = new FileOutputStream(file);
-                                try {
+                                try (FileOutputStream fos = new FileOutputStream(file)) {
                                     URLUtils.saveURL(link, fos);
                                     imageFiles.add(file);
-                                } finally {
-                                    fos.close();
                                 }
                             } else {
                                 imageUrls.add(link);

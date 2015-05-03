@@ -105,8 +105,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                             + " and " + SHOW_ORDER + " = 1"
                             + " ORDER BY RANDOM() LIMIT 1";
 
-        Cursor c = db.rawQuery(sqlQuery, new String[] {tag, tumblrName});
-        try {
+        try (Cursor c = db.rawQuery(sqlQuery, new String[]{tag, tumblrName})) {
             if (c.moveToNext()) {
                 return new PostTag(
                         c.getLong(c.getColumnIndex(_ID)),
@@ -114,25 +113,20 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                         c.getString(c.getColumnIndex(TAG)),
                         c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
                         c.getLong(c.getColumnIndex(SHOW_ORDER))
-                        );
+                );
             }
-        } finally {
-            c.close();
         }
         return null;
     }
     
     public Map<String, Long> getMapTagLastPublishedTime(List<String> tags, String tumblrName) {
-        Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[] {TAG, PUBLISH_TIMESTAMP}); 
 
         HashMap<String, Long> map = new HashMap<String, Long>();
-        try {
+        try (Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[]{TAG, PUBLISH_TIMESTAMP})) {
             while (c.moveToNext()) {
                 map.put(c.getString(c.getColumnIndex(TAG)).toLowerCase(Locale.US),
                         c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)));
             }
-        } finally {
-            c.close();
         }
         return map;
     }
@@ -197,9 +191,8 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         String sqlQuery = "SELECT " + TextUtils.join(",", COLUMNS) + ", max(" + PUBLISH_TIMESTAMP + ")"
                 + " FROM " + TABLE_NAME + " WHERE " + TUMBLR_NAME + "=?";
 
-        Cursor c = db.rawQuery(sqlQuery, new String[] {tumblrName});
         PostTag postTag = null;
-        try {
+        try (Cursor c = db.rawQuery(sqlQuery, new String[]{tumblrName})) {
             // be sure at least one record is returned (table could be empty)
             if (c.moveToNext() && !c.isNull(c.getColumnIndex(_ID))) {
                 postTag = new PostTag(
@@ -208,10 +201,8 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                         c.getString(c.getColumnIndex(TAG)),
                         c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
                         c.getLong(c.getColumnIndex(SHOW_ORDER))
-                        );
+                );
             }
-        } finally {
-            c.close();
         }    
         return postTag;
     }
@@ -231,16 +222,13 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 "(SELECT count(*) FROM birthday where tumblr_name=?) " + BIRTHDAYS_COUNT_COLUMN + "," +
                 "(SELECT count(*) FROM VW_MISSING_BIRTHDAYS where tumblr_name=?) " + MISSING_BIRTHDAYS_COUNT_COLUMN;
 
-        Cursor c = db.rawQuery(sqlQuery, new String[] {tumblrName, tumblrName, tumblrName, tumblrName, tumblrName, tumblrName});
         HashMap<String, Long> map = new HashMap<String, Long>();
-        try {
+        try (Cursor c = db.rawQuery(sqlQuery, new String[]{tumblrName, tumblrName, tumblrName, tumblrName, tumblrName, tumblrName})) {
             if (c.moveToNext()) {
                 for (int i = 0; i < c.getColumnCount(); i++) {
                     map.put(c.getColumnName(i), c.getLong(i));
                 }
             }
-        } finally {
-            c.close();
         }
         return map;
     }
