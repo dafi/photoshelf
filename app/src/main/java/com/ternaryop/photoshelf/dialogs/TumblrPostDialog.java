@@ -210,6 +210,7 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
     }
 
     public String getPostTitle() {
+        postTitle.clearComposingText();
         return Html.toHtml(postTitle.getText());
     }
 
@@ -371,18 +372,20 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
             appSupport.setSelectedBlogName(selectedBlogName);
 
             List<?> urlsOrFiles = getImageUrls() != null ? getImageUrls() : getImageFiles();
+            String postTitle = getPostTitle();
+            String postTags = getPostTags();
             if (blockUIWhilePublish) {
                 final PostCallback callback = new PostCallback(urlsOrFiles.size(), publish);
                 if (publish) {
                     for (Object url : urlsOrFiles) {
                         Tumblr.getSharedTumblr(getActivity()).publishPhotoPost(selectedBlogName,
-                                url, getPostTitle(), getPostTags(),
+                                url, postTitle, postTags,
                                 callback);
                     }
                 } else {
                     for (Object url : urlsOrFiles) {
                         Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(selectedBlogName,
-                                url, getPostTitle(), getPostTags(),
+                                url, postTitle, postTags,
                                 callback);
                     }
                 }
@@ -392,16 +395,16 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
                         PublishIntentService.startPublishIntent(getActivity(),
                                 url,
                                 selectedBlogName,
-                                getPostTitle(),
-                                getPostTags());
+                                postTitle,
+                                postTags);
                     }
                 } else {
                     for (Object url : urlsOrFiles) {
                         PublishIntentService.startSaveAsDraftIntent(getActivity(),
                                 url,
                                 selectedBlogName,
-                                getPostTitle(),
-                                getPostTags());
+                                postTitle,
+                                postTags);
                     }
                 }
             }
