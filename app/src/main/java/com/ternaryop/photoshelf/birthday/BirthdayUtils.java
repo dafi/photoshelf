@@ -27,6 +27,7 @@ import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.util.Pair;
 
+import com.ternaryop.photoshelf.HtmlDocumentSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity;
 import com.ternaryop.photoshelf.db.Birthday;
@@ -38,14 +39,12 @@ import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.ImageUtils;
 import com.ternaryop.utils.StringUtils;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 public class BirthdayUtils {
     private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
     private static final int BIRTHDAY_NOTIFICATION_ID = 1;
-    public static final String DESKTOP_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:25.0) Gecko/20100101 Firefox/25.0";
 
     private final static BirthdaySearcher[] BIRTHDAY_SEARCHERS = new BirthdaySearcher[3];
 
@@ -222,10 +221,7 @@ public class BirthdayUtils {
                     .replaceAll(" ", "+")
                     .replaceAll("\"", "");
             String url = "https://www.google.com/search?hl=en&q=" + cleanName;
-            String text = Jsoup.connect(url)
-                    .userAgent(DESKTOP_USER_AGENT)
-                    .get()
-                    .text();
+            String text = HtmlDocumentSupport.getDocument(url).text();
             // match only dates in expected format (ie. "Born: month_name day, year")
             Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+ \\d{1,2}, \\d{4})");
             Matcher matcher = pattern.matcher(text);
@@ -249,9 +245,7 @@ public class BirthdayUtils {
                     .replaceAll(" ", "_")
                     .replaceAll("\"", "");
             String url = "http://en.wikipedia.org/wiki/" + cleanName;
-            Document document = Jsoup.connect(url)
-                    .userAgent(DESKTOP_USER_AGENT)
-                    .get();
+            Document document = HtmlDocumentSupport.getDocument(url);
             // protect against redirect
             if (document.title().toLowerCase(Locale.US).contains(name)) {
                 Elements el = document.select(".bday");
@@ -273,9 +267,7 @@ public class BirthdayUtils {
                     .replaceAll(" ", "-")
                     .replaceAll("\"", "");
             String url = "http://www.famousbirthdays.com/people/" + cleanName + ".html";
-            Document document = Jsoup.connect(url)
-                    .userAgent(DESKTOP_USER_AGENT)
-                    .get();
+            Document document = HtmlDocumentSupport.getDocument(url);
             Elements el = document.select("time");
             if (el.size() > 0) {
                 String birthDate = el.get(0).attr("datetime");

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -30,6 +29,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
+import com.ternaryop.photoshelf.HtmlDocumentSupport;
 import com.ternaryop.photoshelf.ImageDOMSelectorFinder;
 import com.ternaryop.photoshelf.ImageInfo;
 import com.ternaryop.photoshelf.ImageUrlRetriever;
@@ -259,9 +259,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             List<ImageInfo> imageInfoList = new ArrayList<ImageInfo>();
 
             try {
-                URL url = new URL(urls[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
+                connection = HtmlDocumentSupport.openConnection(urls[0]);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     // this will be useful to display download percentage

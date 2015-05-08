@@ -13,7 +13,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.ternaryop.utils.URLUtils;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class ImageUrlRetriever {
@@ -85,7 +84,7 @@ public class ImageUrlRetriever {
                     String url = imageInfo.getDestinationDocumentURL();
                     String link;
                     if (imageInfo.hasPageSel()) {
-                        Document htmlDocument = Jsoup.connect(url).get();
+                        Document htmlDocument = HtmlDocumentSupport.getDocument(url);
                         link = htmlDocument.select(selector).attr(imageInfo.getSelAttr());
                     } else if (selector.trim().length() == 0) {
                         // if the selector is empty then 'url' is an image
@@ -94,7 +93,7 @@ public class ImageUrlRetriever {
                     } else {
                         // parse document on if the imageURL is not set
                         if (imageInfo.getImageURL() == null) {
-                            Document htmlDocument = Jsoup.connect(url).get();
+                            Document htmlDocument = HtmlDocumentSupport.getDocument(url);
                             if (title == null) {
                                 title = htmlDocument.title();
                             }
