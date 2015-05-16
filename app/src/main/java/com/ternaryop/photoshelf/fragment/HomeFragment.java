@@ -48,8 +48,12 @@ public class HomeFragment extends AbsPhotoShelfFragment {
     }
 
     private void fillStatsUI(Map<String, Long> statsMap) {
+        if (getView() == null) {
+            return;
+        }
         DecimalFormat format = new DecimalFormat("###,###");
-        getView().findViewById(R.id.home_container).setVisibility(View.VISIBLE);
+        View containerView = getView().findViewById(R.id.home_container);
+        containerView.setVisibility(View.VISIBLE);
         for (int i = 0; i < viewIdColumnMap.size(); i++) {
             TextView textView = (TextView) getView().findViewById(viewIdColumnMap.keyAt(i));
             Long count = statsMap.get(viewIdColumnMap.valueAt(i));
