@@ -82,24 +82,23 @@ public class ImageUrlRetriever {
                 for (ImageInfo imageInfo : list) {
                     String selector = imageInfo.getSelector();
                     String url = imageInfo.getDestinationDocumentURL();
-                    String link;
-                    if (imageInfo.hasPageSel()) {
-                        Document htmlDocument = HtmlDocumentSupport.getDocument(url);
-                        link = htmlDocument.select(selector).attr(imageInfo.getSelAttr());
-                    } else if (selector.trim().length() == 0) {
-                        // if the selector is empty then 'url' is an image
-                        // and doesn't need to be parsed
-                        link = url;
-                    } else {
-                        // parse document on if the imageURL is not set
-                        if (imageInfo.getImageURL() == null) {
+                    String link = imageInfo.getImageURL();
+
+                    // parse document only if the imageURL is not set (ie isn't cached)
+                    if (link == null) {
+                        if (imageInfo.hasPageSel()) {
+                            Document htmlDocument = HtmlDocumentSupport.getDocument(url);
+                            link = htmlDocument.select(selector).attr(imageInfo.getSelAttr());
+                        } else if (selector.trim().length() == 0) {
+                            // if the selector is empty then 'url' is an image
+                            // and doesn't need to be parsed
+                            link = url;
+                        } else {
                             Document htmlDocument = HtmlDocumentSupport.getDocument(url);
                             if (title == null) {
                                 title = htmlDocument.title();
                             }
                             link = htmlDocument.select(selector).attr("src");
-                        } else {
-                            link = imageInfo.getImageURL();
                         }
                     }
                     if (!link.isEmpty()) {
