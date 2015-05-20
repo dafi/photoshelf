@@ -160,7 +160,7 @@ public class TumblrHttpOAuthConsumer {
         return canHandleURI;
     }
     
-    public synchronized Response getSignedPostResponse(String url, Map<String, ?> params) throws IOException {
+    public Response getSignedPostResponse(String url, Map<String, ?> params) throws IOException {
         OAuthRequest oAuthReq = new OAuthRequest(Verb.POST, url);
 
         for (String key : params.keySet()) {
@@ -173,7 +173,7 @@ public class TumblrHttpOAuthConsumer {
         return new MultipartConverter(oAuthReq, params).getRequest().send();
     }
 
-    public synchronized Response getSignedGetResponse(String url, Map<String, ?> params) {
+    public Response getSignedGetResponse(String url, Map<String, ?> params) {
         OAuthRequest oAuthReq = new OAuthRequest(Verb.GET, url);
 
         if (params != null) {
