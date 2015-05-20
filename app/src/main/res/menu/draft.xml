@@ -33,6 +33,11 @@
                 </group>
             </menu>
         </item>
+        <item
+            android:id="@+id/action_tag_navigator"
+            android:icon="@drawable/ic_action_tag_navigator"
+            app:showAsAction="ifRoom"
+            android:title="@string/navigate_tags"/>
     </group>
 
 </menu>

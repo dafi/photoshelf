@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 import android.content.Context;
@@ -328,6 +329,10 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
 
     public int getCurrentSort() {
         return currentSort;
+    }
+
+    public List<PhotoShelfPost> getPhotoList() {
+        return visiblePosts;
     }
 
     private class ViewHolder {

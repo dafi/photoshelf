@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -28,6 +30,7 @@ import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.db.Importer.ImportCompleteCallback;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog.onPostScheduleListener;
+import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
@@ -36,6 +39,8 @@ import com.ternaryop.widget.ProgressHighlightViewLayout;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
+    private static final int TAG_NAVIGATOR_DIALOG = 1;
+
     private HashMap<String, TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
     private WaitingResultSwipeRefreshLayout swipeLayout;
@@ -119,6 +124,9 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                 photoAdapter.sortByUploadTime();
                 photoAdapter.notifyDataSetChanged();
                 photoListView.setSelection(0);
+                return true;
+            case R.id.action_tag_navigator:
+                TagNavigatorDialog.newInstance(photoAdapter.getPhotoList(), this, TAG_NAVIGATOR_DIALOG).show(getFragmentManager(), "dialog");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -281,4 +289,16 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     public void onRefresh() {
         refreshCache();
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case TAG_NAVIGATOR_DIALOG:
+                if (resultCode == Activity.RESULT_OK) {
+                    photoListView.setSelection(TagNavigatorDialog.findTagIndex(photoAdapter.getPhotoList(), data));
+                }
+                break;
+        }
+    }
+
 }

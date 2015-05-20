@@ -206,5 +206,8 @@
     <string name="tag_name">Tag Name</string>
     <string name="last_published_tag">Last Published Tag</string>
     <string name="upload_time">Upload Time</string>
+    <string name="navigate_tags">Navigate Tags</string>
+    <string name="close">Close</string>
+    <string name="tag_navigator_title">Navigate tags (%1$d)</string>
 
 </resources>
