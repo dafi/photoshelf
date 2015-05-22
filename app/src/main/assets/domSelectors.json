@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": "#theimage",
     "http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/": "#theimage",
@@ -22,9 +22,13 @@
     "http:\/\/www.sawfirst.com": "pageSel:.entry-title a selAttr:href",
     "http:\/\/imgbox.com": "#img",
     "http:\/\/someimage.com": "#viewimage",
-    "http://imgpit.com/": ".centred_resized"
+    "http://imgpit.com/": ".centred_resized",
+    "http://www.gceleb.com/": "",
+    "http://www.imgz.pw/": "regExp:src='(.*?)' id='iimg'",
+    "imageleon.com": "#full_image"
   },
   "containerSelectors": {
-    "http:\/\/www.sawfirst.com": "#gallery-1 a img[src*=jpg]"
+    "http:\/\/www.sawfirst.com": "#gallery-1 a img[src*=jpg]",
+    "http://www.gceleb.com/": ".entry img"
   }
 }
