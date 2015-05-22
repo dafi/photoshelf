@@ -35,20 +35,24 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
-import com.ternaryop.utils.drawer.counter.CountChangedListener;
-import com.ternaryop.utils.drawer.counter.CountProvider;
 import com.ternaryop.photoshelf.db.DBHelper;
+import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.utils.drawer.counter.CountChangedListener;
+import com.ternaryop.utils.drawer.counter.CountProvider;
 
 public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick, SearchView.OnQueryTextListener {
-    protected enum POST_ACTION {
-        PUBLISH,
-        DELETE
-    }
+    protected static final int POST_ACTION_PUBLISH = 1;
+    protected static final int POST_ACTION_DELETE = 2;
+    protected static final int POST_ACTION_EDIT = 3;
+
+    public static final int POST_ACTION_ERROR = 0;
+    public static final int POST_ACTION_OK = -1;
+    public static final int POST_ACTION_FIRST_USER = 1;
 
     private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 
@@ -135,6 +139,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
                         post.getPostId());
                 DBHelper.getInstance(getContext()).getPostTagDAO().deleteById(post.getPostId());
+                onPostAction(post, POST_ACTION_DELETE, POST_ACTION_OK);
             }
         }.execute();
     }
@@ -253,17 +258,17 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         builder.show();
     }
 
-    private void showConfirmDialog(final POST_ACTION postAction, final ActionMode mode, final List<PhotoShelfPost> postsList) {
+    private void showConfirmDialog(final int postAction, final ActionMode mode, final List<PhotoShelfPost> postsList) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
                     switch (postAction) {
-                    case PUBLISH:
+                    case POST_ACTION_PUBLISH:
                         publishPost(mode, postsList);
                         break;
-                    case DELETE:
+                    case POST_ACTION_DELETE:
                         deletePost(mode, postsList);
                         break;
                     }
@@ -274,13 +279,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
         String message = null;
         switch (postAction) {
-        case PUBLISH:
+        case POST_ACTION_PUBLISH:
             message = getResources().getQuantityString(R.plurals.publish_post_confirm,
                     postsList.size(),
                     postsList.size(),
                     postsList.get(0).getFirstTag());
             break;
-        case DELETE:
+        case POST_ACTION_DELETE:
             message = getResources().getQuantityString(R.plurals.delete_post_confirm,
                     postsList.size(),
                     postsList.size(),
@@ -301,6 +306,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             protected void executeAction(PhotoShelfPost post) {
                 Tumblr.getSharedTumblr(getContext()).publishPost(getBlogName(),
                         post.getPostId());
+                onPostAction(post, POST_ACTION_PUBLISH, POST_ACTION_OK);
             }
         }.execute();
     }
@@ -417,13 +423,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     protected boolean handleMenuItem(MenuItem item, List<PhotoShelfPost> postList, ActionMode mode) {
         switch (item.getItemId()) {
             case R.id.post_publish:
-                showConfirmDialog(POST_ACTION.PUBLISH, mode, postList);
+                showConfirmDialog(POST_ACTION_PUBLISH, mode, postList);
                 return true;
             case R.id.group_menu_image_dimension:
                 browseImageBySize(postList.get(0));
                 return true;
             case R.id.post_delete:
-                showConfirmDialog(POST_ACTION.DELETE, mode, postList);
+                showConfirmDialog(POST_ACTION_DELETE, mode, postList);
                 return true;
             case R.id.post_edit:
                 showEditDialog(postList.get(0), mode);
@@ -475,4 +481,19 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         readPhotoPosts();
     }
 
+    /**
+     * Overridden (if necessary) by subclasses to be informed about post action result,
+     * the default implementation does nothing
+     * @param post the post processed by action
+     * @param postAction the action executed
+     * @param resultCode on success POST_ACTION_OK
+     */
+    public void onPostAction(TumblrPhotoPost post, int postAction, @SuppressWarnings("SameParameterValue") int resultCode) {
+    }
+
+    @Override
+    public void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post) {
+        super.onEditDone(dialog, post);
+        onPostAction(post, POST_ACTION_EDIT, POST_ACTION_OK);
+    }
 }

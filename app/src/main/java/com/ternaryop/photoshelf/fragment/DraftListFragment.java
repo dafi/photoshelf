@@ -25,13 +25,12 @@ import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
-import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.db.Importer.ImportCompleteCallback;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog;
-import com.ternaryop.tumblr.Tumblr;
+import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
@@ -46,6 +45,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     private WaitingResultSwipeRefreshLayout swipeLayout;
 
     private ProgressHighlightViewLayout progressHighlightViewLayout;
+    private DraftPostHelper draftPostHelper;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,6 +73,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         if (taskUIRecreated()) {
             return;
         }
+        draftPostHelper = new DraftPostHelper(getActivity(), getBlogName());
         refreshCache();
     }
 
@@ -104,7 +105,11 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         boolean isChecked = !item.isChecked();
 
         switch (item.getItemId()) {
-            case R.id.action_draft_refresh:
+            case R.id.clear_draft_cache:
+                draftPostHelper.getDraftCache().clearCache();
+                refreshCache();
+                return true;
+            case R.id.reload_draft:
                 refreshCache();
                 return true;
             case R.id.sort_tag_name:
@@ -196,20 +201,15 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                     // reading drafts
                     HashMap<String, List<TumblrPost>> tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
                     queuedPosts = new HashMap<String, TumblrPost>();
-                    DraftPostHelper publisher = new DraftPostHelper();
-                    publisher.getDraftAndQueueTags(Tumblr.getSharedTumblr(getContext()), getBlogName(), tagsForDraftPosts, queuedPosts);
+                    draftPostHelper.getDraftAndQueueTags(tagsForDraftPosts, queuedPosts);
 
                     ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
 
                     // get last published
                     this.publishProgress(getContext().getString(R.string.finding_last_published_posts));
-                    Map<String, Long> lastPublishedPhotoByTags = publisher.getLastPublishedPhotoByTags(
-                            Tumblr.getSharedTumblr(getContext()),
-                            getBlogName(),
-                            tags,
-                            DBHelper.getInstance(getContext()).getPostTagDAO());
+                    Map<String, Long> lastPublishedPhotoByTags = draftPostHelper.getLastPublishedPhotoByTags(tags);
 
-                    return publisher.getDraftPosts(
+                    return draftPostHelper.getDraftPosts(
                             tagsForDraftPosts,
                             queuedPosts,
                             lastPublishedPhotoByTags);
@@ -237,6 +237,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                     public void onPostScheduled(long id, Calendar scheduledDateTime) {
                         lastScheduledDate = (Calendar) scheduledDateTime.clone();
                         photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
+                        draftPostHelper.getDraftCache().deleteItem(item);
                         refreshUI();
                         if (mode != null) {
                             mode.finish();
@@ -288,6 +289,21 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     @Override
     public void onRefresh() {
         refreshCache();
+    }
+
+    @Override
+    public void onPostAction(TumblrPhotoPost post, int postAction, int resultCode) {
+        if (resultCode == POST_ACTION_OK) {
+            switch (postAction) {
+                case POST_ACTION_EDIT:
+                    draftPostHelper.getDraftCache().updateItem(post);
+                    break;
+                case POST_ACTION_PUBLISH:
+                case POST_ACTION_DELETE:
+                    draftPostHelper.getDraftCache().deleteItem(post);
+                    break;
+            }
+        }
     }
 
     @Override

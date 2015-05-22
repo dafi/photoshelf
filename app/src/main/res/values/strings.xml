@@ -209,5 +209,7 @@
     <string name="navigate_tags">Navigate Tags</string>
     <string name="close">Close</string>
     <string name="tag_navigator_title">Navigate tags (%1$d)</string>
+    <string name="reload">Reload</string>
+    <string name="clear_cache">Clear Cache</string>
 
 </resources>

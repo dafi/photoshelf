@@ -10,7 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import android.content.Context;
+
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
+import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -18,6 +21,21 @@ import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.tumblr.TumblrUtils;
 
 public class DraftPostHelper {
+    private final Context context;
+    private final String blogName;
+    private final Tumblr tumblr;
+    private final TumblrPostCache draftCache;
+
+    public DraftPostHelper(Context context, String blogName) {
+        this.context = context;
+        this.blogName = blogName;
+        draftCache = new TumblrPostCache(context, "draft");
+        tumblr = Tumblr.getSharedTumblr(context);
+    }
+
+    public TumblrPostCache getDraftCache() {
+        return draftCache;
+    }
 
     /**
      * Return map where key is the first tag and value is the post
@@ -60,13 +78,11 @@ public class DraftPostHelper {
         return map;
     }
 
-    public Map<String, Long> getLastPublishedPhotoByTags(final Tumblr tumblr,
-            final String tumblrName,
-            final List<String> tags,
-            final PostTagDAO postTagDAO)
+    public Map<String, Long> getLastPublishedPhotoByTags(final List<String> tags)
             throws Exception {
         final Map<String, Long> lastPublish = new HashMap<String, Long>();
-        Map<String, Long> postByTags = postTagDAO.getMapTagLastPublishedTime(tags, tumblrName);
+        final PostTagDAO postTagDAO = DBHelper.getInstance(context).getPostTagDAO();
+        Map<String, Long> postByTags = postTagDAO.getMapTagLastPublishedTime(tags, blogName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
@@ -85,7 +101,7 @@ public class DraftPostHelper {
                     @Override
                     public Exception call() {
                         try {
-                            List<TumblrPhotoPost> posts = tumblr.getPhotoPosts(tumblrName, params);
+                            List<TumblrPhotoPost> posts = tumblr.getPhotoPosts(blogName, params);
                             for (TumblrPhotoPost post : posts) {
                                 lastPublish.put(tag.toLowerCase(Locale.US), post.getTimestamp());
                             }
@@ -143,15 +159,11 @@ public class DraftPostHelper {
     /**
      * Get in parallel tagsForDraftPosts and tagsForQueuedPosts, wait until all is retrieved
      * Expired scheduled posts are removed
-     * @param tumblr the tumblr instance
-     * @param tumblrName the blog name
      * @param tagsForDraftPosts on return contains value
      * @param queuedPosts on return contains value
      * @throws Exception 
      */
     public void getDraftAndQueueTags(
-            final Tumblr tumblr,
-            final String tumblrName,
             final HashMap<String, List<TumblrPost> > tagsForDraftPosts,
             final Map<String, TumblrPost> queuedPosts) throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -162,7 +174,21 @@ public class DraftPostHelper {
             @Override
             public Exception call() throws Exception {
                 try {
-                    tagsForDraftPosts.putAll(getTagsForDraftPosts(tumblr.getDraftPosts(tumblrName)));
+                    long maxTimestamp = 0;
+                    List<TumblrPost> draftPosts = draftCache.read();
+                    for (TumblrPost p : draftPosts) {
+                        if (p.getTimestamp() > maxTimestamp) {
+                            maxTimestamp = p.getTimestamp();
+                        }
+                    }
+                    List<TumblrPost> newerPosts = tumblr.getDraftPosts(blogName, maxTimestamp);
+                    if (newerPosts.size() > 0) {
+                        ArrayList<TumblrPost> arr = new ArrayList<>(newerPosts);
+                        arr.addAll(draftPosts);
+                        draftPosts = arr;
+                        draftCache.write(arr, true);
+                    }
+                    tagsForDraftPosts.putAll(getTagsForDraftPosts(draftPosts));
                 } catch (Exception e) {
                     return e;
                 }
@@ -174,7 +200,7 @@ public class DraftPostHelper {
 
             @Override
             public Exception call() throws Exception {
-                List<TumblrPost> posts = TumblrUtils.getQueueAll(tumblr, tumblrName);
+                List<TumblrPost> posts = TumblrUtils.getQueueAll(tumblr, blogName);
                 queuedPosts.putAll(getTagsForQueuedPosts(posts));
                 return null;
             }

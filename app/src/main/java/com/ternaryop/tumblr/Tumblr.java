@@ -192,7 +192,7 @@ public class Tumblr {
         }
     }
     
-    public List<TumblrPost> getDraftPosts(final String tumblrName) {
+    public List<TumblrPost> getDraftPosts(final String tumblrName, long maxTimestamp) {
         String apiUrl = getApiUrl(tumblrName, "/posts/draft");
         ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
 
@@ -202,7 +202,13 @@ public class Tumblr {
             
             Map<String, String> params = new HashMap<String, String>(1);
             while (arr.length() > 0) {
-                addPostsToList(list, arr);
+                for (int i = 0; i < arr.length(); i++) {
+                    TumblrPost post = build(arr.getJSONObject(i));
+                    if (post.getTimestamp() <= maxTimestamp) {
+                        return list;
+                    }
+                    list.add(post);
+                }
                 long beforeId = arr.getJSONObject(arr.length() - 1).getLong("id");
                 params.put("before_id", beforeId + "");
 
