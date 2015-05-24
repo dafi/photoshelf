@@ -57,6 +57,10 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // no need to upgrade
+        if (newVersion == 4) {
+            return;
+        }
         if (newVersion == 3) {
             db.execSQL("CREATE INDEX TUMBLR_NAME_IDX ON BIRTHDAY(TUMBLR_NAME)");
             return;
@@ -77,22 +81,18 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
                 BIRTH_DATE,
                 TUMBLR_NAME,
                 MONTH_DAY_FORMAT.format(date));
-        Cursor c = db.rawQuery(sqlQuery, null);
-
-        return cursorToBirtdayList(c);
+        return cursorToBirtdayList(db.rawQuery(sqlQuery, null));
     }
 
     public List<Birthday> getBirthdayByMonth(int month, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        Cursor c = db.query(TABLE_NAME,
-                new String[] {NAME,    BIRTH_DATE,    TUMBLR_NAME},
+        return cursorToBirtdayList(db.query(TABLE_NAME,
+                new String[]{NAME, BIRTH_DATE, TUMBLR_NAME},
                 String.format("strftime('%%m', %1$s) = ? and %2$s = ?", BIRTH_DATE, TUMBLR_NAME),
-                new String[] {month < 10 ? "0" + month : "" + month, tumblrName},
+                new String[]{month < 10 ? "0" + month : "" + month, tumblrName},
                 null,
                 null,
-                String.format("strftime('%%d', %1$s), %2$s", BIRTH_DATE, NAME));
-
-        return cursorToBirtdayList(c);
+                String.format("strftime('%%d', %1$s), %2$s", BIRTH_DATE, NAME)));
     }
     
     public long getBirthdaysCountInDate(Date date, String tumblrName) {

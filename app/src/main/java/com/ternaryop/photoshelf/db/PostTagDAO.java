@@ -55,9 +55,15 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 SHOW_ORDER));
         // lollipop warns about index problems so add it
         db.execSQL("CREATE INDEX TAG_IDX ON POST_TAG(TAG)");
+        // speedup getCursorLastPublishedTime
+        db.execSQL("CREATE INDEX TAG_TIMESTAMP_IDX ON POST_TAG(TAG, PUBLISH_TIMESTAMP);");
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (newVersion == 4) {
+            db.execSQL("CREATE INDEX TAG_TIMESTAMP_IDX ON POST_TAG(TAG, PUBLISH_TIMESTAMP);");
+            return;
+        }
         // no need to upgrade
         if (newVersion == 2) {
             return;
@@ -160,8 +166,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 + " AND PUBLISH_TIMESTAMP = "
                 + " (SELECT MAX(PUBLISH_TIMESTAMP)"
                 + "   FROM post_tag p"
-                + "  WHERE p.tag = t.tag )"
-                + " GROUP BY PUBLISH_TIMESTAMP",
+                + "  WHERE p.tag = t.tag )",
                 args);
     }
 
@@ -300,13 +305,12 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     public List<PostTag> getPostsById(long id, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
-        Cursor c = db.query(TABLE_NAME,
+        return cursorToList(db.query(TABLE_NAME,
                 COLUMNS,
                 _ID + " =? and " + TUMBLR_NAME + " =?",
                 new String[] {String.valueOf(id), tumblrName},
                 null,
                 null,
-                null);
-        return cursorToList(c);
+                null));
     }
 }
