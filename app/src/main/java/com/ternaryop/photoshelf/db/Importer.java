@@ -20,6 +20,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -265,13 +266,15 @@ public class Importer {
                 List<Birthday> birthdays = new ArrayList<Birthday>();
                 int curr = 1;
                 int size = names.size();
+                StringBuilder found = new StringBuilder();
 
                 for (final String name : names) {
-                    publishProgress(name + " (" + curr + "/" + size + ")");
+                    publishProgress(name + " (" + curr + "/" + size + ")" + found);
                     try {
                         Birthday birthday = BirthdayUtils.searchBirthday(name, blogName);
                         if (birthday != null) {
                             birthdays.add(birthday);
+                            found.append("\n").append(birthday.toString());
                         }
                     } catch (Exception e) {
                         // simply skip
@@ -301,7 +304,7 @@ public class Importer {
                 } finally {
                     db.endTransaction();
                 }
-                return getContext().getString(R.string.import_progress_title, birthdays.size());
+                return getContext().getString(R.string.import_progress_title, birthdays.size()) + "\n" + TextUtils.join("\n", birthdays);
             }
 
             protected void onPostExecute(String message) {
