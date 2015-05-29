@@ -5,6 +5,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
+        android:theme="@style/Theme.PhotoShelf.Dialog"
         android:layout_height="?actionBarSize" />
 
     <EditText
@@ -50,51 +51,4 @@
             android:contentDescription="@string/refresh"
             android:src="@drawable/navigation_refresh" />
     </LinearLayout>
-
-    <LinearLayout
-        style="?android:attr/buttonBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="end">
-
-        <Button
-            android:id="@+id/cancelButton"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/cancel_title" />
-
-        <Button
-            android:id="@+id/draft_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/draft_title" />
-
-        <Button
-            android:id="@+id/edit_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/edit_post_title"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/publish_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/publish_title" />
-
-    </LinearLayout>
-
 </LinearLayout>

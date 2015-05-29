@@ -6,19 +6,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +47,7 @@ import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.DialogUtils;
 import org.json.JSONObject;
 
-public class TumblrPostDialog extends DialogFragment implements View.OnClickListener, Toolbar.OnMenuItemClickListener {
+public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuItemClickListener {
 
     public static final String ARG_PHOTO_POST = "photoPost";
     public static final String ARG_IMAGE_URLS = "imageUrls";
@@ -66,11 +68,9 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
     private boolean blockUIWhilePublish;
     private String htmlTitle;
     private String sourceTitle;
-    private Toolbar toolbar;
     private List<String> initialTagList;
     private ColorStateList defaultPostTagsColor;
     private Drawable defaultPostTagsBackground;
-    private ContextThemeWrapper contextThemeWrapper;
 
     public static TumblrPostDialog newInstance(Bundle args, Fragment target) {
         TumblrPostDialog fragment = new TumblrPostDialog();
@@ -113,53 +113,39 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        appSupport = new AppSupport(getActivity());
         decodeArguments();
         setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_PhotoShelf_Dialog);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // this is necessary othwerwise the autocomplete drop down items and the toolbar overflow menu items are styled incorrectly
-        contextThemeWrapper = new ContextThemeWrapper(getActivity(), R.style.Theme_PhotoShelf_Dialog);
-        View view = inflater.inflate(R.layout.dialog_publish_post, container, false);
-
-        toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        toolbar.inflateMenu(R.menu.publish_post_overflow);
-        toolbar.setOnMenuItemClickListener(this);
-
-        postTitle = (EditText)view.findViewById(R.id.post_title);
-        postTags = (MultiAutoCompleteTextView)view.findViewById(R.id.post_tags);
-        blogList = (Spinner) view.findViewById(R.id.blog);
-        
-        appSupport = new AppSupport(getActivity());
-        view.findViewById(R.id.cancelButton).setOnClickListener(this);
-
-        tagAdapter = new TagCursorAdapter(
-                contextThemeWrapper,
-                android.R.layout.simple_dropdown_item_1line,
-                "");
-        tagAdapter.setBlogName(appSupport.getSelectedBlogName());
-        postTags.setAdapter(tagAdapter);
-        postTags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
-
-        blogList.setOnItemSelectedListener(new BlogItemSelectedListener());        
-        
-        if (photoPost != null) {
-            view.findViewById(R.id.publish_button).setVisibility(View.GONE);
-            view.findViewById(R.id.draft_button).setVisibility(View.GONE);
-            view.findViewById(R.id.blog_list).setVisibility(View.GONE);
-            view.findViewById(R.id.edit_button).setVisibility(View.VISIBLE);
-            view.findViewById(R.id.edit_button).setOnClickListener(this);
-        } else {
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_publish_post, null);
+        setupUI(view);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                .setView(view)
+                .setNegativeButton(R.string.cancel_title, null);
+        if (photoPost == null) {
             OnClickPublishListener onClickPublishListener = new OnClickPublishListener();
-            view.findViewById(R.id.publish_button).setOnClickListener(onClickPublishListener);
-            view.findViewById(R.id.draft_button).setOnClickListener(onClickPublishListener);
-            view.findViewById(R.id.refreshBlogList).setOnClickListener(this);
+            builder.setNeutralButton(R.string.publish_post, onClickPublishListener);
+            builder.setPositiveButton(R.string.draft_title, onClickPublishListener);
+            view.findViewById(R.id.refreshBlogList).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fetchBlogNames();
+                }
+            });
+        } else {
+            view.findViewById(R.id.blog_list).setVisibility(View.GONE);
+            builder.setPositiveButton(R.string.edit_post_title, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    editPost();
+                }
+            });
         }
 
-        setupUI();
-        return view;
+        return builder.create();
     }
 
     @Override
@@ -169,24 +155,32 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
         getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.cancelButton:
-                dismiss();
-                return;
-            case R.id.refreshBlogList:
-                fetchBlogNames();
-                return;
-            case R.id.edit_button:
-                editPost();
-        }
-    }
+    private void setupUI(View view) {
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        toolbar.inflateMenu(R.menu.publish_post_overflow);
+        toolbar.setOnMenuItemClickListener(this);
+        toolbar.getMenu().findItem(R.id.block_ui).setChecked(blockUIWhilePublish);
 
-    private void setupUI() {
+        postTitle = (EditText)view.findViewById(R.id.post_title);
+        postTags = (MultiAutoCompleteTextView)view.findViewById(R.id.post_tags);
+        blogList = (Spinner) view.findViewById(R.id.blog);
+
+        // the ContextThemeWrapper is necessary otherwise the autocomplete drop down items and the toolbar overflow menu items are styled incorrectly
+        // since the switch to the AlertDialog the toolbar isn't styled from code so to fix it the theme is declared directly into xml
+        tagAdapter = new TagCursorAdapter(
+                new ContextThemeWrapper(getActivity(), R.style.Theme_PhotoShelf_Dialog),
+                android.R.layout.simple_dropdown_item_1line,
+                "");
+        tagAdapter.setBlogName(appSupport.getSelectedBlogName());
+        postTags.setAdapter(tagAdapter);
+        postTags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
+        blogList.setOnItemSelectedListener(new BlogItemSelectedListener());
+
         fillTags(initialTagList);
         postTitle.setText(Html.fromHtml(htmlTitle));
-        toolbar.getMenu().findItem(R.id.block_ui).setChecked(blockUIWhilePublish);
+        // move caret to end
+        postTitle.setSelection(postTitle.length());
 
         if (photoPost != null) {
             toolbar.setTitle(R.string.edit_post_title);
@@ -197,8 +191,6 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
                     size,
                     size));
         }
-        // move caret to end
-        postTitle.setSelection(postTitle.length());
     }
 
     public List<String> getImageUrls() {
@@ -255,27 +247,28 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
             new Thread(runnable).start();
         }
     }
-    
+
     @Override
     public void onStart() {
         super.onStart();
         if (photoPost == null) {
-            getView().findViewById(R.id.publish_button).setEnabled(false);
-            getView().findViewById(R.id.draft_button).setEnabled(false);
+            AlertDialog dialog = (AlertDialog) getDialog();
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
             List<String> blogSetNames = appSupport.getBlogList();
             if (blogSetNames == null) {
                 fetchBlogNames();
             } else {
                 fillBlogList(blogSetNames);
-                getView().findViewById(R.id.publish_button).setEnabled(true);
-                getView().findViewById(R.id.draft_button).setEnabled(true);
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
             }
         }
     }
 
     private void fillBlogList(List<String> blogNames) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(contextThemeWrapper, android.R.layout.simple_spinner_item, blogNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, blogNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         blogList.setAdapter(adapter);
 
@@ -289,10 +282,11 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
             }
         }
     }
-    
+
     private void fetchBlogNames() {
-        getView().findViewById(R.id.publish_button).setEnabled(false);
-        getView().findViewById(R.id.draft_button).setEnabled(false);
+        final AlertDialog dialog = (AlertDialog) getDialog();
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
         Tumblr.getSharedTumblr(getActivity()).getBlogList(new Callback<Blog[]>() {
 
@@ -304,15 +298,15 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
                 }
                 appSupport.setBlogList(blogNames);
                 fillBlogList(blogNames);
-                getView().findViewById(R.id.publish_button).setEnabled(true);
-                getView().findViewById(R.id.draft_button).setEnabled(true);
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
             }
 
             @Override
             public void failure(Exception e) {
                 dismiss();
                 DialogUtils.showErrorDialog(getActivity(), e);
-            } 
+            }
         });
     }
 
@@ -333,7 +327,7 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
         return false;
     }
 
-    private final class OnClickPublishListener implements View.OnClickListener {
+    private final class OnClickPublishListener implements DialogInterface.OnClickListener {
         private ProgressDialog progressDialog;
 
         private final class PostCallback implements Callback<Long> {
@@ -365,10 +359,9 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
         }
 
         @Override
-        public void onClick(final View v) {
-            boolean publish = v.getId() == R.id.publish_button;
-            String selectedBlogName = (String) blogList
-                    .getSelectedItem();
+        public void onClick(DialogInterface dialog, int which) {
+            boolean publish = which == DialogInterface.BUTTON_NEUTRAL;
+            String selectedBlogName = (String) blogList.getSelectedItem();
             appSupport.setSelectedBlogName(selectedBlogName);
 
             List<?> urlsOrFiles = getImageUrls() != null ? getImageUrls() : getImageFiles();
@@ -408,7 +401,6 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
                     }
                 }
             }
-            dismiss();
         }
     }
 
@@ -422,7 +414,6 @@ public class TumblrPostDialog extends DialogFragment implements View.OnClickList
 
             @Override
             public void complete(JSONObject result) {
-                dismiss();
                 newValues.put("tumblrName", appSupport.getSelectedBlogName());
                 DBHelper.getInstance(getActivity()).getPostTagDAO().update(newValues);
                 if (getTargetFragment() instanceof PostListener) {
