@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.view.View;
 import android.widget.ArrayAdapter;
 
 import com.ternaryop.photoshelf.R;
@@ -62,9 +63,10 @@ public class TagNavigatorDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        adapter = createAdapter(getArguments().getStringArrayList(ARG_TAG_LIST));
+        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_tag_navigator, null);
+        setupUI(view);
         return new AlertDialog.Builder(getActivity())
-                .setView(R.layout.dialog_tag_navigator)
+                .setView(view)
                 .setTitle(getResources().getString(R.string.tag_navigator_title, adapter.getCount()))
                 .setNegativeButton(getResources().getString(R.string.close), null)
                 .setAdapter(adapter, new DialogInterface.OnClickListener() {
@@ -76,6 +78,38 @@ public class TagNavigatorDialog extends DialogFragment {
                     }
                 })
                 .create();
+    }
+
+    private void setupUI(View view) {
+        adapter = createAdapter(getArguments().getStringArrayList(ARG_TAG_LIST));
+        View.OnClickListener sortClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    case R.id.sort_tag_name:
+                        adapter.sort(new Comparator<TagCounter>() {
+                            @Override
+                            public int compare(TagCounter lhs, TagCounter rhs) {
+                                return lhs.tag.compareToIgnoreCase(rhs.tag);
+                            }
+                        });
+                        adapter.notifyDataSetChanged();
+                        break;
+                    case R.id.sort_tag_count:
+                        adapter.sort(new Comparator<TagCounter>() {
+                            @Override
+                            public int compare(TagCounter lhs, TagCounter rhs) {
+                                // sort descending
+                                return rhs.count - lhs.count;
+                            }
+                        });
+                        adapter.notifyDataSetChanged();
+                        break;
+                }
+            }
+        };
+        view.findViewById(R.id.sort_tag_name).setOnClickListener(sortClick);
+        view.findViewById(R.id.sort_tag_count).setOnClickListener(sortClick);
     }
 
     public ArrayAdapter<TagCounter> createAdapter(List<String> tagList) {
