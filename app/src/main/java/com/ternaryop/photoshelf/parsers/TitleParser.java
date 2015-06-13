@@ -121,7 +121,7 @@ public class TitleParser {
     public TitleData parseTitle(String title) {
         TitleData titleData = new TitleData();
 
-        title = config.getBlackListRegExpr().matcher(title).replaceAll("");
+        title = config.applyBlackList(title);
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
 
         Matcher m = uppercaseNameRE.matcher(title);

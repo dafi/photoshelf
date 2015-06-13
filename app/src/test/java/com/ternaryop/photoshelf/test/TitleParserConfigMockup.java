@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.test;
 
-import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.List;
 
 import com.ternaryop.photoshelf.parsers.TitleParserConfig;
 
@@ -9,14 +10,16 @@ import com.ternaryop.photoshelf.parsers.TitleParserConfig;
  * Used by tests
  */
 public class TitleParserConfigMockup implements TitleParserConfig {
-    private Pattern blackListRegExpr;
-
     public TitleParserConfigMockup(String configPath) throws Exception {
-        blackListRegExpr = Pattern.compile("(fake)", Pattern.CASE_INSENSITIVE);
     }
 
     @Override
-    public Pattern getBlackListRegExpr() {
-        return blackListRegExpr;
+    public List<TitleParserRegExp> getBlackListRegExpr() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String applyBlackList(String input) {
+        return input;
     }
 }

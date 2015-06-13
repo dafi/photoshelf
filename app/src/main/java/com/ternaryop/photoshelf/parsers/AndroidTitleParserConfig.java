@@ -4,12 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import com.ternaryop.utils.JSONUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -19,13 +18,13 @@ import org.json.JSONObject;
 public class AndroidTitleParserConfig implements TitleParserConfig {
     private static final String TITLEPARSER_FILENAME = "titleParser.json";
 
-    private Pattern blackListRegExpr;
     private static boolean isUpgraded;
+    private List<TitleParserRegExp> blackList;
 
     public AndroidTitleParserConfig(Context context) {
         InputStream is = null;
         try {
-            if (blackListRegExpr != null) {
+            if (blackList != null) {
                 return;
             }
             try {
@@ -57,13 +56,26 @@ public class AndroidTitleParserConfig implements TitleParserConfig {
     }
 
     private void createBlackListRegExpr(JSONObject jsonAssets) throws Exception {
-        List<Object> blackList = new ArrayList<Object>();
-        blackList.addAll(JSONUtils.toList(jsonAssets.getJSONObject("blackList").getJSONArray("regExprs")));
-        blackListRegExpr = Pattern.compile("(" + TextUtils.join("|", blackList) + ")", Pattern.CASE_INSENSITIVE);
+        blackList = new ArrayList<>();
+        JSONArray array = jsonAssets.getJSONObject("blackList").getJSONArray("regExprs");
+        for (int i = 0; i < array.length(); i++) {
+            JSONArray reArray = array.getJSONArray(i);
+            blackList.add(new TitleParserRegExp(reArray.getString(0), reArray.getString(1)));
+        }
     }
 
     @Override
-    public Pattern getBlackListRegExpr() {
-        return blackListRegExpr;
+    public List<TitleParserRegExp> getBlackListRegExpr() {
+        return blackList;
+    }
+
+    @Override
+    public String applyBlackList(String input) {
+        String result = input;
+
+        for (TitleParserRegExp re : blackList) {
+            result = result.replaceAll(re.pattern, re.replacer);
+        }
+        return result;
     }
 }
