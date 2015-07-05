@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Pair;
 
 import com.ternaryop.photoshelf.HtmlDocumentSupport;
@@ -79,13 +80,17 @@ public class BirthdayUtils {
         } else {
             builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size(), list.size()));
             NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+            ArrayList<String> names = new ArrayList<>();
             inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title));
             for (Birthday birthday : list) {
                 Calendar cal = Calendar.getInstance(Locale.US);
                 cal.setTime(birthday.getBirthDate());
                 int years = currYear - cal.get(Calendar.YEAR);
                 inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.getName(), years));
+                names.add(birthday.getName());
             }
+            // The text is shown when there isn't enough space for inboxStyle
+            builder.setContentText(TextUtils.join(", ", names));
             builder.setStyle(inboxStyle);
         }
 
