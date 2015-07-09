@@ -13,7 +13,7 @@ import com.ternaryop.utils.StringUtils;
 public class TitleParser {
     private static final Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
     // used to capture the whole name when is all uppercase
-    private static final Pattern uppercaseNameRE = Pattern.compile("(^[A-Z ]*\\b)\\s(?i)(at the|at|[-–|~@]|attends|arrives|leaves)?\\s?");
+    private static final Pattern uppercaseNameRE = Pattern.compile("(^[A-Z- ]*\\b)\\s(?i)(at the|at|[-–|~@]|attends|arrives|leaves)?\\s?");
 
     private static final String[] months = {"", "January",
                   "February",
