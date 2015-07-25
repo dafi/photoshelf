@@ -27,6 +27,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
             android:src="@drawable/bg_actions"
+            android:contentDescription="@string/menu_show_image"
             android:visibility="invisible" />
 
         <ImageView

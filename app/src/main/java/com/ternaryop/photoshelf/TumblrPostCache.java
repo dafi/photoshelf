@@ -23,11 +23,9 @@ import com.ternaryop.tumblr.TumblrPost;
  */
 public class TumblrPostCache {
     private final File cacheFileDir;
-    private final String cacheDir;
 
     public TumblrPostCache(Context context, String cacheDir) {
-        this.cacheDir = cacheDir;
-        cacheFileDir = new File(context.getCacheDir(), this.cacheDir);
+        cacheFileDir = new File(context.getCacheDir(), cacheDir);
     }
 
     public void deleteItem(TumblrPost item) {
