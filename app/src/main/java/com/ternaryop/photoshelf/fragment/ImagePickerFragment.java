@@ -259,7 +259,8 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             List<ImageInfo> imageInfoList = new ArrayList<ImageInfo>();
 
             try {
-                connection = HtmlDocumentSupport.openConnection(urls[0]);
+                String galleryUrl = urls[0];
+                connection = HtmlDocumentSupport.openConnection(galleryUrl);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     // this will be useful to display download percentage
@@ -288,16 +289,17 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                     }
                     Document htmlDocument = Jsoup.parse(baos.toString());
                     imageUrlRetriever.setTitle(htmlDocument.title());
-                    String containerSelector = domSelectorFinder.getContainerSelectorFromUrl(urls[0]);
+                    String containerSelector = domSelectorFinder.getContainerSelectorFromUrl(galleryUrl);
                     if (containerSelector == null) {
                         containerSelector = "a img[src*=jpg]";
                     }
                     Elements thumbnailImages = htmlDocument.select(containerSelector);
                     publishProgress(getResources().getQuantityString(R.plurals.image_found, thumbnailImages.size(), thumbnailImages.size()));
+                    htmlDocument.setBaseUri(galleryUrl);
                     for (int i = 0; i < thumbnailImages.size(); i++) {
                         Element thumbnailImage = thumbnailImages.get(i);
-                        String thumbnailURL = thumbnailImage.attr("src");
-                        String destinationDocumentURL = thumbnailImage.parent().attr("href");
+                        String thumbnailURL = thumbnailImage.absUrl("src");
+                        String destinationDocumentURL = thumbnailImage.parent().absUrl("href");
                         String selector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
                         if (selector != null) {
                             imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, selector));
