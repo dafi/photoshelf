@@ -199,9 +199,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                                           long id, boolean checked) {
         int selectCount = gridView.getCheckedItemCount();
         mode.setSubtitle(getActivity().getResources().getQuantityString(
-                R.plurals.selected_items,
+                R.plurals.selected_items_total,
                 selectCount,
-                selectCount));
+                selectCount,
+                imagePickerAdapter.getCount()));
     }
 
     @Override

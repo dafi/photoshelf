@@ -90,6 +90,10 @@
         <item quantity="one">%1$d selected</item>
         <item quantity="other">%1$d selected</item>
     </plurals>
+    <plurals name="selected_items_total">
+        <item quantity="one">%1$d of %2$d selected</item>
+        <item quantity="other">%1$d of %2$d selected</item>
+    </plurals>
     <plurals name="saving_post_in_draft">
         <item quantity="one">Saving post in draft&#8230;</item>
         <item quantity="other">Saving %1$d posts in draft&#8230;</item>
