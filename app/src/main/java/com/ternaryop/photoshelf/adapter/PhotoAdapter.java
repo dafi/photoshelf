@@ -129,7 +129,7 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.title_textview:
-                onPhotoBrowseClick.onPhotoBrowseClick((Integer) v.getTag());
+                onPhotoBrowseClick.onTagClick((Integer) v.getTag());
                 break;
             case R.id.thumbnail_image:
                 onPhotoBrowseClick.onThumbnailImageClick((Integer) v.getTag());

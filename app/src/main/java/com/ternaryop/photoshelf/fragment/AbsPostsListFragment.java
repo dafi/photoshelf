@@ -392,7 +392,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     @Override
-    public void onPhotoBrowseClick(int position) {
+    public void onTagClick(int position) {
         final PhotoShelfPost post = photoAdapter.getItem(position);
         TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), post.getFirstTag(), false);
     }

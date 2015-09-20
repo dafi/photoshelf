@@ -341,7 +341,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     }
 
     @Override
-    public void onPhotoBrowseClick(int position) {
+    public void onTagClick(int position) {
     }
 
     @Override
