@@ -131,8 +131,8 @@
         <item quantity="other">next in %1$d days</item>
     </plurals>
     <plurals name="general_posts_error">
-        <item quantity="one">Unable to process the post</item>
-        <item quantity="other">Unable to process %1$d posts</item>
+        <item quantity="one">Unable to process the post (%1$s)</item>
+        <item quantity="other">Unable to process %2$d posts (%1$s)</item>
     </plurals>
     <plurals name="delete_items_confirm">
         <item quantity="one">Delete \'%2$s\', are you sure?</item>

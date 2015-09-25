@@ -333,6 +333,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     abstract class ActionExecutor extends AbsProgressIndicatorAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
         private final ActionMode mode;
         private final List<PhotoShelfPost> postList;
+        Exception error; // contains the last error found
 
         public ActionExecutor(Context context, int resId, ActionMode mode, List<PhotoShelfPost> postList) {
             super(context, context.getString(resId));
@@ -350,7 +351,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         @Override
         protected void onPostExecute(List<PhotoShelfPost> notDeletedPosts) {
             super.onPostExecute(null);
-            
+
             refreshUI();
             // all posts have been deleted so call actionMode.finish() 
             if (notDeletedPosts.size() == 0) {
@@ -370,6 +371,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                     getContext().getResources().getQuantityString(
                             R.plurals.general_posts_error,
                             notDeletedPosts.size(),
+                            error.getMessage(),
                             notDeletedPosts.size()));
         }
 
@@ -382,6 +384,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                     executeAction(post);
                     this.publishProgress(post);
                 } catch (Exception e) {
+                    error = e;
                     notDeletedPosts.add(post);
                 }
             }

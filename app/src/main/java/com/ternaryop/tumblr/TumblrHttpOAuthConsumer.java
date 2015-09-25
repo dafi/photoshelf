@@ -1,6 +1,7 @@
 package com.ternaryop.tumblr;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import android.content.Context;
@@ -10,9 +11,11 @@ import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.utils.JSONUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.scribe.builder.ServiceBuilder;
@@ -217,8 +220,27 @@ public class TumblrHttpOAuthConsumer {
         }
         int status = json.getJSONObject("meta").getInt("status");
         if (status != 200 && status != 201) {
-            throw new JSONException(json.getJSONObject("meta").getString("msg"));
+            String errorMessage = getErrorFromResponse(json);
+            if (errorMessage == null) {
+                errorMessage = json.getJSONObject("meta").getString("msg");
+            }
+            throw new JSONException(errorMessage);
         }
-    }    
+    }
+
+    private String getErrorFromResponse(JSONObject json) throws JSONException {
+        if (json.has("response")) {
+            JSONObject response = json.getJSONObject("response");
+            if (response.has("errors")) {
+                JSONArray errors = response.getJSONArray("errors");
+                ArrayList<String> list = new ArrayList<>();
+                for (int i = 0; i < errors.length(); i++) {
+                    list.add(errors.getString(i));
+                }
+                return TextUtils.join(",", list);
+            }
+        }
+        return null;
+    }
 
 }
