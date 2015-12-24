@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": "#theimage",
     "http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/": "#theimage",
@@ -25,7 +25,8 @@
     "http://imgpit.com/": ".centred_resized",
     "http://www.gceleb.com/": "",
     "http://www.imgz.pw/": "regExp:src='(.*?)' id='iimg'",
-    "imageleon.com": "#full_image"
+    "imageleon.com": "#full_image",
+    "imgcredit.xyz": ".centred_resized"
   },
   "containerSelectors": {
     "http:\/\/www.sawfirst.com": "#gallery-1 a img[src*=jpg]",
