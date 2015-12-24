@@ -6,16 +6,10 @@
               android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/sort_tag_name"
-        android:text="@string/tag_name"
+        android:id="@+id/sort_tag"
+        android:text="@string/sort_by_count"
         style="?android:attr/buttonBarButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"/>
 
-    <Button
-        android:id="@+id/sort_tag_count"
-        android:text="@string/tag_count"
-        style="?android:attr/buttonBarButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"/>
 </LinearLayout>

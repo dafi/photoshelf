@@ -215,6 +215,7 @@
     <string name="tag_navigator_title">Navigate tags (%1$d)</string>
     <string name="reload">Reload</string>
     <string name="clear_cache">Clear Cache</string>
-    <string name="tag_count">Tag Count</string>
+    <string name="sort_by_count">Sort by Count</string>
+    <string name="sort_by_name">Sort by Name</string>
 
 </resources>

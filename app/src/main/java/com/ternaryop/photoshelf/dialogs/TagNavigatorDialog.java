@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.dialogs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -12,10 +11,13 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
@@ -28,7 +30,11 @@ public class TagNavigatorDialog extends DialogFragment {
 
     public static final String SELECTED_TAG = "selectedTag";
     public static final String ARG_TAG_LIST = "list";
+    private static final int SORT_TAG_NAME = 0;
+    private static final int SORT_TAG_COUNT = 1;
+    public static final String PREF_NAME_TAG_SORT = "tagNavigatorSort";
     private ArrayAdapter<TagCounter> adapter;
+    private Button sortButton;
 
     public static TagNavigatorDialog newInstance(List<PhotoShelfPost> photoList, Fragment target, int requestCode) {
         Bundle args = new Bundle();
@@ -82,34 +88,37 @@ public class TagNavigatorDialog extends DialogFragment {
 
     private void setupUI(View view) {
         adapter = createAdapter(getArguments().getStringArrayList(ARG_TAG_LIST));
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sortButton = (Button) view.findViewById(R.id.sort_tag);
+
+        changeSortType(preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME));
         View.OnClickListener sortClick = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch (v.getId()) {
-                    case R.id.sort_tag_name:
-                        adapter.sort(new Comparator<TagCounter>() {
-                            @Override
-                            public int compare(TagCounter lhs, TagCounter rhs) {
-                                return lhs.tag.compareToIgnoreCase(rhs.tag);
-                            }
-                        });
-                        adapter.notifyDataSetChanged();
-                        break;
-                    case R.id.sort_tag_count:
-                        adapter.sort(new Comparator<TagCounter>() {
-                            @Override
-                            public int compare(TagCounter lhs, TagCounter rhs) {
-                                // sort descending
-                                return rhs.count - lhs.count;
-                            }
-                        });
-                        adapter.notifyDataSetChanged();
+                    case R.id.sort_tag:
+                        int sortType = preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME);
+                        sortType = sortType == SORT_TAG_NAME ? SORT_TAG_COUNT : SORT_TAG_NAME;
+                        preferences.edit().putInt(PREF_NAME_TAG_SORT, sortType).apply();
+                        changeSortType(sortType);
                         break;
                 }
             }
         };
-        view.findViewById(R.id.sort_tag_name).setOnClickListener(sortClick);
-        view.findViewById(R.id.sort_tag_count).setOnClickListener(sortClick);
+        sortButton.setOnClickListener(sortClick);
+    }
+
+    private void changeSortType(int sortType) {
+        switch (sortType) {
+            case SORT_TAG_NAME:
+                sortButton.setText(R.string.sort_by_count);
+                sortByTagName();
+                break;
+            case SORT_TAG_COUNT:
+                sortButton.setText(R.string.sort_by_name);
+                sortByTagCount();
+                break;
+        }
     }
 
     public ArrayAdapter<TagCounter> createAdapter(List<String> tagList) {
@@ -125,14 +134,29 @@ public class TagNavigatorDialog extends DialogFragment {
             }
         }
         ArrayList<TagCounter> list = new ArrayList<>(map.values());
-        Collections.sort(list, new Comparator<TagCounter>() {
+
+        return new ArrayAdapter<TagCounter>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<TagCounter>(list));
+    }
+
+    private void sortByTagCount() {
+        adapter.sort(new Comparator<TagCounter>() {
+            @Override
+            public int compare(TagCounter lhs, TagCounter rhs) {
+                // sort descending
+                return rhs.count - lhs.count;
+            }
+        });
+        adapter.notifyDataSetChanged();
+    }
+
+    private void sortByTagName() {
+        adapter.sort(new Comparator<TagCounter>() {
             @Override
             public int compare(TagCounter lhs, TagCounter rhs) {
                 return lhs.tag.compareToIgnoreCase(rhs.tag);
             }
         });
-
-        return new ArrayAdapter<TagCounter>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<TagCounter>(list));
+        adapter.notifyDataSetChanged();
     }
 
     private static class TagCounter {
