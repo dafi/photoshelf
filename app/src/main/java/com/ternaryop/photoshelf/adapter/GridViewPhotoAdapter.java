@@ -47,7 +47,7 @@ public class GridViewPhotoAdapter extends BaseAdapter implements View.OnClickLis
         TumblrPhotoPost post = item.second;
         Calendar c = Calendar.getInstance();
         int age = c.get(Calendar.YEAR) - birthday.getBirthDateCalendar().get(Calendar.YEAR);
-        holder.caption.setText(post.getTags().get(0) + ", " + age);
+        holder.caption.setText(String.format("%s, %d", post.getTags().get(0), age));
         imageLoader.displayImage(post.getClosestPhotoByWidth(250).getUrl(), holder.thumbImage);
 
         if (showButtons && onPhotoBrowseClick != null) {

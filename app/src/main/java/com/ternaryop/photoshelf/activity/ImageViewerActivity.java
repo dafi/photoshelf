@@ -142,7 +142,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         runOnUiThread(new Runnable() {
             public void run() {
                 detailsText.setVisibility(View.VISIBLE);
-                detailsText.setText(imageHostUrl + String.format(" (%1dx%2d)", w, h));
+                detailsText.setText(String.format("%s (%1dx%2d)", imageHostUrl , w, h));
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {

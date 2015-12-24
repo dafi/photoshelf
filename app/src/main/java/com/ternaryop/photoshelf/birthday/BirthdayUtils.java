@@ -148,10 +148,8 @@ public class BirthdayUtils {
 
         if (fromAge == 0) {
             message = context.getString(R.string.week_selection_under_age, toAge);
-        } else if (toAge == 0) {
-            message = context.getString(R.string.week_selection_over_age, fromAge);
         } else {
-            throw new IllegalArgumentException("fromAge or toAge are both greater than 0");
+            message = context.getString(R.string.week_selection_over_age, fromAge);
         }
 
         final int THUMBS_COUNT = 9;
