@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.fragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -180,7 +181,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
     private List<ImageInfo> getCheckedImageInfoList() {
         SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
-        ArrayList<ImageInfo> list = new ArrayList<ImageInfo>();
+        ArrayList<ImageInfo> list = new ArrayList<>();
         for (int i = 0; i < checkedItemPositions.size(); i++) {
             int key = checkedItemPositions.keyAt(i);
             if (checkedItemPositions.get(key)) {
@@ -211,7 +212,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         Bundle args = new Bundle();
 
         if (imageUrlRetriever.getImageUrls() != null) {
-            args.putStringArrayList(TumblrPostDialog.ARG_IMAGE_URLS, new ArrayList<String>(imageUrlRetriever.getImageUrls()));
+            args.putStringArrayList(TumblrPostDialog.ARG_IMAGE_URLS, new ArrayList<>(imageUrlRetriever.getImageUrls()));
         } else {
             ArrayList<String> paths = new ArrayList<>(imageUrlRetriever.getImageFiles().size());
             for (File f : imageUrlRetriever.getImageFiles()) {
@@ -225,7 +226,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
         // use only first tag, generally other tags are poorly determinated
         List<String> firstTag = titleData.getTags().isEmpty() ? titleData.getTags() : titleData.getTags().subList(0, 1);
-        args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<String>(new ArrayList<String>(firstTag)));
+        args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<>(new ArrayList<>(firstTag)));
 
         TumblrPostDialog.newInstance(args, null).show(getFragmentManager(), "dialog");
     }
@@ -255,13 +256,63 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
         @Override
         protected List<ImageInfo> doInBackground(String... urls) {
-            InputStream input;
-            HttpURLConnection connection = null;
-            List<ImageInfo> imageInfoList = new ArrayList<ImageInfo>();
+            List<ImageInfo> imageInfoList = new ArrayList<>();
 
             try {
                 String galleryUrl = urls[0];
-                connection = HtmlDocumentSupport.openConnection(galleryUrl);
+                String content = readURLContent(galleryUrl);
+
+                Document htmlDocument = Jsoup.parse(content);
+                htmlDocument.setBaseUri(galleryUrl);
+                imageUrlRetriever.setTitle(htmlDocument.title());
+                extractImages(imageInfoList, galleryUrl, htmlDocument);
+
+                extractImageFromMultiPage(imageInfoList, galleryUrl, htmlDocument);
+
+            } catch (Exception e) {
+                error = e;
+            }
+            return imageInfoList;
+        }
+
+        private void extractImageFromMultiPage(List<ImageInfo> imageInfoList, String url, Document startPageDocument) throws IOException {
+            String multiPageSelector = domSelectorFinder.getMultiPageSelectorFromUrl(url);
+            if (multiPageSelector == null) {
+                return;
+            }
+            for (Element element : startPageDocument.select(multiPageSelector)) {
+                String pageUrl = element.absUrl("href");
+                String pageContent = readURLContent(pageUrl);
+                Document pageDocument = Jsoup.parse(pageContent);
+                pageDocument.setBaseUri(pageUrl);
+                extractImages(imageInfoList, pageUrl, pageDocument);
+            }
+        }
+
+        private void extractImages(List<ImageInfo> imageInfoList, String url, Document htmlDocument) {
+            String containerSelector = domSelectorFinder.getContainerSelectorFromUrl(url);
+            if (containerSelector == null) {
+                containerSelector = "a img[src*=jpg]";
+            }
+            Elements thumbnailImages = htmlDocument.select(containerSelector);
+            int totalSize = imageInfoList.size() + thumbnailImages.size();
+            publishProgress(getResources().getQuantityString(R.plurals.image_found, totalSize, totalSize));
+            for (Element thumbnailImage : thumbnailImages) {
+                String destinationDocumentURL = thumbnailImage.parent().absUrl("href");
+                String selector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
+                if (selector != null) {
+                    String thumbnailURL = thumbnailImage.absUrl("src");
+                    imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, selector));
+                }
+            }
+        }
+
+        private String readURLContent(String url) throws IOException {
+            InputStream input;
+            HttpURLConnection connection = null;
+
+            try {
+                connection = HtmlDocumentSupport.openConnection(url);
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     // this will be useful to display download percentage
@@ -288,36 +339,16 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
                         }
                         baos.write(data, 0, count);
                     }
-                    Document htmlDocument = Jsoup.parse(baos.toString());
-                    imageUrlRetriever.setTitle(htmlDocument.title());
-                    String containerSelector = domSelectorFinder.getContainerSelectorFromUrl(galleryUrl);
-                    if (containerSelector == null) {
-                        containerSelector = "a img[src*=jpg]";
-                    }
-                    Elements thumbnailImages = htmlDocument.select(containerSelector);
-                    publishProgress(getResources().getQuantityString(R.plurals.image_found, thumbnailImages.size(), thumbnailImages.size()));
-                    htmlDocument.setBaseUri(galleryUrl);
-                    for (int i = 0; i < thumbnailImages.size(); i++) {
-                        Element thumbnailImage = thumbnailImages.get(i);
-                        String thumbnailURL = thumbnailImage.absUrl("src");
-                        String destinationDocumentURL = thumbnailImage.parent().absUrl("href");
-                        String selector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
-                        if (selector != null) {
-                            imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, selector));
-                        }
-                    }
+                    return baos.toString();
                 } else {
                     throw new RuntimeException("Unable to read page, HTTP error " + connection.getResponseCode());
                 }
-            } catch (Exception e) {
-                error = e;
             } finally {
                 if (connection != null) try {
                     connection.disconnect();
                 } catch (Exception ignored) {
                 }
             }
-            return imageInfoList;
         }
 
         @Override
@@ -348,7 +379,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     public void onThumbnailImageClick(int position) {
         final ImageInfo imageInfo = imagePickerAdapter.getItem(position);
         if (imageInfo.getImageURL() == null) {
-            List<ImageInfo> imageInfoList = new ArrayList<ImageInfo>();
+            List<ImageInfo> imageInfoList = new ArrayList<>();
             imageInfoList.add(imageInfo);
             new ImageUrlRetriever(getActivity(), new ImageUrlRetriever.OnImagesRetrieved() {
                 @Override

@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 8,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": "#theimage",
     "http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/": "#theimage",
@@ -26,10 +26,15 @@
     "http://www.gceleb.com/": "",
     "http://www.imgz.pw/": "regExp:src='(.*?)' id='iimg'",
     "imageleon.com": "#full_image",
-    "imgcredit.xyz": ".centred_resized"
+    "imgcredit.xyz": ".centred_resized",
+    "hotflick.net": ".pict_content img"
   },
   "containerSelectors": {
     "http:\/\/www.sawfirst.com": "#gallery-1 a img[src*=jpg]",
-    "http://www.gceleb.com/": ".entry img"
+    "http://www.gceleb.com/": ".entry img",
+    "hotflick.net": ".box-item-155-img img"
+  },
+  "multiPageSelectors": {
+    "hotflick.net": ".box-paging a:not(.active)"
   }
 }

@@ -18,8 +18,9 @@ import org.json.JSONObject;
  * 
  */
 public class ImageDOMSelectorFinder {
-    private static final HashMap<String, Object> domainMap = new HashMap<String, Object>();
-    private static final HashMap<String, Object> containerSelectorsMap = new HashMap<String, Object>();
+    private static final HashMap<String, Object> domainMap = new HashMap<>();
+    private static final HashMap<String, Object> containerSelectorsMap = new HashMap<>();
+    private static final HashMap<String, Object> multiPageSelectorsMap = new HashMap<>();
     private static boolean isUpgraded;
     private static final String SELECTORS_FILENAME = "domSelectors.json";
 
@@ -60,6 +61,7 @@ public class ImageDOMSelectorFinder {
                 JSONObject jsonAssets = JSONUtils.jsonFromInputStream(is);
                 domainMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("selectors")));
                 containerSelectorsMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("containerSelectors")));
+                multiPageSelectorsMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("multiPageSelectors")));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,6 +86,17 @@ public class ImageDOMSelectorFinder {
             for (String re : containerSelectorsMap.keySet()) {
                 if (Pattern.compile(re).matcher(url).find()) {
                     return containerSelectorsMap.get(re).toString();
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getMultiPageSelectorFromUrl(String url) {
+        if (url != null) {
+            for (String re : multiPageSelectorsMap.keySet()) {
+                if (Pattern.compile(re).matcher(url).find()) {
+                    return multiPageSelectorsMap.get(re).toString();
                 }
             }
         }
