@@ -18,6 +18,8 @@ import org.junit.runners.Parameterized;
 import static org.junit.Assert.assertEquals;
 
 
+// To run this test be sure the Build Variants window is open then select Unit Tests
+// see more http://developer.android.com/training/testing/unit-testing/local-unit-tests.html#run
 @RunWith(Parameterized.class)
 public class TitleParserFileTests {
     @Parameterized.Parameter(0)
