@@ -93,6 +93,7 @@
         <ListPreference
             android:title="@string/pref_thumbnail_width"
             android:key="thumbnail_width"
+            android:defaultValue="@string/thumbnail_width_value_default"
             android:entries="@array/list_thumbnail_width_entries_default"
             android:entryValues="@array/list_thumbnail_width_values_default" />
     </PreferenceCategory>
