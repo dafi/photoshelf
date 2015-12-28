@@ -4,7 +4,8 @@
             "regExprs":[
               ["([0-9]+)/([0-9]+)/([0-9]+)\\s?-?\\s?\\bHawtCelebs\\b", "$2/$1/$3", "convert mm/dd/yyyy to dd/mm/yyyy"],
               ["-?\\s?\\bHawtCelebs\\b", "", "remove the text"],
-              ["-?\\s?Carreck Celebrity Pictures » Blog Archive »", "", "remove the text"]
+              ["-?\\s?Carreck Celebrity Pictures » Blog Archive »", "", "remove the text"],
+              ["-?\\s?SAWFIRST.*", "", "remove the text"]
             ]
     }
 }
