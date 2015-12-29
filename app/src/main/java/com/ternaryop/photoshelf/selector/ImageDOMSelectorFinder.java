@@ -1,8 +1,9 @@
-package com.ternaryop.photoshelf;
+package com.ternaryop.photoshelf.selector;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import android.content.Context;
@@ -18,11 +19,35 @@ import org.json.JSONObject;
  * 
  */
 public class ImageDOMSelectorFinder {
-    private static final HashMap<String, Object> domainMap = new HashMap<>();
-    private static final HashMap<String, Object> containerSelectorsMap = new HashMap<>();
-    private static final HashMap<String, Object> multiPageSelectorsMap = new HashMap<>();
+    private static final HashMap<String, DOMSelector> domainMap = new HashMap<>();
     private static boolean isUpgraded;
     private static final String SELECTORS_FILENAME = "domSelectors.json";
+    private static final DOMSelector DEFAULT_SELECTOR = new DOMSelector() {
+        @Override
+        public String getContainer() {
+            return DEFAULT_CONTAINER_SELECTOR;
+        }
+        @Override
+        public void setDomainRE(String domainRE) {
+            throw new RuntimeException("Readonly instance");
+        }
+        @Override
+        public void setImage(String image) {
+            throw new RuntimeException("Readonly instance");
+        }
+        @Override
+        public void setMultiPage(String multiPage) {
+            throw new RuntimeException("Readonly instance");
+        }
+        @Override
+        public void setTitle(String title) {
+            throw new RuntimeException("Readonly instance");
+        }
+        @Override
+        public void setContainer(String container) {
+            throw new RuntimeException("Readonly instance");
+        }
+    };
 
     public ImageDOMSelectorFinder(Context context) {
         InputStream is = null;
@@ -50,8 +75,7 @@ public class ImageDOMSelectorFinder {
                             is.close();
                             context.deleteFile(SELECTORS_FILENAME);
                         }
-                        domainMap.putAll(JSONUtils.toMap(jsonPrivate.getJSONObject("selectors")));
-                        containerSelectorsMap.putAll(JSONUtils.toMap(jsonPrivate.getJSONObject("containerSelectors")));
+                        buildSelectors(JSONUtils.toMap(jsonPrivate.getJSONObject("selectors")));
                         return;
                     }
                 } catch (FileNotFoundException ex) {
@@ -59,9 +83,7 @@ public class ImageDOMSelectorFinder {
                     is = context.getAssets().open(SELECTORS_FILENAME);
                 }
                 JSONObject jsonAssets = JSONUtils.jsonFromInputStream(is);
-                domainMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("selectors")));
-                containerSelectorsMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("containerSelectors")));
-                multiPageSelectorsMap.putAll(JSONUtils.toMap(jsonAssets.getJSONObject("multiPageSelectors")));
+                buildSelectors(JSONUtils.toMap(jsonAssets.getJSONObject("selectors")));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,36 +92,21 @@ public class ImageDOMSelectorFinder {
         }
     }
 
-    public String getSelectorFromUrl(String url) {
+    @SuppressWarnings("unchecked")
+    private void buildSelectors(Map<String, Object> selectors) {
+        for (String key : selectors.keySet()) {
+            domainMap.put(key, new DOMSelector(key, (Map<String, String>)selectors.get(key)));
+        }
+    }
+
+    public DOMSelector getSelectorFromUrl(String url) {
         if (url != null) {
             for (String domainRE : domainMap.keySet()) {
                 if (Pattern.compile(domainRE).matcher(url).find()) {
-                    return domainMap.get(domainRE).toString();
+                    return domainMap.get(domainRE);
                 }
             }
         }
-        return null;
-    }
-
-    public String getContainerSelectorFromUrl(String url) {
-        if (url != null) {
-            for (String re : containerSelectorsMap.keySet()) {
-                if (Pattern.compile(re).matcher(url).find()) {
-                    return containerSelectorsMap.get(re).toString();
-                }
-            }
-        }
-        return null;
-    }
-
-    public String getMultiPageSelectorFromUrl(String url) {
-        if (url != null) {
-            for (String re : multiPageSelectorsMap.keySet()) {
-                if (Pattern.compile(re).matcher(url).find()) {
-                    return multiPageSelectorsMap.get(re).toString();
-                }
-            }
-        }
-        return null;
+        return DEFAULT_SELECTOR;
     }
 }

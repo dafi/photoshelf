@@ -31,7 +31,6 @@ import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.HtmlDocumentSupport;
-import com.ternaryop.photoshelf.ImageDOMSelectorFinder;
 import com.ternaryop.photoshelf.ImageInfo;
 import com.ternaryop.photoshelf.ImageUrlRetriever;
 import com.ternaryop.photoshelf.R;
@@ -42,6 +41,8 @@ import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
+import com.ternaryop.photoshelf.selector.DOMSelector;
+import com.ternaryop.photoshelf.selector.ImageDOMSelectorFinder;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
 import com.ternaryop.utils.URLUtils;
@@ -261,13 +262,14 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             try {
                 String galleryUrl = urls[0];
                 String content = readURLContent(galleryUrl);
+                DOMSelector selector = domSelectorFinder.getSelectorFromUrl(galleryUrl);
 
                 Document htmlDocument = Jsoup.parse(content);
                 htmlDocument.setBaseUri(galleryUrl);
-                imageUrlRetriever.setTitle(htmlDocument.title());
-                extractImages(imageInfoList, galleryUrl, htmlDocument);
+                imageUrlRetriever.setTitle(findTitle(selector, htmlDocument));
+                extractImages(imageInfoList, selector, htmlDocument);
 
-                extractImageFromMultiPage(imageInfoList, galleryUrl, htmlDocument);
+                extractImageFromMultiPage(imageInfoList, selector, htmlDocument);
 
             } catch (Exception e) {
                 error = e;
@@ -275,34 +277,40 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             return imageInfoList;
         }
 
-        private void extractImageFromMultiPage(List<ImageInfo> imageInfoList, String url, Document startPageDocument) throws IOException {
-            String multiPageSelector = domSelectorFinder.getMultiPageSelectorFromUrl(url);
-            if (multiPageSelector == null) {
+        public String findTitle(DOMSelector selector, Document htmlDocument) {
+            String title = "";
+            if (selector.getTitle() != null) {
+                title = htmlDocument.select(selector.getTitle()).text();
+            }
+            if (title.isEmpty()) {
+                return htmlDocument.title();
+            }
+            return title;
+        }
+
+        private void extractImageFromMultiPage(List<ImageInfo> imageInfoList, DOMSelector selector, Document startPageDocument) throws IOException {
+            if (selector.getMultiPage() == null) {
                 return;
             }
-            for (Element element : startPageDocument.select(multiPageSelector)) {
+            for (Element element : startPageDocument.select(selector.getMultiPage())) {
                 String pageUrl = element.absUrl("href");
                 String pageContent = readURLContent(pageUrl);
                 Document pageDocument = Jsoup.parse(pageContent);
                 pageDocument.setBaseUri(pageUrl);
-                extractImages(imageInfoList, pageUrl, pageDocument);
+                extractImages(imageInfoList, domSelectorFinder.getSelectorFromUrl(pageUrl), pageDocument);
             }
         }
 
-        private void extractImages(List<ImageInfo> imageInfoList, String url, Document htmlDocument) {
-            String containerSelector = domSelectorFinder.getContainerSelectorFromUrl(url);
-            if (containerSelector == null) {
-                containerSelector = "a img[src*=jpg]";
-            }
-            Elements thumbnailImages = htmlDocument.select(containerSelector);
+        private void extractImages(List<ImageInfo> imageInfoList, DOMSelector selector, Document htmlDocument) {
+            Elements thumbnailImages = htmlDocument.select(selector.getContainer());
             int totalSize = imageInfoList.size() + thumbnailImages.size();
             publishProgress(getResources().getQuantityString(R.plurals.image_found, totalSize, totalSize));
             for (Element thumbnailImage : thumbnailImages) {
                 String destinationDocumentURL = thumbnailImage.parent().absUrl("href");
-                String selector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
-                if (selector != null) {
+                DOMSelector destinationSelector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
+                if (destinationSelector.getImage() != null) {
                     String thumbnailURL = thumbnailImage.absUrl("src");
-                    imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, selector));
+                    imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, destinationSelector.getImage()));
                 }
             }
         }

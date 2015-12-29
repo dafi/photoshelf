@@ -1,40 +1,95 @@
 {
-  "version": 8,
+  "version": 9,
   "selectors": {
-    "http:\/\/images.bangtidy.net\/.*\/attachment": "#theimage",
-    "http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/": "#theimage",
-    "http:\/\/x05.org": "#img_obj",
-    "http:\/\/www.imagebam.com": ".image-container img",
-    "http:\/\/www.pixtreat.com": "#img_obj",
-    "http:\/\/www.imagesion.com": "#full_image",
-    "http:\/\/www.picturesion.com": "#full_image",
-    "http:\/\/.*.imagevenue.com": "#thepic",
-    "http:\/\/imagetwist.com": ".pic",
-    "http:\/\/www.hotcelebshome.com": "#thepic",
-    "http:\/\/eyeprime.net": ".attachment-810x810",
-    "hollywoodtuna.com\/.*page_id": "p a img",
-    "imgchili.net": "#show_image",
-    "http:\/\/celebmafia.com": "",
-    "http:\/\/www.hawtcelebs.com\/wp-content": "",
-    "http:\/\/imgearn.net": ".pic",
-    "http:\/\/storeimgs.net": ".centred_resized",
-    "http:\/\/www.imagegaga.net": "#full_image",
-    "http:\/\/www.sawfirst.com": "pageSel:.entry-title a selAttr:href",
-    "http:\/\/imgbox.com": "#img",
-    "http:\/\/someimage.com": "#viewimage",
-    "http://imgpit.com/": ".centred_resized",
-    "http://www.gceleb.com/": "",
-    "http://www.imgz.pw/": "regExp:src='(.*?)' id='iimg'",
-    "imageleon.com": "#full_image",
-    "imgcredit.xyz": ".centred_resized",
-    "hotflick.net": ".pict_content img"
-  },
-  "containerSelectors": {
-    "http:\/\/www.sawfirst.com": "#gallery-1 a img[src*=jpg]",
-    "http://www.gceleb.com/": ".entry img",
-    "hotflick.net": ".box-item-155-img img"
-  },
-  "multiPageSelectors": {
-    "hotflick.net": ".box-paging a:not(.active)"
+    "http:\/\/images.bangtidy.net\/.*\/attachment": {
+      "image": "#theimage"
+    },
+    "http:\/\/images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/": {
+      "image": "#theimage"
+    },
+    "http:\/\/x05.org": {
+      "image": "#img_obj"
+    },
+    "http:\/\/www.imagebam.com": {
+      "image": ".image-container img"
+    },
+    "http:\/\/www.pixtreat.com": {
+      "image": "#img_obj"
+    },
+    "http:\/\/www.imagesion.com": {
+      "image": "#full_image"
+    },
+    "http:\/\/www.picturesion.com": {
+      "image": "#full_image"
+    },
+    "http:\/\/.*.imagevenue.com": {
+      "image": "#thepic"
+    },
+    "http:\/\/imagetwist.com": {
+      "image": ".pic"
+    },
+    "http:\/\/www.hotcelebshome.com": {
+      "image": "#thepic"
+    },
+    "http:\/\/eyeprime.net": {
+      "image": ".attachment-810x810"
+    },
+    "hollywoodtuna.com\/.*page_id": {
+      "image": "p a img"
+    },
+    "imgchili.net": {
+      "image": "#show_image"
+    },
+    "http:\/\/celebmafia.com": {
+      "image": ""
+    },
+    "http:\/\/www.hawtcelebs.com\/wp-content": {
+      "image": "",
+      "title": ".posthead h1"
+    },
+    "http:\/\/imgearn.net": {
+      "image": ".pic"
+    },
+    "http:\/\/storeimgs.net": {
+      "image": ".centred_resized"
+    },
+    "http:\/\/www.imagegaga.net": {
+      "image": "#full_image"
+    },
+    "http:\/\/www.sawfirst.com": {
+      "image": "pageSel:.entry-title a selAttr:href",
+      "container": "#gallery-1 a img[src*=jpg]",
+      "title": ".entry p strong"
+    },
+    "http:\/\/imgbox.com": {
+      "image": "#img"
+    },
+    "http:\/\/someimage.com": {
+      "image": "#viewimage"
+    },
+    "http://imgpit.com/": {
+      "image": ".centred_resized"
+    },
+    "http://www.gceleb.com/": {
+      "image": "",
+      "container":".entry img"
+    },
+    "http://www.imgz.pw/": {
+      "image": "regExp:src='(.*?)' id='iimg'"
+    },
+    "imageleon.com": {
+      "image": "#full_image"
+    },
+    "imgcredit.xyz": {
+      "image": ".centred_resized"
+    },
+    "hotflick.net": {
+      "image": ".pict_content img",
+      "container": ".box-item-155-img img",
+      "multiPage": ".box-paging a:not(.active)"
+    },
+    "carreck.com": {
+      "title": ".postentry p"
+    }
   }
 }
