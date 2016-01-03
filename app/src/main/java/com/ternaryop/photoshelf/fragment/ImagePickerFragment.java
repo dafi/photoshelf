@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -60,6 +61,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     private ImageUrlRetriever imageUrlRetriever;
     private ImagePickerAdapter imagePickerAdapter;
     private ImageDOMSelectorFinder domSelectorFinder;
+    private TextView detailsText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -80,6 +82,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         gridView.setOnItemClickListener(this);
         gridView.setMultiChoiceModeListener(this);
         gridView.setEmptyView(progressHighlightViewLayout);
+
+        detailsText = (TextView) rootView.findViewById(R.id.details_text);
+
+        setHasOptionsMenu(true);
 
         return rootView;
     }
@@ -364,13 +370,25 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             super.onPostExecute(null);
             if (error == null) {
                 progressHighlightViewLayout.stopProgress();
-                getSupportActionBar().setSubtitle(imageUrlRetriever.getTitle());
+                showDetails(imageUrlRetriever.getTitle());
+                getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.image_found, result.size(), result.size()));
                 imagePickerAdapter.addAll(result);
                 imagePickerAdapter.notifyDataSetChanged();
                 gridView.invalidateViews();
             } else {
                 DialogUtils.showErrorDialog(getActivity(), error);
             }
+        }
+
+        public void showDetails(String text) {
+            detailsText.setVisibility(View.VISIBLE);
+            detailsText.setText(text);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    detailsText.setVisibility(View.GONE);
+                }
+            }, 3 * 1000);
         }
     }
 
@@ -404,5 +422,26 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
 
     @Override
     public void onOverflowClick(View view, int position) {
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.image_picker, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_image_viewer_details:
+                toogleDetails();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void toogleDetails() {
+        detailsText.setVisibility(detailsText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
     }
 }
