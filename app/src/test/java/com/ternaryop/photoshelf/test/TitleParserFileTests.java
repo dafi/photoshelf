@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 
+import com.ternaryop.photoshelf.parsers.JSONTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class TitleParserFileTests {
     public void testTitle() {
         try {
             String configPath = new File(new File(".").getAbsoluteFile(), "app/src/main/assets/titleParser.json").getAbsolutePath();
-            TitleData titleData = TitleParser.instance(new TitleParserConfigMockup(configPath)).parseTitle(inputTitle);
+            TitleData titleData = TitleParser.instance(new JSONTitleParserConfig(configPath)).parseTitle(inputTitle);
 
             String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
             assertEquals(expectedTitle, formattedInput);
