@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 
 // To run this test be sure the Build Variants window is open then select Unit Tests
@@ -63,6 +64,7 @@ public class TitleParserFileTests {
             assertEquals(expectedTitle, formattedInput);
         } catch (Exception e) {
             e.printStackTrace();
+            assertFalse(e.getMessage(), true);
         }
     }
 }
