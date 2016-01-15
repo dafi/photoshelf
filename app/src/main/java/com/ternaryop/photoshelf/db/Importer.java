@@ -40,11 +40,12 @@ import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.IOUtils;
 
 public class Importer {
-    private static final String CSV_FILE_NAME = "tags.csv";
-    private static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
-    private static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
-    private static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
-    private static final String TOTAL_USERS_FILE_NAME = "totalUsers.csv";
+    public static final String CSV_FILE_NAME = "tags.csv";
+    public static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
+    public static final String TITLE_PARSER_FILE_NAME = "titleParser.json";
+    public static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
+    public static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
+    public static final String TOTAL_USERS_FILE_NAME = "totalUsers.csv";
 
     private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
@@ -168,22 +169,28 @@ public class Importer {
         return postRetriever;
     }
 
-    public void importDOMFilters(String importPath) {
+    public void importFile(String importPath, String contextFileName) {
+        try {
+            copyFileToContext(importPath, contextFileName);
+            Toast.makeText(context, context.getString(R.string.importSuccess), Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void copyFileToContext(String fullPath, String contextFileName) throws IOException {
         InputStream in = null;
         OutputStream out = null;
 
         try {
-            in = new FileInputStream(importPath);
-            out = context.openFileOutput("domSelectors.json", 0);
+            in = new FileInputStream(fullPath);
+            out = context.openFileOutput(contextFileName, 0);
 
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            Toast.makeText(context, context.getString(R.string.importSuccess), Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             if (in != null) try { in.close(); } catch (Exception ignored) {}
             if (out != null) try { out.close(); } catch (Exception ignored) {}
@@ -411,6 +418,10 @@ public class Importer {
 
     public static String getDOMFiltersPath() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
+    }
+
+    public static String getTitleParserPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + TITLE_PARSER_FILE_NAME;
     }
 
     public static String getBirthdaysPath() {

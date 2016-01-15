@@ -28,6 +28,11 @@
                 android:persistent="false"
                 android:title="@string/import_dom_filters_title" />
 
+            <Preference
+                android:key="import_title_parser"
+                android:persistent="false"
+                android:title="@string/import_title_parser_title" />
+
             <PreferenceCategory android:title="@string/pref_posts_title" >
                 <Preference
                     android:key="import_posts_from_csv"

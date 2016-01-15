@@ -40,6 +40,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private static final String KEY_EXPORT_POSTS_FROM_CSV = "export_posts_csv";
     private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
     private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
+    private static final String KEY_IMPORT_TITLE_PARSER = "import_title_parser";
     private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
     private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
     private static final String KEY_EXPORT_MISSING_BIRTHDAYS = "export_missing_birthdays";
@@ -56,6 +57,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private Preference preferenceExportPostsToCSV;
     private Preference preferenceImportPostsFromTumblr;
     private Preference preferenceImportDOMFilters;
+    private Preference preferenceImportTitleParser;
     private Preference preferenceImportBirthdays;
     private Preference preferenceExportBirthdays;
     private Preference preferenceImportBirthdaysFromWikipedia;
@@ -97,24 +99,18 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         }
         
         String csvPath = Importer.getPostsPath();
-        preferenceImportPostsFromCSV = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_CSV);
-        preferenceImportPostsFromCSV.setSummary(csvPath);
-        preferenceImportPostsFromCSV.setEnabled(new File(csvPath).exists());
+        preferenceImportPostsFromCSV = setupPreferenceFilePath(csvPath, KEY_IMPORT_POSTS_FROM_CSV, preferenceScreen);
 
         preferenceExportPostsToCSV = preferenceScreen.findPreference(KEY_EXPORT_POSTS_FROM_CSV);
         preferenceExportPostsToCSV.setSummary(csvPath);
         
         preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
         
-        String domFiltersPath = Importer.getDOMFiltersPath();
-        preferenceImportDOMFilters = preferenceScreen.findPreference(KEY_IMPORT_DOM_FILTERS);
-        preferenceImportDOMFilters.setSummary(domFiltersPath);
-        preferenceImportDOMFilters.setEnabled(new File(domFiltersPath).exists());
+        preferenceImportDOMFilters = setupPreferenceFilePath(Importer.getDOMFiltersPath(), KEY_IMPORT_DOM_FILTERS, preferenceScreen);
+        preferenceImportTitleParser = setupPreferenceFilePath(Importer.getTitleParserPath(), KEY_IMPORT_TITLE_PARSER, preferenceScreen);
 
         String birthdaysPath = Importer.getBirthdaysPath();
-        preferenceImportBirthdays = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS);
-        preferenceImportBirthdays.setSummary(birthdaysPath);
-        preferenceImportBirthdays.setEnabled(new File(birthdaysPath).exists());
+        preferenceImportBirthdays = setupPreferenceFilePath(birthdaysPath, KEY_IMPORT_BIRTHDAYS, preferenceScreen);
 
         preferenceExportBirthdays = preferenceScreen.findPreference(KEY_EXPORT_BIRTHDAYS);
         preferenceExportBirthdays.setSummary(birthdaysPath);
@@ -135,6 +131,13 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), AppSupport.PREF_EXPORT_DAYS_PERIOD);
 
         setupVersionInfo(preferenceScreen);
+    }
+
+    private Preference setupPreferenceFilePath(String fullPath, String prefKey, PreferenceScreen preferenceScreen) {
+        Preference pref = preferenceScreen.findPreference(prefKey);
+        pref.setSummary(fullPath);
+        pref.setEnabled(new File(fullPath).exists());
+        return pref;
     }
 
     @Override
@@ -207,7 +210,10 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
                 getImporter().importFromTumblr(appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceImportDOMFilters) {
-                getImporter().importDOMFilters(Importer.getDOMFiltersPath());
+                getImporter().importFile(Importer.getDOMFiltersPath(), Importer.DOM_FILTERS_FILE_NAME);
+                return true;
+            } else if (preference == preferenceImportTitleParser) {
+                getImporter().importFile(Importer.getDOMFiltersPath(), Importer.TITLE_PARSER_FILE_NAME);
                 return true;
             } else if (preference == preferenceImportBirthdays) {
                 getImporter().importBirthdays(Importer.getBirthdaysPath());

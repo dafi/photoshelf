@@ -47,6 +47,7 @@
     <string name="export_posts_csv_title">Export Posts to CSV File</string>
     <string name="import_posts_from_tumblr_title">Import Posts From Tumblr</string>
     <string name="import_dom_filters_title">Import DOM Filters</string>
+    <string name="import_title_parser_title">Import Title Parsers</string>
     <string name="import_birthdays_title">Import Birthdays</string>
     <string name="import_missing_birthdays_from_wikipedia_title">Import Missing Birthdays from Wikipedia</string>
     <string name="export_birthdays_title">Export Birthdays to CSV File</string>
