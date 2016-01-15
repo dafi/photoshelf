@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -90,6 +90,9 @@
     },
     "carreck.com": {
       "title": ".postentry p"
+    },
+    "http://kosty555.info": {
+      "title": ".bbc_center .bbc"
     }
   }
 }
