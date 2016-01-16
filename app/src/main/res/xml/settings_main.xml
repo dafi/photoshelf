@@ -79,10 +79,10 @@
         android:key="pref_key_schedule_settings"
         android:title="@string/pref_schedule_title" >
         <com.ternaryop.preference.IntegerEditTextPreference
-            android:defaultValue="@integer/schedule_time_span_default"
-            android:key="schedule_time_span"
-            android:maxLength="2"
-            android:title="Default Schedule Span Hours" />
+            android:defaultValue="@integer/schedule_minutes_time_span_default"
+            android:key="schedule_minutes_time_span"
+            android:maxLength="6"
+            android:title="@string/schedule_minutes_time_span_default" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_clear_cache"

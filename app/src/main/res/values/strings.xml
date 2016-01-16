@@ -123,6 +123,10 @@
         <item quantity="one">One hour</item>
         <item quantity="other">%1$d hours</item>
     </plurals>
+    <plurals name="minute_title">
+        <item quantity="one">One minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
     <plurals name="day_title">
         <item quantity="one">One day</item>
         <item quantity="other">%1$d days</item>
@@ -218,5 +222,6 @@
     <string name="clear_cache">Clear Cache</string>
     <string name="sort_by_count">Sort by Count</string>
     <string name="sort_by_name">Sort by Name</string>
+    <string name="schedule_minutes_time_span_default">Default Schedule Span Minutes</string>
 
 </resources>

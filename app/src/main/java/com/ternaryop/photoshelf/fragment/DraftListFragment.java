@@ -57,9 +57,11 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
         photoListView.setEmptyView(progressHighlightViewLayout);
 
-        swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
-        swipeLayout.setColorScheme(R.array.progress_swipe_colors);
-        swipeLayout.setOnRefreshListener(this);
+        if (rootView != null) {
+            swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+            swipeLayout.setColorScheme(R.array.progress_swipe_colors);
+            swipeLayout.setOnRefreshListener(this);
+        }
 
         return rootView;
     }
@@ -199,11 +201,11 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
             protected List<PhotoShelfPost> doInBackground(Void... params) {
                 try {
                     // reading drafts
-                    HashMap<String, List<TumblrPost>> tagsForDraftPosts = new HashMap<String, List<TumblrPost>>();
-                    queuedPosts = new HashMap<String, TumblrPost>();
+                    HashMap<String, List<TumblrPost>> tagsForDraftPosts = new HashMap<>();
+                    queuedPosts = new HashMap<>();
                     draftPostHelper.getDraftAndQueueTags(tagsForDraftPosts, queuedPosts);
 
-                    ArrayList<String> tags = new ArrayList<String>(tagsForDraftPosts.keySet());
+                    ArrayList<String> tags = new ArrayList<>(tagsForDraftPosts.keySet());
 
                     // get last published
                     this.publishProgress(getContext().getString(R.string.finding_last_published_posts));
@@ -271,7 +273,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
             cal = (Calendar) lastScheduledDate.clone();
         }
         // set next queued post time
-        cal.add(Calendar.HOUR, fragmentActivityStatus.getAppSupport().getDefaultScheduleHoursSpan());
+        cal.add(Calendar.MINUTE, fragmentActivityStatus.getAppSupport().getDefaultScheduleMinutesTimeSpan());
 
         return cal;
     }

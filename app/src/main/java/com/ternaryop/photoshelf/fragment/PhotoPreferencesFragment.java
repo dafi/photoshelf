@@ -117,8 +117,8 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
         preferenceImportBirthdaysFromWikipedia = preferenceScreen.findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA);
         
-        preferenceScheduleTimeSpan = preferenceScreen.findPreference(AppSupport.PREF_SCHEDULE_TIME_SPAN);
-        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), AppSupport.PREF_SCHEDULE_TIME_SPAN);
+        preferenceScheduleTimeSpan = preferenceScreen.findPreference(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN);
+        onSharedPreferenceChanged(PreferenceManager.getDefaultSharedPreferences(getActivity()), AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN);
 
         preferenceClearImageCache = preferenceScreen.findPreference(KEY_CLEAR_IMAGE_CACHE);
 
@@ -154,27 +154,31 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(AppSupport.PREF_SCHEDULE_TIME_SPAN)) {
-            int hours = sharedPreferences.getInt(key, 0);
-            preferenceScheduleTimeSpan.setSummary(getResources().getQuantityString(R.plurals.hour_title, hours, hours));
-        } else if (key.equals(KEY_THUMBNAIL_WIDTH)) {
-            String value = sharedPreferences.getString(key, getResources().getString(R.string.thumbnail_width_value_default));
-            int index = preferenceThumbnailWidth.findIndexOfValue(value);
-            if (index > -1) {
-                preferenceThumbnailWidth.setSummary(preferenceThumbnailWidth.getEntries()[index]);
-            }
-        } else if (key.equals(AppSupport.PREF_EXPORT_DAYS_PERIOD)) {
-            int days = sharedPreferences.getInt(key, appSupport.getExportDaysPeriod());
-            long lastFollowersUpdateTime = appSupport.getLastFollowersUpdateTime();
-            String remainingMessage;
-            if (lastFollowersUpdateTime < 0) {
-                remainingMessage = getResources().getString(R.string.never_run);
-            } else {
-                int remainingDays = (int)(days - DateTimeUtils.daysSinceTimestamp(lastFollowersUpdateTime));
-                remainingMessage = getResources().getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays);
-            }
-            preferenceExportDaysPeriod.setSummary(getResources().getQuantityString(R.plurals.day_title, days, days)
-                    + " (" + remainingMessage + ")");
+        switch (key) {
+            case AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN:
+                int minutes = sharedPreferences.getInt(key, 0);
+                preferenceScheduleTimeSpan.setSummary(getResources().getQuantityString(R.plurals.minute_title, minutes, minutes));
+                break;
+            case KEY_THUMBNAIL_WIDTH:
+                String value = sharedPreferences.getString(key, getResources().getString(R.string.thumbnail_width_value_default));
+                int index = preferenceThumbnailWidth.findIndexOfValue(value);
+                if (index > -1) {
+                    preferenceThumbnailWidth.setSummary(preferenceThumbnailWidth.getEntries()[index]);
+                }
+                break;
+            case AppSupport.PREF_EXPORT_DAYS_PERIOD:
+                int days = sharedPreferences.getInt(key, appSupport.getExportDaysPeriod());
+                long lastFollowersUpdateTime = appSupport.getLastFollowersUpdateTime();
+                String remainingMessage;
+                if (lastFollowersUpdateTime < 0) {
+                    remainingMessage = getResources().getString(R.string.never_run);
+                } else {
+                    int remainingDays = (int) (days - DateTimeUtils.daysSinceTimestamp(lastFollowersUpdateTime));
+                    remainingMessage = getResources().getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays);
+                }
+                preferenceExportDaysPeriod.setSummary(getResources().getQuantityString(R.plurals.day_title, days, days)
+                        + " (" + remainingMessage + ")");
+                break;
         }
     }
 

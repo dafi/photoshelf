@@ -27,7 +27,7 @@ public class AppSupport {
     // Preferences keys
     public static final String PREF_SELECTED_BLOG = "selectedBlog";
     public static final String PREF_BLOG_NAMES = "blogNames";
-    public static final String PREF_SCHEDULE_TIME_SPAN = "schedule_time_span";
+    public static final String PREF_SCHEDULE_MINUTES_TIME_SPAN = "schedule_minutes_time_span";
     public static final String PREF_EXPORT_DAYS_PERIOD = "exportDaysPeriod";
     public static final String PREF_LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime";
 
@@ -52,22 +52,22 @@ public class AppSupport {
         if (blogSet == null) {
             return null;
         }
-        ArrayList<String> list = new ArrayList<String>(blogSet);
+        ArrayList<String> list = new ArrayList<>(blogSet);
         Collections.sort(list);
         return list;
     }
     
     public void setBlogList(List<String> blogNames) {
-        setBlogList(new HashSet<String>(blogNames));
+        setBlogList(new HashSet<>(blogNames));
     }
 
     public void setBlogList(Set<String> blogNames) {
         preferences.edit().putStringSet(PREF_BLOG_NAMES, blogNames).apply();
     }
 
-    public int getDefaultScheduleHoursSpan() {
-        return preferences.getInt(PREF_SCHEDULE_TIME_SPAN,
-                context.getResources().getInteger(R.integer.schedule_time_span_default));
+    public int getDefaultScheduleMinutesTimeSpan() {
+        return preferences.getInt(PREF_SCHEDULE_MINUTES_TIME_SPAN,
+                context.getResources().getInteger(R.integer.schedule_minutes_time_span_default));
     }
 
     public Context getContext() {
@@ -84,7 +84,7 @@ public class AppSupport {
 
             @Override
             public void complete(Blog[] blogs) {
-                HashSet<String> blogNames = new HashSet<String>(blogs.length);
+                HashSet<String> blogNames = new HashSet<>(blogs.length);
                 String primaryBlog = null;
                 for (Blog blog : blogs) {
                     blogNames.add(blog.getName());
@@ -111,7 +111,7 @@ public class AppSupport {
     }
     
     public interface AppSupportCallback {
-        public void onComplete(AppSupport appSupport, Exception error);
+        void onComplete(AppSupport appSupport, Exception error);
     }
     
     public long getLastBirthdayShowTime() {

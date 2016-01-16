@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item type="integer" name="schedule_time_span_default">3</item>
+    <item type="integer" name="schedule_minutes_time_span_default">180</item>
     <item type="integer" name="export_days_period_default">7</item>
     <item type="string" name="thumbnail_width_value_default">75</item>
     <string-array name="list_thumbnail_width_entries_default">
