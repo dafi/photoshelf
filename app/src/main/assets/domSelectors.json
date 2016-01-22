@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -81,7 +81,7 @@
       "image": "#full_image"
     },
     "imgcredit.xyz": {
-      "image": ".centred_resized"
+      "image": ".centred"
     },
     "hotflick.net": {
       "image": ".pict_content img",
