@@ -14,10 +14,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
-public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
+public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColumns {
     public static final String NAME = "NAME";
     public static final String BIRTH_DATE = "BIRTH_DATE";
     public static final String TUMBLR_NAME = "TUMBLR_NAME";
@@ -107,7 +108,7 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
     
     public List<String> getNameWithoutBirthDays(String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         try (Cursor c = db.query("VW_MISSING_BIRTHDAYS",
                 new String[]{NAME},
                 TUMBLR_NAME + " = ?",
@@ -134,7 +135,7 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
     }
 
     private List<Birthday> cursorToBirtdayList(Cursor c) {
-        ArrayList<Birthday> list = new ArrayList<Birthday>();
+        ArrayList<Birthday> list = new ArrayList<>();
         try {
             while (c.moveToNext()) {
                 Birthday birthday = new Birthday(
@@ -210,11 +211,11 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
                     " and t.TUMBLR_NAME=?" +
                     " order by tag";
 
-        ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        ArrayList<Map<String, String>> list = new ArrayList<>();
         try (Cursor c = db.rawQuery(dateQuery,
                 new String[]{tumblrName})) {
             while (c.moveToNext()) {
-                HashMap<String, String> map = new HashMap<String, String>();
+                HashMap<String, String> map = new HashMap<>();
                 map.put("postId", c.getString(0));
                 map.put("tag", c.getString(1));
                 map.put("age", c.getString(2));
@@ -300,5 +301,22 @@ public class BirthdayDAO extends AbsDAO<Birthday> implements BaseColumns {
 
         return db.rawQuery(query,
                 new String[]{likeClause, tumblrName, likeClause, tumblrName});
+    }
+
+    public SQLiteStatement getCompiledInsertStatement(SQLiteDatabase db) {
+        return db.compileStatement("insert into " + TABLE_NAME + "(TUMBLR_NAME, NAME, BIRTH_DATE) values (?, ?, ?)");
+    }
+
+    public long insert(SQLiteStatement stmt, Birthday birthday) {
+        int index = 0;
+        stmt.bindString(++index, birthday.getTumblrName());
+        stmt.bindString(++index, birthday.getName());
+        if (birthday.getBirthDate() == null) {
+            stmt.bindNull(++index);
+        } else {
+            stmt.bindString(++index, Birthday.ISO_DATE_FORMAT.format(birthday.getBirthDate()));
+        }
+
+        return stmt.executeInsert();
     }
 }

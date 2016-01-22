@@ -59,8 +59,8 @@ public class Importer {
 
     public void importPostsFromCSV(final String importPath) {
         try {
-            new DbImportAsyncTask<PostTag>(context,
-                    new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
+            new DbImportAsyncTask<>(context,
+                    new CSVIterator<>(importPath, new PostTagCSVBuilder()),
                     DBHelper.getInstance(context).getPostTagDAO(),
                     true).execute();
 //            if (dropboxManager.hasLinkedAccount()) {
@@ -106,7 +106,7 @@ public class Importer {
         try (Cursor c = db.query(PostTagDAO.TABLE_NAME, null, null, null, null, null, PostTagDAO._ID)) {
             PrintWriter pw = new PrintWriter(exportPath);
             while (c.moveToNext()) {
-                pw.println(String.format("%1$d;%2$s;%3$s;%4$d;%5$d",
+                pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$d;%5$d",
                         c.getLong(c.getColumnIndex(PostTagDAO._ID)),
                         c.getString(c.getColumnIndex(PostTagDAO.TUMBLR_NAME)),
                         c.getString(c.getColumnIndex(PostTagDAO.TAG)),
@@ -145,7 +145,7 @@ public class Importer {
                     }
                     return;
                 }
-                List<PostTag> allPostTags = new ArrayList<PostTag>();
+                List<PostTag> allPostTags = new ArrayList<>();
                 for (TumblrPost tumblrPost : allPosts) {
                     allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));
                 }
@@ -199,8 +199,8 @@ public class Importer {
 
     public void importBirthdays(final String importPath) {
         try {
-            new DbImportAsyncTask<Birthday>(context,
-                    new CSVIterator<Birthday>(importPath, new CSVBuilder<Birthday>() {
+            new DbImportAsyncTask<>(context,
+                    new CSVIterator<>(importPath, new CSVBuilder<Birthday>() {
 
                         @Override
                         public Birthday parseCSVFields(String[] fields) throws ParseException {
@@ -270,7 +270,7 @@ public class Importer {
             protected String doInBackground(Void... params) {
                 BirthdayDAO birthdayDAO = DBHelper.getInstance(context).getBirthdayDAO();
                 List<String> names = birthdayDAO.getNameWithoutBirthDays(blogName);
-                List<Birthday> birthdays = new ArrayList<Birthday>();
+                List<Birthday> birthdays = new ArrayList<>();
                 int curr = 1;
                 int size = names.size();
                 StringBuilder found = new StringBuilder();
@@ -296,7 +296,7 @@ public class Importer {
                     String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + fileName;
                     PrintWriter pw = new PrintWriter(path);
                     for (Birthday birthday : birthdays) {
-                        pw.println(String.format("%1$d;%2$s;%3$s;%4$s",
+                        pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$s",
                                 1L,
                                 birthday.getName(),
                                 Birthday.ISO_DATE_FORMAT.format(birthday.getBirthDate()),

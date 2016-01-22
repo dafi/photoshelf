@@ -12,10 +12,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
-public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
+public class PostTagDAO extends BulkImportAbsDAO<PostTag> implements BaseColumns {
     public static final String TABLE_NAME = "POST_TAG";
     
     public static final String TAG = "TAG";
@@ -127,7 +128,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     
     public Map<String, Long> getMapTagLastPublishedTime(List<String> tags, String tumblrName) {
 
-        HashMap<String, Long> map = new HashMap<String, Long>();
+        HashMap<String, Long> map = new HashMap<>();
         try (Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[]{TAG, PUBLISH_TIMESTAMP})) {
             while (c.moveToNext()) {
                 map.put(c.getString(c.getColumnIndex(TAG)).toLowerCase(Locale.US),
@@ -171,7 +172,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     }
 
     private List<PostTag> cursorToList(Cursor c) {
-        ArrayList<PostTag> list = new ArrayList<PostTag>();
+        ArrayList<PostTag> list = new ArrayList<>();
         try {
             while (c.moveToNext()) {
                 PostTag postTag = new PostTag(
@@ -227,7 +228,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 "(SELECT count(*) FROM birthday where tumblr_name=?) " + BIRTHDAYS_COUNT_COLUMN + "," +
                 "(SELECT count(*) FROM VW_MISSING_BIRTHDAYS where tumblr_name=?) " + MISSING_BIRTHDAYS_COUNT_COLUMN;
 
-        HashMap<String, Long> map = new HashMap<String, Long>();
+        HashMap<String, Long> map = new HashMap<>();
         try (Cursor c = db.rawQuery(sqlQuery, new String[]{tumblrName, tumblrName, tumblrName, tumblrName, tumblrName, tumblrName})) {
             if (c.moveToNext()) {
                 for (int i = 0; i < c.getColumnCount(); i++) {
@@ -312,5 +313,20 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 null,
                 null,
                 null));
+    }
+
+    public SQLiteStatement getCompiledInsertStatement(SQLiteDatabase db) {
+        return db.compileStatement("insert into " + TABLE_NAME + "(" + _ID + ", TAG, TUMBLR_NAME, PUBLISH_TIMESTAMP, SHOW_ORDER) values (?, ?, ?, ?, ?)");
+    }
+
+    public long insert(SQLiteStatement stmt, PostTag postTag) {
+        int index = 0;
+        stmt.bindLong(++index, postTag.getId());
+        stmt.bindString(++index, postTag.getTag());
+        stmt.bindString(++index, postTag.getTumblrName());
+        stmt.bindLong(++index, postTag.getPublishTimestamp());
+        stmt.bindLong(++index, postTag.getShowOrder());
+
+        return stmt.executeInsert();
     }
 }
