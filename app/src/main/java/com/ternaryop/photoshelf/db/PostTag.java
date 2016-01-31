@@ -1,13 +1,8 @@
 package com.ternaryop.photoshelf.db;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
-import com.ternaryop.tumblr.TumblrPost;
-
-public class PostTag implements Serializable {
+public class PostTag extends Post {
     /**
      * 
      */
@@ -28,6 +23,12 @@ public class PostTag implements Serializable {
         this.id = id;
         this.publishTimestamp = timestamp;
         this.showOrder = showOrder;
+    }
+
+    public PostTag(Post post) {
+        this.id = post.getId();
+        this.publishTimestamp = post.getPublishTimestamp();
+        this.showOrder = post.getShowOrder();
     }
     
     public String getTag() {
@@ -69,22 +70,10 @@ public class PostTag implements Serializable {
     public void setTumblrName(String tumblrName) {
         this.tumblrName = tumblrName;
     }
-    
+
     @Override
     public String toString() {
         return String.format(Locale.US, "%1$s[%2$d] = tag %3$s ts = %4$d order %5$d",
                 tumblrName, id, tag, publishTimestamp, showOrder);
-    }
-    
-    public static List<PostTag> postTagsFromTumblrPost(TumblrPost tumblrPost) {
-        int showOrder = 1;
-        ArrayList<PostTag> list = new ArrayList<PostTag>();
-
-        for (String tag : tumblrPost.getTags()) {
-            list.add(new PostTag(tumblrPost.getPostId(), tumblrPost.getBlogName(), tag, tumblrPost.getTimestamp(), showOrder));
-            ++showOrder;
-        }
-        
-        return list;
     }
 }

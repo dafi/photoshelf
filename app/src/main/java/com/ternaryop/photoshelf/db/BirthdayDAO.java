@@ -19,10 +19,10 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColumns {
-    public static final String NAME = "NAME";
-    public static final String BIRTH_DATE = "BIRTH_DATE";
-    public static final String TUMBLR_NAME = "TUMBLR_NAME";
-    public static final String TABLE_NAME = "BIRTHDAY";
+    public static final String NAME = "name";
+    public static final String BIRTH_DATE = "birth_date";
+    public static final String TUMBLR_NAME = "tumblr_name";
+    public static final String TABLE_NAME = "birthday";
     
     public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, NAME, BIRTH_DATE };
 
@@ -49,23 +49,15 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
                 TUMBLR_NAME));
         
         // create views
-        db.execSQL("CREATE VIEW VW_MISSING_BIRTHDAYS AS"
-                + " select distinct t.TAG AS name, t.tumblr_name from POST_TAG t"
-                + " where ((t.SHOW_ORDER = 1)"
-                + " and (not(upper(t.TAG) in (select upper(BIRTHDAY.name) from BIRTHDAY))))");
+        db.execSQL("CREATE VIEW vw_missing_birthdays AS"
+                + " select distinct t.tag as name, t.tumblr_name from vw_post_tag t"
+                + " where ((t.show_order = 1)"
+                + " and (not(upper(t.tag) in (select upper(birthday.name) from birthday))))");
         // lollipop warns about index problems so add it
-        db.execSQL("CREATE INDEX TUMBLR_NAME_IDX ON BIRTHDAY(TUMBLR_NAME)");
+        db.execSQL("CREATE INDEX tumblr_name_idx ON birthday(tumblr_name)");
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // no need to upgrade
-        if (newVersion == 4) {
-            return;
-        }
-        if (newVersion == 3) {
-            db.execSQL("CREATE INDEX TUMBLR_NAME_IDX ON BIRTHDAY(TUMBLR_NAME)");
-            return;
-        }
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         db.execSQL("DROP VIEW IF EXISTS VW_MISSING_BIRTHDAYS");
         onCreate(db);
@@ -109,7 +101,7 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
     public List<String> getNameWithoutBirthDays(String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
         ArrayList<String> list = new ArrayList<>();
-        try (Cursor c = db.query("VW_MISSING_BIRTHDAYS",
+        try (Cursor c = db.query("vw_missing_birthdays",
                 new String[]{NAME},
                 TUMBLR_NAME + " = ?",
                 new String[]{tumblrName},
@@ -127,7 +119,7 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
 
     public Cursor getMissingBirthDaysCursor(String patternName, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        return db.rawQuery("select name " + NAME + ", " + TUMBLR_NAME + ", -1 " + _ID + ", null " + BIRTH_DATE + " from VW_MISSING_BIRTHDAYS" +
+        return db.rawQuery("select name " + NAME + ", " + TUMBLR_NAME + ", -1 " + _ID + ", null " + BIRTH_DATE + " from vw_missing_birthdays" +
                         " where " + NAME + " like ?" +
                         " and " + TUMBLR_NAME + "= ?" +
                         " order by " + NAME,
@@ -197,7 +189,7 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
                     " t._id," +
                     " t.tag," +
                     " (strftime('%Y', 'now') - strftime('%Y', b.birth_date)) - (strftime('%m-%d', 'now') < strftime('%m-%d', b.birth_date)) age" +
-                    " from post_tag t," +
+                    " from vw_post_tag t," +
                     " birthday b" +
                     " where" +
                     " t.tag=b.name" +
@@ -208,7 +200,7 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
                     " (strftime('%Y', 'now') - strftime('%Y', b.birth_date))" +
                     "     - (strftime('%m-%d', 'now') < strftime('%m-%d', b.birth_date) ) between " + fromAge + " and " + toAge + ")" +
                     " and t.show_order=1" +
-                    " and t.TUMBLR_NAME=?" +
+                    " and t.tumblr_name=?" +
                     " order by tag";
 
         ArrayList<Map<String, String>> list = new ArrayList<>();
@@ -294,17 +286,17 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
         String likeClause = "%" + pattern + "%";
 
         String query = "select " + TextUtils.join(",", COLUMNS) + " from birthday where name like ?" +
-                " and TUMBLR_NAME = ?" +
+                " and tumblr_name = ?" +
                 " and strftime('%m%d', birth_date) in" +
                 " (SELECT strftime('%m%d', birth_date) FROM birthday where name like ?" +
-                " and TUMBLR_NAME = ? and birth_date is not null group by strftime('%m%d', birth_date) having count(*) > 1 order by count(*) ) order by strftime('%m%d', birth_date), name";
+                " and tumblr_name = ? and birth_date is not null group by strftime('%m%d', birth_date) having count(*) > 1 order by count(*) ) order by strftime('%m%d', birth_date), name";
 
         return db.rawQuery(query,
                 new String[]{likeClause, tumblrName, likeClause, tumblrName});
     }
 
     public SQLiteStatement getCompiledInsertStatement(SQLiteDatabase db) {
-        return db.compileStatement("insert into " + TABLE_NAME + "(TUMBLR_NAME, NAME, BIRTH_DATE) values (?, ?, ?)");
+        return db.compileStatement("insert into " + TABLE_NAME + "(tumblr_name, name, birth_date) values (?, ?, ?)");
     }
 
     public long insert(SQLiteStatement stmt, Birthday birthday) {

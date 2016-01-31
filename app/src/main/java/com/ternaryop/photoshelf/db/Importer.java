@@ -61,7 +61,7 @@ public class Importer {
         try {
             new DbImportAsyncTask<>(context,
                     new CSVIterator<>(importPath, new PostTagCSVBuilder()),
-                    DBHelper.getInstance(context).getPostTagDAO(),
+                    DBHelper.getInstance(context).getBulkImportPostDAOWrapper(),
                     true).execute();
 //            if (dropboxManager.hasLinkedAccount()) {
 //                DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
@@ -102,8 +102,7 @@ public class Importer {
     }
 
     public void syncExportPostsToCSV(final String exportPath) throws Exception {
-        SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
-        try (Cursor c = db.query(PostTagDAO.TABLE_NAME, null, null, null, null, null, PostTagDAO._ID)) {
+        try (Cursor c = DBHelper.getInstance(context).getPostTagDAO().cursorExport()) {
             PrintWriter pw = new PrintWriter(exportPath);
             while (c.moveToNext()) {
                 pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$d;%5$d",
@@ -147,12 +146,12 @@ public class Importer {
                 }
                 List<PostTag> allPostTags = new ArrayList<>();
                 for (TumblrPost tumblrPost : allPosts) {
-                    allPostTags.addAll(PostTag.postTagsFromTumblrPost(tumblrPost));
+                    allPostTags.addAll(postTagsFromTumblrPost(tumblrPost));
                 }
                 new DbImportAsyncTask<PostTag>(context,
                         textView,
                         allPostTags.iterator(),
-                        DBHelper.getInstance(context).getPostTagDAO(),
+                        DBHelper.getInstance(context).getBulkImportPostDAOWrapper(),
                         false) {
                     @Override
                     protected void onPostExecute(Void result) {
@@ -162,6 +161,18 @@ public class Importer {
                         }
                     }
                 }.execute();
+            }
+
+            private List<PostTag> postTagsFromTumblrPost(TumblrPost tumblrPost) {
+                int showOrder = 1;
+                ArrayList<PostTag> list = new ArrayList<>();
+
+                for (String tag : tumblrPost.getTags()) {
+                    list.add(new PostTag(tumblrPost.getPostId(), tumblrPost.getBlogName(), tag, tumblrPost.getTimestamp(), showOrder));
+                    ++showOrder;
+                }
+
+                return list;
             }
         };
         PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, textView, wrapperCallback);

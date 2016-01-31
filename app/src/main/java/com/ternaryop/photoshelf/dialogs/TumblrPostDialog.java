@@ -198,7 +198,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = new ArrayList<String>(imageUrls);
+        this.imageUrls = new ArrayList<>(imageUrls);
     }
 
     public String getPostTitle() {
@@ -268,7 +268,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     private void fillBlogList(List<String> blogNames) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, blogNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, blogNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         blogList.setAdapter(adapter);
 
@@ -292,7 +292,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
             @Override
             public void complete(Blog[] result) {
-                List<String> blogNames = new ArrayList<String>(result.length);
+                List<String> blogNames = new ArrayList<>(result.length);
                 for (Blog blog : result) {
                     blogNames.add(blog.getName());
                 }
@@ -405,7 +405,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     private void editPost() {
-        final HashMap<String, String> newValues = new HashMap<String, String>();
+        final HashMap<String, String> newValues = new HashMap<>();
         newValues.put("id", String.valueOf(photoPost.getPostId()));
         newValues.put("caption", getPostTitle());
         newValues.put("tags", getPostTags());
@@ -415,7 +415,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             @Override
             public void complete(JSONObject result) {
                 newValues.put("tumblrName", appSupport.getSelectedBlogName());
-                DBHelper.getInstance(getActivity()).getPostTagDAO().update(newValues);
+                DBHelper.getInstance(getActivity()).getPostDAO().update(newValues, getActivity());
                 if (getTargetFragment() instanceof PostListener) {
                     ((PostListener) getTargetFragment()).onEditDone(TumblrPostDialog.this, photoPost);
                 }
@@ -439,7 +439,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     private void setImageFiles(List<File> imageFiles) {
-        this.imageFiles = new ArrayList<File>(imageFiles);
+        this.imageFiles = new ArrayList<>(imageFiles);
     }
 
     private class BlogItemSelectedListener implements OnItemSelectedListener {
@@ -487,6 +487,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     public interface PostListener {
-        public void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post);
+        void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post);
     }
 }

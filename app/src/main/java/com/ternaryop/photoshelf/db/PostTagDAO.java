@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.db;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,18 +11,19 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
-public class PostTagDAO extends BulkImportAbsDAO<PostTag> implements BaseColumns {
-    public static final String TABLE_NAME = "POST_TAG";
+public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
+    public static final String TABLE_NAME = "vw_post_tag";
     
-    public static final String TAG = "TAG";
-    public static final String TUMBLR_NAME = "TUMBLR_NAME";
-    public static final String PUBLISH_TIMESTAMP = "PUBLISH_TIMESTAMP";
-    public static final String SHOW_ORDER = "SHOW_ORDER";
-    
+    public static final String TAG = "tag";
+    public static final String TUMBLR_NAME = "tumblr_name";
+    public static final String PUBLISH_TIMESTAMP = "publish_timestamp";
+    public static final String SHOW_ORDER = "show_order";
+    public static final String TAG_ID = "tag_id";
+    public static final String BLOG_ID = "blog_id";
+
     public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
     public static final String POST_COUNT_COLUMN = "post_count";
     public static final String UNIQUE_TAGS_COUNT_COLUMN = "unique_tags_count";
@@ -40,40 +40,14 @@ public class PostTagDAO extends BulkImportAbsDAO<PostTag> implements BaseColumns
     }
 
     protected void onCreate(SQLiteDatabase db) {
-        String sql = "CREATE TABLE {0} ("
-                + "{1} BIGINT UNSIGNED NOT NULL,"
-                + "{2} TEXT NOT NULL,"
-                + "{3} TEXT NOT NULL,"
-                + "{4} INT UNSIGNED NOT NULL,"
-                + "{5} UNSIGNED NOT NULL,"
-                + "PRIMARY KEY ( {1}, {2}));";
-        db.execSQL(MessageFormat.format(sql,
-                TABLE_NAME,
-                _ID,
-                TAG,
-                TUMBLR_NAME,
-                PUBLISH_TIMESTAMP,
-                SHOW_ORDER));
-        // lollipop warns about index problems so add it
-        db.execSQL("CREATE INDEX TAG_IDX ON POST_TAG(TAG)");
-        // speedup getCursorLastPublishedTime
-        db.execSQL("CREATE INDEX TAG_TIMESTAMP_IDX ON POST_TAG(TAG, PUBLISH_TIMESTAMP);");
+        db.execSQL("create view vw_post_tag as" +
+                " select p._id, t.name tag, b.name tumblr_name, tag_id, blog_id, publish_timestamp, show_order" +
+                " from blog b, tag t, post p" +
+                " where p.blog_id=b._id and p.tag_id=t._id");
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (newVersion == 4) {
-            db.execSQL("CREATE INDEX TAG_TIMESTAMP_IDX ON POST_TAG(TAG, PUBLISH_TIMESTAMP);");
-            return;
-        }
-        // no need to upgrade
-        if (newVersion == 2) {
-            return;
-        }
-        if (newVersion == 3) {
-            db.execSQL("CREATE INDEX TAG_IDX ON POST_TAG(TAG)");
-            return;
-        }
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        db.execSQL("DROP VIEW IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
 
@@ -161,12 +135,12 @@ public class PostTagDAO extends BulkImportAbsDAO<PostTag> implements BaseColumns
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
         
         return db.rawQuery("SELECT " + TextUtils.join(",", selectArgs) 
-                + " FROM post_tag AS t"
-                + " WHERE t.TUMBLR_NAME = ?"
+                + " FROM vw_post_tag AS t"
+                + " WHERE t.tumblr_name = ?"
                 + " AND lower(t.tag) IN (" + inClause + ")"
-                + " AND PUBLISH_TIMESTAMP = "
-                + " (SELECT MAX(PUBLISH_TIMESTAMP)"
-                + "   FROM post_tag p"
+                + " AND publish_timestamp = "
+                + " (SELECT MAX(publish_timestamp)"
+                + "   FROM vw_post_tag p"
                 + "  WHERE p.tag = t.tag )",
                 args);
     }
@@ -221,10 +195,10 @@ public class PostTagDAO extends BulkImportAbsDAO<PostTag> implements BaseColumns
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
         String sqlQuery = "select" +
-                "(SELECT count(distinct(_id)) from post_tag where tumblr_name=?) " + POST_COUNT_COLUMN + "," +
-                "(SELECT count(*) FROM post_tag where tumblr_name=?) " + RECORD_COUNT_COLUMN + "," +
-                "(SELECT count(distinct(tag)) FROM post_tag where tumblr_name=?) " + UNIQUE_TAGS_COUNT_COLUMN + "," +
-                "(SELECT count(distinct(tag)) FROM post_tag where tumblr_name=? and show_order=1) " + UNIQUE_FIRST_TAG_COUNT_COLUMN + "," +
+                "(SELECT count(distinct(_id)) from vw_post_tag where tumblr_name=?) " + POST_COUNT_COLUMN + "," +
+                "(SELECT count(*) FROM vw_post_tag where tumblr_name=?) " + RECORD_COUNT_COLUMN + "," +
+                "(SELECT count(distinct(tag)) FROM vw_post_tag where tumblr_name=?) " + UNIQUE_TAGS_COUNT_COLUMN + "," +
+                "(SELECT count(distinct(tag)) FROM vw_post_tag where tumblr_name=? and show_order=1) " + UNIQUE_FIRST_TAG_COUNT_COLUMN + "," +
                 "(SELECT count(*) FROM birthday where tumblr_name=?) " + BIRTHDAYS_COUNT_COLUMN + "," +
                 "(SELECT count(*) FROM VW_MISSING_BIRTHDAYS where tumblr_name=?) " + MISSING_BIRTHDAYS_COUNT_COLUMN;
 
@@ -254,79 +228,15 @@ public class PostTagDAO extends BulkImportAbsDAO<PostTag> implements BaseColumns
         return TABLE_NAME;
     }
 
-    public void update(Map<String, String> newValues) {
-        String id = newValues.get("id");
-        String tumblrName = newValues.get("tumblrName");
-        String tags = newValues.get("tags");
-
-        if (id == null) {
-            throw new IllegalArgumentException("Post id is mandatory for update");
-        }
-        if (tumblrName == null || tumblrName.isEmpty()) {
-            throw new IllegalArgumentException("Tumblr name is mandatory for update");
-        }
-        if (tags == null || tags.isEmpty()) {
-            throw new IllegalArgumentException("Tag is mandatory for update");
-        }
-
-        long longId = Long.parseLong(id);
-        List<PostTag> postTags = getPostsById(longId, tumblrName);
-        if (postTags.isEmpty()) {
-            return;
-        }
-
-        SQLiteDatabase db = getDbHelper().getWritableDatabase();
-        try {
-            db.beginTransaction();
-            deleteById(longId);
-            // insert using existing postTag so we can modify only some fields leaving the others with previous values
-            PostTag postTag = postTags.get(0);
-            int showOrder = 1;
-            for (String tag : tags.split(",")) {
-                String trimmedTag = tag.trim();
-                if (!trimmedTag.isEmpty()) {
-                    postTag.setTag(trimmedTag);
-                    postTag.setShowOrder(showOrder++);
-                    insert(postTag);
-                }
-            }
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    public int deleteById(long id) {
-        SQLiteDatabase db = getDbHelper().getWritableDatabase();
-        return db.delete(TABLE_NAME, _ID + "=?", new String[] {String.valueOf(id)});
-    }
-
-    public List<PostTag> getPostsById(long id, String tumblrName) {
+    public Cursor cursorExport() {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-
-        return cursorToList(db.query(TABLE_NAME,
-                COLUMNS,
-                _ID + " =? and " + TUMBLR_NAME + " =?",
-                new String[] {String.valueOf(id), tumblrName},
+        return db.query(
+                TABLE_NAME,
+                new String[] {_ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER},
                 null,
                 null,
-                null));
-    }
-
-    public SQLiteStatement getCompiledInsertStatement(SQLiteDatabase db) {
-        return db.compileStatement("insert into " + TABLE_NAME + "(" + _ID + ", TAG, TUMBLR_NAME, PUBLISH_TIMESTAMP, SHOW_ORDER) values (?, ?, ?, ?, ?)");
-    }
-
-    public long insert(SQLiteStatement stmt, PostTag postTag) {
-        int index = 0;
-        stmt.bindLong(++index, postTag.getId());
-        stmt.bindString(++index, postTag.getTag());
-        stmt.bindString(++index, postTag.getTumblrName());
-        stmt.bindLong(++index, postTag.getPublishTimestamp());
-        stmt.bindLong(++index, postTag.getShowOrder());
-
-        return stmt.executeInsert();
+                null,
+                null,
+                _ID + ", " + BLOG_ID + ", " + TAG_ID);
     }
 }

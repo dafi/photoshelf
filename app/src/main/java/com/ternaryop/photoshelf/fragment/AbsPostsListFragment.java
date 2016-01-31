@@ -138,7 +138,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             protected void executeAction(PhotoShelfPost post) {
                 Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
                         post.getPostId());
-                DBHelper.getInstance(getContext()).getPostTagDAO().deleteById(post.getPostId());
+                DBHelper.getInstance(getContext()).getPostDAO().deleteById(post.getPostId());
                 onPostAction(post, POST_ACTION_DELETE, POST_ACTION_OK);
             }
         }.execute();
@@ -193,7 +193,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     protected List<PhotoShelfPost> getSelectedPosts() {
         SparseBooleanArray checkedItemPositions = photoListView.getCheckedItemPositions();
-        ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>();
+        ArrayList<PhotoShelfPost> list = new ArrayList<>();
         for (int i = 0; i < checkedItemPositions.size(); i++) {
             int key = checkedItemPositions.keyAt(i);
             if (checkedItemPositions.get(key)) {
@@ -236,7 +236,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     public void browseImageBySize(final PhotoShelfPost post) {
-        final ArrayAdapter<TumblrAltSize> arrayAdapter = new ArrayAdapter<TumblrAltSize>(
+        final ArrayAdapter<TumblrAltSize> arrayAdapter = new ArrayAdapter<>(
                 getActivity(),
                 android.R.layout.select_dialog_item,
                 post.getFirstPhotoAltSize());
@@ -377,7 +377,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
         @Override
         protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
-            List<PhotoShelfPost> notDeletedPosts = new ArrayList<PhotoShelfPost>();
+            List<PhotoShelfPost> notDeletedPosts = new ArrayList<>();
 
             for (final PhotoShelfPost post : postList) {
                 try {
@@ -415,7 +415,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                ArrayList<PhotoShelfPost> postList = new ArrayList<PhotoShelfPost>();
+                ArrayList<PhotoShelfPost> postList = new ArrayList<>();
                 postList.add(post);
                 return handleMenuItem(item, postList, null);
             }
