@@ -29,7 +29,7 @@ public class DraftPostHelper {
     public DraftPostHelper(Context context, String blogName) {
         this.context = context;
         this.blogName = blogName;
-        draftCache = new TumblrPostCache(context, "draft");
+        draftCache = new TumblrPostCache(context, blogName + "Draft");
         tumblr = Tumblr.getSharedTumblr(context);
     }
 
@@ -43,14 +43,14 @@ public class DraftPostHelper {
      * @return the tag, posts map
      */
     public Map<String, List<TumblrPost> > getTagsForDraftPosts(List<TumblrPost> draftPosts) {
-        HashMap<String, List<TumblrPost> > map = new HashMap<String, List<TumblrPost> >();
+        HashMap<String, List<TumblrPost> > map = new HashMap<>();
 
         for (TumblrPost post : draftPosts) {
             if (post.getType().equals("photo") && post.getTags().size() > 0) {
                 String tag = post.getTags().get(0).toLowerCase(Locale.US);
                 List<TumblrPost> list = map.get(tag);
                 if (list == null) {
-                    list = new ArrayList<TumblrPost>();
+                    list = new ArrayList<>();
                     map.put(tag.toLowerCase(Locale.US), list);
                 }
                 list.add(post);
@@ -66,7 +66,7 @@ public class DraftPostHelper {
      * @return the tag, posts map
      */
     public Map<String, TumblrPost> getTagsForQueuedPosts(List<TumblrPost> queuedPosts) {
-        HashMap<String, TumblrPost> map = new HashMap<String, TumblrPost>();
+        HashMap<String, TumblrPost> map = new HashMap<>();
 
         for (TumblrPost post : queuedPosts) {
             if (post.getType().equals("photo") && post.getTags().size() > 0) {
@@ -80,19 +80,19 @@ public class DraftPostHelper {
 
     public Map<String, Long> getLastPublishedPhotoByTags(final List<String> tags)
             throws Exception {
-        final Map<String, Long> lastPublish = new HashMap<String, Long>();
+        final Map<String, Long> lastPublish = new HashMap<>();
         final PostTagDAO postTagDAO = DBHelper.getInstance(context).getPostTagDAO();
         Map<String, Long> postByTags = postTagDAO.getMapTagLastPublishedTime(tags, blogName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
-        ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
+        ArrayList<Callable<Exception>> callables = new ArrayList<>();
 
         for (final String tag : tags) {
             Long lastPublishedTime = postByTags.get(tag);
 
             if (lastPublishedTime == null) {
                 // every thread receives its own parameters map
-                final HashMap<String, String> params = new HashMap<String, String>();
+                final HashMap<String, String> params = new HashMap<>();
                 params.put("type", "photo");
                 params.put("limit", "1");
                 params.put("tag", tag);
@@ -128,7 +128,7 @@ public class DraftPostHelper {
             Map<String, List<TumblrPost>> draftPosts,
             Map<String, TumblrPost> queuedPosts,
             Map<String, Long> lastPublished) {
-        ArrayList<PhotoShelfPost> list = new ArrayList<PhotoShelfPost>();
+        ArrayList<PhotoShelfPost> list = new ArrayList<>();
 
         for (String tag : draftPosts.keySet()) {
             List<TumblrPost> draftPostList = draftPosts.get(tag);
@@ -167,7 +167,7 @@ public class DraftPostHelper {
             final HashMap<String, List<TumblrPost> > tagsForDraftPosts,
             final Map<String, TumblrPost> queuedPosts) throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
-        ArrayList<Callable<Exception>> callables = new ArrayList<Callable<Exception>>();
+        ArrayList<Callable<Exception>> callables = new ArrayList<>();
 
         callables.add(new Callable<Exception>() {
 
