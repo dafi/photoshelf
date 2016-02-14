@@ -86,7 +86,7 @@
     "hotflick.net": {
       "image": ".pict_content img",
       "container": ".box-item-155-img img",
-      "multiPage": ".box-paging a:not(.active)"
+      "multiPage": ".box-paging a.active ~ a"
     },
     "carreck.com": {
       "title": ".postentry p"

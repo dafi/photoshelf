@@ -298,12 +298,14 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             if (selector.getMultiPage() == null) {
                 return;
             }
-            for (Element element : startPageDocument.select(selector.getMultiPage())) {
+            Element element = startPageDocument.select(selector.getMultiPage()).first();
+            while (element != null) {
                 String pageUrl = element.absUrl("href");
                 String pageContent = readURLContent(pageUrl);
                 Document pageDocument = Jsoup.parse(pageContent);
                 pageDocument.setBaseUri(pageUrl);
                 extractImages(imageInfoList, domSelectorFinder.getSelectorFromUrl(pageUrl), pageDocument);
+                element = pageDocument.select(selector.getMultiPage()).first();
             }
         }
 
