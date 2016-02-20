@@ -10,7 +10,7 @@ import java.util.Locale;
 public class TitleData {
     private static final String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives", "at the"};
 
-    private static final HashMap<String, String> cities = new HashMap<String, String>();
+    private static final HashMap<String, String> cities = new HashMap<>();
 
     static {
         cities.put("LA", "Los Angeles");
@@ -82,13 +82,13 @@ public class TitleData {
     }
 
     public void setTags(String[] tags) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         for (String tag1 : tags) {
             if (tag1 == null) {
                 continue;
             }
             String tag = tag1
-                    .replace("[0-9]*(st|nd|rd|th)?", "")
+                    .replaceFirst("[0-9]*(st|nd|rd|th)?", "")
                     .replaceAll("\"|'", "");
             for (String prefix : locationPrefixes) {
                 tag = tag.replaceFirst(prefix, "");
