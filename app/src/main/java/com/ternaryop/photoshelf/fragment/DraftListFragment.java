@@ -265,8 +265,8 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                 }
             } catch (Exception ignored) {
             }
+            // Calendar.MINUTE isn't reset otherwise the calc may be inaccurate
             cal.setTime(new Date(maxScheduledTime));
-            cal.set(Calendar.MINUTE, 0);
             cal.set(Calendar.SECOND, 0);
             cal.set(Calendar.MILLISECOND, 0);
         } else {
