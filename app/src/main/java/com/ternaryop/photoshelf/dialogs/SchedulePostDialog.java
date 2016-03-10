@@ -99,7 +99,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
 
     private void schedulePost() {
         Tumblr.getSharedTumblr(getContext())
-        .schedulePost(blogName, item.getPostId(), scheduleDateTime.getTimeInMillis(), new AbsCallback(this, R.string.parsing_error) {
+        .schedulePost(blogName, item, scheduleDateTime.getTimeInMillis(), new AbsCallback(this, R.string.parsing_error) {
 
             @Override
             public void complete(JSONObject result) {

@@ -302,7 +302,7 @@ public class Tumblr {
         }
     }
 
-    public void schedulePost(final String tumblrName, final long id, final long timestamp, final Callback<JSONObject> callback) {
+    public void schedulePost(final String tumblrName, final TumblrPost post, final long timestamp, final Callback<JSONObject> callback) {
         new AsyncTask<Void, Void, JSONObject>() {
             Exception error;
             @Override
@@ -312,9 +312,14 @@ public class Tumblr {
                 String gmtDate = dateFormat.format(new Date(timestamp));
                 
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("id", id + "");
+                params.put("id", post.getPostId() + "");
                 params.put("state", "queue");
                 params.put("publish_on", gmtDate);
+
+                if (post instanceof TumblrPhotoPost) {
+                    params.put("caption", ((TumblrPhotoPost) post).getCaption());
+                }
+                params.put("tags", post.getTagsAsString());
 
                 try {
                     JSONObject json = consumer.jsonFromPost(apiUrl, params);
