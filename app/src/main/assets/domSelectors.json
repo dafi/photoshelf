@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -64,7 +64,7 @@
     "http:\/\/imgbox.com": {
       "image": "#img"
     },
-    "http:\/\/someimage.com": {
+    ".*someimage.com": {
       "image": "#viewimage"
     },
     "http://imgpit.com/": {
