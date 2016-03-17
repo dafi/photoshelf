@@ -223,5 +223,6 @@
     <string name="sort_by_count">Sort by Count</string>
     <string name="sort_by_name">Sort by Name</string>
     <string name="schedule_minutes_time_span_default">Default Schedule Span Minutes</string>
+    <string name="birthdays_found">Birthdays found</string>
 
 </resources>

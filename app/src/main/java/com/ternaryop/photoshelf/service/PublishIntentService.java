@@ -9,13 +9,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
@@ -39,6 +43,8 @@ public class PublishIntentService extends IntentService {
     private static final String NOTIFICATION_PUBLISH_ERROR_TAG = "com.ternaryop.photoshelf.publish.error";
     private static final String NOTIFICATION_BIRTHDAY_ERROR_TAG = "com.ternaryop.photoshelf.birthday.error";
     private static final String NOTIFICATION_BIRTHDAY_SUCCESS_TAG = "com.ternaryop.photoshelf.birthday.success";
+    private static final String NOTIFICATION_BIRTHDAY_DELETED_ACTION = "com.ternaryop.photoshelf.birthday.clear";
+
     private static final int NOTIFICATION_ID = 1;
 
     public static final String URL_OR_FILE = "urlOrFile";
@@ -59,6 +65,8 @@ public class PublishIntentService extends IntentService {
     public PublishIntentService() {
         super("publishIntent");
     }
+
+    private static final List<String> birthdaysContentLines = new ArrayList<>();
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -129,7 +137,8 @@ public class PublishIntentService extends IntentService {
                         Notification notification = createNotification(
                                 getString(R.string.name_with_date_age, name, date, strAage),
                                 getString(R.string.new_birthday_ticker, name),
-                                R.drawable.stat_notify_bday);
+                                R.drawable.stat_notify_bday,
+                                true);
                         // if notification is already visible the user doesn't receive any visual feedback so we clear it
                         notificationManager.cancel(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID);
                         notificationManager.notify(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID, notification);
@@ -137,7 +146,8 @@ public class PublishIntentService extends IntentService {
                 } catch (Exception e) {
                     Notification notification = createNotification(name + ": " + e.getLocalizedMessage(),
                             R.string.birthday_add_error_ticker,
-                            R.drawable.stat_notify_error);
+                            R.drawable.stat_notify_error,
+                            false);
                     notificationManager.notify(NOTIFICATION_BIRTHDAY_ERROR_TAG, NOTIFICATION_ID, notification);
                 } finally {
                     db.endTransaction();
@@ -152,25 +162,39 @@ public class PublishIntentService extends IntentService {
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         // add url.hashCode() to ensure every notification is shown
-        Notification notification = createNotification(postTags, R.string.upload_error_ticker, R.drawable.stat_notify_error);
+        Notification notification = createNotification(postTags, R.string.upload_error_ticker, R.drawable.stat_notify_error, false);
         notificationManager.notify(NOTIFICATION_PUBLISH_ERROR_TAG, NOTIFICATION_ID + url.hashCode(), notification);
     }
 
-    private Notification createNotification(String contentText, String stringTicker, int iconId) {
+    private Notification createNotification(String contentText, String stringTicker, int iconId, boolean multipleLines) {
+        Intent intent = new Intent(NOTIFICATION_BIRTHDAY_DELETED_ACTION);
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        registerReceiver(receiver, new IntentFilter(NOTIFICATION_BIRTHDAY_DELETED_ACTION));
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 this)
+                .setContentText(contentText)
                 .setTicker(stringTicker)
-                .setSmallIcon(iconId);
+                .setSmallIcon(iconId)
+                .setDeleteIntent(deletePendingIntent)
+                .setAutoCancel(true); // remove notification when user clicks on it
 
-        builder.setContentText(contentText);
-        // remove notification when user clicks on it
-        builder.setAutoCancel(true);
+        if (multipleLines) {
+            birthdaysContentLines.add(contentText);
+
+            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+            inboxStyle.setBigContentTitle(getString(R.string.birthdays_found));
+            for (String line : birthdaysContentLines) {
+                inboxStyle.addLine(line);
+            }
+            builder.setStyle(inboxStyle);
+        }
 
         return builder.build();
     }
 
-    private Notification createNotification(String contentText, int stringTickerId, int iconId) {
-        return createNotification(contentText, getString(stringTickerId), iconId);
+    private Notification createNotification(String contentText, int stringTickerId, int iconId, boolean multipleLines) {
+        return createNotification(contentText, getString(stringTickerId), iconId, multipleLines);
     }
 
     private static void startActionIntent(Context context,
@@ -224,10 +248,20 @@ public class PublishIntentService extends IntentService {
             list = BirthdayUtils.getPhotoPosts(getApplicationContext(), birthday);
         } catch (Exception ex) {
             // we can't use Collections.emptyList() because java.util.List isn't Serializable
-            list = new ArrayList<Pair<Birthday, TumblrPhotoPost>>();
+            list = new ArrayList<>();
         }
         Intent countIntent = new Intent(BIRTHDAY_INTENT);
         countIntent.putExtra(RESULT_LIST1, list);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(countIntent);
     }
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (NOTIFICATION_BIRTHDAY_DELETED_ACTION.equals(intent.getAction())) {
+                birthdaysContentLines.clear();
+            }
+            unregisterReceiver(this);
+        }
+    };
 }
