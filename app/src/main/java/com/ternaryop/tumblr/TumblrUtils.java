@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.content.Context;
+
+import com.ternaryop.photoshelf.db.DBHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -67,5 +70,60 @@ public class TumblrUtils {
             throw new TumblrException(e);
         }
         return list;
+    }
+
+    public static int renameTag(String fromTag, String toTag, Context context, String blogName) {
+        HashMap<String, String> searchParams = new HashMap<String, String>();
+        searchParams.put("type", "photo");
+        searchParams.put("tag", fromTag);
+        int offset = 0;
+        boolean loadNext;
+        Tumblr tumblr = Tumblr.getSharedTumblr(context);
+        HashMap<String, String> params = new HashMap<>();
+        int renamedCount = 0;
+
+        do {
+            searchParams.put("offset", String.valueOf(offset));
+            List<TumblrPost> postsList = tumblr.getPublicPosts(blogName, searchParams);
+            loadNext = postsList.size() > 0;
+            offset += postsList.size();
+
+            for (TumblrPost post : postsList) {
+                if (replaceTag(fromTag, toTag, post)) {
+                    params.clear();
+                    params.put("id", String.valueOf(post.getPostId()));
+                    params.put("tags", post.getTagsAsString());
+                    tumblr.editPost(blogName, params);
+                    updateTagsOnDB(post.getPostId(), post.getTagsAsString(), context, blogName);
+                    ++renamedCount;
+                }
+            }
+        } while (loadNext);
+        return renamedCount;
+    }
+
+    private static boolean replaceTag(String fromTag, String toTag, TumblrPost post) {
+        ArrayList<String> renamedTag = new ArrayList<>(post.getTags());
+        boolean found = false;
+        for (int i = 0; i < renamedTag.size(); i++) {
+            if (renamedTag.get(i).equalsIgnoreCase(fromTag)) {
+                renamedTag.remove(i);
+                renamedTag.add(i, toTag);
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            post.setTags(renamedTag);
+        }
+        return found;
+    }
+
+    private static void updateTagsOnDB(long id, String tags, Context context, String blogName) {
+        final HashMap<String, String> newValues = new HashMap<>();
+        newValues.put("id", String.valueOf(id));
+        newValues.put("tags", tags);
+        newValues.put("tumblrName", blogName);
+        DBHelper.getInstance(context).getPostDAO().update(newValues, context);
     }
 }
