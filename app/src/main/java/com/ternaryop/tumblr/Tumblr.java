@@ -341,6 +341,20 @@ public class Tumblr {
         }.execute();
     }
 
+    public JSONObject editPost(final String tumblrName, final Map<String, String> params) {
+        if (!params.containsKey("id")) {
+            throw new TumblrException("The id is mandatory to edit post");
+        }
+        String apiUrl = getApiUrl(tumblrName, "/post/edit");
+
+        try {
+            JSONObject json = consumer.jsonFromPost(apiUrl, params);
+            return json.getJSONObject("response");
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
+    }
+
     public void editPost(final String tumblrName, final Map<String, String> params, final Callback<JSONObject> callback) {
         if (!params.containsKey("id")) {
             callback.failure(new TumblrException("The id is mandatory to edit post"));
