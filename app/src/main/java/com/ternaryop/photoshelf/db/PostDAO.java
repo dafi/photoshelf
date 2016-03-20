@@ -104,6 +104,7 @@ public class PostDAO extends AbsDAO<Post> implements BaseColumns {
                 if (!trimmedTag.isEmpty()) {
                     postTag.setTag(trimmedTag);
                     postTag.setShowOrder(showOrder++);
+                    postTag.setTumblrName(tumblrName);
                     bulkImportPostDAOWrapper.insert(insertStatement, postTag);
                 }
             }
