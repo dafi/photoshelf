@@ -8,6 +8,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
@@ -230,7 +231,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     protected int[] getSingleSelectionMenuIds() {
         if (singleSelectionMenuIds == null) {
-            singleSelectionMenuIds = new int[] {R.id.post_schedule, R.id.post_edit, R.id.group_menu_image_dimension};
+            singleSelectionMenuIds = new int[] {R.id.post_schedule, R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post};
         }
         return singleSelectionMenuIds;
     }
@@ -256,6 +257,12 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                     }
                 });
         builder.show();
+    }
+
+    public void showPost(final PhotoShelfPost post) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(post.getPostUrl()));
+        startActivity(i);
     }
 
     private void showConfirmDialog(final int postAction, final ActionMode mode, final List<PhotoShelfPost> postsList) {
@@ -439,6 +446,9 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 return true;
             case R.id.post_save_draft:
                 saveAsDraft(mode, postList);
+                return true;
+            case R.id.show_post:
+                showPost(postList.get(0));
                 return true;
             default:
                 return false;

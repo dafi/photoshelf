@@ -71,4 +71,9 @@ public class PublishedPostsListFragment extends ScheduledListFragment {
             }
         }.execute();
     }
+
+    @Override
+    protected int getActionModeMenuId() {
+        return R.menu.published_context;
+    }
 }
