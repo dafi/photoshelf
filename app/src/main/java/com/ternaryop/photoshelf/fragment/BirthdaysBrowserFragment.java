@@ -315,6 +315,11 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
                 subTitle = item.getTitle();
                 showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_MISSING;
                 break;
+            case R.id.action_show_birthdays_without_posts:
+                setSpinnerVisibility(false);
+                subTitle = item.getTitle();
+                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_WITHOUT_POSTS;
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }

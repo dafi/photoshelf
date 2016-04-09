@@ -251,6 +251,17 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
                 NAME);
     }
 
+    public Cursor getBirthdaysWithoutPostsCursor(String tumblrName) {
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+        return db.query(TABLE_NAME,
+                COLUMNS,
+                "name NOT IN (SELECT name FROM tag)",
+                null,
+                null,
+                null,
+                NAME);
+    }
+
     public static Birthday getBirthday(Cursor c) {
         try {
             Birthday birthday = new Birthday(

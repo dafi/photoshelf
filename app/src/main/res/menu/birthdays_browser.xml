@@ -15,6 +15,9 @@
         <item
             android:id="@+id/action_show_birthdays_missing"
             android:title="@string/show_birthdays_missing"/>
+        <item
+            android:id="@+id/action_show_birthdays_without_posts"
+            android:title="@string/birthdays_without_posts"/>
     </group>
 
 </menu>

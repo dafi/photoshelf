@@ -33,6 +33,7 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
     public static final int SHOW_BIRTHDAYS_IGNORED = 1 << 1;
     public static final int SHOW_BIRTHDAYS_IN_SAME_DAY = 1 << 2;
     public static final int SHOW_BIRTHDAYS_MISSING = 1 << 3;
+    public static final int SHOW_BIRTHDAYS_WITHOUT_POSTS = 1 << 4;
 
     private final DBHelper dbHelper;
     private final Context context;
@@ -67,6 +68,8 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
             return dbHelper.getBirthdayDAO().getBirthdaysInSameDay(pattern, blogName);
         } else if (isShowMissing()) {
             return dbHelper.getBirthdayDAO().getMissingBirthDaysCursor(pattern, blogName);
+        } else if (isWithoutPost()) {
+            return dbHelper.getBirthdayDAO().getBirthdaysWithoutPostsCursor(blogName);
         }
         return dbHelper.getBirthdayDAO().getBirthdayCursorByName(pattern, month, blogName);
     }
@@ -199,6 +202,10 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
         return (showFlags & SHOW_BIRTHDAYS_MISSING) != 0;
     }
 
+    public boolean isWithoutPost() {
+        return (showFlags & SHOW_BIRTHDAYS_WITHOUT_POSTS) != 0;
+    }
+
     public boolean isShowFlag(int value) {
         return (showFlags & value) != 0;
     }
@@ -213,6 +220,8 @@ public class BirthdayCursorAdapter extends SimpleCursorAdapter implements Filter
             showFlags = show ? SHOW_BIRTHDAYS_IN_SAME_DAY : SHOW_BIRTHDAYS_ALL;
         } else if ((value & SHOW_BIRTHDAYS_MISSING) != 0) {
             showFlags = show ? SHOW_BIRTHDAYS_MISSING : SHOW_BIRTHDAYS_ALL;
+        } else if ((value & SHOW_BIRTHDAYS_WITHOUT_POSTS) != 0) {
+            showFlags = show ? SHOW_BIRTHDAYS_WITHOUT_POSTS : SHOW_BIRTHDAYS_ALL;
         }
     }
 
