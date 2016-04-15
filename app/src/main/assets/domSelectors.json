@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -92,7 +92,7 @@
       "title": ".postentry p"
     },
     "http://kosty555.info": {
-      "title": ".ipsType_pagetitle"
+      "title": "[itemprop=commentText]"
     }
   }
 }
