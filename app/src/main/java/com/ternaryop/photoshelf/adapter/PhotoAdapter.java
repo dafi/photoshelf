@@ -9,31 +9,22 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.preference.PreferenceManager;
-import android.text.Html;
-import android.util.TypedValue;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Filter;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
-import com.ternaryop.photoshelf.adapter.PhotoShelfPost.ScheduleTime;
-import com.ternaryop.tumblr.TumblrAltSize;
-import com.ternaryop.utils.StringUtils;
 
-public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
+public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implements View.OnClickListener, View.OnLongClickListener {
     public static final int SORT_NONE = 0;
     public static final int SORT_TAG_NAME = 1;
     public static final int SORT_LAST_PUBLISHED_TAG = 2;
     public static final int SORT_UPLOAD_TIME = 3;
 
-    private static LayoutInflater inflater = null;
     private final ImageLoader imageLoader;
     private ArrayList<PhotoShelfPost> visiblePosts;
     private final ArrayList<PhotoShelfPost> allPosts;
@@ -44,11 +35,12 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
     private int currentSort = SORT_LAST_PUBLISHED_TAG;
     private boolean sortAscending = true;
 
+    final SelectionArrayViewHolder<PhotoViewHolder> selection = new SelectionArrayViewHolder<>(this);
+
     public PhotoAdapter(Context context, String prefix) {
         this.context = context;
-        inflater = LayoutInflater.from(context);
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
-        allPosts = new ArrayList<PhotoShelfPost>();
+        allPosts = new ArrayList<>();
         visiblePosts = allPosts;
         thumbnailWidth = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_width", "75"));
     }
@@ -57,73 +49,25 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
         this.onPhotoBrowseClick = onPhotoBrowseClick;
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View vi = convertView;
-        ViewHolder holder;
+    @Override
+    public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new PhotoViewHolder(LayoutInflater.from(context).inflate(R.layout.list_row, parent, false));
+    }
 
-        if (convertView == null) {
-            vi = inflater.inflate(R.layout.list_row, parent, false);
-            holder = new ViewHolder(vi);
-            vi.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
+    @Override
+    public void onBindViewHolder(PhotoViewHolder holder, int position) {
+        View.OnClickListener listener = onPhotoBrowseClick == null ? null : this;
+        holder.bindModel(visiblePosts.get(position), imageLoader, thumbnailWidth);
+        holder.setOnClickListeners(visiblePosts.get(position), listener);
+        if (onPhotoBrowseClick instanceof OnPhotoBrowseClickMultiChoice) {
+            holder.setOnClickMultiChoiceListeners(listener, this);
         }
+        holder.itemView.setSelected(selection.isSelected(position));
+    }
 
-        final PhotoShelfPost post = getItem(position);
-
-        switch (post.getScheduleTimeType()) {
-            case POST_PUBLISH_NEVER:
-                holder.setColors(R.array.post_never);
-                break;
-            case POST_PUBLISH_FUTURE:
-                holder.setColors(R.array.post_future);
-                break;
-            default:
-                holder.setColors(post.getGroupId() % 2 == 0 ? R.array.post_even : R.array.post_odd);
-                break;
-        }
-
-        holder.title.setText(post.getFirstTag());
-        holder.caption.setText(Html.fromHtml(StringUtils.stripHtmlTags("a|img|p|br", post.getCaption())));
-
-        // set the onclick listeners
-        if (onPhotoBrowseClick != null) {
-            if (post.getScheduleTimeType() == ScheduleTime.POST_PUBLISH_NEVER) {
-                holder.title.setOnClickListener(null);
-            } else {
-                holder.title.setOnClickListener(this);
-                holder.title.setTag(position);
-            }
-
-            holder.thumbImage.setOnClickListener(this);
-            holder.thumbImage.setTag(position);
-
-            holder.menu.setOnClickListener(this);
-            holder.menu.setTag(position);
-        }
-
-        int noteCount = (int) post.getNoteCount();
-        if (noteCount > 0) {
-            holder.noteCount.setVisibility(View.VISIBLE);
-            holder.noteCount.setText(getContext().getResources().getQuantityString(
-                    R.plurals.note_title,
-                    noteCount,
-                    noteCount));
-        } else {
-            holder.noteCount.setVisibility(View.GONE);
-        }
-
-        holder.timeDesc.setText(post.getLastPublishedTimestampAsString());
-
-        TumblrAltSize altSize = post.getClosestPhotoByWidth(thumbnailWidth);
-        ViewGroup.LayoutParams imageLayoutParams = holder.thumbImage.getLayoutParams();
-        int minThumbnainWidth = Math.max(thumbnailWidth, altSize.getWidth());
-        // convert from pixel to DIP
-        imageLayoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, minThumbnainWidth, getContext().getResources().getDisplayMetrics());
-        imageLayoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, altSize.getHeight(), getContext().getResources().getDisplayMetrics());
-
-        imageLoader.displayImage(altSize.getUrl(), holder.thumbImage);
-        return vi;
+    @Override
+    public int getItemCount() {
+        return visiblePosts.size();
     }
 
     public void onClick(final View v) {
@@ -137,26 +81,24 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
             case R.id.menu:
                 onPhotoBrowseClick.onOverflowClick(v, (Integer) v.getTag());
                 break;
+            case R.id.list_row:
+                ((OnPhotoBrowseClickMultiChoice)onPhotoBrowseClick).onItemClick((Integer) v.getTag());
+                break;
         }
     }
 
     @Override
+    public boolean onLongClick(View v) {
+        ((OnPhotoBrowseClickMultiChoice)onPhotoBrowseClick).onItemLongClick((Integer) v.getTag());
+        return true;
+    }
+
     public PhotoShelfPost getItem(int position) {
         return visiblePosts.get(position);
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public int getCount() {
-        return visiblePosts.size();
-    }
-
     public void calcGroupIds() {
-        int count = getCount();
+        int count = getItemCount();
 
         if (count > 0) {
             int groupId = 0;
@@ -184,16 +126,22 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
 
     public void addAll(Collection<? extends PhotoShelfPost> collection) {
         allPosts.addAll(collection);
+        notifyDataSetChanged();
     }
 
     public void clear() {
         visiblePosts.clear();
         allPosts.clear();
+        notifyDataSetChanged();
     }
 
     public void remove(PhotoShelfPost object) {
-        visiblePosts.remove(object);
         allPosts.remove(object);
+        int position = visiblePosts.indexOf(object);
+        if (position >= 0) {
+            visiblePosts.remove(position);
+            notifyItemRemoved(position);
+        }
     }
 
     public Filter getFilter() {
@@ -220,7 +168,7 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
                     results.count = allPosts.size();
                     results.values = allPosts;
                 } else {
-                    ArrayList<PhotoShelfPost> filteredPosts = new ArrayList<PhotoShelfPost>();
+                    ArrayList<PhotoShelfPost> filteredPosts = new ArrayList<>();
 
                     pattern = pattern.toLowerCase(Locale.US);
                     for (PhotoShelfPost post : allPosts) {
@@ -254,10 +202,6 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
         } else {
             calcGroupIds();
         }
-    }
-
-    public Context getContext() {
-        return context;
     }
 
     private void updateCurrentSortType(int type) {
@@ -335,35 +279,28 @@ public class PhotoAdapter extends BaseAdapter implements View.OnClickListener {
         return visiblePosts;
     }
 
-    private class ViewHolder {
-        final TextView title;
-        final TextView timeDesc;
-        final TextView caption;
-        final ImageView thumbImage;
-        final ImageView menu;
-        final View view;
-        final TextView noteCount;
-
-        public ViewHolder(View vi) {
-            view = vi;
-            title = (TextView) vi.findViewById(R.id.title_textview);
-            timeDesc = (TextView) vi.findViewById(R.id.time_desc);
-            caption = (TextView) vi.findViewById(R.id.caption);
-            menu = (ImageView) vi.findViewById(R.id.menu);
-            noteCount = (TextView) vi.findViewById(R.id.note_count);
-
-            thumbImage = (ImageView) vi.findViewById(R.id.thumbnail_image);
+    public List<PhotoShelfPost> getSelectedPosts() {
+        ArrayList<PhotoShelfPost> list = new ArrayList<>(getSelection().getItemCount());
+        for (int pos : getSelection().getSelectedPositions()) {
+            list.add(getItem(pos));
         }
+        return list;
+    }
 
-        public void setColors(int resArray) {
-            TypedArray array = getContext().getResources().obtainTypedArray(resArray);
-            view.setBackground(array.getDrawable(0));
-            title.setTextColor(array.getColorStateList(1));
-            timeDesc.setTextColor(array.getColorStateList(2));
-            caption.setTextColor(array.getColorStateList(3));
-            menu.setImageDrawable(array.getDrawable(4));
-            noteCount.setTextColor(array.getColorStateList(3));
-            array.recycle();
+
+    public Selection getSelection() {
+        return selection;
+    }
+
+    public void setEmptyView(final View view) {
+        if (view != null) {
+            registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    view.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+                }
+            });
         }
     }
 }

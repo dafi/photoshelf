@@ -42,14 +42,14 @@ public class PublishedPostsListFragment extends ScheduledListFragment {
             @Override
             protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
                 try {
-                    HashMap<String, String> params = new HashMap<String, String>();
+                    HashMap<String, String> params = new HashMap<>();
                     params.put("offset", String.valueOf(offset));
                     params.put("type", "photo");
                     params.put("notes_info", "true");
                     List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(getContext())
                             .getPublicPosts(getBlogName(), params);
 
-                    List<PhotoShelfPost> photoList = new ArrayList<PhotoShelfPost>(); 
+                    List<PhotoShelfPost> photoList = new ArrayList<>();
                     for (TumblrPost post : photoPosts) {
                         if (post.getType().equals("photo")) {
                             photoList.add(new PhotoShelfPost((TumblrPhotoPost)post, post.getTimestamp() * 1000));
@@ -59,7 +59,7 @@ public class PublishedPostsListFragment extends ScheduledListFragment {
                         totalPosts += photoPosts.size();
                         hasMorePosts = true;
                     } else {
-                        totalPosts = photoAdapter.getCount() + photoList.size();
+                        totalPosts = photoAdapter.getItemCount() + photoList.size();
                         hasMorePosts = false;
                     }
                     return photoList;

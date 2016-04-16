@@ -11,8 +11,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,16 +27,16 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.PopupMenu;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImageViewerActivity;
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
-import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
+import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
+import com.ternaryop.photoshelf.adapter.Selection;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.tumblr.Tumblr;
@@ -46,7 +47,7 @@ import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.drawer.counter.CountChangedListener;
 import com.ternaryop.utils.drawer.counter.CountProvider;
 
-public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClick, SearchView.OnQueryTextListener {
+public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
     protected static final int POST_ACTION_PUBLISH = 1;
     protected static final int POST_ACTION_DELETE = 2;
     protected static final int POST_ACTION_EDIT = 3;
@@ -62,12 +63,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     protected boolean hasMorePosts;
     protected boolean isScrolling;
     protected long totalPosts;
-    protected ListView photoListView;
+    protected RecyclerView recyclerView;
     protected SearchView searchView;
 
     private int[] singleSelectionMenuIds;
 
     private CountChangedListener countChangedListener;
+    ActionMode actionMode;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,12 +78,27 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         
         photoAdapter = new PhotoAdapter(getActivity(), LOADER_PREFIX_POSTS_THUMB);
 
-        photoListView = (ListView)rootView.findViewById(R.id.list);
-        photoListView.setOnItemClickListener(this);
-        photoListView.setOnScrollListener(this);
-        photoListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        photoListView.setMultiChoiceModeListener(this);
-        photoListView.setAdapter(photoAdapter);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(photoAdapter);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItem = ((LinearLayoutManager)layoutManager).findFirstVisibleItemPosition();
+
+                boolean loadMore = totalItemCount > 0 &&
+                        (firstVisibleItem + visibleItemCount >= totalItemCount);
+
+                if (loadMore && hasMorePosts && !isScrolling) {
+                    offset += Tumblr.MAX_POST_PER_REQUEST;
+                    readPhotoPosts();
+                }
+            }
+        });
 
         setHasOptionsMenu(true);
         
@@ -192,28 +209,18 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         return true;
     }
 
-    protected List<PhotoShelfPost> getSelectedPosts() {
-        SparseBooleanArray checkedItemPositions = photoListView.getCheckedItemPositions();
-        ArrayList<PhotoShelfPost> list = new ArrayList<>();
-        for (int i = 0; i < checkedItemPositions.size(); i++) {
-            int key = checkedItemPositions.keyAt(i);
-            if (checkedItemPositions.get(key)) {
-                list.add(photoAdapter.getItem(key));
-            }
-        }
-        return list;
-    }
-    
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        return handleMenuItem(item, getSelectedPosts(), mode);
+        return handleMenuItem(item, photoAdapter.getSelectedPosts(), mode);
     }
 
     public void onDestroyActionMode(ActionMode mode) {
+        this.actionMode = null;
+        photoAdapter.getSelection().clear();
     }
 
     public void onItemCheckedStateChanged(ActionMode mode, int position,
             long id, boolean checked) {
-        int selectCount = photoListView.getCheckedItemCount();
+        int selectCount = photoAdapter.getSelection().getItemCount();
         boolean singleSelection = selectCount == 1;
 
         for (int itemId : getSingleSelectionMenuIds()) {
@@ -322,15 +329,15 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         if (searchView != null && searchView.isIconified()) {
             if (hasMorePosts) {
                 getSupportActionBar().setSubtitle(getString(R.string.post_count_1_of_x,
-                        photoAdapter.getCount(),
+                        photoAdapter.getItemCount(),
                         totalPosts));
             } else {
                 getSupportActionBar().setSubtitle(getResources().getQuantityString(
                         R.plurals.posts_count,
-                        photoAdapter.getCount(),
-                        photoAdapter.getCount()));
+                        photoAdapter.getItemCount(),
+                        photoAdapter.getItemCount()));
                 if (countChangedListener != null) {
-                    countChangedListener.onChangeCount(this, photoAdapter.getCount());
+                    countChangedListener.onChangeCount(this, photoAdapter.getItemCount());
                 }
             }
         }
@@ -368,10 +375,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 return;
             }
             // leave posts not processed checked
-            photoListView.clearChoices();
+            photoAdapter.getSelection().clear();
             for (PhotoShelfPost post : notDeletedPosts) {
                 int position = photoAdapter.getPosition(post);
-                photoListView.setItemChecked(position, true);
+                photoAdapter.getSelection().setSelected(position, true);
             }
             DialogUtils.showSimpleMessageDialog(getContext(),
                     R.string.generic_error,
@@ -428,6 +435,42 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             }
         });
         popupMenu.show();
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        if (actionMode == null) {
+            handleClickedThumbnail(position);
+        } else {
+            updateSelection(position);
+        }
+    }
+
+    private void handleClickedThumbnail(int position) {
+        final PhotoShelfPost post = photoAdapter.getItem(position);
+        if (getActivity().getCallingActivity() == null) {
+            onThumbnailImageClick(position);
+        } else {
+            finish(post);
+        }
+    }
+
+    private void updateSelection(int position) {
+        Selection selection = photoAdapter.getSelection();
+        selection.toggle(position);
+        if (selection.getItemCount() == 0) {
+            actionMode.finish();
+        } else {
+            onItemCheckedStateChanged(actionMode, position, -1, selection.isSelected(position));
+        }
+    }
+
+    @Override
+    public void onItemLongClick(int position) {
+        if (actionMode == null) {
+            actionMode = getActivity().startActionMode(this);
+        }
+        photoAdapter.getSelection().toggle(position);
     }
 
     protected boolean handleMenuItem(MenuItem item, List<PhotoShelfPost> postList, ActionMode mode) {

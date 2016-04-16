@@ -74,12 +74,12 @@ public class ScheduledListFragment extends AbsPostsListFragment {
             @Override
             protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
                 try {
-                    HashMap<String, String> params = new HashMap<String, String>();
+                    HashMap<String, String> params = new HashMap<>();
                     params.put("offset", String.valueOf(offset));
                     List<TumblrPost> photoPosts = Tumblr.getSharedTumblr(getContext())
                             .getQueue(getBlogName(), params);
 
-                    List<PhotoShelfPost> photoList = new ArrayList<PhotoShelfPost>(); 
+                    List<PhotoShelfPost> photoList = new ArrayList<>();
                     for (TumblrPost post : photoPosts) {
                         if (post.getType().equals("photo")) {
                             photoList.add(new PhotoShelfPost((TumblrPhotoPost)post,
@@ -92,7 +92,7 @@ public class ScheduledListFragment extends AbsPostsListFragment {
                         totalPosts = photoList.size();
                         hasMorePosts = photoList.size() == Tumblr.MAX_POST_PER_REQUEST;
                     } else {
-                        totalPosts = photoAdapter.getCount() + photoList.size();
+                        totalPosts = photoAdapter.getItemCount() + photoList.size();
                         hasMorePosts = false;
                     }
                     return photoList;

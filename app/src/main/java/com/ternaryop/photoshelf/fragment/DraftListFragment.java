@@ -11,6 +11,7 @@ import java.util.Map;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -55,7 +56,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         View view = View.inflate(getActivity(), R.layout.draft_empty_list, (ViewGroup) rootView);
         progressHighlightViewLayout = (ProgressHighlightViewLayout) view.findViewById(android.R.id.empty);
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
-        photoListView.setEmptyView(progressHighlightViewLayout);
+        photoAdapter.setEmptyView(progressHighlightViewLayout);
 
         if (rootView != null) {
             swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
@@ -118,19 +119,19 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                 item.setChecked(isChecked);
                 photoAdapter.sortByTagName();
                 photoAdapter.notifyDataSetChanged();
-                photoListView.setSelection(0);
+                scrollToPosition(0);
                 return true;
             case R.id.sort_published_tag:
                 item.setChecked(isChecked);
                 photoAdapter.sortByLastPublishedTag();
                 photoAdapter.notifyDataSetChanged();
-                photoListView.setSelection(0);
+                scrollToPosition(0);
                 return true;
             case R.id.sort_upload_time:
                 item.setChecked(isChecked);
                 photoAdapter.sortByUploadTime();
                 photoAdapter.notifyDataSetChanged();
-                photoListView.setSelection(0);
+                scrollToPosition(0);
                 return true;
             case R.id.action_tag_navigator:
                 TagNavigatorDialog.newInstance(photoAdapter.getPhotoList(), this, TAG_NAVIGATOR_DIALOG).show(getFragmentManager(), "dialog");
@@ -161,7 +162,6 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     private void onRefreshStarted() {
         photoAdapter.clear();
-        photoAdapter.notifyDataSetInvalidated();
         progressHighlightViewLayout.startProgress();
         swipeLayout.setRefreshingAndWaintingResult(true);
     }
@@ -313,10 +313,14 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         switch (requestCode) {
             case TAG_NAVIGATOR_DIALOG:
                 if (resultCode == Activity.RESULT_OK) {
-                    photoListView.setSelection(TagNavigatorDialog.findTagIndex(photoAdapter.getPhotoList(), data));
+                    scrollToPosition(TagNavigatorDialog.findTagIndex(photoAdapter.getPhotoList(), data));
                 }
                 break;
         }
     }
 
+    public void scrollToPosition(int position) {
+        // offset set to 0 put the item to the top
+        ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
+    }
 }

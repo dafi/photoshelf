@@ -34,7 +34,7 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
 
         photoAdapter.setOnPhotoBrowseClick(this);
-        photoListView.setEmptyView(rootView.findViewById(android.R.id.empty));
+        photoAdapter.setEmptyView(rootView != null ? rootView.findViewById(android.R.id.empty) : null);
         
         if (getBlogName() != null && postTag != null && postTag.trim().length() > 0) {
             onQueryTextSubmit(postTag.trim());
@@ -114,14 +114,14 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
             @Override
             protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
                 try {
-                    HashMap<String, String> params = new HashMap<String, String>();
+                    HashMap<String, String> params = new HashMap<>();
                     params.put("tag", postTag);
                     params.put("notes_info", "true");
                     params.put("offset", String.valueOf(offset));
                     List<TumblrPhotoPost> photoPosts = Tumblr.getSharedTumblr(getContext())
                             .getPhotoPosts(getBlogName(), params);
 
-                    List<PhotoShelfPost> photoList = new ArrayList<PhotoShelfPost>();
+                    List<PhotoShelfPost> photoList = new ArrayList<>();
                     for (TumblrPost post : photoPosts) {
                         photoList.add(new PhotoShelfPost((TumblrPhotoPost)post,
                                 post.getTimestamp() * 1000));
@@ -130,7 +130,7 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
                         totalPosts = photoList.get(0).getTotalPosts();
                         hasMorePosts = true;
                     } else {
-                        totalPosts = photoAdapter.getCount() + photoList.size();
+                        totalPosts = photoAdapter.getItemCount() + photoList.size();
                         hasMorePosts = false;
                     }
                     return photoList;

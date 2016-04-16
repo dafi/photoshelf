@@ -216,7 +216,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
 
     private List<TumblrPhotoPost> getCheckedPosts() {
         SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
-        ArrayList<TumblrPhotoPost> list = new ArrayList<TumblrPhotoPost>();
+        ArrayList<TumblrPhotoPost> list = new ArrayList<>();
         for (int i = 0; i < checkedItemPositions.size(); i++) {
             int key = checkedItemPositions.keyAt(i);
             if (checkedItemPositions.get(key)) {
