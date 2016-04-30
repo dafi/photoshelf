@@ -59,4 +59,7 @@
         <item>@color/progressbar_progress_bg</item>
         <item>@color/actionbar_popup_bg</item>
     </array>
+
+    <color name="image_picker_detail_text_text">#ffffff</color>
+    <color name="image_picker_detail_text_bg">#90000000</color>
 </resources>

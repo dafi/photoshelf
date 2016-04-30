@@ -4,106 +4,151 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.ImageInfo;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.widget.CheckableImageView;
 
-public class ImagePickerAdapter extends BaseAdapter implements View.OnClickListener {
+public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener  {
     private final ImageLoader imageLoader;
-	private final LayoutInflater inflater;
-	private OnPhotoBrowseClick onPhotoBrowseClick;
+    private final Context context;
+    private OnPhotoBrowseClickMultiChoice onPhotoBrowseClick;
 	private final ArrayList<ImageInfo> items;
     private boolean showButtons;
 
+    final SelectionArrayViewHolder<ViewHolder> selection = new SelectionArrayViewHolder<>(this);
+
 	public ImagePickerAdapter(Context context) {
+        this.context = context;
         imageLoader = new ImageLoader(context.getApplicationContext(), "picker", R.drawable.stub);
-		inflater = LayoutInflater.from(context);
 		items = new ArrayList<>();
-	}
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.gridview_photo_picker_item, parent, false));
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        View.OnClickListener listener = onPhotoBrowseClick == null ? null : this;
+        holder.bindModel(items.get(position), imageLoader, showButtons);
+        if (showButtons && onPhotoBrowseClick != null) {
+            holder.setOnClickListeners(listener);
+        }
+        holder.setOnClickMultiChoiceListeners(listener, this);
+        holder.thumbImage.setChecked(selection.isSelected(position));
+    }
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		ViewHolder holder;
-
-		if (convertView == null) {
-			convertView = inflater.inflate(R.layout.gridview_photo_picker_item, parent, false);
-			holder = new ViewHolder(convertView);
-			convertView.setTag(holder);
-		} else {
-			holder = (ViewHolder) convertView.getTag();
-		}
-		if (showButtons && onPhotoBrowseClick != null) {
-			holder.showImageAction.setOnClickListener(this);
-			holder.showImageAction.setTag(position);
-		}
-        holder.showImageAction.setVisibility(showButtons ? View.VISIBLE : View.INVISIBLE);
-        holder.bgAction.setVisibility(showButtons ? View.VISIBLE : View.INVISIBLE);
-
-		ImageInfo imageInfo = getItem(position);
-		imageLoader.displayImage(imageInfo.getThumbnailURL(), holder.thumbImage);
-
-		return convertView;
-	}
-
-	@Override
-	public int getCount() {
+	public int getItemCount() {
 		return items.size();
 	}
 
-	@Override
 	public ImageInfo getItem(int position) {
 		return items.get(position);
 	}
 
-	@Override
-	public long getItemId(int position) {
-		return position;
-	}
-
-	@Override
-	public boolean isEnabled(int position) {
-		return getItem(position).getSelector() != null;
-	}
-
 	public void addAll(List<ImageInfo> list) {
 		items.addAll(list);
+        notifyDataSetChanged();
 	}
 
+    @Override
 	public void onClick(final View v) {
 		switch (v.getId()) {
 			case R.id.ic_show_image_action:
 				onPhotoBrowseClick.onThumbnailImageClick((Integer) v.getTag());
 				break;
+            case R.id.list_row:
+                onPhotoBrowseClick.onItemClick((Integer) v.getTag());
+                break;
 		}
 	}
 
-    public boolean isShowButtons() {
-        return showButtons;
+    @Override
+    public boolean onLongClick(View v) {
+        onPhotoBrowseClick.onItemLongClick((Integer) v.getTag());
+        return true;
     }
 
     public void setShowButtons(boolean showButtons) {
         this.showButtons = showButtons;
     }
 
-    private class ViewHolder {
-		final ImageView showImageAction;
-		final ImageView thumbImage;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        final ImageView showImageAction;
+		final CheckableImageView thumbImage;
 		final ImageView bgAction;
 
-		public ViewHolder(View vi) {
-			bgAction = (ImageView)vi.findViewById(R.id.bg_actions);
-			showImageAction = (ImageView)vi.findViewById(R.id.ic_show_image_action);
-			thumbImage = (ImageView)vi.findViewById(R.id.thumbnail_image);
+		public ViewHolder(View itemView) {
+			super(itemView);
+			bgAction = (ImageView)itemView.findViewById(R.id.bg_actions);
+			showImageAction = (ImageView)itemView.findViewById(R.id.ic_show_image_action);
+			thumbImage = (CheckableImageView)itemView.findViewById(R.id.thumbnail_image);
 		}
-	}
 
-	public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
+        public void bindModel(ImageInfo imageInfo, ImageLoader imageLoader, boolean showButtons) {
+            setVisibility(showButtons);
+            displayImage(imageInfo, imageLoader);
+        }
+
+        private void setVisibility(boolean showButtons) {
+            showImageAction.setVisibility(showButtons ? View.VISIBLE : View.INVISIBLE);
+            bgAction.setVisibility(showButtons ? View.VISIBLE : View.INVISIBLE);
+        }
+
+        private void displayImage(ImageInfo imageInfo, ImageLoader imageLoader) {
+            imageLoader.displayImage(imageInfo.getThumbnailURL(), thumbImage);
+        }
+
+        public void setOnClickListeners(View.OnClickListener listener) {
+            showImageAction.setOnClickListener(listener);
+            showImageAction.setTag(getAdapterPosition());
+        }
+
+        public void setOnClickMultiChoiceListeners(View.OnClickListener listener, View.OnLongClickListener longClickListener) {
+            if (listener != null) {
+                final int position = getAdapterPosition();
+                itemView.setOnClickListener(listener);
+                itemView.setOnLongClickListener(longClickListener);
+                itemView.setLongClickable(true);
+                itemView.setTag(position);
+            }
+        }
+    }
+
+	public void setOnPhotoBrowseClick(OnPhotoBrowseClickMultiChoice onPhotoBrowseClick) {
 		this.onPhotoBrowseClick = onPhotoBrowseClick;
 	}
+
+    public List<ImageInfo> getSelectedItems() {
+        ArrayList<ImageInfo> list = new ArrayList<>(getSelection().getItemCount());
+        for (int pos : getSelection().getSelectedPositions()) {
+            list.add(getItem(pos));
+        }
+        return list;
+    }
+
+    public Selection getSelection() {
+        return selection;
+    }
+
+    public void setEmptyView(final View view) {
+        if (view != null) {
+            registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    view.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+                }
+            });
+        }
+    }
 }

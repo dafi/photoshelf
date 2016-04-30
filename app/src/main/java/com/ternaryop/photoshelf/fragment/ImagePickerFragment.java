@@ -16,8 +16,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.SparseBooleanArray;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,8 +27,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
@@ -37,13 +36,15 @@ import com.ternaryop.photoshelf.ImageUrlRetriever;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImageViewerActivity;
 import com.ternaryop.photoshelf.adapter.ImagePickerAdapter;
-import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
+import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice;
+import com.ternaryop.photoshelf.adapter.Selection;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.photoshelf.selector.DOMSelector;
 import com.ternaryop.photoshelf.selector.ImageDOMSelectorFinder;
+import com.ternaryop.photoshelf.view.AutofitGridLayoutManager;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
 import com.ternaryop.utils.URLUtils;
@@ -54,14 +55,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, AdapterView.OnItemClickListener, ImageUrlRetriever.OnImagesRetrieved, OnPhotoBrowseClick {
-    private GridView gridView;
+public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageUrlRetriever.OnImagesRetrieved, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
+    private RecyclerView gridView;
     private ProgressHighlightViewLayout progressHighlightViewLayout;
 
     private ImageUrlRetriever imageUrlRetriever;
     private ImagePickerAdapter imagePickerAdapter;
     private ImageDOMSelectorFinder domSelectorFinder;
-    private TextView detailsText;
+    private String detailsText;
+    ActionMode actionMode;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,21 +71,20 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         View rootView = inflater.inflate(R.layout.fragment_image_picker, container, false);
         getActivity().setTitle(R.string.image_picker_activity_title);
 
-        imagePickerAdapter = new ImagePickerAdapter(getActivity());
-        imagePickerAdapter.setOnPhotoBrowseClick(this);
-        domSelectorFinder = new ImageDOMSelectorFinder(getActivity());
-        imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
-
         progressHighlightViewLayout = (ProgressHighlightViewLayout) rootView.findViewById(android.R.id.empty);
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
 
-        gridView = (GridView) rootView.findViewById(R.id.gridview);
-        gridView.setAdapter(imagePickerAdapter);
-        gridView.setOnItemClickListener(this);
-        gridView.setMultiChoiceModeListener(this);
-        gridView.setEmptyView(progressHighlightViewLayout);
+        imagePickerAdapter = new ImagePickerAdapter(getActivity());
+        imagePickerAdapter.setOnPhotoBrowseClick(this);
+        imagePickerAdapter.setEmptyView(progressHighlightViewLayout);
+        domSelectorFinder = new ImageDOMSelectorFinder(getActivity());
+        imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
 
-        detailsText = (TextView) rootView.findViewById(R.id.details_text);
+        RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getActivity().getResources().getDimension(R.dimen.image_picker_grid_width));
+        gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
+        gridView.setAdapter(imagePickerAdapter);
+        gridView.setHasFixedSize(true);
+        gridView.setLayoutManager(layout);
 
         setHasOptionsMenu(true);
 
@@ -158,7 +159,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         return (TextView) progressHighlightViewLayout.getCurrentView();
     }
 
+    @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        mode.setTitle(getActivity().getString(R.string.select_images));
+        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.image_picker_context, menu);
         imagePickerAdapter.setShowButtons(true);
@@ -166,19 +170,20 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         return true;
     }
 
+    @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        mode.setTitle(getActivity().getString(R.string.select_images));
         return true;
     }
 
+    @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.showDialog:
-                imageUrlRetriever.retrieve(getCheckedImageInfoList());
+                imageUrlRetriever.retrieve(imagePickerAdapter.getSelectedItems());
                 mode.finish();
                 return true;
             case R.id.create_from_file:
-                imageUrlRetriever.retrieve(getCheckedImageInfoList(), true);
+                imageUrlRetriever.retrieve(imagePickerAdapter.getSelectedItems(), true);
                 mode.finish();
                 return true;
             default:
@@ -186,31 +191,11 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
         }
     }
 
-    private List<ImageInfo> getCheckedImageInfoList() {
-        SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
-        ArrayList<ImageInfo> list = new ArrayList<>();
-        for (int i = 0; i < checkedItemPositions.size(); i++) {
-            int key = checkedItemPositions.keyAt(i);
-            if (checkedItemPositions.get(key)) {
-                list.add(imagePickerAdapter.getItem(key));
-            }
-        }
-        return list;
-    }
-
+    @Override
     public void onDestroyActionMode(ActionMode mode) {
+        this.actionMode = null;
         imagePickerAdapter.setShowButtons(false);
-        imagePickerAdapter.notifyDataSetChanged();
-    }
-
-    public void onItemCheckedStateChanged(ActionMode mode, int position,
-                                          long id, boolean checked) {
-        int selectCount = gridView.getCheckedItemCount();
-        mode.setSubtitle(getActivity().getResources().getQuantityString(
-                R.plurals.selected_items_total,
-                selectCount,
-                selectCount,
-                imagePickerAdapter.getCount()));
+        imagePickerAdapter.getSelection().clear();
     }
 
     @Override
@@ -372,31 +357,14 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
             super.onPostExecute(null);
             if (error == null) {
                 progressHighlightViewLayout.stopProgress();
-                showDetails(imageUrlRetriever.getTitle());
+                detailsText = imageUrlRetriever.getTitle();
+                showDetails(Snackbar.LENGTH_LONG);
                 getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.image_found, result.size(), result.size()));
                 imagePickerAdapter.addAll(result);
-                imagePickerAdapter.notifyDataSetChanged();
-                gridView.invalidateViews();
             } else {
                 DialogUtils.showErrorDialog(getActivity(), error);
             }
         }
-
-        public void showDetails(String text) {
-            detailsText.setVisibility(View.VISIBLE);
-            detailsText.setText(text);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    detailsText.setVisibility(View.GONE);
-                }
-            }, 3 * 1000);
-        }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        onThumbnailImageClick(position);
     }
 
     @Override
@@ -427,6 +395,38 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     }
 
     @Override
+    public void onItemClick(int position) {
+        if (actionMode == null) {
+            onThumbnailImageClick(position);
+        } else {
+            updateSelection(position);
+        }
+    }
+
+    @Override
+    public void onItemLongClick(int position) {
+        if (actionMode == null) {
+            actionMode = getActivity().startActionMode(this);
+        }
+        imagePickerAdapter.getSelection().toggle(position);
+    }
+
+    private void updateSelection(int position) {
+        Selection selection = imagePickerAdapter.getSelection();
+        selection.toggle(position);
+        if (selection.getItemCount() == 0) {
+            actionMode.finish();
+        } else {
+            int selectionCount = selection.getItemCount();
+            actionMode.setSubtitle(getActivity().getResources().getQuantityString(
+                    R.plurals.selected_items_total,
+                    selectionCount,
+                    selectionCount,
+                    imagePickerAdapter.getItemCount()));
+        }
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.image_picker, menu);
         super.onCreateOptionsMenu(menu, inflater);
@@ -436,14 +436,20 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements GridVi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_image_viewer_details:
-                toogleDetails();
+                showDetails(Snackbar.LENGTH_INDEFINITE);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void toogleDetails() {
-        detailsText.setVisibility(detailsText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
+    private void showDetails(int duration) {
+        Snackbar snackbar = Snackbar.make(gridView, detailsText, duration);
+        View sbView = snackbar.getView();
+        sbView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.image_picker_detail_text_bg));
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(ContextCompat.getColor(getActivity(), R.color.image_picker_detail_text_text));
+        textView.setMaxLines(3);
+        snackbar.show();
     }
 }

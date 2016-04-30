@@ -21,11 +21,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AbsListView.MultiChoiceModeListener;
-import android.widget.AbsListView.OnScrollListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 
@@ -47,7 +42,7 @@ import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.drawer.counter.CountChangedListener;
 import com.ternaryop.utils.drawer.counter.CountProvider;
 
-public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnScrollListener, OnItemClickListener, MultiChoiceModeListener, OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
+public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
     protected static final int POST_ACTION_PUBLISH = 1;
     protected static final int POST_ACTION_DELETE = 2;
     protected static final int POST_ACTION_EDIT = 3;
@@ -109,6 +104,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         return R.layout.fragment_photo_list;
     }
 
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         boolean isMenuVisible = !fragmentActivityStatus.isDrawerOpen();
         menu.setGroupVisible(R.id.menu_photo_action_bar, isMenuVisible);
@@ -162,33 +158,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }.execute();
     }
 
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem,
-            int visibleItemCount, int totalItemCount) {
-        boolean loadMore = totalItemCount > 0 &&
-                (firstVisibleItem + visibleItemCount >= totalItemCount);
-
-        if (loadMore && hasMorePosts && !isScrolling) {
-            offset += Tumblr.MAX_POST_PER_REQUEST;
-            readPhotoPosts();
-        }
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-    }
-
-    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        PhotoShelfPost item = (PhotoShelfPost) parent.getItemAtPosition(position);
-        if (getActivity().getCallingActivity() == null) {
-            ImageViewerActivity.startImageViewer(getActivity(),
-                    item.getFirstPhotoAltSize().get(0).getUrl(),
-                    item);
-        } else {
-            finish(item);
-        }
-    }
-
     public void finish(TumblrPhotoPost post) {
         Intent data = new Intent();
         data.putExtra(Constants.EXTRA_POST, post);
@@ -196,7 +165,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         getActivity().setResult(Activity.RESULT_OK, data);
         getActivity().finish();
     }
-    
+
+    @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         mode.setTitle(R.string.select_posts);
         mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
@@ -205,35 +175,32 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         return true;
     }
 
+    @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         return true;
     }
 
+    @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         return handleMenuItem(item, photoAdapter.getSelectedPosts(), mode);
     }
 
+    @Override
     public void onDestroyActionMode(ActionMode mode) {
         this.actionMode = null;
         photoAdapter.getSelection().clear();
     }
 
-    public void onItemCheckedStateChanged(ActionMode mode, int position,
-            long id, boolean checked) {
+    public void updateMenuItems() {
         int selectCount = photoAdapter.getSelection().getItemCount();
         boolean singleSelection = selectCount == 1;
 
         for (int itemId : getSingleSelectionMenuIds()) {
-            MenuItem item = mode.getMenu().findItem(itemId);
+            MenuItem item = actionMode.getMenu().findItem(itemId);
             if (item != null) {
                 item.setVisible(singleSelection);
             }
         }
-
-        mode.setSubtitle(getResources().getQuantityString(
-                R.plurals.selected_items,
-                selectCount,
-                selectCount));
     }
 
     protected int[] getSingleSelectionMenuIds() {
@@ -446,6 +413,14 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }
     }
 
+    @Override
+    public void onItemLongClick(int position) {
+        if (actionMode == null) {
+            actionMode = getActivity().startActionMode(this);
+        }
+        photoAdapter.getSelection().toggle(position);
+    }
+
     private void handleClickedThumbnail(int position) {
         final PhotoShelfPost post = photoAdapter.getItem(position);
         if (getActivity().getCallingActivity() == null) {
@@ -461,16 +436,13 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         if (selection.getItemCount() == 0) {
             actionMode.finish();
         } else {
-            onItemCheckedStateChanged(actionMode, position, -1, selection.isSelected(position));
+            updateMenuItems();
+            int selectionCount = selection.getItemCount();
+            actionMode.setSubtitle(getResources().getQuantityString(
+                    R.plurals.selected_items,
+                    selectionCount,
+                    selectionCount));
         }
-    }
-
-    @Override
-    public void onItemLongClick(int position) {
-        if (actionMode == null) {
-            actionMode = getActivity().startActionMode(this);
-        }
-        photoAdapter.getSelection().toggle(position);
     }
 
     protected boolean handleMenuItem(MenuItem item, List<PhotoShelfPost> postList, ActionMode mode) {
@@ -544,7 +516,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
      * @param postAction the action executed
      * @param resultCode on success POST_ACTION_OK
      */
-    public void onPostAction(TumblrPhotoPost post, int postAction, @SuppressWarnings("SameParameterValue") int resultCode) {
+    public void onPostAction(@SuppressWarnings("UnusedParameters") TumblrPhotoPost post, @SuppressWarnings("UnusedParameters") int postAction, @SuppressWarnings({"SameParameterValue", "UnusedParameters"}) int resultCode) {
     }
 
     @Override

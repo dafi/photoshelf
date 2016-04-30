@@ -3,4 +3,5 @@
     <dimen name="webview_progressbar_height">8dp</dimen>
     <dimen name="grid_layout_thumb_width">250dp</dimen>
     <dimen name="grid_layout_thumb_height">250dp</dimen>
+    <dimen name="image_picker_grid_width">120dp</dimen>
 </resources>
