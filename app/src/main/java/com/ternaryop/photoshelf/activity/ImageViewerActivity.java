@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
@@ -21,6 +22,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -142,7 +144,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         runOnUiThread(new Runnable() {
             public void run() {
                 detailsText.setVisibility(View.VISIBLE);
-                detailsText.setText(String.format("%s (%1dx%2d)", imageHostUrl , w, h));
+                detailsText.setText(String.format(Locale.US, "%s (%1dx%2d)", imageHostUrl , w, h));
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -208,6 +210,10 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
             final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
             String fileName = getIntent().getExtras().getString(IMAGE_TAG);
 
+            if (imageUrl == null) {
+                return;
+            }
+
             if (fileName == null) {
                 fileName = new URI(imageUrl).getPath();
                 int index = fileName.lastIndexOf('/');
@@ -257,6 +263,9 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     private void shareImage() {
         try {
             final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
+            if (imageUrl == null) {
+                return;
+            }
             String fileName = new URI(imageUrl).getPath();
             int index = fileName.lastIndexOf('/');
             if (index != -1) {
@@ -312,9 +321,9 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
                 }
                 try {
                     WallpaperManager wpm = WallpaperManager.getInstance(ImageViewerActivity.this);
-                    float width = wpm.getDesiredMinimumWidth();
-                    float height = wpm.getDesiredMinimumHeight();
-                    bitmap = ImageUtils.getResizedBitmap(bitmap, width, height);
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    bitmap = getScaledBitmap(bitmap, metrics.widthPixels , metrics.heightPixels, true);
                     wpm.setBitmap(bitmap);
                     Toast.makeText(ImageViewerActivity.this,
                             getString(R.string.wallpaper_changed_title),
@@ -325,6 +334,15 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
                 }
             }
         }.execute();
+    }
+
+    public Bitmap getScaledBitmap(Bitmap bitmap, int scaledWidth, int scaledHeight, boolean portrait) {
+        if (portrait) {
+            if (bitmap.getHeight() > scaledHeight) {
+                return ImageUtils.getResizedBitmap(bitmap, scaledWidth, scaledHeight);
+            }
+        }
+        return bitmap;
     }
 
     private abstract class DownloadImageUrl extends AbsProgressIndicatorAsyncTask<Void, Void, Void> {
