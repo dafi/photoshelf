@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -85,6 +85,7 @@
     },
     "hotflick.net": {
       "image": ".pict_content img",
+      "title": "#box-gallery-info-title",
       "container": ".box-item-155-img img",
       "multiPage": ".box-paging a.active ~ a"
     },
