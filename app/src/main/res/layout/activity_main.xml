@@ -4,32 +4,49 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent">
 
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <!-- I don't use CoordinatorLayout because
+        - it doesn't easy allow to have view stay fixed (at bottom) like the detailText on PickerFragment
+        - the appbar_scrolling_view_behavior causes incorrect behavior on view not using RecyclerView like the birthday list
+          where the last item is not visible because the appbar offset hides it
+    -->
+    <!--<android.support.design.widget.CoordinatorLayout-->
+        <!--android:id="@+id/main_content"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <!--<android.support.design.widget.AppBarLayout-->
+            <!--android:id="@+id/appbar"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">-->
 
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/drawer_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                style="?topDrawerToolbarPopupTheme"
-                app:layout_scrollFlags="scroll|enterAlways"/>
+            <!--<android.support.v7.widget.Toolbar-->
+                <!--android:id="@+id/drawer_toolbar"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="?attr/actionBarSize"-->
+                <!--style="?topDrawerToolbarPopupTheme"-->
+                <!--app:layout_scrollFlags="scroll|enterAlways"/>-->
 
-        </android.support.design.widget.AppBarLayout>
+        <!--</android.support.design.widget.AppBarLayout>-->
+
+        <!--<FrameLayout-->
+            <!--android:id="@+id/content_frame"-->
+            <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"/>-->
+    <!--</android.support.design.widget.CoordinatorLayout>-->
+
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent">
+
+        <include layout="@layout/toolbar_app"/>
 
         <FrameLayout
             android:id="@+id/content_frame"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-    </android.support.design.widget.CoordinatorLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/drawer_frame"

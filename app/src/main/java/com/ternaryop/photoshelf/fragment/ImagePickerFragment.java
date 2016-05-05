@@ -80,7 +80,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         domSelectorFinder = new ImageDOMSelectorFinder(getActivity());
         imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
 
-        RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getActivity().getResources().getDimension(R.dimen.image_picker_grid_width));
+        RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.image_picker_grid_width));
         gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
         gridView.setAdapter(imagePickerAdapter);
         gridView.setHasFixedSize(true);
