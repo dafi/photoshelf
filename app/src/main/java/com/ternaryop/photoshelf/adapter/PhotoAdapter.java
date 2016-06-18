@@ -18,9 +18,9 @@ import android.widget.Filter;
 
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.util.sort.AbsSortable;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implements View.OnClickListener, View.OnLongClickListener {
-    public static final int SORT_NONE = 0;
     public static final int SORT_TAG_NAME = 1;
     public static final int SORT_LAST_PUBLISHED_TAG = 2;
     public static final int SORT_UPLOAD_TIME = 3;
@@ -32,8 +32,10 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private final int thumbnailWidth;
 
-    private int currentSort = SORT_LAST_PUBLISHED_TAG;
-    private boolean sortAscending = true;
+    private PhotoShelfPostSortable currentSortable;
+    private PhotoShelfPostSortable tagNameSortable;
+    private PhotoShelfPostSortable lastPublishedTagSortable = new LastPublishedTagSortable(true);
+    private PhotoShelfPostSortable uploadTimeSortable;
 
     final SelectionArrayViewHolder<PhotoViewHolder> selection = new SelectionArrayViewHolder<>(this);
 
@@ -43,6 +45,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
         allPosts = new ArrayList<>();
         visiblePosts = allPosts;
         thumbnailWidth = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_width", "75"));
+        currentSortable = lastPublishedTagSortable;
     }
 
     public void setOnPhotoBrowseClick(OnPhotoBrowseClick onPhotoBrowseClick) {
@@ -57,7 +60,8 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     @Override
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
         View.OnClickListener listener = onPhotoBrowseClick == null ? null : this;
-        holder.bindModel(visiblePosts.get(position), imageLoader, thumbnailWidth);
+        boolean showUploadTime = getCurrentSort() == SORT_UPLOAD_TIME;
+        holder.bindModel(visiblePosts.get(position), imageLoader, thumbnailWidth, showUploadTime);
         holder.setOnClickListeners(visiblePosts.get(position), listener);
         if (onPhotoBrowseClick instanceof OnPhotoBrowseClickMultiChoice) {
             holder.setOnClickMultiChoiceListeners(listener, this);
@@ -197,82 +201,57 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
                 post.setLastPublishedTimestamp(lastPublishDateTime.getTimeInMillis());
             }
         }
-        if (isSortNeeded && currentSort == SORT_LAST_PUBLISHED_TAG) {
+        if (isSortNeeded && getCurrentSort() == SORT_LAST_PUBLISHED_TAG) {
             sort();
         } else {
             calcGroupIds();
         }
     }
 
-    private void updateCurrentSortType(int type) {
-        if (currentSort == type) {
-            sortAscending = !sortAscending;
+    private void sort(PhotoShelfPostSortable sortable) {
+        if (currentSortable == sortable) {
+            boolean ascending = sortable.isAscending();
+            sortable.setAscending(!ascending);
         } else {
-            sortAscending = true;
-            currentSort = type;
+            currentSortable.resetDefault();
+            currentSortable = sortable;
         }
+        currentSortable.sort();
     }
 
     public void sortByTagName() {
-        updateCurrentSortType(SORT_TAG_NAME);
-        Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
-            @Override
-            public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
-                return LastPublishedTimestampComparator.compareTag(lhs, rhs, sortAscending);
-            }
-        });
-        calcGroupIds();
+        if (tagNameSortable == null) {
+            tagNameSortable = new TagNameSortable(true);
+        }
+        sort(tagNameSortable);
     }
 
     public void sortByLastPublishedTag() {
-        if (currentSort == SORT_LAST_PUBLISHED_TAG) {
+        if (getCurrentSort() == SORT_LAST_PUBLISHED_TAG) {
             return;
         }
-        currentSort = SORT_LAST_PUBLISHED_TAG;
-        Collections.sort(visiblePosts, new LastPublishedTimestampComparator());
-        calcGroupIds();
+        if (lastPublishedTagSortable == null) {
+            lastPublishedTagSortable = new LastPublishedTagSortable(true);
+        }
+        sort(lastPublishedTagSortable);
     }
 
     public void sortByUploadTime() {
-        updateCurrentSortType(SORT_UPLOAD_TIME);
-        Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
-            @Override
-            public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
-                long diff = lhs.getTimestamp() - rhs.getTimestamp();
-                int compare = diff < -1 ? -1 : diff > 1 ? 1 : 0;
-                if (compare == 0) {
-                    return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
-                }
-                return sortAscending ? compare : -compare;
-            }
-        });
-        calcGroupIds();
+        if (uploadTimeSortable == null) {
+            uploadTimeSortable = new UploadTimeSortable(true);
+        }
+        sort(uploadTimeSortable);
     }
 
     /**
      * Sort the list using the last used sort method
      */
     public void sort() {
-        int temp = currentSort;
-
-        // reset the flag to force the sort
-        currentSort = SORT_NONE;
-
-        switch (temp) {
-            case SORT_TAG_NAME:
-                sortByTagName();
-                break;
-            case SORT_LAST_PUBLISHED_TAG:
-                sortByLastPublishedTag();
-                break;
-            case SORT_UPLOAD_TIME:
-                sortByUploadTime();
-                break;
-        }
+        currentSortable.sort();
     }
 
     public int getCurrentSort() {
-        return currentSort;
+        return currentSortable.sortId;
     }
 
     public List<PhotoShelfPost> getPhotoList() {
@@ -301,6 +280,67 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
                     view.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
                 }
             });
+        }
+    }
+
+    private abstract class PhotoShelfPostSortable extends AbsSortable {
+        final int sortId;
+
+        public PhotoShelfPostSortable(boolean isDefaultAscending, int sortId) {
+            super(isDefaultAscending);
+            this.sortId = sortId;
+        }
+
+        public void resetDefault() {
+            setAscending(isDefaultAscending());
+        }
+    }
+    private class TagNameSortable extends PhotoShelfPostSortable {
+        public TagNameSortable(boolean isDefaultAscending) {
+            super(isDefaultAscending, SORT_TAG_NAME);
+        }
+
+        public void sort() {
+            Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
+                @Override
+                public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
+                    return LastPublishedTimestampComparator.compareTag(lhs, rhs, isAscending());
+                }
+            });
+            calcGroupIds();
+        }
+    }
+
+    private class LastPublishedTagSortable extends PhotoShelfPostSortable {
+        public LastPublishedTagSortable(boolean isDefaultAscending) {
+            super(isDefaultAscending, SORT_LAST_PUBLISHED_TAG);
+        }
+
+        public void sort() {
+            Collections.sort(visiblePosts, new LastPublishedTimestampComparator());
+            calcGroupIds();
+        }
+    }
+
+    private class UploadTimeSortable extends PhotoShelfPostSortable {
+        public UploadTimeSortable(boolean isDefaultAscending) {
+            super(isDefaultAscending, SORT_UPLOAD_TIME);
+        }
+
+        @Override
+        public void sort() {
+            Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
+                @Override
+                public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
+                    long diff = lhs.getTimestamp() - rhs.getTimestamp();
+                    int compare = diff < -1 ? -1 : diff > 1 ? 1 : 0;
+                    if (compare == 0) {
+                        return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
+                    }
+                    return isAscending() ? compare : -compare;
+                }
+            });
+            calcGroupIds();
         }
     }
 }

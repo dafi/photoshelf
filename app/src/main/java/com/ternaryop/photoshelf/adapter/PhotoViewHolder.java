@@ -13,6 +13,7 @@ import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.utils.StringUtils;
+import org.joda.time.format.DateTimeFormat;
 
 /**
  * Created by dave on 13/04/16.
@@ -37,9 +38,9 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
         thumbImage = (ImageView) itemView.findViewById(R.id.thumbnail_image);
     }
 
-    public void bindModel(PhotoShelfPost post, ImageLoader imageLoader, int thumbnailWidth) {
+    public void bindModel(PhotoShelfPost post, ImageLoader imageLoader, int thumbnailWidth, boolean showUploadTime) {
         updateItemColors(post);
-        updateTitles(post);
+        updateTitles(post, showUploadTime);
         displayImage(post, imageLoader, thumbnailWidth);
     }
 
@@ -70,11 +71,21 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
         imageLayoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, altSize.getHeight(), itemView.getContext().getResources().getDisplayMetrics());
     }
 
-    private void updateTitles(PhotoShelfPost post) {
+    private void updateTitles(PhotoShelfPost post, boolean showUploadTime) {
         title.setText(post.getFirstTag());
         caption.setText(Html.fromHtml(StringUtils.stripHtmlTags("a|img|p|br", post.getCaption())));
         timeDesc.setText(post.getLastPublishedTimestampAsString());
-        updateNote(post);
+        // use noteCountText for both uploadTime and notes
+        if (showUploadTime) {
+            showUploadTime(post);
+        } else {
+            updateNote(post);
+        }
+    }
+
+    private void showUploadTime(PhotoShelfPost post) {
+        noteCountText.setVisibility(View.VISIBLE);
+        noteCountText.setText(itemView.getResources().getString(R.string.uploaded_at_time, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").print(post.getTimestamp() * 1000)));
     }
 
     private void updateNote(PhotoShelfPost post) {

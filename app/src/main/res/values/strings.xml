@@ -172,6 +172,7 @@
     <string name="post_count_1_of_x" tools:ignore="PluralsCandidate">%1$d/%2$d posts</string>
     <string name="upload_immediately">Upload immediately</string>
     <string name="upload_error_ticker">PhotoShelf upload error</string>
+    <string name="uploaded_at_time">Uploaded at %1$s</string>
     <string name="published_post">Published</string>
     <string name="automatic_export">Automatic export</string>
     <string name="week_selection_under_age" tools:ignore="PluralsCandidate">A selection of the most beautiful women under %1$d published last week</string>
