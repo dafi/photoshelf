@@ -20,7 +20,7 @@ public class Log {
             PrintStream ps = new PrintStream(fos);
             if (msg != null) {
                 for (String m : msg) {
-                    ps.println(date + m);
+                    ps.println(date + " - " + m);
                 }
             }
             e.printStackTrace(ps);
