@@ -71,7 +71,7 @@
 
         <!-- Dropbox -->
         <activity
-            android:name="com.dropbox.client2.android.AuthActivity"
+            android:name="com.dropbox.core.android.AuthActivity"
             android:launchMode="singleTask"
             android:configChanges="orientation|keyboard">
             <intent-filter>

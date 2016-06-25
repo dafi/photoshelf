@@ -161,8 +161,12 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.setTitle(getActivity().getString(R.string.select_images));
-        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, 1));
+        mode.setTitle(getString(R.string.select_images));
+        mode.setSubtitle(getResources().getQuantityString(
+                R.plurals.selected_items_total,
+                1,
+                1,
+                imagePickerAdapter.getItemCount()));
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.image_picker_context, menu);
         imagePickerAdapter.setShowButtons(true);
@@ -418,7 +422,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
             actionMode.finish();
         } else {
             int selectionCount = selection.getItemCount();
-            actionMode.setSubtitle(getActivity().getResources().getQuantityString(
+            actionMode.setSubtitle(getResources().getQuantityString(
                     R.plurals.selected_items_total,
                     selectionCount,
                     selectionCount,

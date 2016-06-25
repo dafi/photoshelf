@@ -12,9 +12,6 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.ternaryop.photoshelf.dropbox.AndroidAuthSessionWrapper;
 import com.ternaryop.tumblr.Blog;
 import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
@@ -133,10 +130,6 @@ public class AppSupport {
 
     public boolean isAutomaticExportEnabled() {
         return preferences.getBoolean(AUTOMATIC_EXPORT, false);
-    }
-
-    public DropboxAPI<AndroidAuthSession> getDbxAccountManager() {
-        return AndroidAuthSessionWrapper.getInstance(context);
     }
 
     public int getExportDaysPeriod() {

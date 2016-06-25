@@ -1,14 +1,10 @@
 package com.ternaryop.photoshelf.service;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,6 +27,7 @@ import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
+import com.ternaryop.photoshelf.util.log.Log;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.DateTimeUtils;
@@ -90,15 +87,7 @@ public class PublishIntentService extends IntentService {
         } catch (Exception ex) {
             try {
                 File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "publish_errors.txt");
-                String date = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).format(new Date());
-                FileOutputStream fos = new FileOutputStream(file, true);
-                PrintStream ps = new PrintStream(fos);
-                ps.println(date + " Error on url " + url);
-                ps.println(date + " tags " + postTags);
-                ex.printStackTrace(ps);
-                ps.flush();
-                ps.close();
-                fos.close();
+                Log.error(ex, file, " Error on url " + url, " tags " + postTags);
             } catch (Exception ignored) {
             }
             notifyError(intent);

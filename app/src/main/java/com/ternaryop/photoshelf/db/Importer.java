@@ -24,11 +24,10 @@ import android.text.TextUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.core.v2.files.WriteMode;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
+import com.ternaryop.photoshelf.dropbox.DropboxManager;
 import com.ternaryop.photoshelf.importer.CSVIterator;
 import com.ternaryop.photoshelf.importer.CSVIterator.CSVBuilder;
 import com.ternaryop.photoshelf.importer.PostRetriever;
@@ -50,9 +49,9 @@ public class Importer {
     private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     private final Context context;
-    private final DropboxAPI<AndroidAuthSession> dropboxManager;
+    private final DropboxManager dropboxManager;
 
-    public Importer(final Context context, DropboxAPI<AndroidAuthSession> dropboxManager) {
+    public Importer(final Context context, DropboxManager dropboxManager) {
         this.context = context;
         this.dropboxManager = dropboxManager;
     }
@@ -380,30 +379,23 @@ public class Importer {
         void complete();
     }
 
-    private void copyFileToDropbox(final String exportPath) {
-        if (dropboxManager.getSession().isLinked()) {
-            FileInputStream inputStream = null;
-            try {
-                File exportFile = new File(exportPath);
-                inputStream = new FileInputStream(exportFile);
-
-                String dropboxPath = "/" + exportFile.getName();
-                String parentRev = null;
-
-                try {
-                    // if the file exists then use the parentRev to overwrite and prevent conflicts
-                    parentRev = dropboxManager.metadata(dropboxPath, 1, null, false, null).rev;
-                } catch (DropboxException ignored) {
-                }
-                dropboxManager.putFile(dropboxPath, inputStream, exportFile.length(), parentRev, null);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try { inputStream.close(); } catch (Exception ignored) {}
-                }
+    private void copyFileToDropbox(final String exportPath) throws Exception {
+        if (dropboxManager.isLinked()) {
+            File exportFile = new File(exportPath);
+            try (InputStream in = new FileInputStream(exportFile)) {
+                // Autorename = true and Mode = OVERWRITE allow to overwrite the file if it exists or create it if doesn't
+                dropboxManager.getClient()
+                        .files()
+                        .uploadBuilder(dropboxPath(exportFile))
+                        .withAutorename(true)
+                        .withMode(WriteMode.OVERWRITE)
+                        .uploadAndFinish(in);
             }
         }
+    }
+
+    private String dropboxPath(File exportFile) {
+        return "/" + exportFile.getName();
     }
 
     /**
@@ -443,10 +435,8 @@ public class Importer {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + TOTAL_USERS_FILE_NAME;
     }
 
-    public void syncExportTotalUsersToCSV(final String exportPath, final String blogName) throws IOException {
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(exportPath, true)));
+    public void syncExportTotalUsersToCSV(final String exportPath, final String blogName) throws Exception {
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(exportPath, true)))) {
             String time = ISO_8601_DATE.format(Calendar.getInstance().getTimeInMillis());
             long totalUsers = Tumblr.getSharedTumblr(context)
                     .getFollowers(blogName, null, null)
@@ -454,8 +444,6 @@ public class Importer {
             pw.println(time + ";" + blogName + ";" + totalUsers);
             pw.flush();
             copyFileToDropbox(exportPath);
-        } finally {
-            if (pw != null) try { pw.close(); } catch (Exception ignored) {}
         }
     }
 

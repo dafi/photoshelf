@@ -1,15 +1,20 @@
 package com.ternaryop.photoshelf.service;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Environment;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Importer;
+import com.ternaryop.photoshelf.dropbox.DropboxManager;
+import com.ternaryop.photoshelf.util.log.Log;
 import com.ternaryop.utils.DateTimeUtils;
 
 public class BootService extends Service {
@@ -45,16 +50,16 @@ public class BootService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Importer importer = new Importer(getApplicationContext(), appSupport.getDbxAccountManager());
+                Importer importer = new Importer(getApplicationContext(), DropboxManager.getInstance(getApplicationContext()));
                 try {
                     importer.syncExportPostsToCSV(Importer.getPostsPath());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.error(e, getLogPath(), "Export posts");
                 }
                 try {
                     importer.syncExportBirthdaysToCSV(Importer.getBirthdaysPath());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.error(e, getLogPath(), "Export birthdays");
                 }
                 final long exportDaysPeriod = appSupport.getExportDaysPeriod();
                 final long lastUpdate = appSupport.getLastFollowersUpdateTime();
@@ -63,11 +68,16 @@ public class BootService extends Service {
                         importer.syncExportTotalUsersToCSV(Importer.getTotalUsersPath(), appSupport.getSelectedBlogName());
                         appSupport.setLastFollowersUpdateTime(Calendar.getInstance().getTimeInMillis());
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.error(e, getLogPath(), "Export total users");
                     }
                 }
             }
         }).start();
+    }
+
+    @NonNull
+    private File getLogPath() {
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "export_errors.txt");
     }
 
     private boolean hasAlreadyNotifiedToday() {

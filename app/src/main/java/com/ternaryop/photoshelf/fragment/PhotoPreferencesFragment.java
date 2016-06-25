@@ -19,13 +19,10 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.SdkVersion;
-import com.dropbox.client2.android.AndroidAuthSession;
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
-import com.ternaryop.photoshelf.dropbox.AndroidAuthSessionWrapper;
+import com.ternaryop.photoshelf.dropbox.DropboxManager;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DateTimeUtils;
 
@@ -69,16 +66,16 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private Preference preferenceExportDaysPeriod;
 
     private AppSupport appSupport;
-    private DropboxAPI<AndroidAuthSession> dropboxManager;
+    private DropboxManager dropboxManager;
     private Importer importer;
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_main);
 
         appSupport = new AppSupport(getActivity());
-        dropboxManager = appSupport.getDbxAccountManager();
+        dropboxManager = DropboxManager.getInstance(getActivity());
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -92,7 +89,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         }
         
         preferenceDropboxLogin = preferenceScreen.findPreference(KEY_DROPBOX_LOGIN);
-        if (dropboxManager.getSession().isLinked()) {
+        if (dropboxManager.isLinked()) {
             preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
         } else {
             preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
@@ -184,15 +181,11 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == DROPBOX_RESULT) {
-            AndroidAuthSession session = appSupport.getDbxAccountManager().getSession();
-            if (session.authenticationSuccessful()) {
-                try {
-                    // Required to complete auth, sets the access token on the session
-                    session.finishAuthentication();
-                    preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
-                } catch (IllegalStateException e) {
-                    preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
-                }
+            boolean authenticationSuccessful = dropboxManager.finishAuthentication() != null;
+            if (authenticationSuccessful) {
+                preferenceDropboxLogin.setTitle(getString(R.string.logout_title, DROPBOX_SERVICE_NAME));
+            } else {
+                preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
             }
         }
     }
@@ -239,11 +232,11 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
                         appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceDropboxLogin) {
-                if (dropboxManager.getSession().isLinked()) {
-                    dropboxManager.getSession().unlink();
+                if (dropboxManager.isLinked()) {
+                    dropboxManager.unlink();
                     preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
                 } else {
-                    ((AndroidAuthSessionWrapper)dropboxManager.getSession()).startOAuth2AuthenticationForResult(this, DROPBOX_RESULT);
+                    DropboxManager.getInstance(getActivity()).startOAuth2AuthenticationForResult(this, DROPBOX_RESULT);
                 }
                 return true;
             }
@@ -304,7 +297,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         // dropbox
         preferenceVersion = preferenceScreen.findPreference(KEY_DROPBOX_VERSION);
         preferenceVersion.setTitle(getString(R.string.version_title, "Dropbox Core"));
-        preferenceVersion.setSummary(SdkVersion.get());
+        preferenceVersion.setSummary(DropboxManager.Version);
     }
 
     public Importer getImporter() {

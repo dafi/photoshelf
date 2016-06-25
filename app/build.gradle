@@ -3,10 +3,12 @@ apply plugin: 'com.android.application'
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
 
-    compile 'com.android.support:appcompat-v7:23.3.0'
-    compile 'com.android.support:recyclerview-v7:23.3.0'
-    compile 'com.android.support:design:23.3.0'
-    compile 'com.android.support:cardview-v7:23.3.0'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:recyclerview-v7:24.0.0'
+    compile 'com.android.support:design:24.0.0'
+    compile 'com.android.support:cardview-v7:24.0.0'
+
+    compile 'com.dropbox.core:dropbox-core-sdk:2.0.5'
 
     compile "org.scribe:scribe:1.3.5"
     compile "org.jsoup:jsoup:1.8.2"
@@ -58,6 +60,15 @@ android {
     // Workaround for "Method ... not mocked." in test cases
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+
+    // Needed by dropbox
+    // see http://stackoverflow.com/questions/31912459/duplicate-lib-file-copied-in-apk-meta-inf-license-txt-error-in-andorid-studio#31912566
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
     }
 }
 
