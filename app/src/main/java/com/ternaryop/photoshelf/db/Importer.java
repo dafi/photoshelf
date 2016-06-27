@@ -102,7 +102,7 @@ public class Importer {
 
     public void syncExportPostsToCSV(final String exportPath) throws Exception {
         try (Cursor c = DBHelper.getInstance(context).getPostTagDAO().cursorExport()) {
-            PrintWriter pw = new PrintWriter(exportPath);
+            PrintWriter pw = fastPrintWriter(exportPath);
             while (c.moveToNext()) {
                 pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$d;%5$d",
                         c.getLong(c.getColumnIndex(PostTagDAO._ID)),
@@ -247,7 +247,7 @@ public class Importer {
     public void syncExportBirthdaysToCSV(final String exportPath) throws Exception {
         SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
         try (Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME)) {
-            PrintWriter pw = new PrintWriter(exportPath);
+            PrintWriter pw = fastPrintWriter(exportPath);
             long id = 1;
             while (c.moveToNext()) {
                 String birthdate = c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE));
@@ -304,7 +304,7 @@ public class Importer {
                     db.beginTransaction();
                     String fileName = "birthdays-" + new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()) + ".csv";
                     String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + fileName;
-                    PrintWriter pw = new PrintWriter(path);
+                    PrintWriter pw = fastPrintWriter(path);
                     for (Birthday birthday : birthdays) {
                         pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$s",
                                 1L,
@@ -342,13 +342,11 @@ public class Importer {
                 @Override
                 protected Void doInBackground(Void... voidParams) {
                     List<String> list = DBHelper.getInstance(context).getBirthdayDAO().getNameWithoutBirthDays(tumblrName);
-                    try {
-                        PrintWriter pw = new PrintWriter(exportPath);
+                    try (PrintWriter pw = fastPrintWriter(exportPath)) {
                         for (String name : list) {
                             pw.println(name);
                         }
                         pw.flush();
-                        pw.close();
 
                         copyFileToDropbox(exportPath);
                     } catch (Exception e) {
@@ -436,6 +434,7 @@ public class Importer {
     }
 
     public void syncExportTotalUsersToCSV(final String exportPath, final String blogName) throws Exception {
+        // do not overwrite the entire file but append to the existing one
         try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(exportPath, true)))) {
             String time = ISO_8601_DATE.format(Calendar.getInstance().getTimeInMillis());
             long totalUsers = Tumblr.getSharedTumblr(context)
@@ -447,4 +446,13 @@ public class Importer {
         }
     }
 
+    /**
+     * Create a PrintWriter disabling the flush to speedup writing
+     * @param path the destination path
+     * @return the created PrintWriter
+     * @throws IOException
+     */
+    public static PrintWriter fastPrintWriter(String path) throws IOException {
+        return new PrintWriter(new BufferedWriter(new FileWriter(path)), false);
+    }
 }
