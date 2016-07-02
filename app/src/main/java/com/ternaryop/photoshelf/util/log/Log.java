@@ -26,7 +26,8 @@ public class Log {
             e.printStackTrace(ps);
             ps.flush();
             ps.close();
-        } catch (Exception ignored) {
+        } catch (Exception fosEx) {
+            fosEx.printStackTrace();
         }
     }
 
