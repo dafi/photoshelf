@@ -10,9 +10,9 @@
     <color name="post_even_text_color">#444444</color>
     <color name="post_even_background_color">#cccccc</color>
     <color name="post_future_text_color">#ffffff</color>
-    <color name="post_future_background_color">#009688</color>
+    <color name="post_future_background_color">#719E89</color>
     <color name="post_never_text_color">#444444</color>
-    <color name="post_never_background_color">#ffc400</color>
+    <color name="post_never_background_color">#D8D16E</color>
 
     <!-- Some devices override the @android:color/transparent so we define our version -->
     <color name="transparent">#00000000</color>

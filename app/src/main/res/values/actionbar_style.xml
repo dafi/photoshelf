@@ -7,6 +7,8 @@
 
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
+        <!-- Used for the buttons -->
+        <item name="colorAccent">@color/primary</item>
 
         <item name="actionModeBackground">@color/actionmode_bg</item>
         <item name="actionBarPopupTheme">@style/Theme.PhotoShelf.ActionMode.PopupMenu</item>
@@ -96,6 +98,8 @@
 
         <!-- It's necessary to style the autocomplete dropdown -->
         <item name="android:dropDownItemStyle">@style/Theme.PhotoShelf.Dialog.Widget.DropDownItem</item>
+        <!-- Used for the buttons -->
+        <item name="colorAccent">@color/primary</item>
     </style>
 
     <style name="Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">

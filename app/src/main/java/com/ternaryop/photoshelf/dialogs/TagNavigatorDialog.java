@@ -71,7 +71,7 @@ public class TagNavigatorDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_tag_navigator, null);
         setupUI(view);
-        return new AlertDialog.Builder(getActivity())
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_PhotoShelf_Dialog)
                 .setView(view)
                 .setTitle(getResources().getString(R.string.tag_navigator_title, adapter.getCount()))
                 .setNegativeButton(getResources().getString(R.string.close), null)

@@ -122,7 +122,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_publish_post, null);
         setupUI(view);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.Theme_PhotoShelf_Dialog)
                 .setView(view)
                 .setNegativeButton(R.string.cancel_title, null);
         if (photoPost == null) {
