@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.fragment;
 
 import java.io.File;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -23,6 +24,7 @@ import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.dropbox.DropboxManager;
+import com.ternaryop.photoshelf.util.security.PermissionUtil;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DateTimeUtils;
 
@@ -48,6 +50,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private static final String KEY_THUMBNAIL_WIDTH = "thumbnail_width";
 
     private static final int DROPBOX_RESULT = 2;
+    private static final int REQUEST_FILE_PERMISSION = 1;
 
     private Preference preferenceTumblrLogin;
     private Preference preferenceImportPostsFromCSV;
@@ -94,7 +97,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         } else {
             preferenceDropboxLogin.setTitle(getString(R.string.login_title, DROPBOX_SERVICE_NAME));
         }
-        
+        PermissionUtil.askPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_FILE_PERMISSION);
         String csvPath = Importer.getPostsPath();
         preferenceImportPostsFromCSV = setupPreferenceFilePath(csvPath, KEY_IMPORT_POSTS_FROM_CSV, preferenceScreen);
 
@@ -296,7 +299,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
         // dropbox
         preferenceVersion = preferenceScreen.findPreference(KEY_DROPBOX_VERSION);
-        preferenceVersion.setTitle(getString(R.string.version_title, "Dropbox Core"));
+        preferenceVersion.setTitle(getString(R.string.version_title, "Dropbox"));
         preferenceVersion.setSummary(DropboxManager.Version);
     }
 

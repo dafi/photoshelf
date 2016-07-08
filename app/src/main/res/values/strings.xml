@@ -227,5 +227,6 @@
     <string name="birthdays_found">Birthdays found</string>
     <string name="show_post">Show Post</string>
     <string name="birthdays_without_posts">Birthdays Without Posts</string>
+    <string name="import.permission.rationale">Import and Export need access to files, do you grant permission?</string>
 
 </resources>
