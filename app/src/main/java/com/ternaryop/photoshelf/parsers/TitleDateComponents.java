@@ -46,7 +46,7 @@ public class TitleDateComponents {
      * @return matcher on success, null otherwise
      */
     private Matcher extractComponentsFromTextualDate(String text) {
-        Matcher m = Pattern.compile("\\s?(?:-|,|on)?\\s+\\(?(jan\\w*|feb\\w*|mar\\w*|apr\\w*|may\\w*|jun\\w*|jul\\w*|aug\\w*|sep\\w*|oct\\w*|nov\\w*|dec\\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(text);
+        Matcher m = Pattern.compile("\\s?(?:-|,|\\bon\\b)?\\s+\\(?(jan\\w*|feb\\w*|mar\\w*|apr\\w*|may\\w*|jun\\w*|jul\\w*|aug\\w*|sep\\w*|oct\\w*|nov\\w*|dec\\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(text);
         if (m.find() && m.groupCount() > 1 && containsDateMatch(m)) {
             int dayIndex = 2;
             int monthIndex = 1;
