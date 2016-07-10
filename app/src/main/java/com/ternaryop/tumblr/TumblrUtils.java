@@ -24,7 +24,7 @@ public class TumblrUtils {
                 JSONArray arr = tumblr.getConsumer().jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts");
                 readCount = arr.length();
                 count += readCount;
-                params.put("offset", String.valueOf(readCount));
+                params.put("offset", String.valueOf(count));
             } while (readCount == 20);
         } catch (Exception e) {
             throw new TumblrException(e);
@@ -64,7 +64,7 @@ public class TumblrUtils {
                 List<TumblrPost> queue = tumblr.getQueue(tumblrName, params);
                 readCount = queue.size();
                 list.addAll(queue);
-                params.put("offset", String.valueOf(readCount));
+                params.put("offset", String.valueOf(list.size()));
             } while (readCount == 20);
         } catch (Exception e) {
             throw new TumblrException(e);
