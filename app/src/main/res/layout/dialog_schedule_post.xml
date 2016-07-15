@@ -20,18 +20,18 @@
         android:orientation="horizontal"
         android:layout_gravity="end">
 
-        <Button
+        <android.support.v7.widget.AppCompatButton
             android:id="@+id/cancelButton"
-            style="?android:attr/buttonBarButtonStyle"
+            style="?attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:text="@string/cancel_title" />
 
-        <Button
+        <android.support.v7.widget.AppCompatButton
             android:id="@+id/schedule_button"
-            style="?android:attr/buttonBarButtonStyle"
+            style="?attr/buttonBarButtonStyle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"

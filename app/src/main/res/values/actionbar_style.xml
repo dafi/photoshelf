@@ -30,6 +30,8 @@
 
         <item name="topColorDrawerBackgroundDivider">@color/drawer_divider_bg</item>
         <item name="topColorDrawerBackgroundFrame">@color/drawer_frame_bg</item>
+
+        <item name="alertDialogTheme">@style/Theme.PhotoShelf.Dialog</item>
     </style>
 
     <style name="Theme.PhotoShelf.ContextPopupMenuStyle" parent="@style/Widget.AppCompat.Light.PopupMenu">
