@@ -19,6 +19,7 @@ import android.widget.Filter;
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.util.sort.AbsSortable;
+import com.ternaryop.photoshelf.util.sort.Sortable;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implements View.OnClickListener, View.OnLongClickListener {
     public static final int SORT_TAG_NAME = 1;
@@ -220,27 +221,57 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     }
 
     public void sortByTagName() {
-        if (tagNameSortable == null) {
-            tagNameSortable = new TagNameSortable(true);
-        }
-        sort(tagNameSortable);
+        sort(getTagNameSortable());
     }
 
     public void sortByLastPublishedTag() {
         if (getCurrentSort() == SORT_LAST_PUBLISHED_TAG) {
             return;
         }
-        if (lastPublishedTagSortable == null) {
-            lastPublishedTagSortable = new LastPublishedTagSortable(true);
-        }
-        sort(lastPublishedTagSortable);
+        sort(getLastPublishedTagSortable());
     }
 
     public void sortByUploadTime() {
+        sort(getUploadTimeSortable());
+    }
+
+    private PhotoShelfPostSortable getTagNameSortable() {
+        if (tagNameSortable == null) {
+            tagNameSortable = new TagNameSortable(true);
+        }
+        return tagNameSortable;
+    }
+
+    private PhotoShelfPostSortable getLastPublishedTagSortable() {
+        if (lastPublishedTagSortable == null) {
+            lastPublishedTagSortable = new LastPublishedTagSortable(true);
+        }
+        return lastPublishedTagSortable;
+    }
+
+    private PhotoShelfPostSortable getUploadTimeSortable() {
         if (uploadTimeSortable == null) {
             uploadTimeSortable = new UploadTimeSortable(true);
         }
-        sort(uploadTimeSortable);
+        return uploadTimeSortable;
+    }
+
+    public void sort(int sortType, boolean isAscending) {
+        switch (sortType) {
+            case SORT_TAG_NAME:
+                currentSortable = getTagNameSortable();
+                break;
+            case SORT_LAST_PUBLISHED_TAG:
+                currentSortable = getLastPublishedTagSortable();
+                break;
+            case SORT_UPLOAD_TIME:
+                currentSortable = getUploadTimeSortable();
+                break;
+            default:
+                currentSortable = getLastPublishedTagSortable();
+                break;
+        }
+        currentSortable.setAscending(isAscending);
     }
 
     /**
@@ -252,6 +283,10 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
 
     public int getCurrentSort() {
         return currentSortable.sortId;
+    }
+
+    public Sortable getCurrentSortable() {
+        return currentSortable;
     }
 
     public List<PhotoShelfPost> getPhotoList() {

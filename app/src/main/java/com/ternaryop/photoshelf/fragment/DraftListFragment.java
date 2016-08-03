@@ -10,7 +10,9 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -40,6 +42,8 @@ import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
     private static final int TAG_NAVIGATOR_DIALOG = 1;
+    public static final String PREF_DRAFT_SORT_TYPE = "draft_sort_type";
+    public static final String PREF_DRAFT_SORT_ASCENDING = "draft_sort_ascending";
 
     private HashMap<String, TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
@@ -72,6 +76,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         super.onActivityCreated(savedInstanceState);
 
         photoAdapter.setOnPhotoBrowseClick(this);
+        loadSettings();
 
         if (taskUIRecreated()) {
             return;
@@ -120,18 +125,21 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                 photoAdapter.sortByTagName();
                 photoAdapter.notifyDataSetChanged();
                 scrollToPosition(0);
+                saveSettings();
                 return true;
             case R.id.sort_published_tag:
                 item.setChecked(isChecked);
                 photoAdapter.sortByLastPublishedTag();
                 photoAdapter.notifyDataSetChanged();
                 scrollToPosition(0);
+                saveSettings();
                 return true;
             case R.id.sort_upload_time:
                 item.setChecked(isChecked);
                 photoAdapter.sortByUploadTime();
                 photoAdapter.notifyDataSetChanged();
                 scrollToPosition(0);
+                saveSettings();
                 return true;
             case R.id.action_tag_navigator:
                 TagNavigatorDialog.newInstance(photoAdapter.getPhotoList(), this, TAG_NAVIGATOR_DIALOG).show(getFragmentManager(), "dialog");
@@ -323,4 +331,20 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         // offset set to 0 put the item to the top
         ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
     }
+
+    private void loadSettings() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        photoAdapter.sort(
+                preferences.getInt(PREF_DRAFT_SORT_TYPE, PhotoAdapter.SORT_LAST_PUBLISHED_TAG),
+                preferences.getBoolean(PREF_DRAFT_SORT_ASCENDING, true));
+    }
+
+    private void saveSettings() {
+        PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .edit()
+                .putInt(PREF_DRAFT_SORT_TYPE, photoAdapter.getCurrentSort())
+                .putBoolean(PREF_DRAFT_SORT_ASCENDING, photoAdapter.getCurrentSortable().isAscending())
+                .apply();
+    }
+
 }
