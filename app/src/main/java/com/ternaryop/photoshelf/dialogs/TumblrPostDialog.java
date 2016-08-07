@@ -314,7 +314,10 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     public boolean onMenuItemClick(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.parse_title:
-                parseTitle();
+                parseTitle(false);
+                return true;
+            case R.id.parse_title_swap:
+                parseTitle(true);
                 return true;
             case R.id.source_title:
                 fillWithSourceTitle();
@@ -423,8 +426,8 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         });
     }
 
-    private void parseTitle() {
-        TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(postTitle.getText().toString());
+    private void parseTitle(boolean swapDayMonth) {
+        TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(postTitle.getText().toString(), swapDayMonth);
         // only the edited title is updated, the sourceTitle remains unchanged
         htmlTitle = titleData.toHtml();
         this.postTitle.setText(Html.fromHtml(htmlTitle));

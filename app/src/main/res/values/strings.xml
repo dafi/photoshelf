@@ -228,5 +228,6 @@
     <string name="show_post">Show Post</string>
     <string name="birthdays_without_posts">Birthdays Without Posts</string>
     <string name="import.permission.rationale">Import and Export need access to files, do you grant permission?</string>
+    <string name="parse_title_swap">Parse Swap Day</string>
 
 </resources>
