@@ -95,7 +95,7 @@ public class ImageDOMSelectorFinder {
     @SuppressWarnings("unchecked")
     private void buildSelectors(Map<String, Object> selectors) {
         for (String key : selectors.keySet()) {
-            domainMap.put(key, new DOMSelector(key, (Map<String, String>)selectors.get(key)));
+            domainMap.put(key, new DOMSelector(key, (Map<String, Object>)selectors.get(key)));
         }
     }
 

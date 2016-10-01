@@ -6,6 +6,7 @@ import java.util.Map;
  * Created by dave on 29/12/15.
  * Contains data about DOMSelector
  */
+@SuppressWarnings("unchecked")
 public class DOMSelector {
     public static final String DEFAULT_CONTAINER_SELECTOR = "a img[src*=jpg]";
 
@@ -19,16 +20,19 @@ public class DOMSelector {
     protected String multiPage;
     // the selector used to locate the document title
     protected String title;
+    // the data used to make a POST request
+    private Map<String, String> postData;
 
     public DOMSelector() {
     }
 
-    public DOMSelector(String domainRE, Map<String, String> value) {
+    public DOMSelector(String domainRE, Map<String, Object> value) {
         setDomainRE(domainRE);
-        setImage(value.get("image"));
-        setContainer(value.get("container"));
-        setMultiPage(value.get("multiPage"));
-        setTitle(value.get("title"));
+        setImage((String)value.get("image"));
+        setContainer((String)value.get("container"));
+        setMultiPage((String)value.get("multiPage"));
+        setTitle((String)value.get("title"));
+        setPostData((Map<String, String>)value.get("postData"));
     }
 
     public String getDomainRE() {
@@ -95,5 +99,13 @@ public class DOMSelector {
             sb.append(" title = ").append(title);
         }
         return sb.toString();
+    }
+
+    public Map<String, String> getPostData() {
+        return postData;
+    }
+
+    public void setPostData(Map<String, String> postData) {
+        this.postData = postData;
     }
 }

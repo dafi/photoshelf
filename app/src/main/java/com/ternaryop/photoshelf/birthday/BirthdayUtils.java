@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
@@ -123,10 +124,10 @@ public class BirthdayUtils {
         List<Birthday> birthDays = dbHelper
                 .getBirthdayDAO()
                 .getBirthdayByDate(birthDate.getTime());
-        ArrayList<Pair<Birthday, TumblrPhotoPost>> posts = new ArrayList<Pair<Birthday, TumblrPhotoPost>>();
+        ArrayList<Pair<Birthday, TumblrPhotoPost>> posts = new ArrayList<>();
 
         PostTagDAO postTagDAO = dbHelper.getPostTagDAO();
-        Map<String, String> params = new HashMap<String, String>(2);
+        Map<String, String> params = new HashMap<>(2);
         params.put("type", "photo");
         for (Birthday b : birthDays) {
             PostTag postTag = postTagDAO.getRandomPostByTag(b.getName(), b.getTumblrName());
@@ -160,7 +161,7 @@ public class BirthdayUtils {
 
         StringBuilder sb = new StringBuilder();
 
-        Map<String, String> params = new HashMap<String, String>(2);
+        Map<String, String> params = new HashMap<>(2);
         TumblrPhotoPost post = null;
         params.put("type", "photo");
 
@@ -315,12 +316,12 @@ public class BirthdayUtils {
         ImageUtils.saveImageAsPNG(destBmp, file);
         if (saveAsDraft) {
             Tumblr.getSharedTumblr(context).draftPhotoPost(blogName,
-                    file,
+                    Uri.fromFile(file),
                     getBirthdayCaption(context, name, blogName),
                     "Birthday, " + name);
         } else {
             Tumblr.getSharedTumblr(context).publishPhotoPost(blogName,
-                    file,
+                    Uri.fromFile(file),
                     getBirthdayCaption(context, name, blogName),
                     "Birthday, " + name);
         }
@@ -338,10 +339,10 @@ public class BirthdayUtils {
         int age = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
         // caption must not be localized
         String caption = "Happy %1$dth Birthday, %2$s!!";
-        return String.format(caption, age, name);
+        return String.format(Locale.US, caption, age, name);
     }
 
     public interface BirthdaySearcher {
-        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException;
+        Birthday searchBirthday(String name, String blogName) throws IOException, ParseException;
     }
 }

@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.service;
 
 import java.io.File;
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -44,7 +44,7 @@ public class PublishIntentService extends IntentService {
 
     private static final int NOTIFICATION_ID = 1;
 
-    public static final String URL_OR_FILE = "urlOrFile";
+    public static final String URL = "url";
     public static final String BLOG_NAME = "blogName";
     public static final String POST_TITLE = "postTitle";
     public static final String POST_TAGS = "postTags";
@@ -67,7 +67,7 @@ public class PublishIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Object url = intent.getSerializableExtra(URL_OR_FILE);
+        Uri url = intent.getParcelableExtra(URL);
         String selectedBlogName = intent.getStringExtra(BLOG_NAME);
         String postTitle = intent.getStringExtra(POST_TITLE);
         String postTags = intent.getStringExtra(POST_TAGS);
@@ -146,7 +146,7 @@ public class PublishIntentService extends IntentService {
     }
 
     private void notifyError(Intent intent) {
-        Object url = intent.getSerializableExtra(URL_OR_FILE).toString();
+        Uri url = intent.getParcelableExtra(URL);
         String postTags = intent.getStringExtra(POST_TAGS);
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
@@ -187,13 +187,13 @@ public class PublishIntentService extends IntentService {
     }
 
     private static void startActionIntent(Context context,
-                                            Object urlOrFile,
-                                            String blogName,
-                                            String postTitle,
-                                            String postTags,
-                                            String publishAction) {
+                                          Uri url,
+                                          String blogName,
+                                          String postTitle,
+                                          String postTags,
+                                          String publishAction) {
         Intent intent = new Intent(context, PublishIntentService.class);
-        intent.putExtra(URL_OR_FILE, (Serializable)urlOrFile);
+        intent.putExtra(URL, url);
         intent.putExtra(BLOG_NAME, blogName);
         intent.putExtra(POST_TITLE, postTitle);
         intent.putExtra(POST_TAGS, postTags);
@@ -203,19 +203,19 @@ public class PublishIntentService extends IntentService {
     }
 
     public static void startSaveAsDraftIntent(Context context,
-                                              Object urlOrFile,
+                                              Uri url,
                                               String blogName,
                                               String postTitle,
                                               String postTags) {
-        startActionIntent(context, urlOrFile, blogName, postTitle, postTags, PUBLISH_ACTION_DRAFT);
+        startActionIntent(context, url, blogName, postTitle, postTags, PUBLISH_ACTION_DRAFT);
     }
 
     public static void startPublishIntent(Context context,
-                                              Object urlOrFile,
-                                              String blogName,
-                                              String postTitle,
-                                              String postTags) {
-        startActionIntent(context, urlOrFile, blogName, postTitle, postTags, PUBLISH_ACTION_PUBLISH);
+                                          Uri url,
+                                          String blogName,
+                                          String postTitle,
+                                          String postTags) {
+        startActionIntent(context, url, blogName, postTitle, postTags, PUBLISH_ACTION_PUBLISH);
     }
 
     public static void startBirthdayListIntent(Context context,

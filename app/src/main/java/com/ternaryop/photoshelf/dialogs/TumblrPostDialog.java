@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.dialogs;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -51,7 +51,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
     public static final String ARG_PHOTO_POST = "photoPost";
     public static final String ARG_IMAGE_URLS = "imageUrls";
-    public static final String ARG_IMAGE_PATHS = "imagePaths";
     public static final String ARG_HTML_TITLE = "htmlTitle";
     public static final String ARG_SOURCE_TITLE = "sourceTitle";
     public static final String ARG_INITIAL_TAG_LIST = "initialTagList";
@@ -63,8 +62,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     private AppSupport appSupport;
     private TumblrPhotoPost photoPost;
     private TagCursorAdapter tagAdapter;
-    private List<String> imageUrls;
-    private List<File> imageFiles;
+    private List<Uri> imageUrls;
     private boolean blockUIWhilePublish;
     private String htmlTitle;
     private String sourceTitle;
@@ -76,14 +74,11 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         TumblrPostDialog fragment = new TumblrPostDialog();
 
         Set<String> keys = args.keySet();
-        if ((keys.contains(ARG_PHOTO_POST) && keys.contains(ARG_IMAGE_URLS))
-                || (keys.contains(ARG_PHOTO_POST) && keys.contains(ARG_IMAGE_PATHS))
-                || (keys.contains(ARG_IMAGE_URLS) && keys.contains(ARG_IMAGE_PATHS))
-                ) {
-            throw new IllegalArgumentException("Only one type must be specified between " + ARG_PHOTO_POST + ", " + ARG_IMAGE_URLS + ", " + ARG_IMAGE_PATHS);
+        if ((keys.contains(ARG_PHOTO_POST) && keys.contains(ARG_IMAGE_URLS))) {
+            throw new IllegalArgumentException("Only one type must be specified between " + ARG_PHOTO_POST + ", " + ARG_IMAGE_URLS);
         }
-        if (!keys.contains(ARG_PHOTO_POST) && !keys.contains(ARG_IMAGE_URLS) && !keys.contains(ARG_IMAGE_PATHS)) {
-            throw new IllegalArgumentException("One type must be specified, allowed values are " + ARG_PHOTO_POST + ", " + ARG_IMAGE_URLS + ", " + ARG_IMAGE_PATHS);
+        if (!keys.contains(ARG_PHOTO_POST) && !keys.contains(ARG_IMAGE_URLS)) {
+            throw new IllegalArgumentException("One type must be specified, allowed values are " + ARG_PHOTO_POST + ", " + ARG_IMAGE_URLS);
         }
         fragment.setArguments(args);
         fragment.setTargetFragment(target, 0);
@@ -185,7 +180,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         if (photoPost != null) {
             toolbar.setTitle(R.string.edit_post_title);
         } else {
-            int size = imageUrls != null ? imageUrls.size() : imageFiles.size();
+            int size = imageUrls.size();
             toolbar.setTitle(getActivity().getResources().getQuantityString(
                     R.plurals.post_image,
                     size,
@@ -193,12 +188,8 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         }
     }
 
-    public List<String> getImageUrls() {
+    public List<Uri> getImageUrls() {
         return imageUrls;
-    }
-
-    public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = new ArrayList<>(imageUrls);
     }
 
     public String getPostTitle() {
@@ -367,41 +358,46 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             String selectedBlogName = (String) blogList.getSelectedItem();
             appSupport.setSelectedBlogName(selectedBlogName);
 
-            List<?> urlsOrFiles = getImageUrls() != null ? getImageUrls() : getImageFiles();
-            String postTitle = getPostTitle();
-            String postTags = getPostTags();
             if (blockUIWhilePublish) {
-                final PostCallback callback = new PostCallback(urlsOrFiles.size(), publish);
-                if (publish) {
-                    for (Object url : urlsOrFiles) {
-                        Tumblr.getSharedTumblr(getActivity()).publishPhotoPost(selectedBlogName,
-                                url, postTitle, postTags,
-                                callback);
-                    }
-                } else {
-                    for (Object url : urlsOrFiles) {
-                        Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(selectedBlogName,
-                                url, postTitle, postTags,
-                                callback);
-                    }
+                createPostsBlockedUI(publish, selectedBlogName, getImageUrls(), getPostTitle(), getPostTags());
+            } else {
+                createPostsWithService(publish, selectedBlogName, getImageUrls(), getPostTitle(), getPostTags());
+            }
+        }
+
+        private void createPostsWithService(boolean publish, String selectedBlogName, List<Uri> urls, String postTitle, String postTags) {
+            if (publish) {
+                for (Uri url : urls) {
+                    PublishIntentService.startPublishIntent(getActivity(),
+                            url,
+                            selectedBlogName,
+                            postTitle,
+                            postTags);
                 }
             } else {
-                if (publish) {
-                    for (Object url : urlsOrFiles) {
-                        PublishIntentService.startPublishIntent(getActivity(),
-                                url,
-                                selectedBlogName,
-                                postTitle,
-                                postTags);
-                    }
-                } else {
-                    for (Object url : urlsOrFiles) {
-                        PublishIntentService.startSaveAsDraftIntent(getActivity(),
-                                url,
-                                selectedBlogName,
-                                postTitle,
-                                postTags);
-                    }
+                for (Uri url : urls) {
+                    PublishIntentService.startSaveAsDraftIntent(getActivity(),
+                            url,
+                            selectedBlogName,
+                            postTitle,
+                            postTags);
+                }
+            }
+        }
+
+        private void createPostsBlockedUI(boolean publish, String selectedBlogName, List<Uri> urls, String postTitle, String postTags) {
+            final PostCallback callback = new PostCallback(urls.size(), publish);
+            if (publish) {
+                for (Uri url : urls) {
+                    Tumblr.getSharedTumblr(getActivity()).publishPhotoPost(selectedBlogName,
+                            url, postTitle, postTags,
+                            callback);
+                }
+            } else {
+                for (Uri url : urls) {
+                    Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(selectedBlogName,
+                            url, postTitle, postTags,
+                            callback);
                 }
             }
         }
@@ -437,14 +433,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         fillTags(firstTag);
     }
 
-    public List<File> getImageFiles() {
-        return imageFiles;
-    }
-
-    private void setImageFiles(List<File> imageFiles) {
-        this.imageFiles = new ArrayList<>(imageFiles);
-    }
-
     private class BlogItemSelectedListener implements OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -472,16 +460,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             setInitialTagList(photoPost.getTags());
             blockUIWhilePublish = args.getBoolean(ARG_BLOCK_UI_WHILE_PUBLISH);
         } else {
-            ArrayList<String> paths = args.getStringArrayList(ARG_IMAGE_PATHS);
-            if (paths != null) {
-                ArrayList<File> files = new ArrayList<>(paths.size());
-                for (String path : paths) {
-                    files.add(new File(path));
-                }
-                setImageFiles(files);
-            } else {
-                setImageUrls(args.getStringArrayList(ARG_IMAGE_URLS));
-            }
+            this.imageUrls = args.getParcelableArrayList(ARG_IMAGE_URLS);
             this.htmlTitle = args.getString(ARG_HTML_TITLE);
             this.sourceTitle = args.getString(ARG_SOURCE_TITLE);
             setInitialTagList(args.getStringArrayList(ARG_INITIAL_TAG_LIST));

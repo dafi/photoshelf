@@ -94,6 +94,12 @@
     },
     "http://kosty555.info": {
       "title": "[itemprop=commentText]"
+    },
+    "http://img.yt": {
+      "image": "img.centred",
+      "postData": {
+        "imgContinue": "Continue to image ... "
+      }
     }
   }
 }

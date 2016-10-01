@@ -1,5 +1,6 @@
 package com.ternaryop.tumblr;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -90,37 +91,37 @@ public class Tumblr {
         return API_PREFIX + "/blog/" + tumblrName + ".tumblr.com" + suffix;
     }
     
-    public void draftPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags, final Callback<Long> callback) {
-        createPhotoPost(tumblrName, urlOrFile, caption, tags, "draft", callback);
+    public void draftPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final Callback<Long> callback) {
+        createPhotoPost(tumblrName, uri, caption, tags, "draft", callback);
     }
 
-    public void draftPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags) {
+    public void draftPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags) {
         try {
-            createPhotoPost(tumblrName, urlOrFile, caption, tags, "draft");
+            createPhotoPost(tumblrName, uri, caption, tags, "draft");
         } catch (JSONException e) {
             throw new TumblrException(e);
         }
     }
 
-    public void publishPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags, final Callback<Long> callback) {
-        createPhotoPost(tumblrName, urlOrFile, caption, tags, "published", callback);
+    public void publishPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final Callback<Long> callback) {
+        createPhotoPost(tumblrName, uri, caption, tags, "published", callback);
     }
 
-    public void publishPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags) {
+    public void publishPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags) {
         try {
-            createPhotoPost(tumblrName, urlOrFile, caption, tags, "published");
+            createPhotoPost(tumblrName, uri, caption, tags, "published");
         } catch (JSONException e) {
             throw new TumblrException(e);
         }
     }
     
-    protected void createPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags, final String state, final Callback<Long> callback) {
+    protected void createPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final String state, final Callback<Long> callback) {
         new AsyncTask<Void, Void, Long>() {
             Exception error;
             @Override
             protected Long doInBackground(Void... voidParams) {
                 try {
-                    return createPhotoPost(tumblrName, urlOrFile, caption, tags, state);
+                    return createPhotoPost(tumblrName, uri, caption, tags, state);
                 } catch (Exception e) {
                     error = e;
                 }
@@ -138,14 +139,14 @@ public class Tumblr {
         }.execute();
     }
 
-    protected long createPhotoPost(final String tumblrName, final Object urlOrFile, final String caption, final String tags, final String state) throws JSONException {
+    protected long createPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final String state) throws JSONException {
         String apiUrl = getApiUrl(tumblrName, "/post");
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
 
-        if (urlOrFile instanceof String) {
-            params.put("source", urlOrFile);
+        if (uri.getScheme().equals("file")) {
+            params.put("data", new File(uri.getPath()));
         } else {
-            params.put("data", urlOrFile);
+            params.put("source", uri.toString());
         }
         params.put("state", state);
         params.put("type", "photo");
@@ -174,7 +175,7 @@ public class Tumblr {
 
     protected long createTextPost(final String tumblrName, final String title, final String body, final String tags, final String state) throws JSONException {
         String apiUrl = getApiUrl(tumblrName, "/post");
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
 
         params.put("state", state);
         params.put("type", "text");
@@ -194,13 +195,13 @@ public class Tumblr {
     
     public List<TumblrPost> getDraftPosts(final String tumblrName, long maxTimestamp) {
         String apiUrl = getApiUrl(tumblrName, "/posts/draft");
-        ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+        ArrayList<TumblrPost> list = new ArrayList<>();
 
         try {
             JSONObject json = consumer.jsonFromGet(apiUrl);
             JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
             
-            Map<String, String> params = new HashMap<String, String>(1);
+            Map<String, String> params = new HashMap<>(1);
             while (arr.length() > 0) {
                 for (int i = 0; i < arr.length(); i++) {
                     TumblrPost post = build(arr.getJSONObject(i));
@@ -222,7 +223,7 @@ public class Tumblr {
 
     public List<TumblrPost> getQueue(final String tumblrName, Map<String, String> params) {
         String apiUrl = getApiUrl(tumblrName, "/posts/queue");
-        ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+        ArrayList<TumblrPost> list = new ArrayList<>();
 
         try {
             JSONObject json = consumer.jsonFromGet(apiUrl, params);
@@ -236,10 +237,10 @@ public class Tumblr {
     
     public List<TumblrPhotoPost> getPhotoPosts(final String tumblrName, Map<String, String> params) {
         String apiUrl = getApiUrl(tumblrName, "/posts/photo");
-        ArrayList<TumblrPhotoPost> list = new ArrayList<TumblrPhotoPost>();
+        ArrayList<TumblrPhotoPost> list = new ArrayList<>();
 
         try {
-            Map<String, String> paramsWithKey = new HashMap<String, String>(params);
+            Map<String, String> paramsWithKey = new HashMap<>(params);
             paramsWithKey.put("api_key", consumer.getConsumerKey());
 
             JSONObject json = consumer.jsonFromGet(apiUrl, paramsWithKey);
@@ -262,7 +263,7 @@ public class Tumblr {
     public long publishPost(final String tumblrName, final long id) {
         String apiUrl = getApiUrl(tumblrName, "/post/edit");
         
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("id", String.valueOf(id));
         params.put("state", "published");
 
@@ -278,7 +279,7 @@ public class Tumblr {
     public void deletePost(final String tumblrName, final long id) {
         String apiUrl = getApiUrl(tumblrName, "/post/delete");
       
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("id", String.valueOf(id));
 
         try {
@@ -291,7 +292,7 @@ public class Tumblr {
     public void saveDraft(final String tumblrName, final long id) {
         String apiUrl = getApiUrl(tumblrName, "/post/edit");
         
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("id", String.valueOf(id));
         params.put("state", "draft");
 
@@ -311,7 +312,7 @@ public class Tumblr {
                 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
                 String gmtDate = dateFormat.format(new Date(timestamp));
                 
-                Map<String, String> params = new HashMap<String, String>();
+                Map<String, String> params = new HashMap<>();
                 params.put("id", post.getPostId() + "");
                 params.put("state", "queue");
                 params.put("publish_on", gmtDate);
@@ -389,14 +390,14 @@ public class Tumblr {
     public List<TumblrPost> getPublicPosts(final String tumblrName, Map<String, String> params) {
         String apiUrl = getApiUrl(tumblrName, "/posts");
         
-        Map<String, String> modifiedParams = new HashMap<String, String>(params);
+        Map<String, String> modifiedParams = new HashMap<>(params);
         modifiedParams.put("base-hostname", tumblrName + ".tumblr.com");
         modifiedParams.put("api_key", consumer.getConsumerKey());
 
         try {
             JSONObject json = consumer.jsonFromGet(apiUrl, modifiedParams);
             JSONArray jsonArray = json.getJSONObject("response").getJSONArray("posts");
-            ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+            ArrayList<TumblrPost> list = new ArrayList<>();
             for (int i = 0; i < jsonArray.length(); i++) {
                 list.add(build(jsonArray.getJSONObject(i)));
             }
@@ -409,7 +410,7 @@ public class Tumblr {
     public TumblrFollowers getFollowers(final String tumblrName, final Map<String, String> params, final TumblrFollowers followers) {
         String apiUrl = getApiUrl(tumblrName, "/followers");
 
-        Map<String, String> modifiedParams = new HashMap<String, String>();
+        Map<String, String> modifiedParams = new HashMap<>();
         if (params != null) {
             modifiedParams.putAll(params);
         }
@@ -430,7 +431,7 @@ public class Tumblr {
     }
 
     public TumblrFollowers getFollowers(final String tumblrName, final int offset, final int limit, final TumblrFollowers followers) {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("offset", Integer.toString(offset));
         params.put("limit", Integer.toString(limit));
 

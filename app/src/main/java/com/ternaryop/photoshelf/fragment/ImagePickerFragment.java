@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.fragment;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -207,15 +206,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(imageUrlRetriever.getTitle());
         Bundle args = new Bundle();
 
-        if (imageUrlRetriever.getImageUrls() != null) {
-            args.putStringArrayList(TumblrPostDialog.ARG_IMAGE_URLS, new ArrayList<>(imageUrlRetriever.getImageUrls()));
-        } else {
-            ArrayList<String> paths = new ArrayList<>(imageUrlRetriever.getImageFiles().size());
-            for (File f : imageUrlRetriever.getImageFiles()) {
-                paths.add(f.getAbsolutePath());
-            }
-            args.putStringArrayList(TumblrPostDialog.ARG_IMAGE_PATHS, paths);
-        }
+        args.putParcelableArrayList(TumblrPostDialog.ARG_IMAGE_URLS, imageUrlRetriever.getImageCollector().getImageUrls());
         args.putBoolean(TumblrPostDialog.ARG_BLOCK_UI_WHILE_PUBLISH, false);
         args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml());
         args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, imageUrlRetriever.getTitle());
@@ -385,8 +376,9 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
                 @Override
                 public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
                     // cache retrieved value
-                    imageInfo.setImageURL(imageUrlRetriever.getImageUrls().get(0));
-                    ImageViewerActivity.startImageViewer(getActivity(), imageUrlRetriever.getImageUrls().get(0), null);
+                    final String url = imageUrlRetriever.getImageCollector().getImageUrls().get(0).toString();
+                    imageInfo.setImageURL(url);
+                    ImageViewerActivity.startImageViewer(getActivity(), url, null);
                 }
             }).retrieve(imageInfoList);
         } else {
