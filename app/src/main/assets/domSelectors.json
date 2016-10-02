@@ -1,5 +1,5 @@
 {
-  "version": 16,
+  "version": 17,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -95,7 +95,7 @@
     "http://kosty555.info": {
       "title": "[itemprop=commentText]"
     },
-    "http://img.yt": {
+    "img.yt": {
       "image": "img.centred",
       "postData": {
         "imgContinue": "Continue to image ... "
