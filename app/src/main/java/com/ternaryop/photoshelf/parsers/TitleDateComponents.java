@@ -98,7 +98,7 @@ public class TitleDateComponents {
      * @return matcher on success, null otherwise
      */
     private Matcher extractComponentsFromNumericDate(String text) {
-        Matcher m = Pattern.compile("\\s+\\(?([0-9]{1,2})[^\\d]([0-9]{1,2})[^\\d]([0-9]{2,4})\\)?").matcher(text);
+        Matcher m = Pattern.compile("\\s+\\(?([0-9]{1,2})[^\\d]\\s?([0-9]{1,2})[^\\d]\\s?([0-9]{2,4})\\)?").matcher(text);
         if (m.find() && m.groupCount() > 1) {
             day = Integer.parseInt(m.group(1));
             month = Integer.parseInt(m.group(2));
