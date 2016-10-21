@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 18,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -41,7 +41,8 @@
       "image": "#show_image"
     },
     "http:\/\/celebmafia.com": {
-      "image": ""
+      "image": "",
+      "container": ".entry-content a img[src*=jpg]"
     },
     "http:\/\/www.hawtcelebs.com\/wp-content": {
       "image": "",
