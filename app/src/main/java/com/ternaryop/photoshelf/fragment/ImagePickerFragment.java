@@ -250,8 +250,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
                 String content = readURLContent(galleryUrl);
                 DOMSelector selector = domSelectorFinder.getSelectorFromUrl(galleryUrl);
 
-                Document htmlDocument = Jsoup.parse(content);
-                htmlDocument.setBaseUri(galleryUrl);
+                Document htmlDocument = Jsoup.parse(content, galleryUrl);
                 imageUrlRetriever.setTitle(findTitle(selector, htmlDocument));
                 extractImages(imageInfoList, selector, htmlDocument);
 
@@ -269,9 +268,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
                 title = htmlDocument.select(selector.getTitle()).text();
             }
             if (title.isEmpty()) {
-                return htmlDocument.title();
+                title = htmlDocument.title();
             }
-            return title;
+            String domain = Uri.parse(htmlDocument.baseUri()).getHost();
+            return title + " ::::: " + domain;
         }
 
         private void extractImageFromMultiPage(List<ImageInfo> imageInfoList, DOMSelector selector, Document startPageDocument) throws IOException {

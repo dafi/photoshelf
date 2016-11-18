@@ -1,5 +1,5 @@
 {
-    "version":4,
+    "version":5,
     "blackList":{
             "regExprs":[
               ["\\s+(x\\d+|\\(?\\d+\\)?\\s?HQ\\b|\\d+\\s+pics)", "", "remove image count (eg 'x34' '(8)HQ' '20 HQ')"],
@@ -11,7 +11,8 @@
               ["([0-9]+)/([0-9]+)/([0-9]+)\\s?-?\\s?\\bHawtCelebs\\b", "$2/$1/$3", "convert mm/dd/yyyy to dd/mm/yyyy"],
               ["-?\\s?\\bHawtCelebs\\b", "", "remove the text"],
               ["-?\\s?Carreck Celebrity Pictures » Blog Archive »", "", "remove the text"],
-              ["-?\\s?SAWFIRST.*", "", "remove the text"]
+              ["-?\\s?SAWFIRST.*", "", "remove the text"],
+              ["([0-9]+)\\s?\/\\s?([0-9]+)\\s?\/\\s?([0-9]+) ::::: celebmafia.com", "$2/$1/$3", "convert mm/dd/yyyy to dd/mm/yyyy"]
             ]
     }
 }
