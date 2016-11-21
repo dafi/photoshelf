@@ -50,11 +50,21 @@ public class TitleDateComponents {
      * @return matcher on success, null otherwise
      */
     private Matcher extractComponentsFromTextualDate(String text) {
-        Matcher m = Pattern.compile("\\s?(?:-|,|\\bon\\b)?\\s+\\(?(jan\\w*|feb\\w*|mar\\w*|apr\\w*|may\\w*|jun\\w*|jul\\w*|aug\\w*|sep\\w*|oct\\w*|nov\\w*|dec\\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(text);
-        if (m.find() && m.groupCount() > 1 && containsDateMatch(m)) {
-            int dayIndex = 2;
-            int monthIndex = 1;
-            int yearIndex = 3;
+        Matcher m = Pattern.compile("\\s?(?:-|,|\\bon\\b)?\\s+(\\d*)(?:st|ns|rd|th)?\\s?\\(?(jan\\w*|feb\\w*|mar\\w*|apr\\w*|may\\w*|jun\\w*|jul\\w*|aug\\w*|sep\\w*|oct\\w*|nov\\w*|dec\\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(text);
+        if (m.find() && m.groupCount() > 1) {
+            int dayIndex = 3;
+            int monthIndex = 2;
+            int yearIndex = 4;
+            int expectedGroupCount = 4;
+            if (containsDateDDMonthYear(m)) {
+                dayIndex = 1;
+                monthIndex = 2;
+                yearIndex = 3;
+                expectedGroupCount = 4;
+            } else if (!containsDateMatch(m)) {
+                return null;
+            }
+
             month = indexOfMonthFromShort(m.group(monthIndex).toLowerCase(Locale.getDefault()));
             day = m.group(dayIndex).isEmpty() ? 0 : Integer.parseInt(m.group(dayIndex));
             // The date could have the form Febrary 2011 so the day contains the year
@@ -62,7 +72,7 @@ public class TitleDateComponents {
                 year = day;
                 day = 0;
             } else {
-                if (m.groupCount() == 3 && !m.group(yearIndex).isEmpty()) {
+                if (m.groupCount() == expectedGroupCount && !m.group(yearIndex).isEmpty()) {
                     year = Integer.parseInt(m.group(yearIndex));
                 }
             }
@@ -72,24 +82,36 @@ public class TitleDateComponents {
     }
 
     /**
+     * Check if contains date in the form 12th November 2011
+     * @param m the m
+     * @return true if contains date component, false otherwise
+     */
+    private boolean containsDateDDMonthYear(Matcher m) {
+        return  m.groupCount() == 4 && !m.group(1).isEmpty() && isMonthName(m.group(2)) && !m.group(3).isEmpty() && m.group(4).isEmpty();
+    }
+
+
+    /**
      * Check if the matcher contains valid date components
      * @param matcher the matcher
      * @return true if contains date component, false otherwise
      */
     private boolean containsDateMatch(Matcher matcher) {
-        String month = matcher.group(1);
+        String month = matcher.group(2);
         // the month isn't expressed in the short form (jan, dec)
         if (month.length() == 3) {
             return true;
         }
-        boolean found = false;
+        return isMonthName(month);
+    }
+
+    private boolean isMonthName(String month) {
         for (String m : months) {
             if (month.compareToIgnoreCase(m) == 0) {
-                found = true;
-                break;
+                return true;
             }
         }
-        return found;
+        return false;
     }
 
     /**
