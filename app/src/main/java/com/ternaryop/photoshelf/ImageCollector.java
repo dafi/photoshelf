@@ -42,4 +42,8 @@ public class ImageCollector {
     public void setCollectFiles(boolean useFile) {
         this.useFile = useFile;
     }
+
+    public void clear() {
+        imageUrls.clear();
+    }
 }

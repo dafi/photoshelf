@@ -39,6 +39,7 @@ public class ImageUrlRetriever {
     }
 
     public void retrieve(List<ImageInfo> list, boolean useFile) {
+        imageCollector.clear();
         imageCollector.setCollectFiles(useFile);
         new UrlRetrieverAsyncTask(list).execute();
     }
