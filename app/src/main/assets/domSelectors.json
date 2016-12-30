@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 20,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -101,6 +101,12 @@
       "postData": {
         "imgContinue": "Continue to image ... "
       }
+    },
+    "gotceleb": {
+      "image": ".entry-inner img"
+    },
+    "croea.com": {
+      "image": "img.pic.img"
     }
   }
 }
