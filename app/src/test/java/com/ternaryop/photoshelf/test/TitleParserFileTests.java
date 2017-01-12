@@ -37,8 +37,8 @@ public class TitleParserFileTests {
         ArrayList<Object[]> objects = new ArrayList<Object[]>();
 
         try {
-            inputReader = new BufferedReader(new InputStreamReader(new FileInputStream("/Users/dave/Dropbox/devel/android/photoShelf/tests/titleParser-test-input.txt"), "UTF-8"));
-            resultReader = new BufferedReader(new InputStreamReader(new FileInputStream("/Users/dave/Dropbox/devel/android/photoShelf/tests/titleParser-test-results.txt"), "UTF-8"));
+            inputReader = new BufferedReader(new InputStreamReader(new FileInputStream("/opt/devel/0dafiprj/git.github/post_title_downloader/photoshelf_tests/titleParser-test-input.txt"), "UTF-8"));
+            resultReader = new BufferedReader(new InputStreamReader(new FileInputStream("/opt/devel/0dafiprj/git.github/post_title_downloader/photoshelf_tests/titleParser-test-results.txt"), "UTF-8"));
             String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
 
             String inputLine;
@@ -61,6 +61,12 @@ public class TitleParserFileTests {
             TitleData titleData = TitleParser.instance(new JSONTitleParserConfig(configPath)).parseTitle(inputTitle);
 
             String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
+            if (!expectedTitle.equals(formattedInput)) {
+                System.out.println("\"" + inputTitle + "\",");
+                System.out.println("//expected " + expectedTitle);
+                System.out.println("//found    " + formattedInput);
+                System.out.println();
+            }
             assertEquals(expectedTitle, formattedInput);
         } catch (Exception e) {
             e.printStackTrace();

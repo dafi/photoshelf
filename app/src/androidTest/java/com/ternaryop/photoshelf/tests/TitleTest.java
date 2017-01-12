@@ -18,12 +18,24 @@ public class TitleTest extends AndroidTestCase {
         };
         try {
             AndroidTitleParserConfig config = new AndroidTitleParserConfig(getContext());
+            StringBuilder sb = new StringBuilder();
             for (String i : arr) {
-                TitleData titleData = TitleParser.instance(config).parseTitle(i);
+                TitleData titleData = TitleParser.instance(config).parseTitle(i, false);
 
                 String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
+                // i: input
+                // s: simple without format
+                // e: expected formatted
+                sb.append("i:").append(i).append("\n")
+                        .append("s:").append(titleData.format("", "", "", "")).append("\n")
+                        .append("e:").append(formattedInput)
+                        .append("\n\n");
                 System.out.println("testTitle " + formattedInput);
             }
+            String s = sb.toString();
+            // setting the breakpoint to the println allows to copy to clipboard the whole string
+            // this is necessary because the android log cuts the result
+            System.out.println("whole string\n" + s);
         } catch (Exception e) {
             e.printStackTrace();
         }
