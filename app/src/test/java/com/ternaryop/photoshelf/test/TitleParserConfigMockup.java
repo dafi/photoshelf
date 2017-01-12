@@ -14,12 +14,12 @@ public class TitleParserConfigMockup implements TitleParserConfig {
     }
 
     @Override
-    public List<TitleParserRegExp> getBlackListRegExpr() {
+    public List<TitleParserRegExp> getTitleCleanerList() {
         return Collections.emptyList();
     }
 
     @Override
-    public String applyBlackList(String input) {
-        return input;
+    public String applyList(List<TitleParserRegExp> titleParserRegExpList, String input) {
+        return null;
     }
 }

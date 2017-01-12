@@ -7,16 +7,25 @@ import java.util.List;
  * Access to TitleParser configuration
  */
 public interface TitleParserConfig {
-    public List<TitleParserRegExp> getBlackListRegExpr();
-    public String applyBlackList(String input);
+    List<TitleParserRegExp> getTitleCleanerList();
+    String applyList(List<TitleParserRegExp> titleParserRegExpList, String input);
 
-    public static class TitleParserRegExp {
+    class TitleParserRegExp {
         final String pattern;
         final String replacer;
 
-        public TitleParserRegExp(String pattern, String replacer) {
+        public TitleParserRegExp(final String pattern, final String replacer) {
             this.pattern = pattern;
             this.replacer = replacer;
+        }
+
+        public static String applyList(final List<TitleParserRegExp> titleParserRegExpList, final String input) {
+            String result = input;
+
+            for (TitleParserRegExp re : titleParserRegExpList) {
+                result = result.replaceAll(re.pattern, re.replacer);
+            }
+            return result;
         }
     }
 }

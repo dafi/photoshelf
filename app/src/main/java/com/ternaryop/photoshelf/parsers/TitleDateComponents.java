@@ -145,12 +145,12 @@ public class TitleDateComponents {
         }
         fixYear(Calendar.getInstance().get(Calendar.YEAR));
 
-        // maybe the components format is mm/dd/yyyy so we switch day and month to try dd/mm/yyyy
-        if (swapDayMonth || isDateMMDDFormat()) {
+        if (swapDayMonth) {
             swapDayMonth();
         }
     }
 
+    // TODO: disabled because it breaks the unit tests when current date is for example 20170106
     private boolean isDateMMDDFormat() {
         String strDate = String.format(Locale.US, "%1$04d%2$02d%3$02d", year, month, day);
         String strNow = String.format(Locale.US, "%1$04d%2$02d%3$02d",
@@ -161,6 +161,11 @@ public class TitleDateComponents {
     }
 
     void swapDayMonth() {
+        // if day isn't present doesn't swap
+        // doesn't generate illegal month value if day > 12
+        if (day == 0 || day > 12) {
+            return;
+        }
         int tmp = month;
         month = day;
         day = tmp;

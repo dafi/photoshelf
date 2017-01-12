@@ -14,35 +14,48 @@ import org.json.JSONObject;
  * Read from json file
  */
 public class JSONTitleParserConfig implements TitleParserConfig {
-    private List<TitleParserRegExp> blackList;
+    private List<TitleParserRegExp> titleCleanerList;
+
+    public JSONTitleParserConfig() {
+    }
 
     public JSONTitleParserConfig(String jsonPath) throws Exception {
+        readConfig(jsonPath);
+    }
+
+    public void readConfig(String jsonPath) throws Exception {
         try (InputStream is = new FileInputStream(jsonPath)) {
-            createBlackListRegExpr(JSONUtils.jsonFromInputStream(is));
+            readConfig(is);
         }
     }
 
-    protected void createBlackListRegExpr(JSONObject jsonAssets) throws Exception {
-        blackList = new ArrayList<>();
-        JSONArray array = jsonAssets.getJSONObject("blackList").getJSONArray("regExprs");
+    public void readConfig(InputStream is) throws Exception {
+        readConfig(JSONUtils.jsonFromInputStream(is));
+    }
+
+    public void readConfig(JSONObject jsonObject) throws Exception {
+        titleCleanerList = createList(jsonObject, "titleCleaner", "regExprs");
+    }
+
+    @Override
+    public List<TitleParserRegExp> getTitleCleanerList() {
+        return titleCleanerList;
+    }
+
+    @Override
+    public String applyList(List<TitleParserRegExp> titleParserRegExpList, String input) {
+        return TitleParserRegExp.applyList(titleParserRegExpList, input);
+    }
+
+    public static ArrayList<TitleParserRegExp> createList(JSONObject jsonAssets, String rootName, String replacers) throws Exception {
+        ArrayList<TitleParserRegExp> list = new ArrayList<>();
+        JSONArray array = jsonAssets.getJSONObject(rootName).getJSONArray(replacers);
         for (int i = 0; i < array.length(); i++) {
             JSONArray reArray = array.getJSONArray(i);
-            blackList.add(new TitleParserRegExp(reArray.getString(0), reArray.getString(1)));
+            list.add(new TitleParserRegExp(reArray.getString(0), reArray.getString(1)));
         }
+        return list;
     }
 
-    @Override
-    public List<TitleParserRegExp> getBlackListRegExpr() {
-        return blackList;
-    }
 
-    @Override
-    public String applyBlackList(String input) {
-        String result = input;
-
-        for (TitleParserRegExp re : blackList) {
-            result = result.replaceAll(re.pattern, re.replacer);
-        }
-        return result;
-    }
 }

@@ -5,20 +5,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 
 public class TitleData {
-    private static final String[] locationPrefixes = {"attends", "shopping", "out and about", "arrives", "at the"};
+    // if strings starts with
+    // 're:' will be used as regular expression (ignore case)
+    // 's:' will be used as normal string
+    // No prefix means 's:'
+    private static final String[] locationPrefixes = {"re:\\b(attends|shopping|arrives|arriving|leaves|leaving)\\b", "re:^(at|on)\\s?(the)?", "re:^(night\\s+)?out\\s?(and about|for *)?"};
 
-    private static final HashMap<String, String> cities = new HashMap<>();
+    private static final HashMap<String, Pattern> cities = new HashMap<>();
+    private static final String RE_IGNORECASE = "re:";
+    private static final String NORMAL_STRING = "s:";
 
     static {
-        cities.put("LA", "Los Angeles");
-        cities.put("L.A", "Los Angeles");
-        cities.put("L.A.", "Los Angeles");
-        cities.put("NY", "New York");
-        cities.put("N.Y.", "New York");
-        cities.put("NYC", "New York City");
+        cities.put("Los Angeles", Pattern.compile("L.?A.?"));
+        cities.put("New York", Pattern.compile("N.?Y.?"));
+        cities.put("New York City", Pattern.compile("NYC.?"));
     }
 
     private String who;
@@ -47,14 +51,7 @@ public class TitleData {
             this.location = null;
             return;
         }
-        boolean hasLocationPrefix = false;
-        for (String prefix : locationPrefixes) {
-            if (location.toLowerCase(Locale.ENGLISH).startsWith(prefix)) {
-                hasLocationPrefix = true;
-                break;
-            }
-        }
-        if (hasLocationPrefix) {
+        if (hasLocationPrefix(location)) {
             // lowercase the first character
             location = location.substring(0, 1).toLowerCase(Locale.ENGLISH) + location.substring(1);
         } else {
@@ -63,18 +60,46 @@ public class TitleData {
         this.location = location;
     }
 
+    private boolean hasLocationPrefix(String location) {
+        for (String prefix : locationPrefixes) {
+            if (prefix.startsWith(RE_IGNORECASE)) {
+                if (Pattern.compile(prefix.substring(RE_IGNORECASE.length()), Pattern.CASE_INSENSITIVE).matcher(location).find()) {
+                    return true;
+                }
+            } else {
+                if (prefix.startsWith(NORMAL_STRING)) {
+                    prefix = prefix.substring(NORMAL_STRING.length());
+                }
+                if (location.toLowerCase(Locale.ENGLISH).startsWith(prefix)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public String getCity() {
         return city;
     }
 
-    public void setCity(String city) {
-        String decodedCity = cities.get(city.toUpperCase(Locale.getDefault()));
-        if (decodedCity == null) {
-            String trimmed = city.trim();
-            this.city = trimmed.isEmpty() ? null : trimmed;
+    public void setCity(String aCity) {
+        if (aCity == null) {
+            city = null;
         } else {
-            this.city = decodedCity;
+            city = expandAbbreviation(aCity.trim());
         }
+    }
+
+    private String expandAbbreviation(String aCity) {
+        if (aCity.isEmpty()) {
+            return null;
+        }
+        for (String name : cities.keySet()) {
+            if (name.equalsIgnoreCase(aCity) || cities.get(name).matcher(aCity).find()) {
+                return name;
+            }
+        }
+        return aCity;
     }
 
     public List<String> getTags() {

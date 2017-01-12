@@ -7,9 +7,7 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static final Pattern titleRE = Pattern.compile("^(.*?)\\s(at the|[-\u2013|~@]|attends|arrives|leaves|at)\\s+", Pattern.CASE_INSENSITIVE);
-    // used to capture the whole name when is all uppercase
-    private static final Pattern uppercaseNameRE = Pattern.compile("(^[A-Z- ]*\\b)\\s(?i)(at the|at|[-–|~@]|attends|arrives|leaves)?\\s?");
+    private static final Pattern titleRE = Pattern.compile("(.*?)\\s+(at the|at|in|on the|on|attends|arrives|leaves|(night\\s+)?out|[-–|~@])\\s", Pattern.CASE_INSENSITIVE);
 
     private static TitleParser instance;
     private final TitleParserConfig config;
@@ -25,7 +23,7 @@ public class TitleParser {
     public TitleData parseTitle(String title, boolean swapDayMonth) {
         TitleData titleData = new TitleData();
 
-        title = config.applyBlackList(title);
+        title = config.applyList(config.getTitleCleanerList(), title);
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
 
         title = setWho(title, titleData);
@@ -40,17 +38,14 @@ public class TitleParser {
     }
 
     private String setWho(String title, TitleData titleData) {
-        Matcher m = uppercaseNameRE.matcher(title);
+        Matcher m = titleRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
             titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
-            // remove the 'who' chunk
-            title = title.substring(m.regionStart() + m.group(0).length());
-        } else {
-            m = titleRE.matcher(title);
-            if (m.find() && m.groupCount() > 1) {
-                titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
-                // remove the 'who' chunk
-                title = title.substring(m.regionStart() + m.group(0).length());
+            // remove the 'who' chunk and any not alphabetic character (eg the dash used to separated "who" from location)
+            if (Character.isLetter(m.group(2).charAt(0))) {
+                title = title.substring(m.group(1).length());
+            } else {
+                title = title.substring(m.group(0).length());
             }
         }
         return title;
