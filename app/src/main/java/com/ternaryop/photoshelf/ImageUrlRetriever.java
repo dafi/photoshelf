@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 
 import com.ternaryop.photoshelf.selector.DOMSelector;
 import com.ternaryop.photoshelf.selector.ImageDOMSelectorFinder;
+import com.ternaryop.photoshelf.selector.PageSelector;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -109,17 +110,32 @@ public class ImageUrlRetriever {
             if (link != null) {
                 return link;
             }
-            final String selector = imageInfo.getSelector();
             final String url = imageInfo.getDestinationDocumentURL();
             if (imageInfo.hasPageSel()) {
-                return getDocumentFromUrl(url).select(selector).attr(imageInfo.getSelAttr());
+                return getImageUrlFromPageSel(imageInfo.getSelector().getImageChainList(), url);
             }
+            final String selector = imageInfo.getSelector().getImage();
             if (selector.trim().isEmpty()) {
                 // if the selector is empty then 'url' is an image
                 // and doesn't need to be parsed
                 return url;
             }
             return getDocumentFromUrl(url).select(selector).attr("src");
+        }
+
+        /**
+         * Iterate all PageSelector to find the destination image url. Every PageSelector moves to an intermediate document page
+         * @param selectorInfoList the list to traverse
+         * @param url the starting document url
+         * @return the imageUrl
+         * @throws IOException
+         */
+        private String getImageUrlFromPageSel(final List<PageSelector> selectorInfoList, final String url) throws IOException {
+            String imageUrl = url;
+            for (PageSelector si : selectorInfoList) {
+                imageUrl = getDocumentFromUrl(imageUrl).select(si.selector).attr(si.selAttr);
+            }
+            return imageUrl;
         }
 
         @Override

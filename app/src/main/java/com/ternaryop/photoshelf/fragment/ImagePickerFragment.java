@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -296,13 +297,14 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
             for (Element thumbnailImage : thumbnailImages) {
                 String destinationDocumentURL = thumbnailImage.parent().absUrl("href");
                 DOMSelector destinationSelector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
-                if (destinationSelector.getImage() != null) {
+                if (destinationSelector.getImage() != null || destinationSelector.getImageChainList() != null) {
                     String thumbnailURL = thumbnailImage.absUrl("src");
-                    imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, destinationSelector.getImage()));
+                    imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, destinationSelector));
                 }
             }
         }
 
+        @Nullable
         private String readURLContent(String url) throws IOException {
             InputStream input;
             HttpURLConnection connection = null;

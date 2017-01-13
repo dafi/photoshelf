@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 22,
   "selectors": {
     "http:\/\/images.bangtidy.net\/.*\/attachment": {
       "image": "#theimage"
@@ -31,9 +31,6 @@
     "http:\/\/www.hotcelebshome.com": {
       "image": "#thepic"
     },
-    "http:\/\/eyeprime.net": {
-      "image": ".attachment-810x810"
-    },
     "hollywoodtuna.com\/.*page_id": {
       "image": "p a img"
     },
@@ -58,7 +55,12 @@
       "image": "#full_image"
     },
     "http:\/\/www.sawfirst.com": {
-      "image": "pageSel:.entry-title a selAttr:href",
+      "imageChain": [
+        {
+        "pageSel": ".entry-title a",
+        "selAttr": "href"
+        }
+      ],
       "container": "#gallery-1 a img[src*=jpg]",
       "title": ".entry p strong"
     },
@@ -103,7 +105,17 @@
       }
     },
     "gotceleb": {
-      "image": ".entry-inner img"
+      "imageChain": [
+          {
+            "pageSel": "a[href*=full-image]",
+            "selAttr":"href"
+          },
+          {
+            "pageSel": ".entry-inner img",
+            "selAttr":"src"
+          }
+      ],
+      "container": "#gallery-1 a img[src*=jpg]"
     },
     "croea.com": {
       "image": "img.pic.img"

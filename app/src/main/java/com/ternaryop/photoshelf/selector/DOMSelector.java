@@ -1,5 +1,7 @@
 package com.ternaryop.photoshelf.selector;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,17 +13,19 @@ public class DOMSelector {
     public static final String DEFAULT_CONTAINER_SELECTOR = "a img[src*=jpg]";
 
     // the domain regular expression associated to this selector
-    protected String domainRE;
+    private String domainRE;
     // the selector used to locate the image url
-    protected String image;
+    private String image;
     // the selector used to locate the images container
-    protected String container = DEFAULT_CONTAINER_SELECTOR;
+    private String container = DEFAULT_CONTAINER_SELECTOR;
     // the selector used to locate other pages urls
-    protected String multiPage;
+    private String multiPage;
     // the selector used to locate the document title
-    protected String title;
+    private String title;
     // the data used to make a POST request
     private Map<String, String> postData;
+    // the PageSelector(s) needed to find the final image url
+    private ArrayList<PageSelector> imageChain;
 
     public DOMSelector() {
     }
@@ -29,6 +33,7 @@ public class DOMSelector {
     public DOMSelector(String domainRE, Map<String, Object> value) {
         setDomainRE(domainRE);
         setImage((String)value.get("image"));
+        setImageChainList((List<Map<String, String>>)value.get("imageChain"));
         setContainer((String)value.get("container"));
         setMultiPage((String)value.get("multiPage"));
         setTitle((String)value.get("title"));
@@ -107,5 +112,31 @@ public class DOMSelector {
 
     public void setPostData(Map<String, String> postData) {
         this.postData = postData;
+    }
+
+    public List<PageSelector> getImageChainList() {
+        return imageChain;
+    }
+
+    /**
+     * The CSS selector to use to find the imageUrl.
+     * @param list if the image link is available inside a url chain the selector can contain map with "pageSel" and "selAttr" keys
+     *             pageSel contains the css selector used to select the element
+     *             selAttr contains the element's attribute to use to get the image url.
+     */
+    private void setImageChainList(List<Map<String, String>> list) {
+        if (list == null) {
+            return;
+        }
+        imageChain = new ArrayList<>();
+        for (Map<String, String> map : list) {
+            String pageSel = map.get("pageSel");
+            String selAttr = map.get("selAttr");
+            if (pageSel != null && selAttr != null) {
+                imageChain.add(new PageSelector(pageSel, selAttr));
+            } else {
+                throw new IllegalArgumentException("Invalid pageSel: " + pageSel + " selAttr " + selAttr);
+            }
+        }
     }
 }

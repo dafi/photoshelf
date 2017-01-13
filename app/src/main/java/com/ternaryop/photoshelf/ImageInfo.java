@@ -1,20 +1,19 @@
 package com.ternaryop.photoshelf;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import android.support.annotation.NonNull;
+
+import com.ternaryop.photoshelf.selector.DOMSelector;
 
 public class ImageInfo {
     private String thumbnailURL;
     private String destinationDocumentURL;
+    private DOMSelector selector;
     private String imageURL;
-    private String selector;
-    private static final Pattern pageSelRE = Pattern.compile("pageSel:(.*)\\s+selAttr:(.*)");
-    private String selAttr;
 
-    public ImageInfo(String thumbnailURL, String destinationDocumentURL, String selector) {
+    public ImageInfo(@NonNull String thumbnailURL, @NonNull String destinationDocumentURL, @NonNull DOMSelector selector) {
         this.thumbnailURL = thumbnailURL;
         this.destinationDocumentURL = destinationDocumentURL;
-        setSelector(selector);
+        this.selector = selector;
     }
 
     /**
@@ -43,32 +42,6 @@ public class ImageInfo {
     }
 
     /**
-     * The CSS selector to use to find the imageUrl contained into destination document
-     * Should be null if the destination document is unknown by selector finder
-     * @return css selector
-     */
-    public String getSelector() {
-        return selector;
-    }
-
-    /**
-     * The CSS selector to use to find the imageUrl.
-     * @param selector if the image link is available inside a secondary url the selector can contain expressions in the form
-     *                 of pageSel:**css selector** selAttr:**attribute** where "css selector" is used to select the element
-     *                 and "attribute" is the element's attribute to use to get the image url.
-     */
-    public void setSelector(String selector) {
-        Matcher matcher = pageSelRE.matcher(selector);
-        if (matcher.find() && matcher.groupCount() == 2) {
-            this.selector = matcher.group(1);
-            this.selAttr = matcher.group(2);
-        } else {
-            this.selector = selector;
-            this.selAttr = null;
-        }
-    }
-
-    /**
      * The image url present inside the destination document url.
      * If null must be retrieved from destination document
      * @return image url
@@ -86,11 +59,11 @@ public class ImageInfo {
         return "thumb " + thumbnailURL + " doc " + destinationDocumentURL;
     }
 
-    public String getSelAttr() {
-        return selAttr;
+    public DOMSelector getSelector() {
+        return selector;
     }
 
     public boolean hasPageSel() {
-        return selAttr != null;
+        return selector.getImageChainList() != null;
     }
 }
