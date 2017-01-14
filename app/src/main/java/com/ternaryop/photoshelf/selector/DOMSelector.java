@@ -9,8 +9,9 @@ import java.util.Map;
  * Contains data about DOMSelector
  */
 @SuppressWarnings("unchecked")
-public class DOMSelector {
+public final class DOMSelector {
     public static final String DEFAULT_CONTAINER_SELECTOR = "a img[src*=jpg]";
+    public static final DOMSelector DEFAULT_SELECTOR = new DOMSelector();
 
     // the domain regular expression associated to this selector
     private String domainRE;
@@ -44,7 +45,7 @@ public class DOMSelector {
         return domainRE;
     }
 
-    public void setDomainRE(String domainRE) {
+    private void setDomainRE(String domainRE) {
         this.domainRE = domainRE;
     }
 
@@ -52,7 +53,7 @@ public class DOMSelector {
         return image;
     }
 
-    public void setImage(String image) {
+    private void setImage(String image) {
         this.image = image;
     }
 
@@ -60,7 +61,7 @@ public class DOMSelector {
         return container;
     }
 
-    public void setContainer(String container) {
+    private void setContainer(String container) {
         if (container == null) {
             this.container = DEFAULT_CONTAINER_SELECTOR;
         } else {
@@ -72,7 +73,7 @@ public class DOMSelector {
         return multiPage;
     }
 
-    public void setMultiPage(String multiPage) {
+    private void setMultiPage(String multiPage) {
         this.multiPage = multiPage;
     }
 
@@ -80,7 +81,7 @@ public class DOMSelector {
         return title;
     }
 
-    public void setTitle(String title) {
+    private void setTitle(String title) {
         this.title = title;
     }
 
@@ -110,7 +111,7 @@ public class DOMSelector {
         return postData;
     }
 
-    public void setPostData(Map<String, String> postData) {
+    private void setPostData(Map<String, String> postData) {
         this.postData = postData;
     }
 

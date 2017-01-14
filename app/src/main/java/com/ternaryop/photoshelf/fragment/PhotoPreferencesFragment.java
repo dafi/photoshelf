@@ -24,6 +24,8 @@ import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.dropbox.DropboxManager;
+import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
+import com.ternaryop.photoshelf.selector.ImageDOMSelectorFinder;
 import com.ternaryop.photoshelf.util.security.PermissionUtil;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DateTimeUtils;
@@ -107,7 +109,10 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
         preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
         
         preferenceImportDOMFilters = setupPreferenceFilePath(Importer.getDOMFiltersPath(), KEY_IMPORT_DOM_FILTERS, preferenceScreen);
+        preferenceImportDOMFilters.setTitle(getString(R.string.import_dom_filters_title, new ImageDOMSelectorFinder(getActivity()).getVersion()));
+
         preferenceImportTitleParser = setupPreferenceFilePath(Importer.getTitleParserPath(), KEY_IMPORT_TITLE_PARSER, preferenceScreen);
+        preferenceImportTitleParser.setTitle(getString(R.string.import_title_parser_title, new AndroidTitleParserConfig(getActivity()).getVersion()));
 
         String birthdaysPath = Importer.getBirthdaysPath();
         preferenceImportBirthdays = setupPreferenceFilePath(birthdaysPath, KEY_IMPORT_BIRTHDAYS, preferenceScreen);
@@ -213,7 +218,7 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
                 getImporter().importFile(Importer.getDOMFiltersPath(), Importer.DOM_FILTERS_FILE_NAME);
                 return true;
             } else if (preference == preferenceImportTitleParser) {
-                getImporter().importFile(Importer.getDOMFiltersPath(), Importer.TITLE_PARSER_FILE_NAME);
+                getImporter().importFile(Importer.getTitleParserPath(), Importer.TITLE_PARSER_FILE_NAME);
                 return true;
             } else if (preference == preferenceImportBirthdays) {
                 getImporter().importBirthdays(Importer.getBirthdaysPath());

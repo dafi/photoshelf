@@ -56,6 +56,4 @@ public class JSONTitleParserConfig implements TitleParserConfig {
         }
         return list;
     }
-
-
 }
