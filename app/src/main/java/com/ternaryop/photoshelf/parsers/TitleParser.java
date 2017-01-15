@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static final Pattern titleRE = Pattern.compile("(.*?)\\s+(at the|at|in|on the|on|attends|arrives|leaves|(night\\s+)?out|[-–|~@])\\s", Pattern.CASE_INSENSITIVE);
+    private static final Pattern titleRE = Pattern.compile("(.*?)\\s+(at the|at|in|on the|on|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s", Pattern.CASE_INSENSITIVE);
 
     private static TitleParser instance;
     private final TitleParserConfig config;
@@ -32,7 +32,7 @@ public class TitleParser {
         setLocationAndCity(titleData, parseLocation(title, dateComponents));
 
         titleData.setWhen(dateComponents.format());
-        titleData.setTags(new String[] {titleData.getWho(), titleData.getLocation()});
+        titleData.setTags(titleData.getWho());
 
         return titleData;
     }
@@ -40,7 +40,7 @@ public class TitleParser {
     private String setWho(String title, TitleData titleData) {
         Matcher m = titleRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
-            titleData.setWho(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
+            titleData.setWhoFromString(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
             // remove the 'who' chunk and any not alphabetic character (eg the dash used to separated "who" from location)
             if (Character.isLetter(m.group(2).charAt(0))) {
                 title = title.substring(m.group(1).length());

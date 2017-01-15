@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.parsers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ public class TitleData {
     // 're:' will be used as regular expression (ignore case)
     // 's:' will be used as normal string
     // No prefix means 's:'
-    private static final String[] locationPrefixes = {"re:\\b(attends|shopping|arrives|arriving|leaves|leaving)\\b", "re:^(at|on)\\s?(the)?", "re:^(night\\s+)?out\\s?(and about|for *)?"};
+    private static final String[] locationPrefixes = {"re:\\b(attends|shopping|arrives|arriving|leaves?|leaving)\\b", "re:^(at|on)\\s?(the)?", "re:^(night\\s+)?out\\s?(and about|for *)?"};
 
     private static final HashMap<String, Pattern> cities = new HashMap<>();
     private static final String RE_IGNORECASE = "re:";
@@ -25,18 +26,26 @@ public class TitleData {
         cities.put("New York City", Pattern.compile("NYC.?"));
     }
 
-    private String who;
+    private List<String> who = Collections.emptyList();
     private String location;
     private String city;
     private List<String> tags = Collections.emptyList();
     private String when;
 
-    public String getWho() {
+    public List<String> getWho() {
         return who;
     }
 
-    public void setWho(String who) {
-        this.who = who.trim();
+    public void setWho(List<String> who) {
+        this.who = new ArrayList<>(who);
+    }
+
+    public void setWhoFromString(String string) {
+        if (string == null) {
+            who = Collections.emptyList();
+        } else {
+            who = Arrays.asList(string.trim().split("(?i)\\s*(,|&|\\band\\b)\\s*"));
+        }
     }
 
     public String getLocation() {
@@ -106,7 +115,7 @@ public class TitleData {
         return tags;
     }
 
-    public void setTags(String[] tags) {
+    public void setTags(List<String> tags) {
         ArrayList<String> list = new ArrayList<>();
         for (String tag1 : tags) {
             if (tag1 == null) {
@@ -142,12 +151,7 @@ public class TitleData {
     public String format(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose) {
         StringBuilder sb = new StringBuilder();
 
-        if (who != null) {
-            sb.append(whoTagOpen)
-                    .append(who)
-                    .append(whoTagClose)
-                    .append(" ");
-        }
+        formatWho(whoTagOpen, whoTagClose, descTagOpen, descTagClose, sb);
         if (location != null || when != null || city != null) {
             sb.append(descTagOpen);
             if (location != null) {
@@ -172,5 +176,31 @@ public class TitleData {
             sb.append(descTagClose);
         }
         return sb.toString();
+    }
+
+    private void formatWho(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose, StringBuilder sb) {
+        if (who.isEmpty()) {
+            return;
+        }
+        boolean appendSep = false;
+        for (int i = 0; i < who.size() - 1; i++) {
+            if (appendSep) {
+                sb.append(", ");
+            } else {
+                appendSep = true;
+            }
+            sb.append(who.get(i));
+        }
+        if (who.size() > 1) {
+            sb.insert(0, whoTagOpen)
+                    .append(whoTagClose)
+                    .append(descTagOpen)
+                    .append(" and ")
+                    .append(descTagClose);
+        }
+        sb.append(whoTagOpen)
+                .append(who.get(who.size() - 1))
+                .append(whoTagClose)
+                .append(" ");
     }
 }

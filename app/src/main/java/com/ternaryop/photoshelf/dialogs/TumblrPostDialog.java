@@ -428,9 +428,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         htmlTitle = titleData.toHtml();
         this.postTitle.setText(Html.fromHtml(htmlTitle));
 
-        // get only first tag
-        List<String> firstTag = titleData.getTags().isEmpty() ? titleData.getTags() : titleData.getTags().subList(0, 1);
-        fillTags(firstTag);
+        fillTags(titleData.getTags());
     }
 
     private class BlogItemSelectedListener implements OnItemSelectedListener {

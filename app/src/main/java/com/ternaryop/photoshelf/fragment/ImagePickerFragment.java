@@ -212,9 +212,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml());
         args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, imageUrlRetriever.getTitle());
 
-        // use only first tag, generally other tags are poorly determinated
-        List<String> firstTag = titleData.getTags().isEmpty() ? titleData.getTags() : titleData.getTags().subList(0, 1);
-        args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<>(new ArrayList<>(firstTag)));
+        args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<>(titleData.getTags()));
 
         TumblrPostDialog.newInstance(args, null).show(getFragmentManager(), "dialog");
     }
