@@ -31,8 +31,9 @@
     "http:\/\/www.hotcelebshome.com": {
       "image": "#thepic"
     },
-    "hollywoodtuna.com\/.*page_id": {
-      "image": "p a img"
+    "hollywoodtuna.com": {
+      "image": "p a img",
+      "title": ".topictitle"
     },
     "imgchili.net": {
       "image": "#show_image"
