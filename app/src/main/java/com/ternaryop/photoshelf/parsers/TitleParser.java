@@ -21,6 +21,10 @@ public class TitleParser {
     }
 
     public TitleData parseTitle(String title, boolean swapDayMonth) {
+        return parseTitle(title, swapDayMonth, true);
+    }
+
+    public TitleData parseTitle(String title, boolean swapDayMonth, boolean checkDateInTheFuture) {
         TitleData titleData = new TitleData();
 
         title = config.applyList(config.getTitleCleanerList(), title);
@@ -28,7 +32,7 @@ public class TitleParser {
 
         title = setWho(title, titleData);
 
-        TitleDateComponents dateComponents = new TitleDateComponents(title, swapDayMonth);
+        TitleDateComponents dateComponents = new TitleDateComponents(title, swapDayMonth, checkDateInTheFuture);
         setLocationAndCity(titleData, parseLocation(title, dateComponents));
 
         titleData.setWhen(dateComponents.format());

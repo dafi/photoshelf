@@ -33,15 +33,15 @@ public class TitleDateComponents {
      * Fill parseInfo with day, month, year, matched
      */
     TitleDateComponents(String text) {
-        this(text, false);
+        this(text, false, false);
     }
 
-    TitleDateComponents(String text, boolean swapDayMonth) {
+    TitleDateComponents(String text, boolean swapDayMonth, boolean checkDateInTheFuture) {
         matcher = extractComponentsFromNumericDate(text);
         if (matcher == null) {
             matcher = extractComponentsFromTextualDate(text);
         }
-        fix(swapDayMonth);
+        fix(swapDayMonth, checkDateInTheFuture);
     }
 
     /**
@@ -139,25 +139,28 @@ public class TitleDateComponents {
         return -1;
     }
 
-    private void fix(boolean swapDayMonth) {
+    private void fix(boolean swapDayMonth, boolean checkDateInTheFuture) {
         if (month > 12) {
             swapDayMonth();
         }
         fixYear(Calendar.getInstance().get(Calendar.YEAR));
 
-        if (swapDayMonth) {
+        // maybe the components format is mm/dd/yyyy so we switch day and month to try dd/mm/yyyy
+        if (swapDayMonth || (checkDateInTheFuture && isDateInTheFuture())) {
             swapDayMonth();
         }
     }
 
-    // TODO: disabled because it breaks the unit tests when current date is for example 20170106
-    private boolean isDateMMDDFormat() {
+    private boolean isDateInTheFuture() {
+        if (month > 12) {
+            return false;
+        }
         String strDate = String.format(Locale.US, "%1$04d%2$02d%3$02d", year, month, day);
         String strNow = String.format(Locale.US, "%1$04d%2$02d%3$02d",
                 Calendar.getInstance().get(Calendar.YEAR),
                 Calendar.getInstance().get(Calendar.MONTH) + 1,
                 Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        return strDate.compareTo(strNow) > 0 && month <= 12;
+        return strDate.compareTo(strNow) > 0;
     }
 
     void swapDayMonth() {

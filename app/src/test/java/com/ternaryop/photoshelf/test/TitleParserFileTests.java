@@ -58,7 +58,7 @@ public class TitleParserFileTests {
     public void testTitle() {
         try {
             String configPath = new File(new File(".").getAbsoluteFile(), "app/src/main/assets/titleParser.json").getAbsolutePath();
-            TitleData titleData = TitleParser.instance(new JSONTitleParserConfig(configPath)).parseTitle(inputTitle);
+            TitleData titleData = TitleParser.instance(new JSONTitleParserConfig(configPath)).parseTitle(inputTitle, false, false);
 
             String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
             if (!expectedTitle.equals(formattedInput)) {
