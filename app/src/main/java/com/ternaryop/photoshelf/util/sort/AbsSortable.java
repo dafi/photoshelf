@@ -6,11 +6,13 @@ package com.ternaryop.photoshelf.util.sort;
  */
 public abstract class AbsSortable implements Sortable {
     private final boolean isDefaultAscending;
+    private final int sortId;
     private boolean ascending;
 
-    public AbsSortable(boolean isDefaultAscending) {
+    public AbsSortable(boolean isDefaultAscending, int sortId) {
         this.isDefaultAscending = isDefaultAscending;
         this.ascending = isDefaultAscending;
+        this.sortId = sortId;
     }
 
     @Override
@@ -26,5 +28,9 @@ public abstract class AbsSortable implements Sortable {
     @Override
     public boolean isDefaultAscending() {
         return isDefaultAscending;
+    }
+
+    public int getSortId() {
+        return sortId;
     }
 }

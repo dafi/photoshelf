@@ -229,5 +229,13 @@
     <string name="birthdays_without_posts">Birthdays Without Posts</string>
     <string name="import.permission.rationale">Import and Export need access to files, do you grant permission?</string>
     <string name="parse_title_swap">Parse Swap Day</string>
+    <string name="api_usage">API Usage</string>
+    <string name="max_fetch_items_count">Max Fetch Items Count</string>
+    <string name="newer_than_hours">Newer Than (hours)</string>
+    <string name="feedly_api_calls_count">API Calls count %1$d</string>
+    <string name="feedly_api_reset_limit">Reset Limit %1$s</string>
+    <string name="delete_on_refresh">Delete on Refresh</string>
+    <string name="title_name">Title</string>
+    <string name="saved_time">Saved Time</string>
 
 </resources>

@@ -282,7 +282,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     }
 
     public int getCurrentSort() {
-        return currentSortable.sortId;
+        return currentSortable.getSortId();
     }
 
     public Sortable getCurrentSortable() {
@@ -319,11 +319,8 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     }
 
     private abstract class PhotoShelfPostSortable extends AbsSortable {
-        final int sortId;
-
         public PhotoShelfPostSortable(boolean isDefaultAscending, int sortId) {
-            super(isDefaultAscending);
-            this.sortId = sortId;
+            super(isDefaultAscending, sortId);
         }
 
         public void resetDefault() {

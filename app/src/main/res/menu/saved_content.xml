@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/ic_action_refresh"
+        app:showAsAction="ifRoom"
+        android:title="@string/refresh"/>
+
+    <item
+        android:id="@+id/action_sort"
+        android:icon="@drawable/ic_action_sort"
+        app:showAsAction="ifRoom"
+        android:title="@string/sort">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/sort_title_name"
+                    android:title="@string/title_name"/>
+                <item
+                    android:id="@+id/sort_saved_time"
+                    android:checked="true"
+                    android:title="@string/saved_time"/>
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_api_usage"
+        android:icon="@drawable/ic_action_cloud_upload"
+        app:showAsAction="ifRoom"
+        android:title="@string/api_usage"/>
+
+    <item
+        android:id="@+id/action_settings"
+        app:showAsAction="never"
+        android:title="@string/settings"/>
+</menu>

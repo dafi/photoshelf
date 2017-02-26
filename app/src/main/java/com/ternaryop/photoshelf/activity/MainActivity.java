@@ -30,6 +30,7 @@ import com.ternaryop.photoshelf.fragment.HomeFragment;
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment;
 import com.ternaryop.photoshelf.fragment.PhotoPreferencesFragment;
 import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment;
+import com.ternaryop.photoshelf.fragment.SavedContentListFragment;
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment;
 import com.ternaryop.photoshelf.fragment.TagListFragment;
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment;
@@ -108,6 +109,7 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
         adapter.add(new DrawerItem(getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class,
                 true, new BirthdaysCountRetriever(this, getBlogName(), adapter)));
         adapter.add(new DrawerItem(getString(R.string.best_of), BestOfFragment.class));
+        adapter.add(new DrawerItem("Feedly", SavedContentListFragment.class));
         adapter.add(new DrawerItem(getString(R.string.test_page_title), ImagePickerFragment.class));
 
         // Settings

@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.ternaryop.widget.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="5dip" >
+                                              android:id="@+id/list_row2"
+                                              android:layout_width="fill_parent"
+                                              android:layout_height="wrap_content"
+                                              android:orientation="vertical"
+                                              android:padding="5dip" >
+    <CheckBox
+        android:id="@android:id/checkbox"
+        android:layout_marginEnd="5dip"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@android:id/text1"
+        android:layout_toEndOf="@android:id/checkbox"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textColor="#de000000"
@@ -15,6 +23,7 @@
 
     <TextView
         android:id="@android:id/text2"
+        android:layout_toEndOf="@android:id/checkbox"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@android:id/text1"
