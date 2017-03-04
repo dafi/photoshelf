@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/thumbnail"
         android:layout_toEndOf="@+id/thumbnail"
-        android:textSize="15sp"
+        android:textSize="17sp"
         android:textStyle="bold"
         top:clickedColor="@color/link_text_color_clicked"
         top:clickedBackground="@color/link_text_color_clicked_bg"
