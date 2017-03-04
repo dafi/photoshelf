@@ -3,12 +3,12 @@ apply plugin: 'com.android.application'
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
 
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:recyclerview-v7:24.0.0'
-    compile 'com.android.support:design:24.0.0'
-    compile 'com.android.support:cardview-v7:24.0.0'
+    compile 'com.android.support:appcompat-v7:25.2.0'
+    compile 'com.android.support:recyclerview-v7:25.2.0'
+    compile 'com.android.support:design:25.2.0'
+    compile 'com.android.support:cardview-v7:25.2.0'
 
-    compile 'com.dropbox.core:dropbox-core-sdk:2.0.5'
+    compile 'com.dropbox.core:dropbox-core-sdk:2.0.6'
 
     compile "org.scribe:scribe:1.3.5"
     compile "org.jsoup:jsoup:1.8.2"
@@ -17,12 +17,14 @@ dependencies {
     compile "com.ternaryop:utils:1.0"
 
     testCompile 'junit:junit:4.12'
-    testCompile "org.mockito:mockito-core:1.9.5"
+    androidTestCompile 'com.android.support:support-annotations:25.2.0'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     signingConfigs {
         release {
@@ -41,8 +43,9 @@ android {
     defaultConfig {
         applicationId "com.ternaryop.photoshelf"
         minSdkVersion 21
-        targetSdkVersion 23
+        targetSdkVersion 25
         versionCode versionCodeByTask()
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     lintOptions {
