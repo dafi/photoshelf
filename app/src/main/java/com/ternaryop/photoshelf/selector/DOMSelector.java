@@ -10,7 +10,7 @@ import java.util.Map;
  */
 @SuppressWarnings("unchecked")
 public final class DOMSelector {
-    public static final String DEFAULT_CONTAINER_SELECTOR = "a img[src*=jpg]";
+    public static final String DEFAULT_CONTAINER_SELECTOR = "a img";
     public static final DOMSelector DEFAULT_SELECTOR = new DOMSelector();
 
     // the domain regular expression associated to this selector
