@@ -237,5 +237,6 @@
     <string name="delete_on_refresh">Delete on Refresh</string>
     <string name="title_name">Title</string>
     <string name="saved_time">Saved Time</string>
+    <string name="never_published">Never Published</string>
 
 </resources>

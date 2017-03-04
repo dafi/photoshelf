@@ -18,6 +18,10 @@
                     android:id="@+id/sort_title_name"
                     android:title="@string/title_name"/>
                 <item
+                    android:id="@+id/sort_published_tag"
+                    android:checked="true"
+                    android:title="@string/last_published_tag"/>
+                <item
                     android:id="@+id/sort_saved_time"
                     android:checked="true"
                     android:title="@string/saved_time"/>

@@ -50,7 +50,7 @@ public class FeedlyManager {
         HttpURLConnection conn = null;
         try {
             conn = getSignedGetConnection(sb.toString());
-            final JSONArray items = jsonFromGet(conn, null).getJSONArray("items");
+            final JSONArray items = jsonFromGet(conn).getJSONArray("items");
             final ArrayList<FeedlyContent> list = new ArrayList<>(items.length());
             for (int i = 0; i < items.length(); i++) {
                 list.add(new FeedlyContent(items.getJSONObject(i)));
@@ -63,6 +63,9 @@ public class FeedlyManager {
     }
 
     public void markSaved(List<String> ids, boolean saved) throws Exception {
+        if (ids.isEmpty()) {
+            return;
+        }
         Map<String, Object> map = new HashMap<>();
 
         map.put("type", "entries");
@@ -108,7 +111,7 @@ public class FeedlyManager {
         return conn;
     }
 
-    public JSONObject jsonFromGet(HttpURLConnection conn, Map<String, ?> params) throws Exception {
+    public JSONObject jsonFromGet(HttpURLConnection conn) throws Exception {
         try (InputStream in = new BufferedInputStream(conn.getInputStream())) {
             return JSONUtils.jsonFromInputStream(in);
         }

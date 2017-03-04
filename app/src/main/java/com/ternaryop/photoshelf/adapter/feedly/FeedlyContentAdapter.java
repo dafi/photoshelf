@@ -1,13 +1,15 @@
-package com.ternaryop.photoshelf.adapter;
+package com.ternaryop.photoshelf.adapter.feedly;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,22 +17,27 @@ import android.widget.CompoundButton;
 
 import com.ternaryop.feedly.FeedlyContent;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.util.sort.AbsSortable;
 import com.ternaryop.photoshelf.util.sort.Sortable;
 
 public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentViewHolder> implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     public static final int SORT_TITLE_NAME = 1;
     public static final int SORT_SAVED_TIMESTAMP = 2;
+    public static final int SORT_LAST_PUBLISH_TIMESTAMP = 3;
 
     private final Context context;
     private final ArrayList<FeedlyContentDelegate> allContents;
     private AbsSortable titleNameSortable;
     private AbsSortable saveTimestampSortable;
+    private AbsSortable lastPublishTimestampSortable;
     private AbsSortable currentSortable;
     private OnFeedlyContentClick clickListener;
+    private final String tumblrName;
 
-    public FeedlyContentAdapter(Context context) {
+    public FeedlyContentAdapter(Context context, String tumblrName) {
         this.context = context;
+        this.tumblrName = tumblrName;
         allContents = new ArrayList<>();
         currentSortable = getTitleNameSortable();
     }
@@ -105,7 +112,10 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
                 currentSortable = getTitleNameSortable();
                 break;
             case SORT_SAVED_TIMESTAMP:
-                saveTimestampSortable = getSaveTimestampSortable();
+                currentSortable = getSaveTimestampSortable();
+                break;
+            case SORT_LAST_PUBLISH_TIMESTAMP:
+                currentSortable = getLastPublishTimestampSortable();
                 break;
         }
     }
@@ -129,6 +139,10 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
 
     public void sortBySavedTimestamp() {
         sort(getSaveTimestampSortable());
+    }
+
+    public void sortByLastPublishTimestamp() {
+        sort(getLastPublishTimestampSortable());
     }
 
     private AbsSortable getTitleNameSortable() {
@@ -167,6 +181,47 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
         return saveTimestampSortable;
     }
 
+    private AbsSortable getLastPublishTimestampSortable() {
+        if (lastPublishTimestampSortable == null) {
+            lastPublishTimestampSortable = new AbsSortable(true, SORT_LAST_PUBLISH_TIMESTAMP) {
+                @Override
+                public void sort() {
+                    updateLastPublishTimestamp();
+                    Collections.sort(allContents, new Comparator<FeedlyContentDelegate>() {
+                        @Override
+                        public int compare(FeedlyContentDelegate c1, FeedlyContentDelegate c2) {
+                            final long t1 = c1.lastPublishTimestamp;
+                            final long t2 = c2.lastPublishTimestamp;
+                            if (t1 == t2) {
+                                return c1.getTitle().compareToIgnoreCase(c2.getTitle());
+                            }
+                            return t1 < t2 ? -1 : 1;
+                        }
+                    });
+                }
+
+                private void updateLastPublishTimestamp() {
+                    final HashSet<String> titles = new HashSet<>(allContents.size());
+                    for (FeedlyContentDelegate fc : allContents) {
+                        titles.add(fc.getTitle());
+                        fc.lastPublishTimestamp = Long.MIN_VALUE;
+                    }
+                    final List<Pair<Long, String>> list = DBHelper.getInstance(context).getPostTagDAO()
+                            .getListPairLastPublishedTimestampTag(titles, tumblrName);
+                    for (FeedlyContentDelegate fc : allContents) {
+                        final String title = fc.getTitle();
+                        for (Pair<Long, String> timeTag: list) {
+                            if (timeTag.second.regionMatches(true, 0, title, 0, timeTag.second.length())) {
+                                fc.lastPublishTimestamp = timeTag.first;
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        return lastPublishTimestampSortable;
+    }
+
     @Override
     public void onClick(View v) {
         final Integer position = (Integer) v.getTag();
@@ -188,65 +243,4 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
         }
     }
 
-    /**
-     * Contains fields related to UI state
-     */
-    public static class FeedlyContentDelegate extends FeedlyContent {
-        private FeedlyContent delegated;
-        public boolean checked = true;
-
-        public FeedlyContentDelegate(FeedlyContent delegated) {
-            this.delegated = delegated;
-        }
-
-        @Override
-        public String getId() {
-            return delegated.getId();
-        }
-
-        @Override
-        public String getTitle() {
-            return delegated.getTitle();
-        }
-
-        @Override
-        public String getOriginId() {
-            return delegated.getOriginId();
-        }
-
-        @Override
-        public long getActionTimestamp() {
-            return delegated.getActionTimestamp();
-        }
-
-        @Override
-        public void setId(String id) {
-            delegated.setId(id);
-        }
-
-        @Override
-        public void setTitle(String title) {
-            delegated.setTitle(title);
-        }
-
-        @Override
-        public void setOriginId(String originId) {
-            delegated.setOriginId(originId);
-        }
-
-        @Override
-        public void setActionTimestamp(long actionTimestamp) {
-            delegated.setActionTimestamp(actionTimestamp);
-        }
-
-        @Override
-        public Origin getOrigin() {
-            return delegated.getOrigin();
-        }
-
-        @Override
-        public void setOrigin(Origin origin) {
-            delegated.setOrigin(origin);
-        }
-    }
 }

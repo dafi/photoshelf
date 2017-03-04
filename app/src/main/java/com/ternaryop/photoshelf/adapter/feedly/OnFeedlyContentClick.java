@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.adapter;
+package com.ternaryop.photoshelf.adapter.feedly;
 
 public interface OnFeedlyContentClick {
     void onTitleClick(int position);

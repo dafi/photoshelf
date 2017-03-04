@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -13,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Pair;
 
 public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     public static final String TABLE_NAME = "vw_post_tag";
@@ -112,6 +114,48 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         return map;
     }
 
+    /**
+     * @param tags the tags for which to find the publish timestamp
+     * @param tumblrName the bloch name
+     * @return the pair [last publish timestamp, tag name]
+     */
+    public List<Pair<Long, String>> getListPairLastPublishedTimestampTag(Set<String> tags, String tumblrName) {
+        // contains tumblrName, too
+        String args[] = new String[tags.size() + 1];
+        args[0] = tumblrName;
+        int pos = 1;
+        // make lowercase to match using ignorecase
+        for (String tag : tags) {
+            args[pos++] = tag.toLowerCase(Locale.US);
+        }
+
+        // the BETWEEN condition uses the index so the query execution is very fast compared to the LIKE expression
+        StringBuilder orClause = new StringBuilder();
+        for (int i = 0; i < tags.size(); i++) {
+            orClause.append(" ? between t.name and t.name || '{'");
+            if (i < (tags.size() - 1)) {
+                orClause.append(" or");
+            }
+        }
+        SQLiteDatabase db = getDbHelper().getReadableDatabase();
+
+        String sqlQuery = "SELECT max(p.publish_timestamp), t.name from post p, tag t, blog b"
+                + " where t._id=p.tag_id"
+                + " and p.blog_id=b._id"
+                + " and b.name = ?"
+                + " and t._id in ("
+                + " select _id from tag t where " + orClause + ")"
+                + " group by t.name";
+
+        ArrayList<Pair<Long, String>> list = new ArrayList<>();
+        try (Cursor c = db.rawQuery(sqlQuery, args)) {
+            while (c.moveToNext()) {
+                list.add(new Pair<>(c.getLong(0), c.getString(1)));
+            }
+        }
+        return list;
+    }
+
     public List<PostTag> getListTagsLastPublishedTime(List<String> tags, String tumblrName) {
         return cursorToList(getCursorLastPublishedTime(tags, tumblrName, COLUMNS));
     }
@@ -120,7 +164,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         // contains tumblrName, too
         String args[] = new String[tags.size() + 1];
         args[0] = tumblrName;
-        // make lowecase to match using ignorecase
+        // make lowercase to match using ignorecase
         for (int i = 0; i < tags.size(); i++) {
             args[i + 1] = tags.get(i).toLowerCase(Locale.US);
         }

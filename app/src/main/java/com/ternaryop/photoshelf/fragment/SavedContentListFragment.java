@@ -27,14 +27,14 @@ import com.ternaryop.feedly.FeedlyManager;
 import com.ternaryop.feedly.FeedlyRateLimit;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImagePickerActivity;
-import com.ternaryop.photoshelf.adapter.FeedlyContentAdapter;
-import com.ternaryop.photoshelf.adapter.OnFeedlyContentClick;
+import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick;
+import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.JSONUtils;
 import org.json.JSONArray;
 
-import static com.ternaryop.photoshelf.adapter.FeedlyContentAdapter.SORT_TITLE_NAME;
+import static com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter.SORT_TITLE_NAME;
 
 public class SavedContentListFragment extends AbsPhotoShelfFragment implements OnFeedlyContentClick {
     public static final String PREF_MAX_FETCH_ITEMS_COUNT = "savedContent.MaxFetchItemCount";
@@ -55,8 +55,8 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_photo_list, container, false);
-        adapter = new FeedlyContentAdapter(getActivity());
+        View rootView = inflater.inflate(R.layout.saved_content_list, container, false);
+        adapter = new FeedlyContentAdapter(getActivity(), fragmentActivityStatus.getAppSupport().getSelectedBlogName());
 
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
         recyclerView.setHasFixedSize(true);
@@ -73,10 +73,11 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        adapter.setSortType(SORT_TITLE_NAME);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        adapter.setSortType(preferences.getInt(PREF_SORT_TYPE, SORT_TITLE_NAME));
         adapter.setClickListener(this);
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         refresh(false);
     }
 
@@ -131,9 +132,19 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
                     adapter.addAll(posts);
                     adapter.sort();
                     adapter.notifyDataSetChanged();
+
+                    refreshUI();
                 }
             }
         }.execute();
+    }
+
+    @Override
+    protected void refreshUI() {
+        getSupportActionBar().setSubtitle(getResources().getQuantityString(
+                R.plurals.posts_count,
+                adapter.getItemCount(),
+                adapter.getItemCount()));
     }
 
     @Override
@@ -147,11 +158,14 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         super.onPrepareOptionsMenu(menu);
 
         switch (adapter.getCurrentSort()) {
-            case FeedlyContentAdapter.SORT_TITLE_NAME:
+            case SORT_TITLE_NAME:
                 menu.findItem(R.id.sort_title_name).setChecked(true);
                 break;
             case FeedlyContentAdapter.SORT_SAVED_TIMESTAMP:
                 menu.findItem(R.id.sort_saved_time).setChecked(true);
+                break;
+            case FeedlyContentAdapter.SORT_LAST_PUBLISH_TIMESTAMP:
+                menu.findItem(R.id.sort_published_tag).setChecked(true);
                 break;
         }
     }
@@ -180,6 +194,13 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
             case R.id.sort_saved_time:
                 item.setChecked(isChecked);
                 adapter.sortBySavedTimestamp();
+                adapter.notifyDataSetChanged();
+                scrollToPosition(0);
+                saveSortSettings();
+                return true;
+            case R.id.sort_published_tag:
+                item.setChecked(isChecked);
+                adapter.sortByLastPublishTimestamp();
                 adapter.notifyDataSetChanged();
                 scrollToPosition(0);
                 saveSortSettings();
@@ -242,7 +263,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
                 .apply();
     }
 
-    private View fillSettingsView(View view) {
+    private void fillSettingsView(View view) {
         EditText fetch = (EditText) view.findViewById(R.id.max_fetch_items_count);
         EditText newerThanHours = (EditText) view.findViewById(R.id.newer_than_hours);
         CheckBox deleteOnRefresh = (CheckBox) view.findViewById(R.id.delete_on_refresh);
@@ -250,8 +271,6 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         fetch.setText(String.valueOf(getMaxFetchitemCount()));
         newerThanHours.setText(String.valueOf(getNewerThanHours()));
         deleteOnRefresh.setChecked(deleteOnRefresh());
-
-        return view;
     }
 
     @Override
