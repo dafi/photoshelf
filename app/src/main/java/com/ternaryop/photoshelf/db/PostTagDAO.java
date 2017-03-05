@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.db;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -120,6 +121,9 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
      * @return the pair [last publish timestamp, tag name]
      */
     public List<Pair<Long, String>> getListPairLastPublishedTimestampTag(Set<String> tags, String tumblrName) {
+        if (tags.isEmpty()) {
+            return Collections.emptyList();
+        }
         // contains tumblrName, too
         String args[] = new String[tags.size() + 1];
         args[0] = tumblrName;
