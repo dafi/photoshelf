@@ -82,7 +82,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     }
 
     private void refresh(final boolean deleteItemsIfAllowed) {
-        new AbsProgressIndicatorAsyncTask<Void, Void, List<FeedlyContent>>(getActivity(), getString(R.string.shaking_images_title)) {
+        new AbsProgressIndicatorAsyncTask<Void, Void, List<FeedlyContent>>(getActivity(), getString(R.string.loading_items_title)) {
 
             @Override
             protected List<FeedlyContent> doInBackground(Void... voidParams) {
