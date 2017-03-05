@@ -11,6 +11,8 @@
         <item>@color/post_title_group_odd</item>
         <!-- menu overflow -->
         <item>@drawable/ic_overflow_dark</item>
+        <!-- title style -->
+        <item>@style/post_text_normal</item>
     </array>
     <array name="post_even">
         <item>@drawable/list_selector_post_group_even</item>
@@ -18,6 +20,7 @@
         <item>@color/post_title_group_even</item>
         <item>@color/post_title_group_even</item>
         <item>@drawable/ic_overflow_dark</item>
+        <item>@style/post_text_normal</item>
     </array>
     <array name="post_future">
         <item>@drawable/list_selector_post_future</item>
@@ -25,6 +28,7 @@
         <item>@color/post_title_future</item>
         <item>@color/post_title_future</item>
         <item>@drawable/ic_overflow_light</item>
+        <item>@style/post_text_normal</item>
     </array>
     <array name="post_never">
         <item>@drawable/list_selector_post_never</item>
@@ -32,5 +36,14 @@
         <item>@color/post_title_never</item>
         <item>@color/post_title_never</item>
         <item>@drawable/ic_overflow_dark</item>
+        <item>@style/post_text_never</item>
+    </array>
+    <array name="post_normal">
+        <item>@drawable/list_selector_post_normal</item>
+        <item>@color/post_title_normal</item>
+        <item>@color/post_title_normal</item>
+        <item>@color/post_title_normal</item>
+        <item>@drawable/ic_overflow_dark</item>
+        <item>@style/post_text_normal</item>
     </array>
 </resources>

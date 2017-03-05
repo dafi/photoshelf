@@ -14,6 +14,9 @@
     <color name="post_never_text_color">#444444</color>
     <color name="post_never_background_color">#D8D16E</color>
 
+    <color name="post_normal_text_color">#444444</color>
+    <color name="post_normal_background_color">#ffffff</color>
+
     <!-- Some devices override the @android:color/transparent so we define our version -->
     <color name="transparent">#00000000</color>
 

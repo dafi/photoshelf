@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.adapter.feedly;
 
+import android.content.res.TypedArray;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -32,6 +33,7 @@ class FeedlyContentViewHolder extends RecyclerView.ViewHolder {
         checkbox.setOnCheckedChangeListener(null);
         updateCheckbox(content);
         updateTitles(content);
+        updateItemColors(content);
     }
 
     private void updateCheckbox(FeedlyContentDelegate content) {
@@ -42,15 +44,31 @@ class FeedlyContentViewHolder extends RecyclerView.ViewHolder {
 
     private void updateTitles(FeedlyContentDelegate content) {
         title.setText(content.getTitle());
-        if (Build.VERSION.SDK_INT < 23) {
-            title.setTextAppearance(itemView.getContext(), R.style.FeedlyContentTitle);
-        } else {
-            title.setTextAppearance(R.style.FeedlyContentTitle);
-        }
 
         subtitle.setText(String.format("%s / %s / %s", content.getOrigin().getTitle(),
                 content.getActionTimestampAsString(itemView.getContext()),
                 content.getLastPublishTimestampAsString(itemView.getContext())));
+    }
+
+    private void updateItemColors(FeedlyContentDelegate content) {
+        if (content.lastPublishTimestamp < 0) {
+            setColors(R.array.post_never);
+        } else {
+            setColors(R.array.post_normal);
+        }
+    }
+    @SuppressWarnings("ResourceType")
+    private void setColors(int resArray) {
+        TypedArray array = itemView.getContext().getResources().obtainTypedArray(resArray);
+        itemView.setBackground(array.getDrawable(0));
+
+        if (Build.VERSION.SDK_INT < 23) {
+            title.setTextAppearance(itemView.getContext(), array.getResourceId(5, 0));
+        } else {
+            title.setTextAppearance(array.getResourceId(5, 0));
+        }
+        subtitle.setTextColor(array.getColorStateList(1));
+        array.recycle();
     }
 
     public void setOnClickListeners(FeedlyContent content, View.OnClickListener listener) {
