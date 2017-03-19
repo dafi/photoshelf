@@ -4,10 +4,13 @@
                 android:layout_height="fill_parent"
                 android:orientation="vertical">
 
+    <!-- use paddingBottom and clipToPadding to leave space between last item and bottom -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:paddingBottom="30dp"
+        android:clipToPadding="false"
         android:scrollbars="vertical" />
 
 </RelativeLayout>
