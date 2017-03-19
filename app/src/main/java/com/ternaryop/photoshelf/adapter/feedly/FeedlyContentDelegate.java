@@ -6,7 +6,7 @@ import android.text.format.DateUtils;
 
 import com.ternaryop.feedly.FeedlyContent;
 import com.ternaryop.photoshelf.R;
-import org.joda.time.format.DateTimeFormat;
+import com.ternaryop.utils.DateTimeUtils;
 
 /**
  * Contains fields related to UI state
@@ -75,7 +75,7 @@ public class FeedlyContentDelegate extends FeedlyContent {
         if (lastPublishTimestamp <= 0) {
             return context.getString(R.string.never_published);
         }
-        return DateTimeFormat.forPattern("dd/MM/yyyy").print(lastPublishTimestamp * 1000);
+        return DateTimeUtils.formatPublishDaysAgo(lastPublishTimestamp * 1000, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT);
     }
 
     @NonNull
