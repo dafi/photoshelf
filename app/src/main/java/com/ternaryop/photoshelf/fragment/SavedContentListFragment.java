@@ -25,10 +25,11 @@ import android.widget.EditText;
 import com.ternaryop.feedly.FeedlyContent;
 import com.ternaryop.feedly.FeedlyManager;
 import com.ternaryop.feedly.FeedlyRateLimit;
+import com.ternaryop.photoshelf.BuildConfig;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImagePickerActivity;
-import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick;
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter;
+import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.JSONUtils;
@@ -87,9 +88,11 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
             @Override
             protected List<FeedlyContent> doInBackground(Void... voidParams) {
                 try {
+                    if (BuildConfig.DEBUG) {
+                        return fakeCall();
+                    }
                     deleteItems();
                     return readSavedContents();
-//                    return fakeCall();
                 } catch (Exception e) {
                     setError(e);
                     e.printStackTrace();

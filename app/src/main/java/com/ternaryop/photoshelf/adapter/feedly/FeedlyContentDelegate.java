@@ -1,5 +1,8 @@
 package com.ternaryop.photoshelf.adapter.feedly;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.format.DateUtils;
@@ -15,9 +18,14 @@ public class FeedlyContentDelegate extends FeedlyContent {
     private final FeedlyContent delegated;
     public boolean checked = true;
     public long lastPublishTimestamp;
+    private String domain;
 
     public FeedlyContentDelegate(FeedlyContent delegated) {
         this.delegated = delegated;
+        try {
+            domain = new URI(getOriginId()).getHost();
+        } catch (URISyntaxException ignored) {
+        }
     }
 
     @Override
@@ -81,5 +89,9 @@ public class FeedlyContentDelegate extends FeedlyContent {
     @NonNull
     public String getActionTimestampAsString(Context context) {
         return DateUtils.getRelativeTimeSpanString(context, getActionTimestamp()).toString();
+    }
+
+    public String getDomain() {
+        return domain;
     }
 }

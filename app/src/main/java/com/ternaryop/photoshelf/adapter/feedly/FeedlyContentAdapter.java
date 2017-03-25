@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 
 import com.ternaryop.feedly.FeedlyContent;
+import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.util.sort.AbsSortable;
@@ -25,9 +26,11 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
     public static final int SORT_TITLE_NAME = 1;
     public static final int SORT_SAVED_TIMESTAMP = 2;
     public static final int SORT_LAST_PUBLISH_TIMESTAMP = 3;
+    public static final String PREFIX_FAVICON = "favicon";
 
     private final Context context;
     private final ArrayList<FeedlyContentDelegate> allContents;
+    private final ImageLoader imageLoader;
     private AbsSortable titleNameSortable;
     private AbsSortable saveTimestampSortable;
     private AbsSortable lastPublishTimestampSortable;
@@ -40,6 +43,7 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
         this.tumblrName = tumblrName;
         allContents = new ArrayList<>();
         currentSortable = getTitleNameSortable();
+        imageLoader = new ImageLoader(context.getApplicationContext(), PREFIX_FAVICON, R.drawable.stub);
     }
 
     @Override
@@ -49,7 +53,7 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
 
     @Override
     public void onBindViewHolder(FeedlyContentViewHolder holder, int position) {
-        holder.bindModel(allContents.get(position));
+        holder.bindModel(allContents.get(position), imageLoader);
         setClickListeners(holder, position);
     }
 

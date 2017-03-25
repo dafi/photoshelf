@@ -3,12 +3,16 @@ package com.ternaryop.photoshelf.adapter.feedly;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ternaryop.feedly.FeedlyContent;
+import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 
 /**
@@ -16,29 +20,51 @@ import com.ternaryop.photoshelf.R;
  * The ViewHolder used by the Feedly list
  */
 class FeedlyContentViewHolder extends RecyclerView.ViewHolder {
+    public static final int FAVICON_SIZE = 16;
     final TextView title;
     final TextView subtitle;
     final CheckBox checkbox;
+    final ImageView faviconImage;
+    final View sidebar;
 
     public FeedlyContentViewHolder(View itemView) {
         super(itemView);
+        sidebar = itemView.findViewById(R.id.sidebar);
         title = (TextView) itemView.findViewById(android.R.id.text1);
         subtitle = (TextView) itemView.findViewById(android.R.id.text2);
         checkbox = (CheckBox) itemView.findViewById(android.R.id.checkbox);
+        faviconImage = (ImageView) itemView.findViewById(R.id.thumbnail_image);
     }
 
-    public void bindModel(FeedlyContentDelegate content) {
+    public void bindModel(FeedlyContentDelegate content, ImageLoader imageLoader) {
         // setting listener to null resolved the lost of unchecked state
         // http://stackoverflow.com/a/32428115/195893
         checkbox.setOnCheckedChangeListener(null);
         updateCheckbox(content);
         updateTitles(content);
         updateItemColors(content);
+        displayImage(content, imageLoader, FAVICON_SIZE);
+    }
+
+    private void displayImage(FeedlyContentDelegate content, ImageLoader imageLoader, int size) {
+        setImageDimension(size);
+
+        if (content.getDomain() != null) {
+            String faviconUrl = String.format("https://www.google.com/s2/favicons?domain_url=%s", content.getDomain());
+            imageLoader.displayImage(faviconUrl, faviconImage);
+        }
+    }
+
+    private void setImageDimension(int size) {
+        ViewGroup.LayoutParams imageLayoutParams = faviconImage.getLayoutParams();
+        // convert from pixel to DIP
+        imageLayoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, size, itemView.getContext().getResources().getDisplayMetrics());
+        imageLayoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, size, itemView.getContext().getResources().getDisplayMetrics());
     }
 
     private void updateCheckbox(FeedlyContentDelegate content) {
+        sidebar.setVisibility(View.VISIBLE);
         checkbox.setButtonDrawable(R.drawable.checkbox_bookmark);
-        checkbox.setVisibility(View.VISIBLE);
         checkbox.setChecked(content.checked);
     }
 
