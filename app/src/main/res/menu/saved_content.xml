@@ -35,6 +35,10 @@
         android:title="@string/api_usage"/>
 
     <item
+        android:id="@+id/action_refresh_token"
+        app:showAsAction="ifRoom"
+        android:title="@string/refresh_token"/>
+    <item
         android:id="@+id/action_settings"
         app:showAsAction="never"
         android:title="@string/settings"/>

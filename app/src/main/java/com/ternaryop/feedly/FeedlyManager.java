@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +25,14 @@ import org.json.JSONObject;
 public class FeedlyManager {
     public static final String API_PREFIX = "https://cloud.feedly.com";
 
-    private final String accessToken;
+    private String accessToken;
     private final String userId;
+    private String refreshToken;
 
-    public FeedlyManager(String accessToken, String userId) {
+    public FeedlyManager(String accessToken, String userId, String refreshToken) {
         this.accessToken = accessToken;
         this.userId = userId;
+        this.refreshToken = refreshToken;
     }
 
     public String getGlobalSavedTag() {
@@ -50,7 +54,8 @@ public class FeedlyManager {
         HttpURLConnection conn = null;
         try {
             conn = getSignedGetConnection(sb.toString());
-            final JSONArray items = jsonFromGet(conn).getJSONArray("items");
+            handleError(conn);
+            final JSONArray items = toJson(conn.getInputStream()).getJSONArray("items");
             final ArrayList<FeedlyContent> list = new ArrayList<>(items.length());
             for (int i = 0; i < items.length(); i++) {
                 list.add(new FeedlyContent(items.getJSONObject(i)));
@@ -76,28 +81,44 @@ public class FeedlyManager {
 
         HttpURLConnection conn = null;
         try {
-            conn = getSignedPostConnection(API_PREFIX + "/v3/markers", data);
+            conn = getSignedPostConnection(API_PREFIX + "/v3/markers", "application/json", data);
             FeedlyRateLimit.instance.update(conn);
-
-            if (conn.getResponseCode() != 200) {
-                throw new RuntimeException("Error " + conn.getResponseCode() + ": " + conn.getResponseMessage());
-            }
+            handleError(conn);
         } finally {
             if (conn != null) try { conn.disconnect(); } catch (Exception ignored) {}
         }
-
     }
 
-    private HttpURLConnection getSignedPostConnection(String url, String data) throws IOException {
+    public String refreshAccessToken(String clientId, String clientSecret) throws Exception {
+        HttpURLConnection conn = null;
+        try {
+            String data = "refresh_token=" + URLEncoder.encode(refreshToken, "UTF-8")
+                    + "&client_id=" + URLEncoder.encode(clientId, "UTF-8")
+                    + "&client_secret=" + URLEncoder.encode(clientSecret, "UTF-8")
+                    + "&grant_type=" + URLEncoder.encode("refresh_token", "UTF-8");
+
+            conn = getSignedPostConnection(API_PREFIX + "/v3/auth/token", "application/x-www-form-urlencoded", data);
+            FeedlyRateLimit.instance.update(conn);
+
+            handleError(conn);
+            return toJson(conn.getInputStream()).getString("access_token");
+        } finally {
+            if (conn != null) try { conn.disconnect(); } catch (Exception ignored) {}
+        }
+    }
+
+    private HttpURLConnection getSignedPostConnection(String url, String contentType, String data) throws IOException {
         HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
         conn.setRequestProperty("Authorization", "OAuth " + accessToken);
-        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Content-Type", contentType);
         conn.setDoInput(true);
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
+        conn.setUseCaches(false);
+        conn.setInstanceFollowRedirects(false);
 
         try (OutputStream os = conn.getOutputStream()) {
-            os.write(data.getBytes("UTF-8"));
+            os.write(data.getBytes(StandardCharsets.UTF_8));
         }
 
         return conn;
@@ -111,9 +132,21 @@ public class FeedlyManager {
         return conn;
     }
 
-    public JSONObject jsonFromGet(HttpURLConnection conn) throws Exception {
-        try (InputStream in = new BufferedInputStream(conn.getInputStream())) {
-            return JSONUtils.jsonFromInputStream(in);
+    public JSONObject toJson(InputStream is) throws Exception {
+        try (InputStream bis = new BufferedInputStream(is)) {
+            return JSONUtils.jsonFromInputStream(bis);
         }
+    }
+
+    private void handleError(HttpURLConnection conn) throws Exception {
+        if (conn.getResponseCode() == 200) {
+            return;
+        }
+        final JSONObject error = toJson(conn.getErrorStream());
+        throw new RuntimeException("Error " + conn.getResponseCode() + ": " + error.getString("errorMessage"));
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 }

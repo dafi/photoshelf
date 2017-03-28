@@ -47,6 +47,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     public static final int IDEFAULT_MAX_FETCH_ITEMS_COUNT = 300;
     public static final int DEFAULT_NEWER_THAN_HOURS = 24;
     public static final int ONE_HOUR_MILLIS = 60 * 60 * 1000;
+    public static final String PREF_FEEDLY_ACCESS_TOKEN = "feedlyAccessToken";
 
     private FeedlyContentAdapter adapter;
     protected RecyclerView recyclerView;
@@ -64,8 +65,6 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(adapter);
 
-        feedlyManager = new FeedlyManager(getString(R.string.FEEDLY_ACCESS_TOKEN), getString(R.string.FEEDLY_USER_ID));
-
         setHasOptionsMenu(true);
 
         return rootView;
@@ -78,6 +77,10 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
 
         adapter.setSortType(preferences.getInt(PREF_SORT_TYPE, SORT_TITLE_NAME));
         adapter.setClickListener(this);
+
+        feedlyManager = new FeedlyManager(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN)),
+                getString(R.string.FEEDLY_USER_ID),
+                getString(R.string.FEEDLY_REFRESH_TOKEN));
 
         refresh(false);
     }
@@ -184,6 +187,9 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
             case R.id.action_api_usage:
                 showAPIUsage();
                 return true;
+            case R.id.action_refresh_token:
+                refreshToken();
+                return true;
             case R.id.action_settings:
                 settings();
                 return true;
@@ -211,6 +217,33 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void refreshToken() {
+        new AbsProgressIndicatorAsyncTask<Void, Void, Void>(getActivity(), getString(R.string.refresh_token)) {
+            @Override
+            protected Void doInBackground(Void... voidParams) {
+                try {
+                    final String accessToken = feedlyManager.refreshAccessToken(
+                            getString(R.string.FEEDLY_CLIENT_ID),
+                            getString(R.string.FEEDLY_CLIENT_SECRET));
+                    preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply();
+                } catch (Exception e) {
+                    setError(e);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                if (!hasError()) {
+                    feedlyManager.setAccessToken(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN)));
+                    refresh(false);
+                }
+            }
+        }.execute();
     }
 
     private void saveSortSettings() {
