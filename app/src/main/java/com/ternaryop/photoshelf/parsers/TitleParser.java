@@ -27,7 +27,7 @@ public class TitleParser {
     public TitleData parseTitle(String title, boolean swapDayMonth, boolean checkDateInTheFuture) {
         TitleData titleData = new TitleData();
 
-        title = config.applyList(config.getTitleCleanerList(), title);
+        title = config.applyList(config.getTitleCleanerList(), title).trim();
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
 
         title = setWho(title, titleData);
