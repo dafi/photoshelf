@@ -285,6 +285,6 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 null,
                 null,
                 null,
-                _ID + ", " + BLOG_ID + ", " + TAG_ID);
+                BLOG_ID + ", " + _ID + ", " + SHOW_ORDER);
     }
 }
