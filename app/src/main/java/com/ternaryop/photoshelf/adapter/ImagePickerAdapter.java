@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.ternaryop.lazyimageloader.ImageLoader;
-import com.ternaryop.photoshelf.ImageInfo;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.extractor.ImageInfo;
 import com.ternaryop.widget.CheckableImageView;
 
 public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener  {
@@ -105,7 +105,7 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
         }
 
         private void displayImage(ImageInfo imageInfo, ImageLoader imageLoader) {
-            imageLoader.displayImage(imageInfo.getThumbnailURL(), thumbImage);
+            imageLoader.displayImage(imageInfo.getThumbnailUrl(), thumbImage);
         }
 
         public void setOnClickListeners(View.OnClickListener listener) {

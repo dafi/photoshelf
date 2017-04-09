@@ -40,7 +40,6 @@ import com.ternaryop.utils.IOUtils;
 
 public class Importer {
     public static final String CSV_FILE_NAME = "tags.csv";
-    public static final String DOM_FILTERS_FILE_NAME = "domSelectors.json";
     public static final String TITLE_PARSER_FILE_NAME = "titleParser.json";
     public static final String BIRTHDAYS_FILE_NAME = "birthdays.csv";
     public static final String MISSING_BIRTHDAYS_FILE_NAME = "missingBirthdays.csv";
@@ -417,10 +416,6 @@ public class Importer {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + CSV_FILE_NAME;
     }
 
-    public static String getDOMFiltersPath() {
-        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + DOM_FILTERS_FILE_NAME;
-    }
-
     public static String getTitleParserPath() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + TITLE_PARSER_FILE_NAME;
     }
@@ -450,7 +445,7 @@ public class Importer {
      * Create a PrintWriter disabling the flush to speedup writing
      * @param path the destination path
      * @return the created PrintWriter
-     * @throws IOException
+     * @throws IOException the thrown exception
      */
     public static PrintWriter fastPrintWriter(String path) throws IOException {
         return new PrintWriter(new BufferedWriter(new FileWriter(path)), false);

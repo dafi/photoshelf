@@ -1,9 +1,5 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -15,7 +11,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -30,8 +25,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
-import com.ternaryop.photoshelf.HtmlDocumentSupport;
-import com.ternaryop.photoshelf.ImageInfo;
 import com.ternaryop.photoshelf.ImageUrlRetriever;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImageViewerActivity;
@@ -39,21 +32,18 @@ import com.ternaryop.photoshelf.adapter.ImagePickerAdapter;
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice;
 import com.ternaryop.photoshelf.adapter.Selection;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
+import com.ternaryop.photoshelf.extractor.ImageExtractorManager;
+import com.ternaryop.photoshelf.extractor.ImageGallery;
+import com.ternaryop.photoshelf.extractor.ImageInfo;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
-import com.ternaryop.photoshelf.selector.DOMSelector;
-import com.ternaryop.photoshelf.selector.ImageDOMSelectorFinder;
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.TaskWithUI;
 import com.ternaryop.utils.URLUtils;
 import com.ternaryop.utils.dialog.DialogUtils;
 import com.ternaryop.widget.ProgressHighlightViewLayout;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageUrlRetriever.OnImagesRetrieved, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private RecyclerView gridView;
@@ -61,7 +51,6 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
 
     private ImageUrlRetriever imageUrlRetriever;
     private ImagePickerAdapter imagePickerAdapter;
-    private ImageDOMSelectorFinder domSelectorFinder;
     private String detailsText;
     ActionMode actionMode;
 
@@ -77,7 +66,6 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         imagePickerAdapter = new ImagePickerAdapter(getActivity());
         imagePickerAdapter.setOnPhotoBrowseClick(this);
         imagePickerAdapter.setEmptyView(progressHighlightViewLayout);
-        domSelectorFinder = new ImageDOMSelectorFinder(getActivity());
         imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
 
         RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.image_picker_grid_width));
@@ -222,7 +210,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
      *
      * @author dave
      */
-    class ImageUrlExtractor extends AbsProgressIndicatorAsyncTask<String, String, List<ImageInfo>> {
+    class ImageUrlExtractor extends AbsProgressIndicatorAsyncTask<String, String, ImageGallery> {
         Exception error;
 
         public ImageUrlExtractor(Context context, String message, TextView textView) {
@@ -241,121 +229,31 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         }
 
         @Override
-        protected List<ImageInfo> doInBackground(String... urls) {
-            List<ImageInfo> imageInfoList = new ArrayList<>();
-
+        protected ImageGallery doInBackground(String... urls) {
             try {
                 String galleryUrl = urls[0];
-                String content = readURLContent(galleryUrl);
-                DOMSelector selector = domSelectorFinder.getSelectorFromUrl(galleryUrl);
 
-                Document htmlDocument = Jsoup.parse(content, galleryUrl);
-                imageUrlRetriever.setTitle(findTitle(selector, htmlDocument));
-                extractImages(imageInfoList, selector, htmlDocument);
-
-                extractImageFromMultiPage(imageInfoList, selector, htmlDocument);
-
+                return new ImageExtractorManager(getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN)).getGallery(galleryUrl);
             } catch (Exception e) {
                 error = e;
             }
-            return imageInfoList;
+            return null;
         }
 
-        public String findTitle(DOMSelector selector, Document htmlDocument) {
-            String title = "";
-            if (selector.getTitle() != null) {
-                title = htmlDocument.select(selector.getTitle()).text();
-            }
-            if (title.isEmpty()) {
-                title = htmlDocument.title();
-            }
-            String domain = Uri.parse(htmlDocument.baseUri()).getHost();
-            return title + " ::::: " + domain;
-        }
-
-        private void extractImageFromMultiPage(List<ImageInfo> imageInfoList, DOMSelector selector, Document startPageDocument) throws IOException {
-            if (selector.getMultiPage() == null) {
-                return;
-            }
-            Element element = startPageDocument.select(selector.getMultiPage()).first();
-            while (element != null) {
-                String pageUrl = element.absUrl("href");
-                String pageContent = readURLContent(pageUrl);
-                Document pageDocument = Jsoup.parse(pageContent);
-                pageDocument.setBaseUri(pageUrl);
-                extractImages(imageInfoList, domSelectorFinder.getSelectorFromUrl(pageUrl), pageDocument);
-                element = pageDocument.select(selector.getMultiPage()).first();
-            }
-        }
-
-        private void extractImages(List<ImageInfo> imageInfoList, DOMSelector selector, Document htmlDocument) {
-            Elements thumbnailImages = htmlDocument.select(selector.getContainer());
-            int totalSize = imageInfoList.size() + thumbnailImages.size();
-            publishProgress(getResources().getQuantityString(R.plurals.image_found, totalSize, totalSize));
-            for (Element thumbnailImage : thumbnailImages) {
-                String destinationDocumentURL = thumbnailImage.parent().absUrl("href");
-                DOMSelector destinationSelector = domSelectorFinder.getSelectorFromUrl(destinationDocumentURL);
-                if (destinationSelector.getImage() != null || destinationSelector.getImageChainList() != null) {
-                    String thumbnailURL = thumbnailImage.absUrl("src");
-                    imageInfoList.add(new ImageInfo(thumbnailURL, destinationDocumentURL, destinationSelector));
-                }
-            }
-        }
-
-        @Nullable
-        private String readURLContent(String url) throws IOException {
-            InputStream input;
-            HttpURLConnection connection = null;
-
-            try {
-                connection = HtmlDocumentSupport.openConnection(url);
-
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    // this will be useful to display download percentage
-                    // might be -1: server did not report the length
-
-                    int fileLength = connection.getContentLength();
-                    input = connection.getInputStream();
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-                    byte data[] = new byte[32768];
-                    long total = 0;
-                    int count;
-                    while ((count = input.read(data)) != -1) {
-                        if (isCancelled()) {
-                            return null;
-                        }
-                        total += count;
-                        if (fileLength > 0) {
-                            publishProgress(null, "" + (total * 100 / fileLength));
-                        } else {
-                            // quantity must be int so instead of casting total simply pass 2
-                            String message = getResources().getQuantityString(R.plurals.download_url_with_count, 2, total);
-                            publishProgress(null, message);
-                        }
-                        baos.write(data, 0, count);
-                    }
-                    return baos.toString();
-                } else {
-                    throw new RuntimeException("Unable to read page, HTTP error " + connection.getResponseCode());
-                }
-            } finally {
-                if (connection != null) try {
-                    connection.disconnect();
-                } catch (Exception ignored) {
-                }
-            }
+        public String findTitle(ImageGallery gallery) {
+            return gallery.getTitle() + " ::::: " + gallery.getDomain();
         }
 
         @Override
-        protected void onPostExecute(List<ImageInfo> result) {
+        protected void onPostExecute(ImageGallery gallery) {
             super.onPostExecute(null);
             if (error == null) {
                 progressHighlightViewLayout.stopProgress();
-                detailsText = imageUrlRetriever.getTitle();
+                imageUrlRetriever.setTitle(findTitle(gallery));
+                detailsText = gallery.getTitle();
                 showDetails(Snackbar.LENGTH_LONG);
-                getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.image_found, result.size(), result.size()));
-                imagePickerAdapter.addAll(result);
+                getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.image_found, gallery.getImageInfoList().size(), gallery.getImageInfoList().size()));
+                imagePickerAdapter.addAll(gallery.getImageInfoList());
             } else {
                 DialogUtils.showErrorDialog(getActivity(), error);
             }
@@ -369,7 +267,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
     @Override
     public void onThumbnailImageClick(int position) {
         final ImageInfo imageInfo = imagePickerAdapter.getItem(position);
-        if (imageInfo.getImageURL() == null) {
+        if (imageInfo.getImageUrl() == null) {
             List<ImageInfo> imageInfoList = new ArrayList<>();
             imageInfoList.add(imageInfo);
             new ImageUrlRetriever(getActivity(), new ImageUrlRetriever.OnImagesRetrieved() {
@@ -377,12 +275,12 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
                 public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
                     // cache retrieved value
                     final String url = imageUrlRetriever.getImageCollector().getImageUrls().get(0).toString();
-                    imageInfo.setImageURL(url);
+                    imageInfo.setImageUrl(url);
                     ImageViewerActivity.startImageViewer(getActivity(), url, null);
                 }
             }).retrieve(imageInfoList);
         } else {
-            ImageViewerActivity.startImageViewer(getActivity(), imageInfo.getImageURL(), null);
+            ImageViewerActivity.startImageViewer(getActivity(), imageInfo.getImageUrl(), null);
         }
     }
 

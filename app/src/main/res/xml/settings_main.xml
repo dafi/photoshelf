@@ -24,11 +24,6 @@
             <CheckBoxPreference android:key="automatic_export"
                                 android:title="@string/automatic_export"/>
             <Preference
-                android:key="import_dom_filters"
-                android:persistent="false"
-                android:title="@string/import_dom_filters_title" />
-
-            <Preference
                 android:key="import_title_parser"
                 android:persistent="false"
                 android:title="@string/import_title_parser_title" />

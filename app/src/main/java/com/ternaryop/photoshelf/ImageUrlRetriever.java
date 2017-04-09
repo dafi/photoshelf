@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -10,15 +9,11 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.ternaryop.photoshelf.selector.DOMSelector;
-import com.ternaryop.photoshelf.selector.ImageDOMSelectorFinder;
-import com.ternaryop.photoshelf.selector.PageSelector;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import com.ternaryop.photoshelf.extractor.ImageExtractorManager;
+import com.ternaryop.photoshelf.extractor.ImageInfo;
 
 public class ImageUrlRetriever {
     private final Context context;
-    private final ImageDOMSelectorFinder domSelectorFinder;
     private String title;
     private Exception error = null;
     private final OnImagesRetrieved callback;
@@ -27,7 +22,6 @@ public class ImageUrlRetriever {
     public ImageUrlRetriever(Context context, OnImagesRetrieved callback) {
         this.context = context;
         this.callback = callback;
-        domSelectorFinder = new ImageDOMSelectorFinder(context);
         imageCollector = new ImageCollector(context);
     }
 
@@ -84,14 +78,14 @@ public class ImageUrlRetriever {
             return null;
         }
 
-        private void retrieveImageUrl(ImageInfo imageInfo) throws IOException {
+        private void retrieveImageUrl(ImageInfo imageInfo) throws Exception {
             String link = getImageURL(imageInfo);
 
             if (link.isEmpty()) {
                 return;
             }
             try {
-                imageCollector.addUrl(resolveRelativeURL(imageInfo.getDestinationDocumentURL(), link));
+                imageCollector.addUrl(resolveRelativeURL(imageInfo.getDocumentUrl(), link));
             } catch (URISyntaxException ignored) {
             }
         }
@@ -104,38 +98,14 @@ public class ImageUrlRetriever {
             return new URI(baseURL).resolve(uri).toString();
         }
 
-        private String getImageURL(ImageInfo imageInfo) throws IOException {
-            final String link = imageInfo.getImageURL();
+        private String getImageURL(ImageInfo imageInfo) throws Exception {
+            final String link = imageInfo.getImageUrl();
             // parse document only if the imageURL is not set (ie isn't cached)
             if (link != null) {
                 return link;
             }
-            final String url = imageInfo.getDestinationDocumentURL();
-            if (imageInfo.hasPageSel()) {
-                return getImageUrlFromPageSel(imageInfo.getSelector().getImageChainList(), url);
-            }
-            final String selector = imageInfo.getSelector().getImage();
-            if (selector.trim().isEmpty()) {
-                // if the selector is empty then 'url' is an image
-                // and doesn't need to be parsed
-                return url;
-            }
-            return getDocumentFromUrl(url).select(selector).attr("src");
-        }
-
-        /**
-         * Iterate all PageSelector to find the destination image url. Every PageSelector moves to an intermediate document page
-         * @param selectorInfoList the list to traverse
-         * @param url the starting document url
-         * @return the imageUrl
-         * @throws IOException
-         */
-        private String getImageUrlFromPageSel(final List<PageSelector> selectorInfoList, final String url) throws IOException {
-            String imageUrl = url;
-            for (PageSelector si : selectorInfoList) {
-                imageUrl = getDocumentFromUrl(imageUrl).select(si.selector).attr(si.selAttr);
-            }
-            return imageUrl;
+            final String url = imageInfo.getDocumentUrl();
+            return new ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN)).getImageUrl(url);
         }
 
         @Override
@@ -162,17 +132,6 @@ public class ImageUrlRetriever {
                 .show();
             }
         }
-    }
-
-    public Document getDocumentFromUrl(String url) throws IOException {
-        DOMSelector domSelector = domSelectorFinder.getSelectorFromUrl(url);
-        if (domSelector == null || domSelector.getPostData() == null) {
-            return HtmlDocumentSupport.getDocument(url);
-        }
-        return Jsoup.connect(url)
-                .userAgent(HtmlDocumentSupport.DESKTOP_USER_AGENT)
-                .data(domSelector.getPostData())
-                .post();
     }
 
     public ImageCollector getImageCollector() {
