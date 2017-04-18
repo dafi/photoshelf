@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 /**
  * Created by dave on 07/05/15.
  * Helper class to read Http documents from urls
@@ -27,17 +24,5 @@ public class HtmlDocumentSupport {
         connection.connect();
 
         return connection;
-    }
-
-    /**
-     * Return the jsoup document using the DESKTOP_USER_AGENT
-     * @param url the url to open
-     * @return the document
-     * @throws IOException
-     */
-    public static Document getDocument(String url) throws IOException {
-        return Jsoup.connect(url)
-                .userAgent(DESKTOP_USER_AGENT)
-                .get();
     }
 }

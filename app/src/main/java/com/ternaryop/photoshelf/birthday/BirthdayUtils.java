@@ -2,18 +2,14 @@ package com.ternaryop.photoshelf.birthday;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -29,7 +25,6 @@ import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import com.ternaryop.photoshelf.HtmlDocumentSupport;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity;
 import com.ternaryop.photoshelf.db.Birthday;
@@ -40,21 +35,10 @@ import com.ternaryop.photoshelf.db.PostTagDAO;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.ImageUtils;
-import com.ternaryop.utils.StringUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 public class BirthdayUtils {
     private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
     private static final int BIRTHDAY_NOTIFICATION_ID = 1;
-
-    private final static BirthdaySearcher[] BIRTHDAY_SEARCHERS = new BirthdaySearcher[3];
-
-    static {
-        BIRTHDAY_SEARCHERS[0] = new GoogleBirthdaySearcher();
-        BIRTHDAY_SEARCHERS[1] = new WikipediaBirthdaySearch();
-        BIRTHDAY_SEARCHERS[2] = new FamousBirthdaySearch();
-    }
 
     public static boolean notifyBirthday(Context context) {
         BirthdayDAO birthdayDatabaseHelper = DBHelper
@@ -217,79 +201,13 @@ public class BirthdayUtils {
                 + " - " + now.get(Calendar.DAY_OF_MONTH) + " " + sdf.format(now.getTime()) + " " + now.get(Calendar.YEAR);
     }
 
-    public static class GoogleBirthdaySearcher implements BirthdaySearcher {
-
-        @Override
-        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
-            String cleanName = name
-                    .replaceAll(" ", "+")
-                    .replaceAll("\"", "");
-            String url = "https://www.google.com/search?hl=en&q=" + cleanName;
-            String text = HtmlDocumentSupport.getDocument(url).text();
-            // match only dates in expected format (ie. "Born: month_name day, year")
-            Pattern pattern = Pattern.compile("Born: ([a-zA-Z]+ \\d{1,2}, \\d{4})");
-            Matcher matcher = pattern.matcher(text);
-            if (matcher.find()) {
-                String textDate = matcher.group(1);
-
-                SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
-                Date date = dateFormat.parse(textDate);
-                return new Birthday(name, date, blogName);
+    public static Birthday searchBirthday(Context context, String name, String blogName) {
+        try {
+            final BirthdayInfo info = new BirthdayManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN)).search(name);
+            if (info != null) {
+                return new Birthday(info.getName(), info.getBirthday(), blogName);
             }
-            return null;
-        }
-    }
-
-    public static class WikipediaBirthdaySearch implements BirthdaySearcher {
-
-        @Override
-        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
-            String cleanName = StringUtils
-                    .capitalize(name)
-                    .replaceAll(" ", "_")
-                    .replaceAll("\"", "");
-            String url = "http://en.wikipedia.org/wiki/" + cleanName;
-            Document document = HtmlDocumentSupport.getDocument(url);
-            // protect against redirect
-            if (document.title().toLowerCase(Locale.US).contains(name)) {
-                Elements el = document.select(".bday");
-                if (el.size() > 0) {
-                    String birthDate = el.get(0).text();
-                    return new Birthday(name, birthDate, blogName);
-                }
-            }
-            return null;
-        }
-    }
-
-    public static class FamousBirthdaySearch implements BirthdaySearcher {
-
-        @Override
-        public Birthday searchBirthday(String name, String blogName) throws IOException, ParseException {
-            String cleanName = name.toLowerCase(Locale.US)
-                    .replaceAll("_", "-")
-                    .replaceAll(" ", "-")
-                    .replaceAll("\"", "");
-            String url = "http://www.famousbirthdays.com/people/" + cleanName + ".html";
-            Document document = HtmlDocumentSupport.getDocument(url);
-            Elements el = document.select("time");
-            if (el.size() > 0) {
-                String birthDate = el.get(0).attr("datetime");
-                return new Birthday(name, birthDate, blogName);
-            }
-            return null;
-        }
-    }
-
-    public static Birthday searchBirthday(String name, String blogName) {
-        for (BirthdaySearcher bs : BIRTHDAY_SEARCHERS) {
-            try {
-                Birthday birthday = bs.searchBirthday(name, blogName);
-                if (birthday != null) {
-                    return birthday;
-                }
-            } catch (Exception ignored) {
-            }
+        } catch (Exception ignored) {
         }
 
         return null;
@@ -340,9 +258,5 @@ public class BirthdayUtils {
         // caption must not be localized
         String caption = "Happy %1$dth Birthday, %2$s!!";
         return String.format(Locale.US, caption, age, name);
-    }
-
-    public interface BirthdaySearcher {
-        Birthday searchBirthday(String name, String blogName) throws IOException, ParseException;
     }
 }

@@ -116,15 +116,15 @@ public class PublishIntentService extends IntentService {
                     if (birthdayDAO.getBirthdayByName(name, blogName) != null) {
                         return;
                     }
-                    Birthday birthday = BirthdayUtils.searchBirthday(name, blogName);
+                    Birthday birthday = BirthdayUtils.searchBirthday(getApplicationContext(), name, blogName);
                     if (birthday != null) {
                         birthdayDAO.insert(birthday);
                         db.setTransactionSuccessful();
                         String date = DateFormat.getDateInstance().format(birthday.getBirthDate());
-                        String strAage = String.valueOf(DateTimeUtils.yearsBetweenDates(birthday.getBirthDateCalendar(), Calendar.getInstance()));
+                        String strAge = String.valueOf(DateTimeUtils.yearsBetweenDates(birthday.getBirthDateCalendar(), Calendar.getInstance()));
 
                         Notification notification = createNotification(
-                                getString(R.string.name_with_date_age, name, date, strAage),
+                                getString(R.string.name_with_date_age, name, date, strAge),
                                 getString(R.string.new_birthday_ticker, name),
                                 R.drawable.stat_notify_bday,
                                 true);

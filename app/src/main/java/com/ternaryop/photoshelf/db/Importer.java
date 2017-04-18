@@ -287,7 +287,7 @@ public class Importer {
                 for (final String name : names) {
                     publishProgress(name + " (" + curr + "/" + size + ")" + found);
                     try {
-                        Birthday birthday = BirthdayUtils.searchBirthday(name, blogName);
+                        Birthday birthday = BirthdayUtils.searchBirthday(context, name, blogName);
                         if (birthday != null) {
                             birthdays.add(birthday);
                             found.append("\n").append(birthday.toString());
