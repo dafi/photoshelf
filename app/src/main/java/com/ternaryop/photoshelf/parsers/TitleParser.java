@@ -56,11 +56,11 @@ public class TitleParser {
     }
 
     private String parseLocation(String title, TitleDateComponents dateComponents) {
-        if (dateComponents.matcher == null) {
+        if (dateComponents.datePosition < 0) {
             // no date found so use all substring as location
             return title;
         }
-        return title.substring(0, dateComponents.matcher.start());
+        return title.substring(0, dateComponents.datePosition);
     }
 
     private void setLocationAndCity(TitleData titleData, String loc) {

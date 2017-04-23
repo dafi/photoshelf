@@ -27,7 +27,7 @@ public class TitleDateComponents {
     int day;
     int month;
     int year = -1;
-    Matcher matcher;
+    int datePosition;
 
     /**
      * Fill parseInfo with day, month, year, matched
@@ -37,9 +37,9 @@ public class TitleDateComponents {
     }
 
     TitleDateComponents(String text, boolean swapDayMonth, boolean checkDateInTheFuture) {
-        matcher = extractComponentsFromNumericDate(text);
-        if (matcher == null) {
-            matcher = extractComponentsFromTextualDate(text);
+        datePosition = extractComponentsFromNumericDate(text);
+        if (datePosition < 0) {
+            datePosition = extractComponentsFromTextualDate(text);
         }
         fix(swapDayMonth, checkDateInTheFuture);
     }
@@ -47,9 +47,9 @@ public class TitleDateComponents {
     /**
      * handle dates in the form Jan 10, 2010 or January 10 2010 or Jan 15
      * @param text the string to parse
-     * @return matcher on success, null otherwise
+     * @return the date position on success, -1 otherwise
      */
-    private Matcher extractComponentsFromTextualDate(String text) {
+    private int extractComponentsFromTextualDate(String text) {
         Matcher m = Pattern.compile("\\s?(?:-|,|\\bon\\b)?\\s+(\\d*)(?:st|ns|rd|th)?\\s?\\(?(jan\\w*|feb\\w*|mar\\w*|apr\\w*|may\\w*|jun\\w*|jul\\w*|aug\\w*|sep\\w*|oct\\w*|nov\\w*|dec\\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(text);
         if (m.find() && m.groupCount() > 1) {
             int dayIndex = 3;
@@ -62,7 +62,7 @@ public class TitleDateComponents {
                 yearIndex = 3;
                 expectedGroupCount = 4;
             } else if (!containsDateMatch(m)) {
-                return null;
+                return -1;
             }
 
             month = indexOfMonthFromShort(m.group(monthIndex).toLowerCase(Locale.getDefault()));
@@ -76,9 +76,9 @@ public class TitleDateComponents {
                     year = Integer.parseInt(m.group(yearIndex));
                 }
             }
-            return m;
+            return m.start();
         }
-        return null;
+        return -1;
     }
 
     /**
@@ -99,10 +99,7 @@ public class TitleDateComponents {
     private boolean containsDateMatch(Matcher matcher) {
         String month = matcher.group(2);
         // the month isn't expressed in the short form (jan, dec)
-        if (month.length() == 3) {
-            return true;
-        }
-        return isMonthName(month);
+        return month.length() == 3 || isMonthName(month);
     }
 
     private boolean isMonthName(String month) {
@@ -115,19 +112,27 @@ public class TitleDateComponents {
     }
 
     /**
-     * handle dates in the form dd/dd/dd?? or (dd/dd/??)
+     * handle dates in the form dd/dd/dd?? or (dd/dd/??) or (dddd)
      * @param text the string to parse
      * @return matcher on success, null otherwise
      */
-    private Matcher extractComponentsFromNumericDate(String text) {
-        Matcher m = Pattern.compile("\\s+\\(?([0-9]{1,2})[^\\d]\\s?([0-9]{1,2})[^\\d]\\s?([0-9]{2,4})\\)?").matcher(text);
+    private int extractComponentsFromNumericDate(String text) {
+        Matcher m = Pattern.compile(".*\\D(\\d{1,2})\\s*\\D\\s*(\\d{1,2})\\s*\\D\\s*(\\d{2}|\\d{4})\\b").matcher(text);
         if (m.find() && m.groupCount() > 1) {
             day = Integer.parseInt(m.group(1));
             month = Integer.parseInt(m.group(2));
             year = Integer.parseInt(m.group(3));
-            return m;
+            return m.start(1);
         }
-        return null;
+        // only year
+        m = Pattern.compile("\\(\\s*(2\\d{3})\\s*\\)").matcher(text);
+        if (m.find()) {
+            day = -1;
+            month = -1;
+            year = Integer.parseInt(m.group(1));
+            return m.start(1);
+        }
+        return -1;
     }
     
     private int indexOfMonthFromShort(String shortMonth) {
@@ -153,6 +158,9 @@ public class TitleDateComponents {
 
     private boolean isDateInTheFuture() {
         if (month > 12) {
+            return false;
+        }
+        if (day < 0 && month < 0) {
             return false;
         }
         String strDate = String.format(Locale.US, "%1$04d%2$02d%3$02d", year, month, day);

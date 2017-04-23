@@ -53,8 +53,8 @@ public class TitleData {
     }
 
     public void setLocation(String location) {
-        // remove all non alpha chars (except single and double quotes) from the end
-        location = location.replaceAll("[^\\p{Alpha}|\"|']*$", "").trim();
+        // remove all non alnum chars (except single and double quotes) from the end
+        location = location.replaceAll("[^\\p{Alnum}|\"|']*$", "").trim();
 
         if (location.isEmpty()) {
             this.location = null;
