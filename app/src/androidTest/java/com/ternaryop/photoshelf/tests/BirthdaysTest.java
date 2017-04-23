@@ -36,7 +36,7 @@ public class BirthdaysTest extends TestCase {
 
             while (iterator.hasNext()) {
                 String name = iterator.next();
-                Birthday birthday = BirthdayUtils.searchBirthday(name, "");
+                Birthday birthday = BirthdayUtils.searchBirthday(null, name, "");
                 if (birthday != null) {
                     Log.d("testFindMissing", "MissingBirthdaysTest.findMissing " + birthday);
                 }
