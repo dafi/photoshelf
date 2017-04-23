@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -11,6 +10,7 @@ import android.os.AsyncTask;
 
 import com.ternaryop.photoshelf.extractor.ImageExtractorManager;
 import com.ternaryop.photoshelf.extractor.ImageInfo;
+import com.ternaryop.utils.UriUtils;
 
 public class ImageUrlRetriever {
     private final Context context;
@@ -84,18 +84,15 @@ public class ImageUrlRetriever {
             if (link.isEmpty()) {
                 return;
             }
-            try {
-                imageCollector.addUrl(resolveRelativeURL(imageInfo.getDocumentUrl(), link));
-            } catch (URISyntaxException ignored) {
-            }
+            imageCollector.addUrl(resolveRelativeURL(imageInfo.getDocumentUrl(), link));
         }
 
-        private String resolveRelativeURL(final String baseURL, final String link) throws URISyntaxException {
-            URI uri = new URI(link);
+        private String resolveRelativeURL(final String baseURL, final String link) throws Exception {
+            URI uri =  UriUtils.encodeIllegalChar(link, "UTF-8", 20);
             if (uri.isAbsolute()) {
-                return link;
+                return uri.toString();
             }
-            return new URI(baseURL).resolve(uri).toString();
+            return UriUtils.encodeIllegalChar(baseURL, "UTF-8", 20).resolve(uri).toString();
         }
 
         private String getImageURL(ImageInfo imageInfo) throws Exception {
