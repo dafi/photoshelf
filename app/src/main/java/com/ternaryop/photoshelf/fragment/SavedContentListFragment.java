@@ -121,7 +121,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
 
             @Nullable
             private List<FeedlyContent> fakeCall() throws Exception {
-                try (InputStream is = getActivity().getAssets().open("result_feedly.json")) {
+                try (InputStream is = getActivity().getAssets().open("sample/feedly.json")) {
                     final JSONArray items = JSONUtils.jsonFromInputStream(is).getJSONArray("items");
                     final ArrayList<FeedlyContent> list = new ArrayList<>(items.length());
                     for (int i = 0; i < items.length(); i++) {
