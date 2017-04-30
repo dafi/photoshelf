@@ -9,6 +9,7 @@ public interface Selection {
     int getItemCount();
     void toggle(int position);
     void setSelected(int position, boolean selected);
+    void setSelectedRange(int start, int end, boolean selected);
     void clear();
 
     int[] getSelectedPositions();

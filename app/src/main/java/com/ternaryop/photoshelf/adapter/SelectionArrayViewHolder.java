@@ -8,7 +8,7 @@ import android.support.v7.widget.RecyclerView;
  * Notify changes to the adapter delegate
  */
 public class SelectionArrayViewHolder<T extends RecyclerView.ViewHolder> extends SelectionArray {
-    private RecyclerView.Adapter<T> adapter;
+    private final RecyclerView.Adapter<T> adapter;
 
     public SelectionArrayViewHolder(RecyclerView.Adapter<T> adapter) {
         this.adapter = adapter;
@@ -29,6 +29,12 @@ public class SelectionArrayViewHolder<T extends RecyclerView.ViewHolder> extends
     @Override
     public void clear() {
         super.clear();
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void setSelectedRange(int start, int end, boolean selected) {
+        super.setSelectedRange(start, end, selected);
         adapter.notifyDataSetChanged();
     }
 }

@@ -7,8 +7,9 @@ import android.util.SparseBooleanArray;
  * Hold selection index state
  */
 public class SelectionArray implements Selection {
-    private SparseBooleanArray items = new SparseBooleanArray();
+    private final SparseBooleanArray items = new SparseBooleanArray();
 
+    @Override
     public void toggle(int position) {
         if (items.get(position, false)) {
             items.delete(position);
@@ -17,14 +18,17 @@ public class SelectionArray implements Selection {
         }
     }
 
+    @Override
     public boolean isSelected(int position) {
         return items.get(position, false);
     }
 
+    @Override
     public int getItemCount() {
         return items.size();
     }
 
+    @Override
     public void setSelected(int position, boolean selected) {
         if (selected) {
             items.put(position, true);
@@ -33,6 +37,7 @@ public class SelectionArray implements Selection {
         }
     }
 
+    @Override
     public void clear() {
         items.clear();
     }
@@ -47,4 +52,12 @@ public class SelectionArray implements Selection {
 
         return positions;
     }
+
+    @Override
+    public void setSelectedRange(int start, int end, boolean selected) {
+        for (int i = start; i < end; i++) {
+            setSelected(i, selected);
+        }
+    }
+
 }

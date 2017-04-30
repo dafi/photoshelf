@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.fragment;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -16,8 +15,8 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
-import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,29 +24,28 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.GridView;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
-import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick;
+import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice;
+import com.ternaryop.photoshelf.adapter.Selection;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.service.PublishIntentService;
+import com.ternaryop.photoshelf.view.AutofitGridLayoutManager;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 
-public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener, OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClick {
+public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClickMultiChoice, ActionMode.Callback  {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
     private static final String LOADER_PREFIX = "mediumThumb";
 
-    private GridView gridView;
     private GridViewPhotoAdapter gridViewPhotoAdapter;
     private WaitingResultSwipeRefreshLayout swipeLayout;
+    private ActionMode actionMode;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,10 +55,11 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         gridViewPhotoAdapter = new GridViewPhotoAdapter(getActivity(), LOADER_PREFIX);
         gridViewPhotoAdapter.setOnPhotoBrowseClick(this);
 
-        gridView = (GridView)rootView.findViewById(R.id.gridview);
+        RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.grid_layout_thumb_width));
+        RecyclerView gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
         gridView.setAdapter(gridViewPhotoAdapter);
-        gridView.setOnItemClickListener(this);
-        gridView.setMultiChoiceModeListener(this);
+        gridView.setHasFixedSize(true);
+        gridView.setLayoutManager(layout);
 
         swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
         swipeLayout.setColorScheme(R.array.progress_swipe_colors);
@@ -107,21 +106,19 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
             refresh();
             return true;
         case R.id.action_selectall:
-            selectAll(true);
+            selectAll();
             return true;
         default:
             return super.onOptionsItemSelected(item);
         }
     }
     
-    private void selectAll(boolean select) {
-        if (select) {
-            for (int i = 0; i < gridView.getCount(); i++) {
-                gridView.setItemChecked(i, select);
-            }
-        } else {
-            gridView.clearChoices();
+    private void selectAll() {
+        if (actionMode == null) {
+            actionMode = getActivity().startActionMode(this);
         }
+        gridViewPhotoAdapter.selectAll();
+        updateSubTitle();
     }
 
     private void publish(final ActionMode mode, final boolean saveAsDraft) {
@@ -138,7 +135,8 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
                     Bitmap cakeImage = BitmapFactory.decodeStream(is);
                     is.close();
 
-                    for (TumblrPhotoPost post : getCheckedPosts()) {
+                    for (Pair<Birthday, TumblrPhotoPost> pair : gridViewPhotoAdapter.getSelectedItems()) {
+                        final TumblrPhotoPost post = pair.second;
                         String name = post.getTags().get(0);
                         publishProgress(getContext().getString(R.string.sending_cake_title, name));
                         BirthdayUtils.createBirthdayPost(getContext(), cakeImage, post, getBlogName(), saveAsDraft);
@@ -158,12 +156,45 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }.execute();
     }
 
-    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        onThumbnailImageClick(position);
+    @Override
+    public void onItemClick(int position) {
+        if (actionMode == null) {
+            onThumbnailImageClick(position);
+        } else {
+            updateSelection(position);
+        }
     }
 
     @Override
     public void onTagClick(int position) {
+    }
+
+    @Override
+    public void onItemLongClick(int position) {
+        if (actionMode == null) {
+            actionMode = getActivity().startActionMode(this);
+        }
+        gridViewPhotoAdapter.getSelection().toggle(position);
+    }
+
+    private void updateSelection(int position) {
+        Selection selection = gridViewPhotoAdapter.getSelection();
+        selection.toggle(position);
+        if (selection.getItemCount() == 0) {
+            actionMode.finish();
+        } else {
+            updateSubTitle();
+        }
+    }
+
+    private void updateSubTitle() {
+        Selection selection = gridViewPhotoAdapter.getSelection();
+        int selectionCount = selection.getItemCount();
+        actionMode.setSubtitle(getResources().getQuantityString(
+                R.plurals.selected_items_total,
+                selectionCount,
+                selectionCount,
+                gridViewPhotoAdapter.getItemCount()));
     }
 
     @Override
@@ -187,20 +218,34 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         }
     }
 
+    @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.setTitle(R.string.select_images);
-        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 0, 0));
+        mode.setTitle(getString(R.string.select_images));
+        mode.setSubtitle(getResources().getQuantityString(
+                R.plurals.selected_items_total,
+                1,
+                1,
+                gridViewPhotoAdapter.getItemCount()));
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.birtdays_publisher_context, menu);
         gridViewPhotoAdapter.setShowButtons(true);
         gridViewPhotoAdapter.notifyDataSetChanged();
         return true;
     }
-    
+
+    @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         return true;
     }
 
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        this.actionMode = null;
+        gridViewPhotoAdapter.setShowButtons(false);
+        gridViewPhotoAdapter.getSelection().clear();
+    }
+
+    @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
         case R.id.action_publish:
@@ -212,29 +257,6 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         default:
             return false;
         }
-    }
-
-    private List<TumblrPhotoPost> getCheckedPosts() {
-        SparseBooleanArray checkedItemPositions = gridView.getCheckedItemPositions();
-        ArrayList<TumblrPhotoPost> list = new ArrayList<>();
-        for (int i = 0; i < checkedItemPositions.size(); i++) {
-            int key = checkedItemPositions.keyAt(i);
-            if (checkedItemPositions.get(key)) {
-                list.add(gridViewPhotoAdapter.getItem(key).second);
-            }
-        }
-        return list;
-    }
-    
-    public void onDestroyActionMode(ActionMode mode) {
-        gridViewPhotoAdapter.setShowButtons(false);
-        gridViewPhotoAdapter.notifyDataSetChanged();
-    }
-
-    public void onItemCheckedStateChanged(ActionMode mode, int position,
-            long id, boolean checked) {
-        int selectCount = gridView.getCheckedItemCount();
-        mode.setSubtitle(getResources().getQuantityString(R.plurals.selected_items, 1, selectCount));
     }
 
     @Override
