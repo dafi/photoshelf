@@ -14,6 +14,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -33,6 +34,7 @@ import android.widget.Spinner;
 
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
@@ -55,6 +57,10 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     public static final String ARG_SOURCE_TITLE = "sourceTitle";
     public static final String ARG_INITIAL_TAG_LIST = "initialTagList";
     public static final String ARG_BLOCK_UI_WHILE_PUBLISH = "blockUIWhilePublish";
+
+    private static final int NAME_ALREADY_EXISTS = 0;
+    private static final int NAME_NOT_FOUND = 1;
+    private static final int NAME_MISSPELLED = 2;
 
     private EditText postTitle;
     private MultiAutoCompleteTextView postTags;
@@ -209,33 +215,82 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         final String firstTag = tags.isEmpty() ? "" : tags.get(0);
         this.postTags.setText(TextUtils.join(", ", tags));
 
+        if (firstTag.isEmpty()) {
+            return;
+        }
+        final Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        searchMisspelledName(firstTag);
+                    }
+                });
+            }
+        };
+        new Thread(runnable).start();
+    }
+
+    private void searchMisspelledName(final String name) {
+        new AsyncTask<Void, Void, Void>() {
+            private int nameType;
+            private String correctedName;
+
+            @Override
+            protected void onPreExecute() {
+                ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
+                            .getPostCountByTag(name, appSupport.getSelectedBlogName());
+                    if (count == 0) {
+                        correctedName = new GoogleCustomSearchClient(
+                                getString(R.string.GOOGLE_CSE_APIKEY),
+                                getString(R.string.GOOGLE_CSE_CX))
+                                .getCorrectedQuery(name);
+                        nameType = correctedName == null ? NAME_NOT_FOUND : NAME_MISSPELLED;
+                    } else {
+                        nameType = NAME_ALREADY_EXISTS;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void v) {
+                highlightTagName(nameType, correctedName);
+                ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+            }
+        }.execute();
+    }
+
+    private void highlightTagName(int nameType, String correctedName) {
         if (defaultPostTagsColor == null) {
             defaultPostTagsColor = postTags.getTextColors();
             defaultPostTagsBackground = postTags.getBackground();
         }
-        if (!firstTag.isEmpty()) {
-            // if tag doesn't exist then show the textfield in red
-            final Handler handler = new Handler();
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
-                            .getPostCountByTag(firstTag, appSupport.getSelectedBlogName());
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (count == 0) {
-                                    postTags.setTextColor(Color.WHITE);
-                                    postTags.setBackgroundColor(Color.RED);
-                                } else {
-                                    postTags.setTextColor(defaultPostTagsColor);
-                                    postTags.setBackground(defaultPostTagsBackground);
-                                }
-                            }
-                        });
-                }
-            };
-            new Thread(runnable).start();
+
+        switch (nameType) {
+            case NAME_ALREADY_EXISTS:
+                postTags.setTextColor(defaultPostTagsColor);
+                postTags.setBackground(defaultPostTagsBackground);
+                break;
+            case NAME_MISSPELLED:
+                postTags.setTextColor(Color.RED);
+                postTags.setBackgroundColor(Color.YELLOW);
+                postTags.setText(correctedName);
+                break;
+            case NAME_NOT_FOUND:
+                postTags.setTextColor(Color.WHITE);
+                postTags.setBackgroundColor(Color.RED);
+                break;
         }
     }
 
