@@ -308,7 +308,14 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 }
             }
         }
-        photoAdapter.notifyDataSetChanged();
+        // use post to resolve the error
+        // Cannot call this method in a scroll callback. Scroll callbacks mightbe run during a measure & layout pass where you cannot change theRecyclerView data.
+        // Any method call that might change the structureof the RecyclerView or the adapter contents should be postponed tothe next frame.
+        recyclerView.post(new Runnable() {
+            public void run() {
+                photoAdapter.notifyDataSetChanged();
+            }
+        });
     }
     
     abstract class ActionExecutor extends AbsProgressIndicatorAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
