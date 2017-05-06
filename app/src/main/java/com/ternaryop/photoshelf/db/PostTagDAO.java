@@ -266,9 +266,9 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
 
         return DatabaseUtils.queryNumEntries(db,
                 TABLE_NAME,
-                "lower(" + TAG + ") = lower(?)"
+                TAG + " = ?"
                 + " and " + TUMBLR_NAME + " = ?",
-                new String[]{tag, tumblrName});
+                new String[]{tag.toLowerCase(), tumblrName});
     }
 
     @Override
