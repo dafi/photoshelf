@@ -240,7 +240,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
                 super.onPostExecute(aVoid);
                 if (!hasError()) {
                     feedlyManager.setAccessToken(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN)));
-                    refresh(false);
+                    refresh(true);
                 }
             }
         }.execute();
