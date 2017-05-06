@@ -207,7 +207,9 @@ public class FeedlyContentAdapter extends RecyclerView.Adapter<FeedlyContentView
                 private void updateLastPublishTimestamp() {
                     final HashSet<String> titles = new HashSet<>(allContents.size());
                     for (FeedlyContentDelegate fc : allContents) {
-                        titles.add(fc.getTitle());
+                        // replace any no no-break space with whitespace
+                        // see http://www.regular-expressions.info/unicode.html for \p{Zs}
+                        titles.add(fc.getTitle().replaceAll("\\p{Zs}", " "));
                         fc.lastPublishTimestamp = Long.MIN_VALUE;
                     }
                     final List<Pair<Long, String>> list = DBHelper.getInstance(context).getPostTagDAO()
