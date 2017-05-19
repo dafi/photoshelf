@@ -76,6 +76,8 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     private ColorStateList defaultPostTagsColor;
     private Drawable defaultPostTagsBackground;
 
+    protected AsyncTask spellingTask;
+
     public static TumblrPostDialog newInstance(Bundle args, Fragment target) {
         TumblrPostDialog fragment = new TumblrPostDialog();
 
@@ -125,7 +127,14 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         setupUI(view);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                 .setView(view)
-                .setNegativeButton(R.string.cancel_title, null);
+                .setNegativeButton(R.string.cancel_title, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (spellingTask != null) {
+                            spellingTask.cancel(true);
+                        }
+                    }
+                });
         if (photoPost == null) {
             OnClickPublishListener onClickPublishListener = new OnClickPublishListener();
             builder.setNeutralButton(R.string.publish_post, onClickPublishListener);
@@ -234,7 +243,10 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     private void searchMisspelledName(final String name) {
-        new AsyncTask<Void, Void, Void>() {
+        if (spellingTask != null) {
+            return;
+        }
+        spellingTask = new AsyncTask<Void, Void, Void>() {
             private int nameType;
             private String correctedName;
 
@@ -265,8 +277,16 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
             @Override
             protected void onPostExecute(Void v) {
+                spellingTask = null;
+                if (!isRunning()) {
+                    return;
+                }
                 highlightTagName(nameType, correctedName);
                 ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+            }
+
+            public boolean isRunning() {
+                return !isCancelled() && getStatus().equals(AsyncTask.Status.RUNNING);
             }
         }.execute();
     }
