@@ -138,6 +138,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
                     adapter.addAll(posts);
                     adapter.sort();
                     adapter.notifyDataSetChanged();
+                    scrollToPosition(0);
 
                     refreshUI();
                 }
