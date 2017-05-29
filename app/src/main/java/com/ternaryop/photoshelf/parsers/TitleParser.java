@@ -65,7 +65,7 @@ public class TitleParser {
 
     private void setLocationAndCity(TitleData titleData, String loc) {
         // city names can be multi words so allow whitespaces
-        Matcher m = Pattern.compile("\\s?(.*)?\\s?\\bin\\b([a-z.\\s]*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
+        Matcher m = Pattern.compile("\\s?(.*)?\\s?\\bin\\b([a-z.\\s']*).*$", Pattern.CASE_INSENSITIVE).matcher(loc);
         if (m.find() && m.groupCount() > 1) {
             titleData.setLocation(m.group(1));
             titleData.setCity(m.group(2).trim());
