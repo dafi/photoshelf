@@ -29,6 +29,7 @@ public class TitleParser {
 
         title = config.applyList(config.getTitleCleanerList(), title).trim();
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
+        title = StringUtils.stripAccents(title);
 
         title = setWho(title, titleData);
 
@@ -44,7 +45,7 @@ public class TitleParser {
     private String setWho(String title, TitleData titleData) {
         Matcher m = titleRE.matcher(title);
         if (m.find() && m.groupCount() > 1) {
-            titleData.setWhoFromString(StringUtils.stripAccents(StringUtils.capitalize(m.group(1))));
+            titleData.setWhoFromString(StringUtils.capitalize(m.group(1)));
             // remove the 'who' chunk and any not alphabetic character (eg the dash used to separated "who" from location)
             if (Character.isLetter(m.group(2).charAt(0))) {
                 title = title.substring(m.group(1).length());
