@@ -10,7 +10,9 @@ import java.util.Locale;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Range;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,13 +142,17 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
         notifyDataSetChanged();
     }
 
-    public void remove(PhotoShelfPost object) {
-        allPosts.remove(object);
+    public int remove(PhotoShelfPost object) {
+        // if they point to the same list then remove the item only once
+        if (visiblePosts != allPosts) {
+            allPosts.remove(object);
+        }
         int position = visiblePosts.indexOf(object);
         if (position >= 0) {
             visiblePosts.remove(position);
             notifyItemRemoved(position);
         }
+        return position;
     }
 
     public Filter getFilter() {
@@ -192,7 +198,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     }
 
     public void removeAndRecalcGroups(PhotoShelfPost item, Calendar lastPublishDateTime) {
-        remove(item);
+        moveGroup(item, remove(item));
         boolean isSortNeeded = false;
         String tag = item.getFirstTag();
 
@@ -207,6 +213,37 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
         } else {
             calcGroupIds();
         }
+    }
+
+    private void moveGroup(PhotoShelfPost item, int position) {
+        final Range<Integer> range = getGroupRangeFromPosition(position, item.getGroupId());
+        if (range != null) {
+            notifyItemRangeRemoved(range.getLower(), range.getUpper() - range.getLower());
+        }
+    }
+
+    @Nullable
+    private Range<Integer> getGroupRangeFromPosition(int position, int groupId) {
+        if (position < 0) {
+            return null;
+        }
+        int min = position;
+        int max = position;
+
+        while (min > 0 && visiblePosts.get(min - 1).getGroupId() == groupId) {
+            --min;
+        }
+
+        final int lastIndex = visiblePosts.size() - 1;
+        while (max < lastIndex && visiblePosts.get(max).getGroupId() == groupId) {
+            ++max;
+        }
+
+        // group is empty
+        if (min == max) {
+            return null;
+        }
+        return Range.create(min, max);
     }
 
     private void sort(PhotoShelfPostSortable sortable) {

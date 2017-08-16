@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -34,6 +35,7 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.adapter.Selection;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
+import com.ternaryop.photoshelf.view.ColorItemDecoration;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -65,6 +67,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     private CountChangedListener countChangedListener;
     ActionMode actionMode;
+    protected ColorItemDecoration colorItemDecoration;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,6 +80,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(photoAdapter);
+        colorItemDecoration = new ColorItemDecoration();
+        recyclerView.addItemDecoration(colorItemDecoration);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -125,6 +130,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                     new ActionExecutor(getActivity(), R.string.saving_posts_to_draft_title, mode, postList) {
                         @Override
                         protected void executeAction(PhotoShelfPost post) {
+                            colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_save_as_draft_bg));
                             Tumblr.getSharedTumblr(getContext()).saveDraft(
                                     getBlogName(),
                                     post.getPostId());
@@ -150,6 +156,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         new ActionExecutor(getActivity(), R.string.deleting_posts_title, mode, postList) {
             @Override
             protected void executeAction(PhotoShelfPost post) {
+                colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_delete_bg));
                 Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
                         post.getPostId());
                 DBHelper.getInstance(getContext()).getPostDAO().deleteById(post.getPostId());
@@ -285,6 +292,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         new ActionExecutor(getActivity(), R.string.publishing_posts_title, mode, postList) {
             @Override
             protected void executeAction(PhotoShelfPost post) {
+                colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_publish_bg));
                 Tumblr.getSharedTumblr(getContext()).publishPost(getBlogName(),
                         post.getPostId());
                 onPostAction(post, POST_ACTION_PUBLISH, POST_ACTION_OK);
@@ -308,12 +316,21 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 }
             }
         }
-        // use post to resolve the error
+
+        // use post() to resolve the following error:
         // Cannot call this method in a scroll callback. Scroll callbacks mightbe run during a measure & layout pass where you cannot change theRecyclerView data.
         // Any method call that might change the structureof the RecyclerView or the adapter contents should be postponed tothe next frame.
         recyclerView.post(new Runnable() {
+            @Override
             public void run() {
-                photoAdapter.notifyDataSetChanged();
+                // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
+                // so we wait for finished animations before call it
+                recyclerView.getItemAnimator().isRunning(new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
+                    @Override
+                    public void onAnimationsFinished() {
+                        photoAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         });
     }
@@ -341,10 +358,22 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             super.onPostExecute(null);
 
             refreshUI();
-            // all posts have been deleted so call actionMode.finish() 
+            // all posts have been deleted so call actionMode.finish()
             if (notDeletedPosts.size() == 0) {
                 if (mode != null) {
-                    mode.finish();
+                    // when action mode is on the finish() method could be called while the item animation is running stopping it
+                    // so we wait the animation is completed and then call finish()
+                    recyclerView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            recyclerView.getItemAnimator().isRunning(new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
+                                @Override
+                                public void onAnimationsFinished() {
+                                    mode.finish();
+                                }
+                            });
+                        }
+                    });
                 }
                 return;
             }

@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -245,6 +246,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                 new onPostScheduleListener() {
                     @Override
                     public void onPostScheduled(long id, Calendar scheduledDateTime) {
+                        colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_schedule_bg));
                         lastScheduledDate = (Calendar) scheduledDateTime.clone();
                         photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
                         draftPostHelper.getDraftCache().deleteItem(item);
