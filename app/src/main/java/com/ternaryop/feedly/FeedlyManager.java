@@ -139,11 +139,18 @@ public class FeedlyManager {
     }
 
     private void handleError(HttpURLConnection conn) throws Exception {
-        if (conn.getResponseCode() == 200) {
+        final int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
             return;
         }
         final JSONObject error = toJson(conn.getErrorStream());
-        throw new RuntimeException("Error " + conn.getResponseCode() + ": " + error.getString("errorMessage"));
+        final String errorMessage = error.getString("errorMessage");
+        if (responseCode == 401) {
+            if (errorMessage != null && errorMessage.startsWith("token expired")) {
+                throw new TokenExpiredException(errorMessage);
+            }
+        }
+        throw new RuntimeException("Error " + responseCode + ": " + errorMessage);
     }
 
     public void setAccessToken(String accessToken) {
