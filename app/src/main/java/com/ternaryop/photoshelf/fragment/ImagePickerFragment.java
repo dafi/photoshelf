@@ -6,10 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -32,26 +30,25 @@ import com.ternaryop.photoshelf.adapter.ImagePickerAdapter;
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice;
 import com.ternaryop.photoshelf.adapter.Selection;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
-import com.ternaryop.photoshelf.extractor.ImageExtractorManager;
 import com.ternaryop.photoshelf.extractor.ImageGallery;
 import com.ternaryop.photoshelf.extractor.ImageInfo;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
-import com.ternaryop.utils.TaskWithUI;
-import com.ternaryop.utils.URLUtils;
-import com.ternaryop.utils.dialog.DialogUtils;
+import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.widget.ProgressHighlightViewLayout;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 
-public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageUrlRetriever.OnImagesRetrieved, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
+public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private RecyclerView gridView;
     private ProgressHighlightViewLayout progressHighlightViewLayout;
 
     private ImageUrlRetriever imageUrlRetriever;
     private ImagePickerAdapter imagePickerAdapter;
     private String detailsText;
+    private String parsableTitle;
     ActionMode actionMode;
 
     @Override
@@ -66,7 +63,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         imagePickerAdapter = new ImagePickerAdapter(getActivity());
         imagePickerAdapter.setOnPhotoBrowseClick(this);
         imagePickerAdapter.setEmptyView(progressHighlightViewLayout);
-        imageUrlRetriever = new ImageUrlRetriever(getActivity(), this);
+        imageUrlRetriever = new ImageUrlRetriever(getActivity());
 
         RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.image_picker_grid_width));
         gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
@@ -121,26 +118,35 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         final Matcher m = Pattern.compile("(http:.*)").matcher(textWithUrl);
 
         if (m.find()) {
-            String url = m.group(1);
-            // resolveShortenURL can't be called on main thread so we
-            // resolve into a separated thread
-            new AsyncTask<String, Void, String>() {
-                @Override
-                protected String doInBackground(String... params) {
-                    return URLUtils.resolveShortenURL(params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(String url) {
-                    task = (TaskWithUI) new ImageUrlExtractor(getActivity(), message, getCurrentTextView()).execute(url);
-                }
-            }.execute(url);
+            readImageGallery(m.group(1));
         } else {
             new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.url_not_found)
                     .setMessage(getString(R.string.url_not_found_description, textWithUrl))
                     .show();
         }
+    }
+
+    private void readImageGallery(String url) {
+        imageUrlRetriever.readImageGallery(url)
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        compositeDisposable.add(disposable);
+                    }
+                })
+                .subscribe(new Consumer<ImageGallery>() {
+                               @Override
+                               public void accept(ImageGallery gallery) throws Exception {
+                                   onGalleryRetrieved(gallery);
+                               }
+                           },
+                new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        DialogUtils.showErrorDialog(getActivity(), throwable);
+                    }
+                });
     }
 
     public TextView getCurrentTextView() {
@@ -171,11 +177,11 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.showDialog:
-                imageUrlRetriever.retrieve(imagePickerAdapter.getSelectedItems());
+                retrieveImages(false);
                 mode.finish();
                 return true;
             case R.id.create_from_file:
-                imageUrlRetriever.retrieve(imagePickerAdapter.getSelectedItems(), true);
+                retrieveImages(true);
                 mode.finish();
                 return true;
             default:
@@ -190,74 +196,58 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         imagePickerAdapter.getSelection().clear();
     }
 
-    @Override
-    public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
-        TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(imageUrlRetriever.getTitle());
-        Bundle args = new Bundle();
-
-        args.putParcelableArrayList(TumblrPostDialog.ARG_IMAGE_URLS, imageUrlRetriever.getImageCollector().getImageUrls());
-        args.putBoolean(TumblrPostDialog.ARG_BLOCK_UI_WHILE_PUBLISH, false);
-        args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml());
-        args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, imageUrlRetriever.getTitle());
-
-        args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<>(titleData.getTags()));
-
-        TumblrPostDialog.newInstance(args, null).show(getFragmentManager(), "dialog");
+    private void retrieveImages(boolean useFile) {
+        imageUrlRetriever.retrieve(imagePickerAdapter.getSelectedItems(), useFile)
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        compositeDisposable.add(disposable);
+                    }
+                })
+                .toList()
+                .subscribe(new Consumer<List<Uri>>() {
+                               @Override
+                               public void accept(List<Uri> uris) throws Exception {
+                                   onImagesRetrieved(uris);
+                               }
+                           },
+                        new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Exception {
+                                DialogUtils.showSimpleMessageDialog(getActivity(), R.string.url_not_found, throwable.getLocalizedMessage());
+                            }
+                        });
     }
 
-    /**
-     * Find all images present into the passed HTML document
-     *
-     * @author dave
-     */
-    class ImageUrlExtractor extends AbsProgressIndicatorAsyncTask<String, String, ImageGallery> {
-        Exception error;
+    public void onImagesRetrieved(List<Uri> imageUriList) {
+        try {
+            TitleData titleData = TitleParser.instance(new AndroidTitleParserConfig(getActivity())).parseTitle(parsableTitle);
+            Bundle args = new Bundle();
 
-        public ImageUrlExtractor(Context context, String message, TextView textView) {
-            super(context, message, textView);
+            args.putParcelableArrayList(TumblrPostDialog.ARG_IMAGE_URLS, new ArrayList<>(imageUriList));
+            args.putBoolean(TumblrPostDialog.ARG_BLOCK_UI_WHILE_PUBLISH, false);
+            args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml());
+            args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, parsableTitle);
+
+            args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, new ArrayList<>(titleData.getTags()));
+
+            TumblrPostDialog.newInstance(args, null).show(getFragmentManager(), "dialog");
+        } catch (Exception e) {
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.parsing_error)
+                    .setMessage(e.getLocalizedMessage())
+                    .show();
         }
+    }
 
-        @Override
-        protected void onProgressUpdate(String... message) {
-            // if the first element is null do not increment the progress and get the message from index 1
-            if (message[0] == null) {
-                getCurrentTextView().setText(message[1]);
-            } else {
-                progressHighlightViewLayout.incrementProgress();
-                getCurrentTextView().setText(message[0]);
-            }
-        }
-
-        @Override
-        protected ImageGallery doInBackground(String... urls) {
-            try {
-                String galleryUrl = urls[0];
-
-                return new ImageExtractorManager(getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN)).getGallery(galleryUrl);
-            } catch (Exception e) {
-                error = e;
-            }
-            return null;
-        }
-
-        public String findTitle(ImageGallery gallery) {
-            return gallery.getTitle() + " ::::: " + gallery.getDomain();
-        }
-
-        @Override
-        protected void onPostExecute(ImageGallery gallery) {
-            super.onPostExecute(null);
-            if (error == null) {
-                progressHighlightViewLayout.stopProgress();
-                imageUrlRetriever.setTitle(findTitle(gallery));
-                detailsText = gallery.getTitle();
-                showDetails(Snackbar.LENGTH_LONG);
-                getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.image_found, gallery.getImageInfoList().size(), gallery.getImageInfoList().size()));
-                imagePickerAdapter.addAll(gallery.getImageInfoList());
-            } else {
-                DialogUtils.showErrorDialog(getActivity(), error);
-            }
-        }
+    public void onGalleryRetrieved(ImageGallery imageGallery) {
+        progressHighlightViewLayout.stopProgress();
+        detailsText = imageGallery.getTitle();
+        parsableTitle = buildParsableTitle(imageGallery);
+        showDetails(Snackbar.LENGTH_LONG);
+        final List<ImageInfo> imageInfoList = imageGallery.getImageInfoList();
+        getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.image_found, imageInfoList.size(), imageInfoList.size()));
+        imagePickerAdapter.addAll(imageInfoList);
     }
 
     @Override
@@ -270,15 +260,29 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         if (imageInfo.getImageUrl() == null) {
             List<ImageInfo> imageInfoList = new ArrayList<>();
             imageInfoList.add(imageInfo);
-            new ImageUrlRetriever(getActivity(), new ImageUrlRetriever.OnImagesRetrieved() {
-                @Override
-                public void onImagesRetrieved(ImageUrlRetriever imageUrlRetriever) {
-                    // cache retrieved value
-                    final String url = imageUrlRetriever.getImageCollector().getImageUrls().get(0).toString();
-                    imageInfo.setImageUrl(url);
-                    ImageViewerActivity.startImageViewer(getActivity(), url, null);
-                }
-            }).retrieve(imageInfoList);
+            imageUrlRetriever.retrieve(imageInfoList, false)
+                    .doOnSubscribe(new Consumer<Disposable>() {
+                        @Override
+                        public void accept(Disposable disposable) throws Exception {
+                            compositeDisposable.add(disposable);
+                        }
+                    })
+                    .take(1)
+                    .subscribe(new Consumer<Uri>() {
+                                   @Override
+                                   public void accept(Uri uri) throws Exception {
+                                       // cache retrieved value
+                                       final String url = uri.toString();
+                                       imageInfo.setImageUrl(url);
+                                       ImageViewerActivity.startImageViewer(getActivity(), url, null);
+                                   }
+                               },
+                            new Consumer<Throwable>() {
+                                @Override
+                                public void accept(Throwable throwable) throws Exception {
+                                    DialogUtils.showSimpleMessageDialog(getActivity(), R.string.url_not_found, throwable.getLocalizedMessage());
+                                }
+                            });
         } else {
             ImageViewerActivity.startImageViewer(getActivity(), imageInfo.getImageUrl(), null);
         }
@@ -346,4 +350,14 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements ImageU
         textView.setMaxLines(3);
         snackbar.show();
     }
+
+    /**
+     * Return a string that can be used by the title parser
+     * @param imageGallery the source
+     * @return the title plus domain string
+     */
+    public String buildParsableTitle(final ImageGallery imageGallery) {
+        return imageGallery.getTitle() + " ::::: " + imageGallery.getDomain();
+    }
+
 }

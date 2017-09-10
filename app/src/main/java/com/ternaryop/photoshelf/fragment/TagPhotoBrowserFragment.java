@@ -1,7 +1,5 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -19,14 +17,23 @@ import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
+import com.ternaryop.photoshelf.view.PhotoShelfSwipe;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 public class TagPhotoBrowserFragment extends AbsPostsListFragment implements SearchView.OnSuggestionListener {
     private String postTag;
     private boolean allowSearch;
+    private PhotoShelfSwipe photoShelfSwipe;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -35,11 +42,13 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
 
         photoAdapter.setOnPhotoBrowseClick(this);
         photoAdapter.setEmptyView(rootView != null ? rootView.findViewById(android.R.id.empty) : null);
-        
+
+        photoShelfSwipe = new PhotoShelfSwipe(rootView, R.id.swipe_container);
+
         if (getBlogName() != null && postTag != null && postTag.trim().length() > 0) {
             onQueryTextSubmit(postTag.trim());
         }
-        
+
         return rootView;
     }
     
@@ -94,53 +103,55 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
         refreshUI();
         isScrolling = true;
 
-        new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost> >(getActivity(), getString(R.string.reading_tags_title, postTag)) {
-            @Override
-            protected void onProgressUpdate(String... values) {
-                setProgressMessage(values[0]);
-            }
-            
-            @Override
-            protected void onPostExecute(List<PhotoShelfPost> posts) {
-                super.onPostExecute(posts);
+        HashMap<String, String> params = new HashMap<>();
+        params.put("tag", postTag);
+        params.put("notes_info", "true");
+        params.put("offset", String.valueOf(offset));
 
-                if (!hasError()) {
-                    photoAdapter.addAll(posts);
-                    refreshUI();
-                }
-                isScrolling = false;
-            }
-
-            @Override
-            protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
-                try {
-                    HashMap<String, String> params = new HashMap<>();
-                    params.put("tag", postTag);
-                    params.put("notes_info", "true");
-                    params.put("offset", String.valueOf(offset));
-                    List<TumblrPhotoPost> photoPosts = Tumblr.getSharedTumblr(getContext())
-                            .getPhotoPosts(getBlogName(), params);
-
-                    List<PhotoShelfPost> photoList = new ArrayList<>();
-                    for (TumblrPost post : photoPosts) {
-                        photoList.add(new PhotoShelfPost((TumblrPhotoPost)post,
-                                post.getTimestamp() * 1000));
+        Observable
+                .just(params)
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        isScrolling = false;
                     }
-                    if (photoPosts.size() > 0) {
-                        totalPosts = photoList.get(0).getTotalPosts();
-                        hasMorePosts = true;
-                    } else {
-                        totalPosts = photoAdapter.getItemCount() + photoList.size();
-                        hasMorePosts = false;
+                })
+                .flatMap(new Function<HashMap<String, String>, ObservableSource<TumblrPhotoPost>>() {
+                    @Override
+                    public ObservableSource<TumblrPhotoPost> apply(HashMap<String, String> params) throws Exception {
+                        return Observable.fromIterable(Tumblr.getSharedTumblr(getActivity())
+                                .getPhotoPosts(getBlogName(), params));
                     }
-                    return photoList;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    setError(e);
-                }
-                return Collections.emptyList();
-            }
-        }.execute();
+                })
+                .map(new Function<TumblrPost, PhotoShelfPost>() {
+                    @Override
+                    public PhotoShelfPost apply(TumblrPost tumblrPost) throws Exception {
+                        return new PhotoShelfPost((TumblrPhotoPost)tumblrPost, tumblrPost.getTimestamp() * 1000);
+                    }
+                })
+                .toList()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(photoShelfSwipe.<List<PhotoShelfPost>>applySwipe())
+                .subscribe(new SingleObserver<List<PhotoShelfPost>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(List<PhotoShelfPost> photoList) {
+                        totalPosts += photoList.size();
+                        hasMorePosts = photoList.size() == Tumblr.MAX_POST_PER_REQUEST;
+                        photoAdapter.addAll(photoList);
+                        refreshUI();
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        showSnackbar(makeSnake(recyclerView, t));
+                    }
+                });
     }
 
     @Override

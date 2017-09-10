@@ -70,4 +70,6 @@
 
     <color name="image_picker_detail_text_text">#ffffff</color>
     <color name="image_picker_detail_text_bg">#90000000</color>
+
+    <color name="snack_error_color">#ffdd00</color>
 </resources>

@@ -3,14 +3,18 @@ package com.ternaryop.photoshelf.fragment;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -25,14 +29,17 @@ import android.widget.EditText;
 import com.ternaryop.feedly.FeedlyContent;
 import com.ternaryop.feedly.FeedlyManager;
 import com.ternaryop.feedly.FeedlyRateLimit;
+import com.ternaryop.feedly.TokenExpiredException;
 import com.ternaryop.photoshelf.BuildConfig;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImagePickerActivity;
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter;
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
-import com.ternaryop.utils.DialogUtils;
+import com.ternaryop.photoshelf.view.PhotoShelfSwipe;
 import com.ternaryop.utils.JSONUtils;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.disposables.Disposable;
 import org.json.JSONArray;
 
 import static com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter.SORT_TITLE_NAME;
@@ -41,7 +48,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     public static final String PREF_MAX_FETCH_ITEMS_COUNT = "savedContent.MaxFetchItemCount";
     public static final String PREF_NEWER_THAN_HOURS = "savedContent.NewerThanHours";
     public static final String PREF_DELETE_ON_REFRESH = "savedContent.DeleteOnRefresh";
-    public static final String PREF_SORT_TYPE ="savedContent.SortType" ;
+    public static final String PREF_SORT_TYPE = "savedContent.SortType";
     public static final String PREF_SORT_ASCENDING = "savedContent.SortAscending";
 
     public static final int IDEFAULT_MAX_FETCH_ITEMS_COUNT = 300;
@@ -53,21 +60,33 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     protected RecyclerView recyclerView;
     private FeedlyManager feedlyManager;
     private SharedPreferences preferences;
+    private PhotoShelfSwipe photoShelfSwipe;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.saved_content_list, container, false);
+
+        initRecyclerView(rootView);
+
+        setHasOptionsMenu(true);
+
+        photoShelfSwipe = new PhotoShelfSwipe(rootView, R.id.swipe_container, new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh(true);
+            }
+        });
+        return rootView;
+    }
+
+    private void initRecyclerView(View rootView) {
         adapter = new FeedlyContentAdapter(getActivity(), fragmentActivityStatus.getAppSupport().getSelectedBlogName());
 
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(adapter);
-
-        setHasOptionsMenu(true);
-
-        return rootView;
     }
 
     @Override
@@ -86,65 +105,73 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     }
 
     private void refresh(final boolean deleteItemsIfAllowed) {
-        new AbsProgressIndicatorAsyncTask<Void, Void, List<FeedlyContent>>(getActivity(), getString(R.string.loading_items_title)) {
-
-            @Override
-            protected List<FeedlyContent> doInBackground(Void... voidParams) {
-                try {
-                    if (BuildConfig.DEBUG) {
-                        return fakeCall();
+        // do not start another refresh if the current one is running
+        if (photoShelfSwipe.getSwipe().isWaitingResult()) {
+            return;
+        }
+        Single
+                .fromCallable(callableFeedlyReader(deleteItemsIfAllowed))
+                .compose(photoShelfSwipe.<List<FeedlyContent>>applySwipe())
+                .subscribe(new FeedlyObserver<List<FeedlyContent>>() {
+                    @Override
+                    public void onSuccess(List<FeedlyContent> posts) {
+                        setItems(posts);
                     }
-                    deleteItems();
-                    return readSavedContents();
-                } catch (Exception e) {
-                    setError(e);
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            private void deleteItems() throws Exception {
-                if (deleteItemsIfAllowed && deleteOnRefresh()) {
-                    List<String> idList = new ArrayList<>();
-                    for (FeedlyContent fc: adapter.getUncheckedItems()) {
-                        idList.add(fc.getId());
-                    }
-                    feedlyManager.markSaved(idList, false);
-                }
-            }
-
-            @Nullable
-            private List<FeedlyContent> readSavedContents() throws Exception {
-                long ms = System.currentTimeMillis() - getNewerThanHours() * ONE_HOUR_MILLIS;
-                return feedlyManager.getStreamContents(feedlyManager.getGlobalSavedTag(), getMaxFetchitemCount(), ms, null);
-            }
-
-            @Nullable
-            private List<FeedlyContent> fakeCall() throws Exception {
-                try (InputStream is = getActivity().getAssets().open("sample/feedly.json")) {
-                    final JSONArray items = JSONUtils.jsonFromInputStream(is).getJSONArray("items");
-                    final ArrayList<FeedlyContent> list = new ArrayList<>(items.length());
-                    for (int i = 0; i < items.length(); i++) {
-                        list.add(new FeedlyContent(items.getJSONObject(i)));
-                    }
-                    return list;
-                }
-            }
-
-            protected void onPostExecute(List<FeedlyContent> posts) {
-                super.onPostExecute(null);
-                if (!hasError()) {
-                    adapter.clear();
-                    adapter.addAll(posts);
-                    adapter.sort();
-                    adapter.notifyDataSetChanged();
-                    scrollToPosition(0);
-
-                    refreshUI();
-                }
-            }
-        }.execute();
+                });
     }
+
+    @NonNull
+    private Callable<List<FeedlyContent>> callableFeedlyReader(final boolean deleteItemsIfAllowed) {
+        return new Callable<List<FeedlyContent>>() {
+            @Override
+            public List<FeedlyContent> call() throws Exception {
+                if (BuildConfig.DEBUG) {
+                    return fakeCall();
+                }
+                deleteItems(deleteItemsIfAllowed);
+                return readSavedContents();
+            }
+        };
+    }
+
+    private void setItems(final List<FeedlyContent> items) {
+        adapter.clear();
+        adapter.addAll(items);
+        adapter.sort();
+        adapter.notifyDataSetChanged();
+        scrollToPosition(0);
+
+        refreshUI();
+    }
+
+    private void deleteItems(final boolean deleteItemsIfAllowed) throws Exception {
+        if (deleteItemsIfAllowed && deleteOnRefresh()) {
+            List<String> idList = new ArrayList<>();
+            for (FeedlyContent fc : adapter.getUncheckedItems()) {
+                idList.add(fc.getId());
+            }
+            feedlyManager.markSaved(idList, false);
+        }
+    }
+
+    @Nullable
+    private List<FeedlyContent> readSavedContents() throws Exception {
+        long ms = System.currentTimeMillis() - getNewerThanHours() * ONE_HOUR_MILLIS;
+        return feedlyManager.getStreamContents(feedlyManager.getGlobalSavedTag(), getMaxFetchitemCount(), ms, null);
+    }
+
+    @Nullable
+    private List<FeedlyContent> fakeCall() throws Exception {
+        try (InputStream is = getActivity().getAssets().open("sample/feedly.json")) {
+            final JSONArray items = JSONUtils.jsonFromInputStream(is).getJSONArray("items");
+            final ArrayList<FeedlyContent> list = new ArrayList<>(items.length());
+            for (int i = 0; i < items.length(); i++) {
+                list.add(new FeedlyContent(items.getJSONObject(i)));
+            }
+            return list;
+        }
+    }
+
 
     @Override
     protected void refreshUI() {
@@ -221,30 +248,24 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
     }
 
     private void refreshToken() {
-        new AbsProgressIndicatorAsyncTask<Void, Void, Void>(getActivity(), getString(R.string.refresh_token)) {
-            @Override
-            protected Void doInBackground(Void... voidParams) {
-                try {
-                    final String accessToken = feedlyManager.refreshAccessToken(
-                            getString(R.string.FEEDLY_CLIENT_ID),
-                            getString(R.string.FEEDLY_CLIENT_SECRET));
-                    preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply();
-                } catch (Exception e) {
-                    setError(e);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                if (!hasError()) {
-                    feedlyManager.setAccessToken(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN)));
-                    refresh(true);
-                }
-            }
-        }.execute();
+        Single
+                .fromCallable(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        return feedlyManager.refreshAccessToken(
+                                getString(R.string.FEEDLY_CLIENT_ID),
+                                getString(R.string.FEEDLY_CLIENT_SECRET));
+                    }
+                })
+                .compose(photoShelfSwipe.<String>applySwipe())
+                .subscribe(new FeedlyObserver<String>() {
+                    @Override
+                    public void onSuccess(final String accessToken) {
+                        preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply();
+                        feedlyManager.setAccessToken(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken));
+                        refresh(true);
+                    }
+                });
     }
 
     private void saveSortSettings() {
@@ -264,7 +285,7 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.api_usage)
                 .setMessage(getString(R.string.feedly_api_calls_count, FeedlyRateLimit.instance.getApiCallsCount()) + "\n"
-                + getString(R.string.feedly_api_reset_limit, FeedlyRateLimit.instance.getApiResetLimitAsString()))
+                        + getString(R.string.feedly_api_reset_limit, FeedlyRateLimit.instance.getApiResetLimitAsString()))
                 .show();
     }
 
@@ -272,21 +293,21 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         final View settingsView = getActivity().getLayoutInflater().inflate(R.layout.saved_content_settings, null);
         fillSettingsView(settingsView);
         new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.settings)
-            .setView(settingsView)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    updateSettings(settingsView);
-                }
-            })
-            .setNegativeButton(R.string.cancel_title, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            })
-            .show();
+                .setTitle(R.string.settings)
+                .setView(settingsView)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        updateSettings(settingsView);
+                    }
+                })
+                .setNegativeButton(R.string.cancel_title, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                })
+                .show();
     }
 
     private void updateSettings(View view) {
@@ -320,28 +341,22 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         if (deleteOnRefresh()) {
             return;
         }
-        new AsyncTask<Void, Void, Void>() {
-            Exception error;
-
-            @Override
-            protected Void doInBackground(Void... voidParams) {
-                try {
-                    ArrayList<String> list = new ArrayList<>();
-                    list.add(adapter.getItem(position).getId());
-                    feedlyManager.markSaved(list, checked);
-                } catch (Exception e) {
-                    this.error = e;
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                if (this.error != null) {
-                    DialogUtils.showErrorDialog(getActivity(), this.error);
-                }
-            }
-        }.execute();
+        Single
+                .fromCallable(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        ArrayList<String> list = new ArrayList<>();
+                        list.add(adapter.getItem(position).getId());
+                        feedlyManager.markSaved(list, checked);
+                        return null;
+                    }
+                })
+                .compose(photoShelfSwipe.<Void>applySwipe())
+                .subscribe(new FeedlyObserver<Void>() {
+                    @Override
+                    public void onSuccess(Void voidParams) {
+                    }
+                });
     }
 
     private int getNewerThanHours() {
@@ -356,4 +371,33 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         return preferences.getInt(PREF_MAX_FETCH_ITEMS_COUNT, IDEFAULT_MAX_FETCH_ITEMS_COUNT);
     }
 
+    @NonNull
+    @Override
+    protected Snackbar makeSnake(@NonNull View view, @NonNull Throwable t) {
+        if (t instanceof TokenExpiredException) {
+            Snackbar snackbar = Snackbar.make(recyclerView, R.string.token_expired, Snackbar.LENGTH_INDEFINITE);
+            snackbar
+                    .setActionTextColor(ContextCompat.getColor(getActivity(), R.color.snack_error_color))
+                    .setAction(getResources().getString(R.string.refresh).toLowerCase(), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            refreshToken();
+                        }
+                    });
+            return snackbar;
+        }
+        return super.makeSnake(view, t);
+    }
+
+    abstract class FeedlyObserver<T> implements SingleObserver<T> {
+        @Override
+        public void onSubscribe(Disposable d) {
+            compositeDisposable.add(d);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            showSnackbar(makeSnake(recyclerView, t));
+        }
+    }
 }
