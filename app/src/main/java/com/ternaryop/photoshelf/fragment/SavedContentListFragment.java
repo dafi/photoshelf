@@ -263,6 +263,8 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
                     public void onSuccess(final String accessToken) {
                         preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply();
                         feedlyManager.setAccessToken(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken));
+                        // hide swipe otherwise refresh() exists immediatelly
+                        photoShelfSwipe.getSwipe().setRefreshingAndWaintingResult(false);
                         refresh(true);
                     }
                 });
