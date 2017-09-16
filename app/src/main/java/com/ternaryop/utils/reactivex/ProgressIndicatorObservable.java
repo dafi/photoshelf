@@ -45,7 +45,6 @@ public class ProgressIndicatorObservable {
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {
-                                System.out.println("ProgressIndicatorObservable.run doFinally");
                                 progressDialog.dismiss();
                             }
                         })
