@@ -37,9 +37,12 @@ import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter;
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick;
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe;
 import com.ternaryop.utils.JSONUtils;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 import org.json.JSONArray;
 
 import static com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter.SORT_TITLE_NAME;
@@ -343,20 +346,29 @@ public class SavedContentListFragment extends AbsPhotoShelfFragment implements O
         if (deleteOnRefresh()) {
             return;
         }
-        Single
-                .fromCallable(new Callable<Void>() {
+        Completable
+                .fromAction(new Action() {
                     @Override
-                    public Void call() throws Exception {
+                    public void run() throws Exception {
                         ArrayList<String> list = new ArrayList<>();
                         list.add(adapter.getItem(position).getId());
                         feedlyManager.markSaved(list, checked);
-                        return null;
                     }
                 })
-                .compose(photoShelfSwipe.<Void>applySwipe())
-                .subscribe(new FeedlyObserver<Void>() {
+                .compose(photoShelfSwipe.<Void>applyCompletableSwipe())
+                .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
-                    public void onSuccess(Void voidParams) {
+                    public void accept(Disposable d) throws Exception {
+                        compositeDisposable.add(d);
+                    }
+                })
+                .subscribe(new Action() {
+                    @Override
+                    public void run() throws Exception {}
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable t) throws Exception {
+                        showSnackbar(makeSnake(recyclerView, t));
                     }
                 });
     }

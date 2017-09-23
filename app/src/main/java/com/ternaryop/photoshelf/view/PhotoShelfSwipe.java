@@ -6,6 +6,9 @@ import android.view.View;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.CompletableTransformer;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.SingleTransformer;
@@ -47,6 +50,29 @@ public class PhotoShelfSwipe {
         return new SingleTransformer<T, T>() {
             @Override
             public SingleSource<T> apply(Single<T> upstream) {
+                return upstream
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnSubscribe(new Consumer<Disposable>() {
+                            @Override
+                            public void accept(Disposable disposable) throws Exception {
+                                swipeLayout.setRefreshingAndWaintingResult(true);
+                            }
+                        })
+                        .doFinally(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                swipeLayout.setRefreshingAndWaintingResult(false);
+                            }
+                        });
+            }
+        };
+    }
+
+    public <T> CompletableTransformer applyCompletableSwipe() {
+        return new CompletableTransformer() {
+            @Override
+            public CompletableSource apply(Completable upstream) {
                 return upstream
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
