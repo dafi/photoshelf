@@ -91,20 +91,12 @@ public class Tumblr {
         return API_PREFIX + "/blog/" + tumblrName + ".tumblr.com" + suffix;
     }
     
-    public void draftPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final Callback<Long> callback) {
-        createPhotoPost(tumblrName, uri, caption, tags, "draft", callback);
-    }
-
     public void draftPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags) {
         try {
             createPhotoPost(tumblrName, uri, caption, tags, "draft");
         } catch (JSONException e) {
             throw new TumblrException(e);
         }
-    }
-
-    public void publishPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final Callback<Long> callback) {
-        createPhotoPost(tumblrName, uri, caption, tags, "published", callback);
     }
 
     public void publishPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags) {
@@ -115,30 +107,6 @@ public class Tumblr {
         }
     }
     
-    protected void createPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final String state, final Callback<Long> callback) {
-        new AsyncTask<Void, Void, Long>() {
-            Exception error;
-            @Override
-            protected Long doInBackground(Void... voidParams) {
-                try {
-                    return createPhotoPost(tumblrName, uri, caption, tags, state);
-                } catch (Exception e) {
-                    error = e;
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Long postId) {
-                if (error == null) {
-                    callback.complete(postId);
-                } else {
-                    callback.failure(error);
-                }
-            }
-        }.execute();
-    }
-
     protected long createPhotoPost(final String tumblrName, final Uri uri, final String caption, final String tags, final String state) throws JSONException {
         String apiUrl = getApiUrl(tumblrName, "/post");
         HashMap<String, Object> params = new HashMap<>();

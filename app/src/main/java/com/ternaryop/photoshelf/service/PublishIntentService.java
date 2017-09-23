@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Pair;
@@ -190,12 +191,12 @@ public class PublishIntentService extends IntentService {
         return createNotification(contentText, getString(stringTickerId), subText, iconId, multipleLines);
     }
 
-    private static void startActionIntent(Context context,
-                                          Uri url,
-                                          String blogName,
-                                          String postTitle,
-                                          String postTags,
-                                          String publishAction) {
+    public static void startActionIntent(@NonNull Context context,
+                                         @NonNull Uri url,
+                                         @NonNull String blogName,
+                                         @NonNull String postTitle,
+                                         @NonNull String postTags,
+                                         @NonNull String publishAction) {
         Intent intent = new Intent(context, PublishIntentService.class);
         intent.putExtra(URL, url);
         intent.putExtra(BLOG_NAME, blogName);
@@ -204,22 +205,6 @@ public class PublishIntentService extends IntentService {
         intent.putExtra(ACTION, publishAction);
 
         context.startService(intent);
-    }
-
-    public static void startSaveAsDraftIntent(Context context,
-                                              Uri url,
-                                              String blogName,
-                                              String postTitle,
-                                              String postTags) {
-        startActionIntent(context, url, blogName, postTitle, postTags, PUBLISH_ACTION_DRAFT);
-    }
-
-    public static void startPublishIntent(Context context,
-                                          Uri url,
-                                          String blogName,
-                                          String postTitle,
-                                          String postTags) {
-        startActionIntent(context, url, blogName, postTitle, postTags, PUBLISH_ACTION_PUBLISH);
     }
 
     public static void startBirthdayListIntent(Context context,

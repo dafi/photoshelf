@@ -10,9 +10,5 @@
     <item
         android:id="@+id/parse_title_swap"
         android:title="@string/parse_title_swap" />
-    <item
-        android:id="@+id/block_ui"
-        android:title="@string/upload_immediately"
-        android:checkable="true" />
 
 </menu>

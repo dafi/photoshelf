@@ -72,7 +72,7 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
 
     protected void showEditDialog(final TumblrPhotoPost item, final ActionMode mode) {
         actionMode = mode;
-        TumblrPostDialog.newInstance(item, false, this).show(getFragmentManager(), "dialog");
+        TumblrPostDialog.newInstance(item, this).show(getFragmentManager(), "dialog");
     }
 
     @Override

@@ -8,7 +8,6 @@ import java.util.Set;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -56,7 +55,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     public static final String ARG_HTML_TITLE = "htmlTitle";
     public static final String ARG_SOURCE_TITLE = "sourceTitle";
     public static final String ARG_INITIAL_TAG_LIST = "initialTagList";
-    public static final String ARG_BLOCK_UI_WHILE_PUBLISH = "blockUIWhilePublish";
 
     private static final int NAME_ALREADY_EXISTS = 0;
     private static final int NAME_NOT_FOUND = 1;
@@ -69,7 +67,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     private TumblrPhotoPost photoPost;
     private TagCursorAdapter tagAdapter;
     private List<Uri> imageUrls;
-    private boolean blockUIWhilePublish;
     private String htmlTitle;
     private String sourceTitle;
     private List<String> initialTagList;
@@ -95,7 +92,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
 
-    public static TumblrPostDialog newInstance(TumblrPhotoPost photoPost, boolean blockUIWhilePublish, Fragment target) {
+    public static TumblrPostDialog newInstance(TumblrPhotoPost photoPost, Fragment target) {
         if (photoPost == null) {
             throw new IllegalArgumentException("photoPost is mandatory");
         }
@@ -103,7 +100,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
         Bundle args = new Bundle();
         args.putSerializable(ARG_PHOTO_POST, photoPost);
-        args.putBoolean(ARG_BLOCK_UI_WHILE_PUBLISH, blockUIWhilePublish);
         fragment.setArguments(args);
 
         fragment.setTargetFragment(target, 0);
@@ -169,7 +165,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.publish_post_overflow);
         toolbar.setOnMenuItemClickListener(this);
-        toolbar.getMenu().findItem(R.id.block_ui).setChecked(blockUIWhilePublish);
 
         postTitle = (EditText)view.findViewById(R.id.post_title);
         postTags = (MultiAutoCompleteTextView)view.findViewById(R.id.post_tags);
@@ -388,92 +383,28 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             case R.id.source_title:
                 fillWithSourceTitle();
                 return true;
-            case R.id.block_ui:
-                menuItem.setChecked(!menuItem.isChecked());
-                this.blockUIWhilePublish = menuItem.isChecked();
-                return true;
         }
         return false;
     }
 
     private final class OnClickPublishListener implements DialogInterface.OnClickListener {
-        private ProgressDialog progressDialog;
-
-        private final class PostCallback implements Callback<Long> {
-            public PostCallback (int max, boolean publish) {
-                progressDialog = new ProgressDialog(getActivity());
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                if (publish) {
-                    progressDialog.setMessage(getActivity().getString(R.string.publishing_post));
-                } else {
-                    progressDialog.setMessage(getActivity().getResources().getQuantityString(R.plurals.saving_post_in_draft, max, max));
-                }
-                progressDialog.setMax(max);
-                progressDialog.show();
-            }
-
-            @Override
-            public void failure(Exception ex) {
-                progressDialog.dismiss();
-                DialogUtils.showErrorDialog(getActivity(), ex);
-            }
-
-            @Override
-            public void complete(Long postId) {
-                progressDialog.incrementProgressBy(1);
-                if ((progressDialog.getProgress()) >= progressDialog.getMax()) {
-                    progressDialog.dismiss();
-                }
-            }
-        }
-
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            boolean publish = which == DialogInterface.BUTTON_NEUTRAL;
-            String selectedBlogName = (String) blogList.getSelectedItem();
+            final String selectedBlogName = (String) blogList.getSelectedItem();
             appSupport.setSelectedBlogName(selectedBlogName);
 
-            if (blockUIWhilePublish) {
-                createPostsBlockedUI(publish, selectedBlogName, getImageUrls(), getPostTitle(), getPostTags());
-            } else {
-                createPostsWithService(publish, selectedBlogName, getImageUrls(), getPostTitle(), getPostTags());
-            }
+            createPosts(which == DialogInterface.BUTTON_NEUTRAL, selectedBlogName, getImageUrls(), getPostTitle(), getPostTags());
         }
 
-        private void createPostsWithService(boolean publish, String selectedBlogName, List<Uri> urls, String postTitle, String postTags) {
-            if (publish) {
-                for (Uri url : urls) {
-                    PublishIntentService.startPublishIntent(getActivity(),
-                            url,
-                            selectedBlogName,
-                            postTitle,
-                            postTags);
-                }
-            } else {
-                for (Uri url : urls) {
-                    PublishIntentService.startSaveAsDraftIntent(getActivity(),
-                            url,
-                            selectedBlogName,
-                            postTitle,
-                            postTags);
-                }
-            }
-        }
-
-        private void createPostsBlockedUI(boolean publish, String selectedBlogName, List<Uri> urls, String postTitle, String postTags) {
-            final PostCallback callback = new PostCallback(urls.size(), publish);
-            if (publish) {
-                for (Uri url : urls) {
-                    Tumblr.getSharedTumblr(getActivity()).publishPhotoPost(selectedBlogName,
-                            url, postTitle, postTags,
-                            callback);
-                }
-            } else {
-                for (Uri url : urls) {
-                    Tumblr.getSharedTumblr(getActivity()).draftPhotoPost(selectedBlogName,
-                            url, postTitle, postTags,
-                            callback);
-                }
+        private void createPosts(boolean publish, String selectedBlogName, List<Uri> urls, String postTitle, String postTags) {
+            final String action = publish ? PublishIntentService.PUBLISH_ACTION_PUBLISH : PublishIntentService.PUBLISH_ACTION_DRAFT;
+            for (Uri url : urls) {
+                PublishIntentService.startActionIntent(getActivity(),
+                        url,
+                        selectedBlogName,
+                        postTitle,
+                        postTags,
+                        action);
             }
         }
     }
@@ -531,13 +462,11 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             this.htmlTitle = photoPost.getCaption();
             this.sourceTitle = photoPost.getCaption();
             setInitialTagList(photoPost.getTags());
-            blockUIWhilePublish = args.getBoolean(ARG_BLOCK_UI_WHILE_PUBLISH);
         } else {
             this.imageUrls = args.getParcelableArrayList(ARG_IMAGE_URLS);
             this.htmlTitle = args.getString(ARG_HTML_TITLE);
             this.sourceTitle = args.getString(ARG_SOURCE_TITLE);
             setInitialTagList(args.getStringArrayList(ARG_INITIAL_TAG_LIST));
-            blockUIWhilePublish = args.getBoolean(ARG_BLOCK_UI_WHILE_PUBLISH);
         }
     }
 

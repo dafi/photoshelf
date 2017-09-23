@@ -225,7 +225,6 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
             Bundle args = new Bundle();
 
             args.putParcelableArrayList(TumblrPostDialog.ARG_IMAGE_URLS, new ArrayList<>(imageUriList));
-            args.putBoolean(TumblrPostDialog.ARG_BLOCK_UI_WHILE_PUBLISH, false);
             args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml());
             args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, parsableTitle);
 
