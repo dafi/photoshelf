@@ -69,6 +69,12 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name="com.ternaryop.photoshelf.service.PublishIntentService$ClearBirthdayNotificationBroadcastReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.ternaryop.photoshelf.birthday.clear"/>
+            </intent-filter>
+        </receiver>
+
         <!-- Dropbox -->
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
