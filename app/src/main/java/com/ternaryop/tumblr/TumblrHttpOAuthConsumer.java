@@ -216,7 +216,7 @@ public class TumblrHttpOAuthConsumer {
 
     private void checkResult(JSONObject json) throws JSONException {
         if (!json.has("meta")) {
-            throw new JSONException("Invalid tumblr response, meta not found");
+            throw new TumblrException("Invalid tumblr response, meta not found");
         }
         int status = json.getJSONObject("meta").getInt("status");
         if (status != 200 && status != 201) {
@@ -224,12 +224,17 @@ public class TumblrHttpOAuthConsumer {
             if (errorMessage == null) {
                 errorMessage = json.getJSONObject("meta").getString("msg");
             }
-            throw new JSONException(errorMessage);
+            throw new TumblrException(errorMessage);
         }
     }
 
     private String getErrorFromResponse(JSONObject json) throws JSONException {
         if (json.has("response")) {
+            final JSONArray array = json.optJSONArray("response");
+            // for example when an invalid id is passed the returned response contains an empty array
+            if (array != null && array.length() == 0) {
+                return null;
+            }
             JSONObject response = json.getJSONObject("response");
             if (response.has("errors")) {
                 JSONArray errors = response.getJSONArray("errors");
