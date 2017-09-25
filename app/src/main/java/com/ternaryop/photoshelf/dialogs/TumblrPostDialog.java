@@ -1,9 +1,9 @@
 package com.ternaryop.photoshelf.dialogs;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -13,13 +13,13 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,13 +40,18 @@ import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.photoshelf.service.PublishIntentService;
-import com.ternaryop.tumblr.AbsCallback;
-import com.ternaryop.tumblr.Blog;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.DialogUtils;
-import org.json.JSONObject;
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuItemClickListener {
 
@@ -73,7 +78,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     private ColorStateList defaultPostTagsColor;
     private Drawable defaultPostTagsBackground;
 
-    protected AsyncTask spellingTask;
+    protected CompositeDisposable compositeDisposable;
 
     public static TumblrPostDialog newInstance(Bundle args, Fragment target) {
         TumblrPostDialog fragment = new TumblrPostDialog();
@@ -115,6 +120,14 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         appSupport = new AppSupport(getActivity());
         decodeArguments();
         setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_PhotoShelf_Dialog);
+
+        compositeDisposable = new CompositeDisposable();
+    }
+
+    @Override
+    public void onDestroy() {
+        compositeDisposable.clear();
+        super.onDestroy();
     }
 
     @Override
@@ -126,9 +139,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
                 .setNegativeButton(R.string.cancel_title, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (spellingTask != null) {
-                            spellingTask.cancel(true);
-                        }
+                        compositeDisposable.clear();
                     }
                 });
         if (photoPost == null) {
@@ -158,7 +169,9 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     public void onResume() {
         super.onResume();
         // Dimensions defined on xml layout are not used so we set them here (it works only if called inside onResume)
-        getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        if (getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
     }
 
     private void setupUI(View view) {
@@ -238,52 +251,49 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     private void searchMisspelledName(final String name) {
-        if (spellingTask != null) {
-            return;
-        }
-        spellingTask = new AsyncTask<Void, Void, Void>() {
-            private int nameType;
-            private String correctedName;
+        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
-            @Override
-            protected void onPreExecute() {
-                ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                try {
-                    final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
-                            .getPostCountByTag(name, appSupport.getSelectedBlogName());
-                    if (count == 0) {
-                        correctedName = new GoogleCustomSearchClient(
-                                getString(R.string.GOOGLE_CSE_APIKEY),
-                                getString(R.string.GOOGLE_CSE_CX))
-                                .getCorrectedQuery(name);
-                        nameType = correctedName == null ? NAME_NOT_FOUND : NAME_MISSPELLED;
-                    } else {
-                        nameType = NAME_ALREADY_EXISTS;
+        Single
+                .fromCallable(new Callable<Pair<Integer, String>>() {
+                    @Override
+                    public Pair<Integer, String> call() throws Exception {
+                        final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
+                                .getPostCountByTag(name, appSupport.getSelectedBlogName());
+                        if (count > 0) {
+                            return Pair.create(NAME_ALREADY_EXISTS, name);
+                        }
+                        String correctedName = new GoogleCustomSearchClient(
+                                    getString(R.string.GOOGLE_CSE_APIKEY),
+                                    getString(R.string.GOOGLE_CSE_CX))
+                                    .getCorrectedQuery(name);
+                        if (correctedName == null) {
+                            return Pair.create(NAME_NOT_FOUND, name);
+                        }
+                        return Pair.create(NAME_MISSPELLED, correctedName);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    }
+                })
+                .subscribe(new SingleObserver<Pair<Integer, String>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
 
-            @Override
-            protected void onPostExecute(Void v) {
-                spellingTask = null;
-                if (!isRunning()) {
-                    return;
-                }
-                highlightTagName(nameType, correctedName);
-                ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-            }
+                    @Override
+                    public void onSuccess(Pair<Integer, String> mispelledInfo) {
+                        highlightTagName(mispelledInfo.first, mispelledInfo.second);
+                    }
 
-            public boolean isRunning() {
-                return !isCancelled() && getStatus().equals(AsyncTask.Status.RUNNING);
-            }
-        }.execute();
+                    @Override
+                    public void onError(Throwable e) {}
+                });
     }
 
     private void highlightTagName(int nameType, String correctedName) {
@@ -349,26 +359,27 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
-        Tumblr.getSharedTumblr(getActivity()).getBlogList(new Callback<Blog[]>() {
+        appSupport.clearBlogList();
+        appSupport.fetchBlogNames(getActivity())
+                .subscribe(new SingleObserver<List<String>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
 
-            @Override
-            public void complete(Blog[] result) {
-                List<String> blogNames = new ArrayList<>(result.length);
-                for (Blog blog : result) {
-                    blogNames.add(blog.getName());
-                }
-                appSupport.setBlogList(blogNames);
-                fillBlogList(blogNames);
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-            }
+                    @Override
+                    public void onSuccess(List<String> blogNames) {
+                        fillBlogList(blogNames);
+                        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
+                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    }
 
-            @Override
-            public void failure(Exception e) {
-                dismiss();
-                DialogUtils.showErrorDialog(getActivity(), e);
-            }
-        });
+                    @Override
+                    public void onError(Throwable e) {
+                        dismiss();
+                        DialogUtils.showErrorDialog(getActivity(), e);
+                    }
+                });
     }
 
     @Override
@@ -414,18 +425,31 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         newValues.put("id", String.valueOf(photoPost.getPostId()));
         newValues.put("caption", getPostTitle());
         newValues.put("tags", getPostTags());
+        final String selectedBlogName = appSupport.getSelectedBlogName();
 
-        Tumblr.getSharedTumblr(getActivity()).editPost(appSupport.getSelectedBlogName(), newValues, new AbsCallback(this, R.string.generic_error) {
-
-            @Override
-            public void complete(JSONObject result) {
-                newValues.put("tumblrName", appSupport.getSelectedBlogName());
-                DBHelper.getInstance(getActivity()).getPostDAO().update(newValues, getActivity());
-                if (getTargetFragment() instanceof PostListener) {
-                    ((PostListener) getTargetFragment()).onEditDone(TumblrPostDialog.this, photoPost);
+        final Completable completable = Completable
+                .fromAction(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Tumblr.getSharedTumblr(getActivity()).editPost(selectedBlogName, newValues);
+                        newValues.put("tumblrName", selectedBlogName);
+                        DBHelper.getInstance(getActivity()).getPostDAO().update(newValues, getActivity());
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+        if (getTargetFragment() instanceof PostListener) {
+            ((PostListener) getTargetFragment()).onEditDone(this, photoPost, completable);
+        } else {
+            completable.subscribe(new Action() {
+                @Override
+                public void run() throws Exception {
                 }
-            }
-        });
+            }, new Consumer<Throwable>() {
+                @Override
+                public void accept(Throwable throwable) throws Exception {}
+            });
+        }
     }
 
     private void parseTitle(boolean swapDayMonth) {
@@ -471,6 +495,6 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     public interface PostListener {
-        void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post);
+        void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post, Completable completable);
     }
 }

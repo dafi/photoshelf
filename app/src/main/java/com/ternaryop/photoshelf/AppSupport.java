@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,8 +14,10 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 
 import com.ternaryop.tumblr.Blog;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class AppSupport {
     private static final String SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf";
@@ -53,12 +56,12 @@ public class AppSupport {
         Collections.sort(list);
         return list;
     }
-    
-    public void setBlogList(List<String> blogNames) {
-        setBlogList(new HashSet<>(blogNames));
+
+    public void clearBlogList() {
+        preferences.edit().remove(PREF_BLOG_NAMES).apply();
     }
 
-    public void setBlogList(Set<String> blogNames) {
+    private void setBlogList(Set<String> blogNames) {
         preferences.edit().putStringSet(PREF_BLOG_NAMES, blogNames).apply();
     }
 
@@ -71,46 +74,44 @@ public class AppSupport {
         return context;
     }
 
-    public void fetchBlogNames(final Context context, final AppSupportCallback callback) {
-        List<String> blogList = getBlogList();
+    public Single<List<String>> fetchBlogNames(final Context context) {
+        final List<String> blogList = getBlogList();
         if (blogList != null) {
-            callback.onComplete(this, null);
-            return;
+            return Single.fromCallable(new Callable<List<String>>() {
+                @Override
+                public List<String> call() throws Exception {
+                    return blogList;
+                }
+            });
         }
-        Tumblr.getSharedTumblr(context).getBlogList(new Callback<Blog[]>() {
 
-            @Override
-            public void complete(Blog[] blogs) {
-                HashSet<String> blogNames = new HashSet<>(blogs.length);
-                String primaryBlog = null;
-                for (Blog blog : blogs) {
-                    blogNames.add(blog.getName());
-                    if (blog.isPrimary()) {
-                        primaryBlog = blog.getName();
+        return Single
+                .fromCallable(new Callable<List<String>>() {
+                    @Override
+                    public List<String> call() throws Exception {
+                        return setupBlogs(Tumblr.getSharedTumblr(context).getBlogList());
                     }
-                }
-                setBlogList(blogNames);
-                if (primaryBlog != null) {
-                    setSelectedBlogName(primaryBlog);
-                }
-                if (callback != null) {
-                    callback.onComplete(AppSupport.this, null);
-                }
-            }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
 
-            @Override
-            public void failure(Exception e) {
-                if (callback != null) {
-                    callback.onComplete(AppSupport.this, e);
-                }
+    private List<String> setupBlogs(Blog[] blogs) {
+        HashSet<String> blogNames = new HashSet<>(blogs.length);
+        String primaryBlog = null;
+        for (Blog blog : blogs) {
+            blogNames.add(blog.getName());
+            if (blog.isPrimary()) {
+                primaryBlog = blog.getName();
             }
-        });
+        }
+        setBlogList(blogNames);
+        if (primaryBlog != null) {
+            setSelectedBlogName(primaryBlog);
+        }
+        return getBlogList();
     }
-    
-    public interface AppSupportCallback {
-        void onComplete(AppSupport appSupport, Exception error);
-    }
-    
+
     public long getLastBirthdayShowTime() {
         return preferences.getLong(LAST_BIRTHDAY_SHOW_TIME, 0);
     }

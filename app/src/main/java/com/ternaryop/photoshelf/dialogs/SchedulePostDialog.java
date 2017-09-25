@@ -17,9 +17,11 @@ import android.widget.TimePicker;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
-import com.ternaryop.tumblr.AbsCallback;
 import com.ternaryop.tumblr.Tumblr;
-import org.json.JSONObject;
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.schedulers.Schedulers;
 
 public class SchedulePostDialog extends Dialog implements View.OnClickListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
 
@@ -98,17 +100,25 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
     }
 
     private void schedulePost() {
-        Tumblr.getSharedTumblr(getContext())
-        .schedulePost(blogName, item, scheduleDateTime.getTimeInMillis(), new AbsCallback(this, R.string.parsing_error) {
-
-            @Override
-            public void complete(JSONObject result) {
-                if (onPostSchedule != null) {
-                    onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime);
-                }
-                dismiss();
-            }
-        });
+        final Completable completable = Completable
+                .fromAction(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Tumblr.getSharedTumblr(getContext())
+                                .schedulePost(blogName, item, scheduleDateTime.getTimeInMillis());
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        dismiss();
+                    }
+                });
+        if (onPostSchedule != null) {
+            onPostSchedule.onPostScheduled(item.getPostId(), scheduleDateTime, completable);
+        }
     }
 
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -126,6 +136,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
     }
     
     public interface onPostScheduleListener {
-        void onPostScheduled(long id, Calendar scheduledDateTime);
+        @SuppressWarnings("UnusedParameters")
+        void onPostScheduled(long id, Calendar scheduledDateTime, Completable completable);
     }
 }

@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.activity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Fragment;
@@ -13,7 +12,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.ternaryop.photoshelf.AppSupport;
-import com.ternaryop.photoshelf.AppSupport.AppSupportCallback;
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter;
@@ -35,8 +33,6 @@ import com.ternaryop.photoshelf.fragment.ScheduledListFragment;
 import com.ternaryop.photoshelf.fragment.TagListFragment;
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment;
 import com.ternaryop.tumblr.AuthenticationCallback;
-import com.ternaryop.tumblr.Blog;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity;
@@ -45,6 +41,8 @@ import com.ternaryop.utils.drawer.adapter.DrawerItem;
 import com.ternaryop.utils.drawer.counter.CountChangedListener;
 import com.ternaryop.utils.drawer.counter.CountProvider;
 import com.ternaryop.utils.drawer.counter.CountRetriever;
+import io.reactivex.SingleObserver;
+import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends DrawerActionBarActivity implements AuthenticationCallback, FragmentActivityStatus {
     private static final String LOADER_PREFIX_AVATAR = "avatar";
@@ -148,7 +146,7 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
             DrawerAdapter adapter = getAdapter();
             for (int i = 0; i < adapter.getCount(); i++) {
                 DrawerItem item = adapter.getItem(i);
-                if (item.getCountRetriever() != null) {
+                if (item != null && item.getCountRetriever() != null) {
                     ((AbsCountRetriever)item.getCountRetriever()).setBlogName(blogName);
                 }
             }
@@ -161,7 +159,23 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
 
     private void enableUI(boolean enabled) {
         if (enabled) {
-            fetchBlogNames();
+            appSupport.fetchBlogNames(this)
+                    .subscribe(new SingleObserver<List<String>>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onSuccess(List<String> blogNames) {
+                            fillBlogList(blogNames);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DialogUtils.showErrorDialog(getApplicationContext(), e);
+                        }
+                    });
         }
         getDrawerToggle().setDrawerIndicatorEnabled(enabled);
         getAdapter().setSelectionEnabled(enabled);
@@ -176,12 +190,23 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
                     Toast.LENGTH_LONG)
                     .show();
             // after authentication cache blog names
-            appSupport.fetchBlogNames(this, new AppSupportCallback() {
-                @Override
-                public void onComplete(AppSupport appSupport, Exception error) {
-                    enableUI(token != null && tokenSecret != null);
-                }
-            });
+            appSupport.fetchBlogNames(this)
+                    .subscribe(new SingleObserver<List<String>>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onSuccess(List<String> value) {
+                            enableUI(token != null && tokenSecret != null);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DialogUtils.showErrorDialog(MainActivity.this, e);
+                        }
+                    });
         } else {
             DialogUtils.showErrorDialog(this, error);
         }
@@ -213,25 +238,6 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
             DialogUtils.showErrorDialog(getApplication(), e);
             e.printStackTrace();
         }
-    }
-
-    private void fetchBlogNames() {
-        Tumblr.getSharedTumblr(this).getBlogList(new Callback<Blog[]>() {
-
-            @Override
-            public void complete(Blog[] result) {
-                List<String> blogNames = new ArrayList<String>(result.length);
-                for (Blog blog : result) {
-                    blogNames.add(blog.getName());
-                }
-                appSupport.setBlogList(blogNames);
-                fillBlogList(blogNames);
-            }
-
-            @Override
-            public void failure(Exception e) {
-            }
-        });
     }
 
     private void fillBlogList(List<String> blogNames) {

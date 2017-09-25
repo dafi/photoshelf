@@ -37,9 +37,14 @@ import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
+import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.TaskWithUI;
 import com.ternaryop.widget.ProgressHighlightViewLayout;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
+import io.reactivex.Completable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
     private static final int TAG_NAVIGATOR_DIALOG = 1;
@@ -245,18 +250,39 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                 findScheduleTime(),
                 new onPostScheduleListener() {
                     @Override
-                    public void onPostScheduled(long id, Calendar scheduledDateTime) {
-                        colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_schedule_bg));
-                        lastScheduledDate = (Calendar) scheduledDateTime.clone();
-                        photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
-                        draftPostHelper.getDraftCache().deleteItem(item);
-                        refreshUI();
-                        if (mode != null) {
-                            mode.finish();
-                        }
+                    public void onPostScheduled(final long id, final Calendar scheduledDateTime, final Completable completable) {
+                        completable
+                                .doOnSubscribe(new Consumer<Disposable>() {
+                                    @Override
+                                    public void accept(Disposable d) throws Exception {
+                                        compositeDisposable.add(d);
+                                    }
+                                })
+                                .subscribe(new Action() {
+                                    @Override
+                                    public void run() throws Exception {
+                                        onScheduleRefreshUI(item, mode, scheduledDateTime);
+                                    }
+                                }, new Consumer<Throwable>() {
+                                    @Override
+                                    public void accept(Throwable t) throws Exception {
+                                        DialogUtils.showErrorDialog(getActivity(), t);
+                                    }
+                                });
                     }
                 });
         dialog.show();
+    }
+
+    private void onScheduleRefreshUI(final PhotoShelfPost item, final ActionMode mode, Calendar scheduledDateTime) {
+        colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_schedule_bg));
+        lastScheduledDate = (Calendar) scheduledDateTime.clone();
+        photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
+        draftPostHelper.getDraftCache().deleteItem(item);
+        refreshUI();
+        if (mode != null) {
+            mode.finish();
+        }
     }
 
     private Calendar findScheduleTime() {

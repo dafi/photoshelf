@@ -16,6 +16,7 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.TaskWithUI;
+import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 
 public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPostDialog.PostListener {
@@ -76,7 +77,7 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
     }
 
     @Override
-    public void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post) {
+    public void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post, Completable completable) {
         post.setTags(dialog.getPostTags());
         post.setCaption(dialog.getPostTitle());
         refreshUI();

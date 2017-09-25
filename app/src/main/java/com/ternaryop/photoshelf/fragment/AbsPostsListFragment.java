@@ -43,6 +43,10 @@ import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.drawer.counter.CountChangedListener;
 import com.ternaryop.utils.drawer.counter.CountProvider;
+import io.reactivex.Completable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
     protected static final int POST_ACTION_PUBLISH = 1;
@@ -233,8 +237,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String url = arrayAdapter.getItem(which).getUrl();
-                        ImageViewerActivity.startImageViewer(getActivity(), url, post);
+                        final TumblrAltSize item = arrayAdapter.getItem(which);
+                        if (item != null) {
+                            ImageViewerActivity.startImageViewer(getActivity(), item.getUrl(), post);
+                        }
                     }
                 });
         builder.show();
@@ -556,8 +562,25 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     @Override
-    public void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post) {
-        super.onEditDone(dialog, post);
-        onPostAction(post, POST_ACTION_EDIT, POST_ACTION_OK);
+    public void onEditDone(final TumblrPostDialog dialog, final TumblrPhotoPost photoPost, final Completable completable) {
+        completable
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable d) throws Exception {
+                        compositeDisposable.add(d);
+                    }
+                })
+                .subscribe(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        AbsPostsListFragment.super.onEditDone(dialog, photoPost, completable);
+                        onPostAction(photoPost, POST_ACTION_EDIT, POST_ACTION_OK);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable t) throws Exception {
+                        DialogUtils.showErrorDialog(getActivity(), t);
+                    }
+                });
     }
 }
