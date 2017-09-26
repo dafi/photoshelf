@@ -161,7 +161,7 @@ public class DraftPostHelper {
      * Expired scheduled posts are removed
      * @param tagsForDraftPosts on return contains value
      * @param queuedPosts on return contains value
-     * @throws Exception 
+     * @throws Exception the first exception raised during getting items
      */
     public void getDraftAndQueueTags(
             final HashMap<String, List<TumblrPost> > tagsForDraftPosts,

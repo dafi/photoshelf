@@ -15,7 +15,7 @@ public class HtmlDocumentSupport {
      * Open connection using the DESKTOP_USER_AGENT
      * @param url the url to open
      * @return the connection
-     * @throws IOException
+     * @throws IOException when open fails
      */
     public static HttpURLConnection openConnection(String url) throws IOException {
         HttpURLConnection connection;
