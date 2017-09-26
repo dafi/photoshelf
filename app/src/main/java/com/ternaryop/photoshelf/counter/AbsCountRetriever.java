@@ -51,7 +51,7 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
     public void updateCount(final TextView textView) {
         // if available use the cached value
         if (lastCount != null) {
-            textView.setText(String.format("%d", lastCount));
+            textView.setText(String.valueOf(lastCount));
             textView.setVisibility(View.VISIBLE);
             return;
         }
@@ -76,7 +76,7 @@ public abstract class AbsCountRetriever implements CountRetriever, CountChangedL
                     textView.setVisibility(View.GONE);
                 } else {
                     lastCount = count;
-                    textView.setText(String.format("%d", count));
+                    textView.setText(String.valueOf(count));
                     textView.setVisibility(View.VISIBLE);
                 }
             }
