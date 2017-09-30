@@ -1,10 +1,8 @@
 package com.ternaryop.utils.reactivex;
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -24,13 +22,7 @@ public class ProgressIndicatorObservable {
     private ProgressIndicatorObservable() {
     }
 
-    public static <T> ObservableTransformer<T, T> apply(@NonNull Context context, @StringRes final int titleId, final int max) {
-        return apply(context, context.getResources().getString(titleId), max);
-    }
-
-    public static <T> ObservableTransformer<T, T> apply(@NonNull Context context, final String title, final int max) {
-        final ProgressDialog progressDialog = new ProgressDialog(context);
-
+    public static <T> ObservableTransformer<T, T> apply(@NonNull final ProgressBar progressBar, final int max) {
         // TODO Use Observable.using instead of doFinally (doOnTerminate isn't called when take() is used)
         // https://github.com/tranngoclam/rx-progress-dialog/blob/master/library/src/main/java/io/github/lamtran/rpd/RxProgressDialog.java
         // https://github.com/ReactiveX/RxJava/issues/3124#issuecomment-126210874
@@ -45,37 +37,28 @@ public class ProgressIndicatorObservable {
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {
-                                progressDialog.dismiss();
+                                progressBar.setVisibility(View.GONE);
                             }
                         })
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
-                                show(progressDialog, title, max, disposable);
+                                show(progressBar, max);
                             }
                         })
                         .doOnNext(new Consumer<T>() {
                             @Override
                             public void accept(T obj) throws Exception {
-                                progressDialog.incrementProgressBy(1);
+                                progressBar.incrementProgressBy(1);
                             }
                         });
             }
         };
     }
 
-    protected static void show(final ProgressDialog progressDialog, final String title, final int max, final Disposable disposable) {
-        progressDialog.setMessage(title);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(max);
-        progressDialog.show();
-        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                if (disposable != null && !disposable.isDisposed()) {
-                    disposable.dispose();
-                }
-            }
-        });
+    protected static void show(final ProgressBar progressBar, final int max) {
+        progressBar.setProgress(0);
+        progressBar.setMax(max);
+        progressBar.setVisibility(View.VISIBLE);
     }
 }

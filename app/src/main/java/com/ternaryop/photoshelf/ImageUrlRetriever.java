@@ -10,6 +10,7 @@ import java.util.List;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.widget.ProgressBar;
 
 import com.ternaryop.photoshelf.extractor.ImageExtractorManager;
 import com.ternaryop.photoshelf.extractor.ImageGallery;
@@ -27,10 +28,12 @@ import io.reactivex.schedulers.Schedulers;
 public class ImageUrlRetriever {
     private final Context context;
     private final ImageExtractorManager imageExtractorManager;
+    private final ProgressBar progressBar;
 
-    public ImageUrlRetriever(@NonNull Context context) {
+    public ImageUrlRetriever(@NonNull Context context, @NonNull ProgressBar progressBar) {
         this.context = context;
         this.imageExtractorManager = new ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN));
+        this.progressBar = progressBar;
     }
 
     public Observable<ImageGallery> readImageGallery(@NonNull final String url) {
@@ -42,8 +45,7 @@ public class ImageUrlRetriever {
     public Observable<Uri> retrieve(@NonNull final List<ImageInfo> list, final boolean useFile) {
         return retriveUrlsObservable(list, useFile)
                 .compose(ProgressIndicatorObservable.<Uri>apply( // cast needed, see http://blog.danlew.net/2015/03/02/dont-break-the-chain/ "Update 3/11/2015"
-                        context,
-                        R.string.image_retriever_title,
+                        progressBar,
                         list.size()));
     }
 

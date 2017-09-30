@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
@@ -63,7 +64,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
         imagePickerAdapter = new ImagePickerAdapter(getActivity());
         imagePickerAdapter.setOnPhotoBrowseClick(this);
         imagePickerAdapter.setEmptyView(progressHighlightViewLayout);
-        imageUrlRetriever = new ImageUrlRetriever(getActivity());
+        imageUrlRetriever = new ImageUrlRetriever(getActivity(), (ProgressBar) rootView.findViewById(R.id.progressbar));
 
         RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.image_picker_grid_width));
         gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
@@ -80,6 +81,12 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         openUrl(getTextWithUrl());
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        compositeDisposable.clear();
     }
 
     private String getTextWithUrl() {
@@ -305,7 +312,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
         if (actionMode == null) {
             actionMode = getActivity().startActionMode(this);
         }
-        imagePickerAdapter.getSelection().toggle(position);
+        updateSelection(position);
     }
 
     private void updateSelection(int position) {
