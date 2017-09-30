@@ -237,7 +237,6 @@ public class PublishIntentService extends IntentService {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (NOTIFICATION_BIRTHDAY_CLEAR_ACTION.equals(intent.getAction())) {
-                System.out.println("************************************************************************************** ClearBirthdaysNotificationBroadcastReceiver.onReceive ");
                 birthdaysContentLines.clear();
             }
         }
