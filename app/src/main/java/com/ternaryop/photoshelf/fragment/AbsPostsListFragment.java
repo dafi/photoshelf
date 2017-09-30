@@ -460,7 +460,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         if (actionMode == null) {
             actionMode = getActivity().startActionMode(this);
         }
-        photoAdapter.getSelection().toggle(position);
+        updateSelection(position);
     }
 
     private void handleClickedThumbnail(int position) {
