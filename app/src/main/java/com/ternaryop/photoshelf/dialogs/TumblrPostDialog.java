@@ -277,7 +277,11 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
                 .doFinally(new Action() {
                     @Override
                     public void run() throws Exception {
-                        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                        final AlertDialog dialog = (AlertDialog) getDialog();
+                        // protect against NPE because inside onDestroy the dialog is already null
+                        if (dialog != null) {
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                        }
                     }
                 })
                 .subscribe(new SingleObserver<Pair<Integer, String>>() {
