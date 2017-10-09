@@ -285,23 +285,35 @@ public class Tumblr {
     }
 
     public List<TumblrPost> getPublicPosts(final String tumblrName, Map<String, String> params) {
-        String apiUrl = getApiUrl(tumblrName, "/posts");
-        
+        String apiUrl = getApiUrl(tumblrName, "/posts" + getPostTypeAsUrlPath(params));
+
         Map<String, String> modifiedParams = new HashMap<>(params);
-        modifiedParams.put("base-hostname", tumblrName + ".tumblr.com");
-        modifiedParams.put("api_key", consumer.getConsumerKey());
+        modifiedParams.remove("type");
 
         try {
-            JSONObject json = consumer.jsonFromGet(apiUrl, modifiedParams);
+            JSONObject json = consumer.publicJsonFromGet(apiUrl, modifiedParams);
             JSONArray jsonArray = json.getJSONObject("response").getJSONArray("posts");
             ArrayList<TumblrPost> list = new ArrayList<>();
             for (int i = 0; i < jsonArray.length(); i++) {
                 list.add(build(jsonArray.getJSONObject(i)));
             }
             return list;
-        } catch (Exception e) {
+        } catch (JSONException e) {
             throw new TumblrException(e);
         }
+    }
+
+    /**
+     * Return the post type contained into params (if any) prepended by "/" url path separator
+     * @param params API params
+     * @return the "/" + type or empty string if not present
+     */
+    private String getPostTypeAsUrlPath(Map<String, String> params) {
+        String type = params.get("type");
+        if (type == null || type.trim().isEmpty()) {
+            return "";
+        }
+        return "/" + type;
     }
 
     public TumblrFollowers getFollowers(final String tumblrName, final Map<String, String> params, final TumblrFollowers followers) {

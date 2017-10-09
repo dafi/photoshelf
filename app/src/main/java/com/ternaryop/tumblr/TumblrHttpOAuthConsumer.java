@@ -196,25 +196,39 @@ public class TumblrHttpOAuthConsumer {
 
     public JSONObject jsonFromGet(String url, Map<String, ?> params) {
         try {
-            JSONObject json = JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getStream());
-            checkResult(json);
-            return json;
-        } catch (Exception e) {
-            throw new TumblrException(e);
-        }
-    }    
-
-    public JSONObject jsonFromPost(String url, Map<String, ?> params) {
-        try {
-            JSONObject json = JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getStream());
-            checkResult(json);
-            return json;
+            return checkResult(JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).getStream()));
         } catch (Exception e) {
             throw new TumblrException(e);
         }
     }
 
-    private void checkResult(JSONObject json) throws JSONException {
+    public JSONObject jsonFromPost(String url, Map<String, ?> params) {
+        try {
+            return checkResult(JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).getStream()));
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
+    }
+
+    /**
+     * Do not involve signed oAuth call, this is used to make public tumblr API requests
+     * @param url the public url
+     * @param params query parameters
+     * @return the json
+     */
+    public JSONObject publicJsonFromGet(final String url, final Map<String, ?> params) {
+        try {
+            StringBuilder sbUrl = new StringBuilder(url + "?api_key=" + getConsumerKey());
+            for (Map.Entry<String, ?> e : params.entrySet()) {
+                sbUrl.append("&").append(e.getKey()).append("=").append(e.getValue());
+            }
+            return checkResult(JSONUtils.jsonFromUrl(sbUrl.toString()));
+        } catch (Exception e) {
+            throw new TumblrException(e);
+        }
+    }
+
+    private JSONObject checkResult(JSONObject json) throws JSONException {
         if (!json.has("meta")) {
             throw new TumblrException("Invalid tumblr response, meta not found");
         }
@@ -226,6 +240,7 @@ public class TumblrHttpOAuthConsumer {
             }
             throw new TumblrException(errorMessage);
         }
+        return json;
     }
 
     private String getErrorFromResponse(JSONObject json) throws JSONException {
