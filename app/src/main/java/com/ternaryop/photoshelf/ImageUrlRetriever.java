@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.URI;
 import java.util.List;
 
@@ -78,12 +77,12 @@ public class ImageUrlRetriever {
                 });
     }
 
-    private ObservableSource<Uri> makeUriObservable(ImageInfo imageInfo, boolean useFile) throws Exception {
+    private ObservableSource<Uri> makeUriObservable(ImageInfo imageInfo, boolean useFile) {
         try {
             final Uri uri = makeUri(retrieveImageUrl(imageInfo), useFile);
             return uri == null ? Observable.<Uri>empty() : Observable.just(uri);
-        } catch (InterruptedIOException ex) {
-            // this occurs when user dismisses the progress dialog while retrieval isn't completed
+        } catch (Exception ignored) {
+            // e.g. InterruptedIOException occurs when user dismisses the progress dialog while retrieval isn't completed
             return Observable.empty();
         }
     }
