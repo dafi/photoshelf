@@ -14,7 +14,7 @@ import java.util.Locale;
 public class Log {
     private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
 
-    public static void error(Exception e, File destFile, String... msg) {
+    public static void error(Throwable t, File destFile, String... msg) {
         String date = DATE_TIME_FORMAT.format(new Date());
         try (FileOutputStream fos = new FileOutputStream(destFile, true)) {
             PrintStream ps = new PrintStream(fos);
@@ -23,7 +23,7 @@ public class Log {
                     ps.println(date + " - " + m);
                 }
             }
-            e.printStackTrace(ps);
+            t.printStackTrace(ps);
             ps.flush();
             ps.close();
         } catch (Exception fosEx) {
