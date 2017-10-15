@@ -60,8 +60,9 @@
             android:parentActivityName="com.ternaryop.photoshelf.activity.MainActivity" >
         </activity>
 
-        <service android:name="com.ternaryop.photoshelf.service.BootService" />
         <service android:name="com.ternaryop.photoshelf.service.PublishIntentService" />
+
+        <receiver android:name="com.ternaryop.photoshelf.service.AlarmBroadcastReceiver" />
 
         <receiver android:name="com.ternaryop.photoshelf.service.BootServiceReceiver" >
             <intent-filter>
@@ -69,7 +70,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.ternaryop.photoshelf.service.PublishIntentService$ClearBirthdayNotificationBroadcastReceiver" android:exported="false">
+        <receiver android:name="com.ternaryop.photoshelf.util.NotificationUtil$ClearBirthdayNotificationBroadcastReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="com.ternaryop.photoshelf.birthday.clear"/>
             </intent-filter>

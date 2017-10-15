@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -19,7 +20,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class AppSupport {
+public class AppSupport extends ContextWrapper {
     private static final String SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf";
     private static final String LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime";
     private static final String AUTOMATIC_EXPORT = "automatic_export";
@@ -31,11 +32,10 @@ public class AppSupport {
     public static final String PREF_EXPORT_DAYS_PERIOD = "exportDaysPeriod";
     public static final String PREF_LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime";
 
-    private final Context context;
     private final SharedPreferences preferences;
 
     public AppSupport(Context context) {
-        this.context = context;
+        super(context);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
     
@@ -67,11 +67,7 @@ public class AppSupport {
 
     public int getDefaultScheduleMinutesTimeSpan() {
         return preferences.getInt(PREF_SCHEDULE_MINUTES_TIME_SPAN,
-                context.getResources().getInteger(R.integer.schedule_minutes_time_span_default));
-    }
-
-    public Context getContext() {
-        return context;
+                getResources().getInteger(R.integer.schedule_minutes_time_span_default));
     }
 
     public Single<List<String>> fetchBlogNames(final Context context) {
@@ -135,7 +131,7 @@ public class AppSupport {
 
     public int getExportDaysPeriod() {
         return preferences.getInt(PREF_EXPORT_DAYS_PERIOD,
-                context.getResources().getInteger(R.integer.export_days_period_default));
+                getResources().getInteger(R.integer.export_days_period_default));
     }
 
     public void setLastFollowersUpdateTime(long millisecs) {

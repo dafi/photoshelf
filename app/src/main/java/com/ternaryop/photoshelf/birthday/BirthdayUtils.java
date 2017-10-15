@@ -11,35 +11,25 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Environment;
-import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 import android.util.Pair;
 
 import com.ternaryop.photoshelf.R;
-import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.PostTag;
 import com.ternaryop.photoshelf.db.PostTagDAO;
+import com.ternaryop.photoshelf.util.NotificationUtil;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.ImageUtils;
 
 public class BirthdayUtils {
-    private static final String BIRTHDAY_NOTIFICATION_TAG = "com.ternaryop.photoshelf.bday";
-    private static final int BIRTHDAY_NOTIFICATION_ID = 1;
-
     public static boolean notifyBirthday(Context context) {
         BirthdayDAO birthdayDatabaseHelper = DBHelper
                 .getInstance(context.getApplicationContext())
@@ -50,58 +40,10 @@ public class BirthdayUtils {
             return false;
         }
 
-        int currYear = now.get(Calendar.YEAR);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                context.getApplicationContext())
-                .setContentIntent(createPendingIntent(context))
-                .setSmallIcon(R.drawable.stat_notify_bday);
-        if (list.size() == 1) {
-            Birthday birthday = list.get(0);
-            builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size()));
-            Calendar cal = Calendar.getInstance(Locale.US);
-            cal.setTime(birthday.getBirthDate());
-            int years = currYear - cal.get(Calendar.YEAR);
-            builder.setContentText(context.getString(R.string.birthday_years_old, birthday.getName(), years));
-        } else {
-            builder.setContentTitle(context.getResources().getQuantityString(R.plurals.birthday_title, list.size(), list.size()));
-            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-            ArrayList<String> names = new ArrayList<>();
-            inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title));
-            for (Birthday birthday : list) {
-                Calendar cal = Calendar.getInstance(Locale.US);
-                cal.setTime(birthday.getBirthDate());
-                int years = currYear - cal.get(Calendar.YEAR);
-                inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.getName(), years));
-                names.add(birthday.getName());
-            }
-            // The text is shown when there isn't enough space for inboxStyle
-            builder.setContentText(TextUtils.join(", ", names));
-            builder.setStyle(inboxStyle);
-        }
-
-        // remove notification when user clicks on it
-        builder.setAutoCancel(true);
-        
-        Notification notification = builder.build();
-        NotificationManager notificationManager = (NotificationManager)context.getApplicationContext()
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(BIRTHDAY_NOTIFICATION_TAG, BIRTHDAY_NOTIFICATION_ID, notification);
-
+        new NotificationUtil(context).notifyTodayBirthdays(list, now.get(Calendar.YEAR));
         return true;
     }
 
-    private static PendingIntent createPendingIntent(Context context) {
-        // Define Activity to start
-        Intent resultIntent = new Intent(context, BirthdaysPublisherActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        // Adds the back stack
-        stackBuilder.addParentStack(BirthdaysPublisherActivity.class);
-        // Adds the Intent to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        // Gets a PendingIntent containing the entire back stack
-        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-    
     public static ArrayList<Pair<Birthday, TumblrPhotoPost>> getPhotoPosts(final Context context, Calendar birthDate) {
         DBHelper dbHelper = DBHelper
                 .getInstance(context.getApplicationContext());

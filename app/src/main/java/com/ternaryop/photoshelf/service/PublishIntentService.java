@@ -1,24 +1,17 @@
 package com.ternaryop.photoshelf.service;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 import android.app.IntentService;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Pair;
 
@@ -27,23 +20,16 @@ import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
+import com.ternaryop.photoshelf.util.NotificationUtil;
 import com.ternaryop.photoshelf.util.log.Log;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.DateTimeUtils;
 
 /**
  * Created by dave on 01/03/14.
  * Contains all methods used to publish posts
  */
 public class PublishIntentService extends IntentService {
-    private static final String NOTIFICATION_PUBLISH_ERROR_TAG = "com.ternaryop.photoshelf.publish.error";
-    private static final String NOTIFICATION_BIRTHDAY_ERROR_TAG = "com.ternaryop.photoshelf.birthday.error";
-    private static final String NOTIFICATION_BIRTHDAY_SUCCESS_TAG = "com.ternaryop.photoshelf.birthday.success";
-    private static final String NOTIFICATION_BIRTHDAY_CLEAR_ACTION = "com.ternaryop.photoshelf.birthday.clear";
-
-    private static final int NOTIFICATION_ID = 1;
-
     public static final String URL = "url";
     public static final String BLOG_NAME = "blogName";
     public static final String POST_TITLE = "postTitle";
@@ -59,11 +45,17 @@ public class PublishIntentService extends IntentService {
     // Intents returned using local broadcast
     public static final String BIRTHDAY_INTENT = "birthdayIntent";
 
+    private NotificationUtil notificationUtil;
+
     public PublishIntentService() {
         super("publishIntent");
     }
 
-    private static final List<String> birthdaysContentLines = new ArrayList<>();
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        notificationUtil = new NotificationUtil(this);
+    }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -85,14 +77,8 @@ public class PublishIntentService extends IntentService {
                 broadcastBirthdaysByDate(intent);
             }
         } catch (Exception ex) {
-            try {
-                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "publish_errors.txt");
-                Log.error(ex, file, " Error on url " + url, " tags " + postTags);
-            } catch (Exception ignored) {
-            }
-            notifyError(intent, ex);
+            logError(intent, ex);
         }
-            
     }
 
     private void addBithdateFromTags(final String postTags, final String blogName) {
@@ -109,7 +95,6 @@ public class PublishIntentService extends IntentService {
             public void run() {
                 BirthdayDAO birthdayDAO = DBHelper.getInstance(getApplicationContext()).getBirthdayDAO();
                 SQLiteDatabase db = birthdayDAO.getDbHelper().getWritableDatabase();
-                NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
                 db.beginTransaction();
 
                 try {
@@ -120,26 +105,10 @@ public class PublishIntentService extends IntentService {
                     if (birthday != null) {
                         birthdayDAO.insert(birthday);
                         db.setTransactionSuccessful();
-                        String date = DateFormat.getDateInstance().format(birthday.getBirthDate());
-                        String strAge = String.valueOf(DateTimeUtils.yearsBetweenDates(birthday.getBirthDateCalendar(), Calendar.getInstance()));
-
-                        Notification notification = createNotification(
-                                getString(R.string.name_with_date_age, name, date, strAge),
-                                getString(R.string.new_birthday_ticker, name),
-                                null,
-                                R.drawable.stat_notify_bday,
-                                true);
-                        // if notification is already visible the user doesn't receive any visual feedback so we clear it
-                        notificationManager.cancel(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID);
-                        notificationManager.notify(NOTIFICATION_BIRTHDAY_SUCCESS_TAG, NOTIFICATION_ID, notification);
+                        notificationUtil.notifyBirthdayAdded(name, birthday.getBirthDate());
                     }
                 } catch (Exception e) {
-                    Notification notification = createNotification(name,
-                            R.string.birthday_add_error_ticker,
-                            e.getLocalizedMessage(),
-                            R.drawable.stat_notify_error,
-                            false);
-                    notificationManager.notify(NOTIFICATION_BIRTHDAY_ERROR_TAG, NOTIFICATION_ID, notification);
+                    notificationUtil.notifyError(e, name, getString(R.string.birthday_add_error_ticker));
                 } finally {
                     db.endTransaction();
                 }
@@ -147,48 +116,17 @@ public class PublishIntentService extends IntentService {
         }).start();
     }
 
-    private void notifyError(Intent intent, Exception e) {
+    private void logError(Intent intent, Exception e) {
         Uri url = intent.getParcelableExtra(URL);
         String postTags = intent.getStringExtra(POST_TAGS);
 
-        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        // add url.hashCode() to ensure every notification is shown
-        Notification notification = createNotification(postTags, R.string.upload_error_ticker, e.getLocalizedMessage(), R.drawable.stat_notify_error, false);
-        notificationManager.notify(NOTIFICATION_PUBLISH_ERROR_TAG, NOTIFICATION_ID + url.hashCode(), notification);
-    }
-
-    private Notification createNotification(String contentText, String stringTicker, String subText, int iconId, boolean isBirthdayNotification) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setContentText(contentText)
-                .setTicker(stringTicker)
-                .setSmallIcon(iconId)
-                .setAutoCancel(true); // remove notification when user clicks on it
-
-        if (subText != null) {
-            builder.setSubText(subText);
+        try {
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "publish_errors.txt");
+            Log.error(e, file, " Error on url " + url, " tags " + postTags);
+        } catch (Exception ignored) {
         }
 
-        if (isBirthdayNotification) {
-            birthdaysContentLines.add(contentText);
-            setupBirthdayNotification(builder);
-        }
-
-        return builder.build();
-    }
-
-    private void setupBirthdayNotification(NotificationCompat.Builder builder) {
-        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle(getString(R.string.birthdays_found));
-        for (String line : birthdaysContentLines) {
-            inboxStyle.addLine(line);
-        }
-        builder.setStyle(inboxStyle);
-        builder.setDeleteIntent(getClearBirthdaysPendingIntent());
-        builder.setNumber(birthdaysContentLines.size());
-    }
-
-    private Notification createNotification(String contentText, int stringTickerId, String subText, int iconId, boolean multipleLines) {
-        return createNotification(contentText, getString(stringTickerId), subText, iconId, multipleLines);
+        notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode());
     }
 
     public static void startActionIntent(@NonNull Context context,
@@ -231,20 +169,5 @@ public class PublishIntentService extends IntentService {
         Intent countIntent = new Intent(BIRTHDAY_INTENT);
         countIntent.putExtra(RESULT_LIST1, list);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(countIntent);
-    }
-
-    public static class ClearBirthdayNotificationBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (NOTIFICATION_BIRTHDAY_CLEAR_ACTION.equals(intent.getAction())) {
-                birthdaysContentLines.clear();
-            }
-        }
-    }
-
-    private PendingIntent getClearBirthdaysPendingIntent() {
-        Intent intent = new Intent(this, ClearBirthdayNotificationBroadcastReceiver.class);
-        intent.setAction(NOTIFICATION_BIRTHDAY_CLEAR_ACTION);
-        return PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

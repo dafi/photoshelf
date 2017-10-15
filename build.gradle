@@ -17,5 +17,8 @@ allprojects {
         jcenter()
         // mavenRepo urls: "file:///home/user/.m2/repository"
         mavenLocal()
+        maven {
+            url 'https://maven.google.com'
+        }
     }
 }
