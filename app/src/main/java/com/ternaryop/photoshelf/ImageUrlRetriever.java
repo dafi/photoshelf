@@ -77,14 +77,9 @@ public class ImageUrlRetriever {
                 });
     }
 
-    private ObservableSource<Uri> makeUriObservable(ImageInfo imageInfo, boolean useFile) {
-        try {
-            final Uri uri = makeUri(retrieveImageUrl(imageInfo), useFile);
-            return uri == null ? Observable.<Uri>empty() : Observable.just(uri);
-        } catch (Exception ignored) {
-            // e.g. InterruptedIOException occurs when user dismisses the progress dialog while retrieval isn't completed
-            return Observable.empty();
-        }
+    private ObservableSource<Uri> makeUriObservable(ImageInfo imageInfo, boolean useFile) throws Exception {
+        final Uri uri = makeUri(retrieveImageUrl(imageInfo), useFile);
+        return uri == null ? Observable.<Uri>empty() : Observable.just(uri);
     }
 
     private String retrieveImageUrl(ImageInfo imageInfo) throws Exception {
