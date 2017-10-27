@@ -11,7 +11,7 @@ import com.ternaryop.photoshelf.AppSupport;
  *
  */
 public interface FragmentActivityStatus {
-    public boolean isDrawerOpen();
-    public AppSupport getAppSupport();
-    public Toolbar getToolbar();
+    boolean isDrawerOpen();
+    AppSupport getAppSupport();
+    Toolbar getToolbar();
 }

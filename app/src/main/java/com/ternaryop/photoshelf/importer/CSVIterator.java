@@ -46,7 +46,7 @@ public class CSVIterator<T> implements Iterator<T> {
     }
     
     public interface CSVBuilder<T> {
-        public T parseCSVFields(String fields[]) throws ParseException;
+        T parseCSVFields(String fields[]) throws ParseException;
     }
 }
 

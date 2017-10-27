@@ -115,7 +115,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
 
     protected List<Birthday> getSelectedPosts() {
         SparseBooleanArray checkedItemPositions = listView.getCheckedItemPositions();
-        ArrayList<Birthday> list = new ArrayList<Birthday>();
+        ArrayList<Birthday> list = new ArrayList<>();
         for (int i = 0; i < checkedItemPositions.size(); i++) {
             int key = checkedItemPositions.keyAt(i);
             if (checkedItemPositions.get(key)) {
@@ -366,7 +366,7 @@ public class BirthdaysBrowserFragment extends AbsPhotoShelfFragment implements A
         String months[] = new String[13];
         months[0] = getString(R.string.all);
         System.arraycopy(new DateFormatSymbols().getMonths(), 0, months, 1, 12);
-        ArrayAdapter<String> monthAdapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> monthAdapter = new ArrayAdapter<>(
                 actionBar.getThemedContext(),
                 android.R.layout.simple_spinner_item,
                 months);

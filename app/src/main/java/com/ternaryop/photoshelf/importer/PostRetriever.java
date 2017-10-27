@@ -32,7 +32,7 @@ public class PostRetriever extends AbsProgressIndicatorAsyncTask<Void, Integer, 
     public void readPhotoPosts(String tumblrName, String tag) {
         this.tumblrName = tumblrName;
 
-        params = new HashMap<String, String>();
+        params = new HashMap<>();
         params.put("type", "photo");
         if (tag != null && tag.trim().length() > 0) {
             params.put("tag", tag);
@@ -42,7 +42,7 @@ public class PostRetriever extends AbsProgressIndicatorAsyncTask<Void, Integer, 
 
     @Override
     protected List<TumblrPost> doInBackground(Void... voidParams) {
-        ArrayList<TumblrPost> allPostList = new ArrayList<TumblrPost>();
+        ArrayList<TumblrPost> allPostList = new ArrayList<>();
         try {
             int offset = 0;
             boolean loadNext;

@@ -27,7 +27,7 @@ public class FeedlyManager {
 
     private String accessToken;
     private final String userId;
-    private String refreshToken;
+    private final String refreshToken;
 
     public FeedlyManager(String accessToken, String userId, String refreshToken) {
         this.accessToken = accessToken;

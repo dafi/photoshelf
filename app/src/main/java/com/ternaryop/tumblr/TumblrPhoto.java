@@ -22,7 +22,7 @@ public class TumblrPhoto implements Serializable {
     public TumblrPhoto(JSONObject json) throws JSONException {
         caption = json.getString("caption");
         JSONArray jsonSizes = json.getJSONArray("alt_sizes");
-        altSizes = new ArrayList<TumblrAltSize>(jsonSizes.length());
+        altSizes = new ArrayList<>(jsonSizes.length());
         for (int i = 0; i < jsonSizes.length(); i++) {
             altSizes.add(new TumblrAltSize(jsonSizes.getJSONObject(i)));
         }

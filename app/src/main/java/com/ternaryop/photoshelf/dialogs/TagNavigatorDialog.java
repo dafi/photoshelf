@@ -135,7 +135,7 @@ public class TagNavigatorDialog extends DialogFragment {
         }
         ArrayList<TagCounter> list = new ArrayList<>(map.values());
 
-        return new ArrayAdapter<TagCounter>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<TagCounter>(list));
+        return new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<>(list));
     }
 
     private void sortByTagCount() {

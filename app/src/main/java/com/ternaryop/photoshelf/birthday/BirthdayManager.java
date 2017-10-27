@@ -19,7 +19,7 @@ import org.json.JSONObject;
 public class BirthdayManager {
     public static final String API_PREFIX = "http://visualdiffer.com/image";
 
-    private String accessToken;
+    private final String accessToken;
 
     public BirthdayManager(String accessToken) {
         this.accessToken = accessToken;

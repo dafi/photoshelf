@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.adapter;
 import java.util.List;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,8 @@ public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerA
         imageLoader = new ImageLoader(context.getApplicationContext(), prefix, R.drawable.stub);
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    @NonNull
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         ViewHolder holder;
 
         if (convertView == null) {
@@ -46,7 +48,7 @@ public class BlogSpinnerAdapter extends ArrayAdapter<String> implements SpinnerA
     }
 
     @Override
-    public View getDropDownView(int position, View convertView, ViewGroup parent) {
+    public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
         return getView(position, convertView, parent);
     }
 

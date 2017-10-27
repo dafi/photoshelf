@@ -66,7 +66,7 @@ public class MultipartConverter {
     }
 
     private void computeBody(Map<String, ?> bodyMap) throws IOException {
-        responsePieces = new ArrayList<Object>();
+        responsePieces = new ArrayList<>();
 
         StringBuilder message = new StringBuilder();
         message.append("Content-Type: multipart/form-data; boundary=").append(boundary).append("\r\n\r\n");

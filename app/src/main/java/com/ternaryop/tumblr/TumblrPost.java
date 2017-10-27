@@ -58,7 +58,7 @@ public class TumblrPost implements Serializable {
         noteCount = json.has("note_count") ? json.getLong("note_count") : 0;
 
         JSONArray jsonTags = json.getJSONArray("tags");
-        tags = new ArrayList<String>(jsonTags.length());
+        tags = new ArrayList<>(jsonTags.length());
         for (int i = 0; i < jsonTags.length(); i++) {
             tags.add(jsonTags.getString(i));
         }
@@ -163,7 +163,7 @@ public class TumblrPost implements Serializable {
     }
 
     public void setTags(String tags) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         for (String s : tags.split(",")) {
             list.add(s.trim());
         }

@@ -26,7 +26,7 @@ public class TumblrPhotoPost extends TumblrPost {
         caption = json.getString("caption");
 
         JSONArray jsonPhotos = json.getJSONArray("photos");
-        photos = new ArrayList<TumblrPhoto>(jsonPhotos.length());
+        photos = new ArrayList<>(jsonPhotos.length());
         for (int i = 0; i < jsonPhotos.length(); i++) {
             photos.add(new TumblrPhoto(jsonPhotos.getJSONObject(i)));
         }

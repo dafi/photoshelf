@@ -26,7 +26,7 @@ public class BirthdaysTest extends TestCase {
         //////
         ///////////////////////////////////////////////////////////////
         try {
-            CSVIterator<String> iterator = new CSVIterator<String>(importPath, new CSVIterator.CSVBuilder<String>() {
+            CSVIterator<String> iterator = new CSVIterator<>(importPath, new CSVIterator.CSVBuilder<String>() {
 
                 @Override
                 public String parseCSVFields(String[] fields) throws ParseException {

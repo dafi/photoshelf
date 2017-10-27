@@ -61,7 +61,7 @@ public class TumblrPostCache {
         if (list == null) {
             return Collections.emptyList();
         }
-        ArrayList<TumblrPost> posts = new ArrayList<TumblrPost>(list.length);
+        ArrayList<TumblrPost> posts = new ArrayList<>(list.length);
 
         for (File f : list) {
             BufferedInputStream bis = null;

@@ -20,7 +20,7 @@ public class ImageExtractorManager {
     public static final String API_PREFIX = "http://visualdiffer.com/image";
 //    public static final String API_PREFIX = "http://192.168.0.2/image";
 
-    private String accessToken;
+    private final String accessToken;
 
     public ImageExtractorManager(String accessToken) {
         this.accessToken = accessToken;

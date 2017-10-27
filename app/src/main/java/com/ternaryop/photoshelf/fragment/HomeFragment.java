@@ -20,7 +20,7 @@ import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.PostTagDAO;
 
 public class HomeFragment extends AbsPhotoShelfFragment {
-    private final static SparseArray<String> viewIdColumnMap = new SparseArray<String>();
+    private final static SparseArray<String> viewIdColumnMap = new SparseArray<>();
 
     static {
         viewIdColumnMap.put(R.id.total_records, PostTagDAO.RECORD_COUNT_COLUMN);
@@ -77,7 +77,7 @@ public class HomeFragment extends AbsPhotoShelfFragment {
 
         UIFillerHandler(HomeFragment homeFragment) {
             super(Looper.getMainLooper());
-            this.homeFragment = new WeakReference<HomeFragment>(homeFragment);
+            this.homeFragment = new WeakReference<>(homeFragment);
         }
 
         @Override

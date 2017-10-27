@@ -19,7 +19,7 @@ public class TumblrUtils {
         long readCount;
 
         try {
-            Map<String, String> params = new HashMap<String, String>(1);
+            Map<String, String> params = new HashMap<>(1);
             do {
                 JSONArray arr = tumblr.getConsumer().jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts");
                 readCount = arr.length();
@@ -40,7 +40,7 @@ public class TumblrUtils {
             JSONObject json = tumblr.getConsumer().jsonFromGet(apiUrl);
             JSONArray arr = json.getJSONObject("response").getJSONArray("posts");
             
-            Map<String, String> params = new HashMap<String, String>(1);
+            Map<String, String> params = new HashMap<>(1);
             while (arr.length() > 0) {
                 count += arr.length();
                 long beforeId = arr.getJSONObject(arr.length() - 1).getLong("id");
@@ -55,11 +55,11 @@ public class TumblrUtils {
     }
 
     public static List<TumblrPost> getQueueAll(Tumblr tumblr, final String tumblrName) {
-        ArrayList<TumblrPost> list = new ArrayList<TumblrPost>();
+        ArrayList<TumblrPost> list = new ArrayList<>();
         long readCount;
 
         try {
-            Map<String, String> params = new HashMap<String, String>(1);
+            Map<String, String> params = new HashMap<>(1);
             do {
                 List<TumblrPost> queue = tumblr.getQueue(tumblrName, params);
                 readCount = queue.size();
@@ -73,7 +73,7 @@ public class TumblrUtils {
     }
 
     public static int renameTag(String fromTag, String toTag, Context context, String blogName) {
-        HashMap<String, String> searchParams = new HashMap<String, String>();
+        HashMap<String, String> searchParams = new HashMap<>();
         searchParams.put("type", "photo");
         searchParams.put("tag", fromTag);
         int offset = 0;

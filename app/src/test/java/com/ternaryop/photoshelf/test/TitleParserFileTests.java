@@ -34,7 +34,7 @@ public class TitleParserFileTests {
     public static Collection<Object[]> data() throws IOException {
         BufferedReader inputReader = null;
         BufferedReader resultReader = null;
-        ArrayList<Object[]> objects = new ArrayList<Object[]>();
+        ArrayList<Object[]> objects = new ArrayList<>();
 
         try {
             inputReader = new BufferedReader(new InputStreamReader(new FileInputStream("/opt/devel/0dafiprj/git.github/post_title_downloader/photoshelf_tests/titleParser-test-input.txt"), "UTF-8"));
