@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
+import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -35,6 +36,7 @@ public class ScheduledListFragment extends AbsPostsListFragment {
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
 
+        photoAdapter.setCounterType(CounterEvent.SCHEDULE);
         photoShelfSwipe = new PhotoShelfSwipe(rootView, R.id.swipe_container, new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

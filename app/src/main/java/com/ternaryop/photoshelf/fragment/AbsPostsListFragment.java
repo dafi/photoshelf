@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,14 +40,12 @@ import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
-import com.ternaryop.utils.drawer.counter.CountChangedListener;
-import com.ternaryop.utils.drawer.counter.CountProvider;
 import io.reactivex.Completable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 
-public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements CountProvider, OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
+public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
     protected static final int POST_ACTION_PUBLISH = 1;
     protected static final int POST_ACTION_DELETE = 2;
     protected static final int POST_ACTION_EDIT = 3;
@@ -69,7 +66,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     private int[] singleSelectionMenuIds;
 
-    private CountChangedListener countChangedListener;
     ActionMode actionMode;
     protected ColorItemDecoration colorItemDecoration;
 
@@ -317,9 +313,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                         R.plurals.posts_count,
                         photoAdapter.getItemCount(),
                         photoAdapter.getItemCount()));
-                if (countChangedListener != null) {
-                    countChangedListener.onChangeCount(this, photoAdapter.getItemCount());
-                }
+                photoAdapter.notifyCountChanged();
             }
         }
 
@@ -512,20 +506,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }
     }
 
-    @Override
-    public void setCountChangedListener(CountChangedListener countChangedListener) {
-        this.countChangedListener = countChangedListener;
-    }
-
-    @Override
-    public CountChangedListener getCountChangedListener() {
-        return countChangedListener;
-    }
-
     protected SearchView setupSearchView(Menu menu) {
         MenuItem searchMenu = menu.findItem(R.id.action_search);
         if (searchMenu != null) {
-            searchView = (SearchView)MenuItemCompat.getActionView(searchMenu);
+            searchView = (SearchView) searchMenu.getActionView();
             searchView.setQueryHint(getString(R.string.enter_tag_hint));
             searchView.setOnQueryTextListener(this);
         }

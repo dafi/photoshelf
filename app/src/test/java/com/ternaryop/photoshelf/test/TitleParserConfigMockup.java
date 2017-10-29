@@ -10,7 +10,7 @@ import com.ternaryop.photoshelf.parsers.TitleParserConfig;
  * Used by tests
  */
 public class TitleParserConfigMockup implements TitleParserConfig {
-    public TitleParserConfigMockup(String configPath) throws Exception {
+    public TitleParserConfigMockup(String configPath) {
     }
 
     @Override

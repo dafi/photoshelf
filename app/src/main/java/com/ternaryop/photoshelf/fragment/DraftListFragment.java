@@ -29,6 +29,7 @@ import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
+import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.db.Importer.ImportCompleteCallback;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
@@ -67,6 +68,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         progressHighlightViewLayout = (ProgressHighlightViewLayout) view.findViewById(android.R.id.empty);
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
         photoAdapter.setEmptyView(progressHighlightViewLayout);
+        photoAdapter.setCounterType(CounterEvent.DRAFT);
 
         if (rootView != null) {
             swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);

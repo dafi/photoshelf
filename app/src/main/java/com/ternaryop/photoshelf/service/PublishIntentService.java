@@ -1,18 +1,24 @@
 package com.ternaryop.photoshelf.service;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 
 import com.ternaryop.photoshelf.R;
@@ -20,30 +26,18 @@ import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
 import com.ternaryop.photoshelf.db.BirthdayDAO;
 import com.ternaryop.photoshelf.db.DBHelper;
+import com.ternaryop.photoshelf.event.BirthdayEvent;
 import com.ternaryop.photoshelf.util.NotificationUtil;
 import com.ternaryop.photoshelf.util.log.Log;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Created by dave on 01/03/14.
  * Contains all methods used to publish posts
  */
-public class PublishIntentService extends IntentService {
-    public static final String URL = "url";
-    public static final String BLOG_NAME = "blogName";
-    public static final String POST_TITLE = "postTitle";
-    public static final String POST_TAGS = "postTags";
-    public static final String ACTION = "action";
-    public static final String PUBLISH_ACTION_DRAFT = "draft";
-    public static final String PUBLISH_ACTION_PUBLISH = "publish";
-
-    public static final String BIRTHDAY_LIST_BY_DATE_ACTION = "birthdayListByDate";
-    public static final String BIRTHDAY_DATE = "birthDate";
-    public static final String RESULT_LIST1 = "list1";
-
-    // Intents returned using local broadcast
-    public static final String BIRTHDAY_INTENT = "birthdayIntent";
+public class PublishIntentService extends IntentService implements PhotoShelfIntentExtra {
 
     private NotificationUtil notificationUtil;
 
@@ -58,7 +52,10 @@ public class PublishIntentService extends IntentService {
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    protected void onHandleIntent(@Nullable Intent intent) {
+        if (intent == null) {
+            return;
+        }
         Uri url = intent.getParcelableExtra(URL);
         String selectedBlogName = intent.getStringExtra(BLOG_NAME);
         String postTitle = intent.getStringExtra(POST_TITLE);
@@ -75,9 +72,12 @@ public class PublishIntentService extends IntentService {
                         url, postTitle, postTags);
             } else if (BIRTHDAY_LIST_BY_DATE_ACTION.equals(action)) {
                 broadcastBirthdaysByDate(intent);
+            } else if (BIRTHDAY_PUBLISH_ACTION.equals(action)) {
+                birthdaysPublish(intent);
             }
-        } catch (Exception ex) {
-            logError(intent, ex);
+        } catch (Exception e) {
+            logError(intent, e);
+            notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode());
         }
     }
 
@@ -125,8 +125,6 @@ public class PublishIntentService extends IntentService {
             Log.error(e, file, " Error on url " + url, " tags " + postTags);
         } catch (Exception ignored) {
         }
-
-        notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode());
     }
 
     public static void startActionIntent(@NonNull Context context,
@@ -154,20 +152,59 @@ public class PublishIntentService extends IntentService {
         context.startService(intent);
     }
 
+    public static void startPublishBirthdayIntent(Context context,
+                                                  @NonNull ArrayList<TumblrPhotoPost> list,
+                                                  @NonNull String blogName,
+                                                  boolean publishAsDraft) {
+        if (list.isEmpty()) {
+            return;
+        }
+        Intent intent = new Intent(context, PublishIntentService.class);
+        intent.putExtra(LIST1, list);
+        intent.putExtra(BLOG_NAME, blogName);
+        intent.putExtra(BOOLEAN1, publishAsDraft);
+        intent.putExtra(ACTION, BIRTHDAY_PUBLISH_ACTION);
+
+        context.startService(intent);
+    }
+
     private void broadcastBirthdaysByDate(Intent intent) {
         Calendar birthday = (Calendar) intent.getSerializableExtra(BIRTHDAY_DATE);
         if (birthday == null) {
             birthday = Calendar.getInstance(Locale.US);
         }
-        ArrayList<Pair<Birthday, TumblrPhotoPost>> list;
+        List<Pair<Birthday, TumblrPhotoPost>> list;
         try {
             list = BirthdayUtils.getPhotoPosts(getApplicationContext(), birthday);
         } catch (Exception ex) {
-            // we can't use Collections.emptyList() because java.util.List isn't Serializable
-            list = new ArrayList<>();
+            list = Collections.emptyList();
         }
-        Intent countIntent = new Intent(BIRTHDAY_INTENT);
-        countIntent.putExtra(RESULT_LIST1, list);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(countIntent);
+        if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent.class)) {
+            EventBus.getDefault().post(new BirthdayEvent(list));
+        }
+    }
+
+    private void birthdaysPublish(Intent intent) {
+        @SuppressWarnings("unchecked") List<TumblrPhotoPost> posts = (List<TumblrPhotoPost>)intent.getSerializableExtra(LIST1);
+        final String blogName = intent.getStringExtra(BLOG_NAME);
+        final boolean publishAsDraft = intent.getBooleanExtra(BOOLEAN1, true);
+        String name = "";
+
+        try {
+            final Bitmap cakeImage = getBirthdayBitmap();
+            for (TumblrPhotoPost post : posts) {
+                name = post.getTags().get(0);
+                BirthdayUtils.createBirthdayPost(getApplicationContext(), cakeImage, post, blogName, publishAsDraft);
+            }
+        } catch (Exception e) {
+            logError(intent, e);
+            notificationUtil.notifyError(e, name, getString(R.string.birthday_publish_error_ticker, name, e.getMessage()));
+        }
+    }
+
+    private Bitmap getBirthdayBitmap() throws IOException {
+        try (InputStream is = getAssets().open("cake.png")) {
+            return BitmapFactory.decodeStream(is);
+        }
     }
 }

@@ -20,8 +20,12 @@ import android.widget.Filter;
 
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.photoshelf.util.sort.AbsSortable;
 import com.ternaryop.photoshelf.util.sort.Sortable;
+import org.greenrobot.eventbus.EventBus;
+
+import static com.ternaryop.photoshelf.event.CounterEvent.NONE;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implements View.OnClickListener, View.OnLongClickListener {
     public static final int SORT_TAG_NAME = 1;
@@ -34,6 +38,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     private final Context context;
     private OnPhotoBrowseClick onPhotoBrowseClick;
     private final int thumbnailWidth;
+    private @CounterEvent.CounterType int counterType = NONE;
 
     private PhotoShelfPostSortable currentSortable;
     private PhotoShelfPostSortable tagNameSortable;
@@ -411,5 +416,21 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
             });
             calcGroupIds();
         }
+    }
+
+    @CounterEvent.CounterType
+    public int getCounterType() {
+        return counterType;
+    }
+
+    public void setCounterType(@CounterEvent.CounterType int counterType) {
+        this.counterType = counterType;
+    }
+
+    public void notifyCountChanged() {
+        if (counterType == NONE) {
+            return;
+        }
+        EventBus.getDefault().post(new CounterEvent(counterType, getItemCount()));
     }
 }

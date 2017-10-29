@@ -12,13 +12,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.ternaryop.photoshelf.AppSupport;
-import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter;
-import com.ternaryop.photoshelf.counter.AbsCountRetriever;
-import com.ternaryop.photoshelf.counter.BirthdaysCountRetriever;
-import com.ternaryop.photoshelf.counter.DraftCountRetriever;
-import com.ternaryop.photoshelf.counter.QueueCountRetriever;
+import com.ternaryop.photoshelf.drawer.ItemTestDrawerItem;
+import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.photoshelf.fragment.BestOfFragment;
 import com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment;
 import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment;
@@ -32,20 +29,35 @@ import com.ternaryop.photoshelf.fragment.SavedContentListFragment;
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment;
 import com.ternaryop.photoshelf.fragment.TagListFragment;
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment;
+import com.ternaryop.photoshelf.service.CounterIntentService;
 import com.ternaryop.tumblr.AuthenticationCallback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity;
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter;
 import com.ternaryop.utils.drawer.adapter.DrawerItem;
-import com.ternaryop.utils.drawer.counter.CountChangedListener;
-import com.ternaryop.utils.drawer.counter.CountProvider;
-import com.ternaryop.utils.drawer.counter.CountRetriever;
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class MainActivity extends DrawerActionBarActivity implements AuthenticationCallback, FragmentActivityStatus {
     private static final String LOADER_PREFIX_AVATAR = "avatar";
+
+    private final static int DRAWER_ITEM_HOME = 0;
+    private final static int DRAWER_ITEM_DRAFT = 1;
+    private final static int DRAWER_ITEM_SCHEDULE = 2;
+    private final static int DRAWER_ITEM_PUBLISHED_POST = 3;
+    private final static int DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS = 4;
+    private final static int DRAWER_ITEM_BROWSE_TAGS = 5;
+    private final static int DRAWER_ITEM_BIRTHDAYS_BROWSER = 6;
+    private final static int DRAWER_ITEM_BIRTHDAYS_TODAY = 7;
+    private final static int DRAWER_ITEM_BEST_OF = 8;
+    private final static int DRAWER_ITEM_TEST_PAGE = 9;
+    private final static int DRAWER_ITEM_SETTINGS = 10;
+    private final static int DRAWER_ITEM_FEEDLY = 11;
+
     private AppSupport appSupport;
     private Spinner blogList;
 
@@ -71,6 +83,18 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @Override
     protected int getActivityLayoutResId() {
         return R.layout.activity_main;
     }
@@ -88,31 +112,28 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
     protected DrawerAdapter initDrawerAdapter() {
         DrawerAdapter adapter = new DrawerAdapter(this);
 
-        adapter.add(new DrawerItem(getString(R.string.home), HomeFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_HOME, getString(R.string.home), HomeFragment.class));
 
-        adapter.add(new DrawerItem(getString(R.string.draft_title), DraftListFragment.class,
-                true, new DraftCountRetriever(this, getBlogName(), adapter)));
-        adapter.add(new DrawerItem(getString(R.string.schedule_title), ScheduledListFragment.class,
-                true, new QueueCountRetriever(this, getBlogName(), adapter)));
-        adapter.add(new DrawerItem(getString(R.string.published_post), PublishedPostsListFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_DRAFT, getString(R.string.draft_title), DraftListFragment.class, true));
+        adapter.add(new DrawerItem(DRAWER_ITEM_SCHEDULE, getString(R.string.schedule_title), ScheduledListFragment.class, true));
+        adapter.add(new DrawerItem(DRAWER_ITEM_PUBLISHED_POST, getString(R.string.published_post), PublishedPostsListFragment.class));
 
         // Tags
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER);
-        adapter.add(new DrawerItem(getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment.class));
-        adapter.add(new DrawerItem(getString(R.string.browse_tags_title), TagListFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment.class));
 
         // Extras
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER);
-        adapter.add(new DrawerItem(getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment.class));
-        adapter.add(new DrawerItem(getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class,
-                true, new BirthdaysCountRetriever(this, getBlogName(), adapter)));
-        adapter.add(new DrawerItem(getString(R.string.best_of), BestOfFragment.class));
-        adapter.add(new DrawerItem("Feedly", SavedContentListFragment.class));
-        adapter.add(new DrawerItem(getString(R.string.test_page_title), ImagePickerFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdaysPublisherFragment.class,  true));
+        adapter.add(new DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", SavedContentListFragment.class));
+        adapter.add(new ItemTestDrawerItem(DRAWER_ITEM_TEST_PAGE, getString(R.string.test_page_title), ImagePickerFragment.class));
 
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER);
-        adapter.add(new DrawerItem(getString(R.string.settings), PhotoPreferencesFragment.class));
+        adapter.add(new DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), PhotoPreferencesFragment.class));
 
         return adapter;
     }
@@ -143,18 +164,33 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
         }
 
         public void refreshCounters(String blogName) {
-            DrawerAdapter adapter = getAdapter();
-            for (int i = 0; i < adapter.getCount(); i++) {
-                DrawerItem item = adapter.getItem(i);
-                if (item != null && item.getCountRetriever() != null) {
-                    ((AbsCountRetriever)item.getCountRetriever()).setBlogName(blogName);
-                }
-            }
-            adapter.notifyDataSetChanged();
+            CounterIntentService.fetchCounter(MainActivity.this, blogName, CounterEvent.BIRTHDAY);
+            CounterIntentService.fetchCounter(MainActivity.this, blogName, CounterEvent.DRAFT);
+            CounterIntentService.fetchCounter(MainActivity.this, blogName, CounterEvent.SCHEDULE);
         }
 
         public void onNothingSelected(AdapterView<?> parent) {
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCounterEvent(CounterEvent event) {
+        String value = event.getCount() > 0 ? String.valueOf(event.getCount()) : null;
+
+        switch (event.getType()) {
+            case CounterEvent.BIRTHDAY:
+                getAdapter().getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY).setBadge(value);
+                break;
+            case CounterEvent.DRAFT:
+                getAdapter().getItemById(DRAWER_ITEM_DRAFT).setBadge(value);
+                break;
+            case CounterEvent.SCHEDULE:
+                getAdapter().getItemById(DRAWER_ITEM_SCHEDULE).setBadge(value);
+                break;
+            case CounterEvent.NONE:
+                break;
+        }
+        getAdapter().notifyDataSetChanged();
     }
 
     private void enableUI(boolean enabled) {
@@ -220,19 +256,6 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
     protected void onDrawerItemSelected(DrawerItem drawerItem) {
         try {
             Fragment fragment = drawerItem.instantiateFragment(getApplicationContext());
-
-            CountRetriever countRetriever = drawerItem.getCountRetriever();
-            if (fragment instanceof CountProvider && countRetriever instanceof CountChangedListener) {
-                ((CountProvider)fragment).setCountChangedListener((CountChangedListener) countRetriever);
-            }
-
-            // pass parameter to test page
-            if (fragment instanceof ImagePickerFragment) {
-                Bundle args = new Bundle();
-                args.putString(Constants.EXTRA_URL, getString(R.string.test_page_url));
-                fragment.setArguments(args);
-            }
-
             getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
         } catch (Exception e) {
             DialogUtils.showErrorDialog(getApplication(), e);

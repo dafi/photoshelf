@@ -1,21 +1,15 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -24,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.ternaryop.photoshelf.Constants;
 import com.ternaryop.photoshelf.R;
@@ -31,13 +26,15 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
 import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter;
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice;
 import com.ternaryop.photoshelf.adapter.Selection;
-import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.photoshelf.db.Birthday;
+import com.ternaryop.photoshelf.event.BirthdayEvent;
 import com.ternaryop.photoshelf.service.PublishIntentService;
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClickMultiChoice, ActionMode.Callback  {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
@@ -75,13 +72,13 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     @Override
     public void onStart() {
         super.onStart();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, new IntentFilter(PublishIntentService.BIRTHDAY_INTENT));
+        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
+        EventBus.getDefault().unregister(this);
         super.onStop();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
     }
 
     private void refresh() {
@@ -121,39 +118,18 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         updateSubTitle();
     }
 
-    private void publish(final ActionMode mode, final boolean saveAsDraft) {
-        new AbsProgressIndicatorAsyncTask<Void, String, List<TumblrPhotoPost>>(getActivity(), "") {
-            @Override
-            protected void onProgressUpdate(String... values) {
-                setProgressMessage(values[0]);
-            }
+    private void publish(final ActionMode mode, final boolean publishAsDraft) {
+        ArrayList<TumblrPhotoPost> posts = new ArrayList<>();
+        ArrayList<String> names = new ArrayList<>();
 
-            @Override
-            protected List<TumblrPhotoPost> doInBackground(Void... voidParams) {
-                try {
-                    InputStream is = getContext().getAssets().open("cake.png");
-                    Bitmap cakeImage = BitmapFactory.decodeStream(is);
-                    is.close();
+        for (Pair<Birthday, TumblrPhotoPost> pair : gridViewPhotoAdapter.getSelectedItems()) {
+            names.add(pair.second.getTags().get(0));
+            posts.add(pair.second);
+        }
 
-                    for (Pair<Birthday, TumblrPhotoPost> pair : gridViewPhotoAdapter.getSelectedItems()) {
-                        final TumblrPhotoPost post = pair.second;
-                        String name = post.getTags().get(0);
-                        publishProgress(getContext().getString(R.string.sending_cake_title, name));
-                        BirthdayUtils.createBirthdayPost(getContext(), cakeImage, post, getBlogName(), saveAsDraft);
-                    }
-                } catch (Exception e) {
-                    setError(e);
-                }
-                return null;
-            }
-            
-            protected void onPostExecute(List<TumblrPhotoPost> result) {
-                super.onPostExecute(null);
-                if (!hasError()) {
-                    mode.finish();
-                }
-            }
-        }.execute();
+        PublishIntentService.startPublishBirthdayIntent(getActivity(), posts, getBlogName(), publishAsDraft);
+        Toast.makeText(getActivity(), getString(R.string.sending_cake_title, TextUtils.join(", ", names)), Toast.LENGTH_LONG).show();
+        mode.finish();
     }
 
     @Override
@@ -264,20 +240,11 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         refresh();
     }
 
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            if (PublishIntentService.BIRTHDAY_INTENT.equals(action)) {
-                @SuppressWarnings("unchecked") List<Pair<Birthday, TumblrPhotoPost>> posts = (List<Pair<Birthday, TumblrPhotoPost>>) intent
-                        .getSerializableExtra(PublishIntentService.RESULT_LIST1);
-
-                swipeLayout.setRefreshingAndWaintingResult(false);
-                gridViewPhotoAdapter.clear();
-                gridViewPhotoAdapter.addAll(posts);
-                gridViewPhotoAdapter.notifyDataSetChanged();
-            }
-        }
-    };
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onBirthdayEvent(BirthdayEvent event) {
+        swipeLayout.setRefreshingAndWaintingResult(false);
+        gridViewPhotoAdapter.clear();
+        gridViewPhotoAdapter.addAll(event.getBirthdayList());
+        gridViewPhotoAdapter.notifyDataSetChanged();
+    }
 }

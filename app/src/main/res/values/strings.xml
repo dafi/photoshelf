@@ -188,6 +188,7 @@
     <string name="image_url_description">Image url</string>
     <string name="new_birthday_ticker">Add birthday for %1$s</string>
     <string name="birthday_add_error_ticker">Birthday add error</string>
+    <string name="birthday_publish_error_ticker">Unable to send cake to %1$s (%2$s)</string>
     <string name="home">Home</string>
     <string name="total_posts">Total posts</string>
     <string name="total_records">Total records</string>

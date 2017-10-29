@@ -61,6 +61,7 @@
         </activity>
 
         <service android:name="com.ternaryop.photoshelf.service.PublishIntentService" />
+        <service android:name="com.ternaryop.photoshelf.service.CounterIntentService"/>
 
         <receiver android:name="com.ternaryop.photoshelf.service.AlarmBroadcastReceiver" />
 
