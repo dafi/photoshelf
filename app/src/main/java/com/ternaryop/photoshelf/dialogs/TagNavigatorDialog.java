@@ -10,14 +10,15 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
@@ -69,27 +70,33 @@ public class TagNavigatorDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_tag_navigator, null);
-        setupUI(view);
         return new AlertDialog.Builder(getActivity())
-                .setView(view)
+                .setView(setupUI())
                 .setTitle(getResources().getString(R.string.tag_navigator_title, adapter.getCount()))
                 .setNegativeButton(getResources().getString(R.string.close), null)
-                .setAdapter(adapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent();
-                        intent.putExtra(SELECTED_TAG, adapter.getItem(which).tag);
-                        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
-                    }
-                })
                 .create();
     }
 
-    private void setupUI(View view) {
+    private View setupUI() {
+        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_tag_navigator, null);
         adapter = createAdapter(getArguments().getStringArrayList(ARG_TAG_LIST));
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sortButton = (Button) view.findViewById(R.id.sort_tag);
+        ListView tagList = (ListView) view.findViewById(R.id.tag_list);
+
+        tagList.setAdapter(adapter);
+        tagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                final TagCounter item = adapter.getItem(position);
+                if (item != null) {
+                    Intent intent = new Intent();
+                    intent.putExtra(SELECTED_TAG, item.tag);
+                    getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
+                }
+                dismiss();
+            }
+        });
 
         changeSortType(preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME));
         View.OnClickListener sortClick = new View.OnClickListener() {
@@ -106,6 +113,7 @@ public class TagNavigatorDialog extends DialogFragment {
             }
         };
         sortButton.setOnClickListener(sortClick);
+        return view;
     }
 
     private void changeSortType(int sortType) {
@@ -143,7 +151,8 @@ public class TagNavigatorDialog extends DialogFragment {
             @Override
             public int compare(TagCounter lhs, TagCounter rhs) {
                 // sort descending
-                return rhs.count - lhs.count;
+                final int sign = rhs.count - lhs.count;
+                return sign == 0 ? lhs.tag.compareToIgnoreCase(rhs.tag) : sign;
             }
         });
         adapter.notifyDataSetChanged();
