@@ -1,12 +1,12 @@
 package com.ternaryop.photoshelf.db;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -14,6 +14,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -103,7 +104,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         return null;
     }
     
-    public Map<String, Long> getMapTagLastPublishedTime(List<String> tags, String tumblrName) {
+    public Map<String, Long> getMapTagLastPublishedTime(Collection<String> tags, String tumblrName) {
 
         HashMap<String, Long> map = new HashMap<>();
         try (Cursor c = getCursorLastPublishedTime(tags, tumblrName, new String[]{TAG, PUBLISH_TIMESTAMP})) {
@@ -120,17 +121,9 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
      * @param tumblrName the bloch name
      * @return the pair [last publish timestamp, tag name]
      */
-    public List<Pair<Long, String>> getListPairLastPublishedTimestampTag(Set<String> tags, String tumblrName) {
+    public List<Pair<Long, String>> getListPairLastPublishedTimestampTag(Collection<String> tags, String tumblrName) {
         if (tags.isEmpty()) {
             return Collections.emptyList();
-        }
-        // contains tumblrName, too
-        String args[] = new String[tags.size() + 1];
-        args[0] = tumblrName;
-        int pos = 1;
-        // make lowercase to match using ignorecase
-        for (String tag : tags) {
-            args[pos++] = tag.toLowerCase(Locale.US);
         }
 
         // the BETWEEN condition uses the index so the query execution is very fast compared to the LIKE expression
@@ -152,7 +145,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 + " group by t.name";
 
         ArrayList<Pair<Long, String>> list = new ArrayList<>();
-        try (Cursor c = db.rawQuery(sqlQuery, args)) {
+        try (Cursor c = db.rawQuery(sqlQuery, buildArguments(tags, tumblrName))) {
             while (c.moveToNext()) {
                 list.add(new Pair<>(c.getLong(0), c.getString(1)));
             }
@@ -160,19 +153,20 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         return list;
     }
 
-    public List<PostTag> getListTagsLastPublishedTime(List<String> tags, String tumblrName) {
-        return cursorToList(getCursorLastPublishedTime(tags, tumblrName, COLUMNS));
-    }
-
-    private Cursor getCursorLastPublishedTime(List<String> tags, String tumblrName, String[] selectArgs) {
+    @NonNull
+    private String[] buildArguments(Collection<String> tags, String tumblrName) {
         // contains tumblrName, too
         String args[] = new String[tags.size() + 1];
         args[0] = tumblrName;
+        int pos = 1;
         // make lowercase to match using ignorecase
-        for (int i = 0; i < tags.size(); i++) {
-            args[i + 1] = tags.get(i).toLowerCase(Locale.US);
+        for (String tag : tags) {
+            args[pos++] = tag.toLowerCase(Locale.US);
         }
-        
+        return args;
+    }
+
+    private Cursor getCursorLastPublishedTime(Collection<String> tags, String tumblrName, String[] selectArgs) {
         StringBuilder inClause = new StringBuilder();
         for (int i = 0; i < tags.size(); i++) {
             inClause.append("?");
@@ -190,7 +184,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 + " (SELECT MAX(publish_timestamp)"
                 + "   FROM vw_post_tag p"
                 + "  WHERE p.tag = t.tag )",
-                args);
+                buildArguments(tags, tumblrName));
     }
 
     private List<PostTag> cursorToList(Cursor c) {
