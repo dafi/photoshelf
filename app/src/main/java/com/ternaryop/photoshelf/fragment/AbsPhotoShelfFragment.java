@@ -44,6 +44,7 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
         if (task != null) {
             task.dismiss();
         }
+        compositeDisposable.clear();
         super.onDetach();
     }
     
