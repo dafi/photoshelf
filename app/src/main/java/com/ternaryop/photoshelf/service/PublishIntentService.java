@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.IntentService;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,9 +18,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.widget.Toast;
 
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.birthday.BirthdayUtils;
@@ -31,6 +36,7 @@ import com.ternaryop.photoshelf.util.NotificationUtil;
 import com.ternaryop.photoshelf.util.log.Log;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
+import com.ternaryop.utils.ImageUtils;
 import org.greenrobot.eventbus.EventBus;
 
 /**
@@ -40,9 +46,11 @@ import org.greenrobot.eventbus.EventBus;
 public class PublishIntentService extends IntentService implements PhotoShelfIntentExtra {
 
     private NotificationUtil notificationUtil;
+    private final Handler handler;
 
     public PublishIntentService() {
         super("publishIntent");
+        handler = new Handler();
     }
 
     @Override
@@ -56,28 +64,42 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
         if (intent == null) {
             return;
         }
-        Uri url = intent.getParcelableExtra(URL);
-        String selectedBlogName = intent.getStringExtra(BLOG_NAME);
-        String postTitle = intent.getStringExtra(POST_TITLE);
-        String postTags = intent.getStringExtra(POST_TAGS);
-        String action = intent.getStringExtra(ACTION);
+        Uri url = intent.getParcelableExtra(EXTRA_URI);
+        String selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME);
+        String postTitle = intent.getStringExtra(EXTRA_POST_TITLE);
+        String postTags = intent.getStringExtra(EXTRA_POST_TAGS);
+        String action = intent.getStringExtra(EXTRA_ACTION);
 
         try {
             addBithdateFromTags(postTags, selectedBlogName);
-            if (PUBLISH_ACTION_DRAFT.equals(action)) {
+            if (ACTION_PUBLISH_DRAFT.equals(action)) {
                 Tumblr.getSharedTumblr(getApplicationContext()).draftPhotoPost(selectedBlogName,
                         url, postTitle, postTags);
-            } else if (PUBLISH_ACTION_PUBLISH.equals(action)) {
+            } else if (ACTION_PUBLISH_PUBLISH.equals(action)) {
                 Tumblr.getSharedTumblr(getApplicationContext()).publishPhotoPost(selectedBlogName,
                         url, postTitle, postTags);
-            } else if (BIRTHDAY_LIST_BY_DATE_ACTION.equals(action)) {
+            } else if (ACTION_BIRTHDAY_LIST_BY_DATE.equals(action)) {
                 broadcastBirthdaysByDate(intent);
-            } else if (BIRTHDAY_PUBLISH_ACTION.equals(action)) {
+            } else if (ACTION_BIRTHDAY_PUBLISH.equals(action)) {
                 birthdaysPublish(intent);
+            } else if (ACTION_CHANGE_WALLPAPER.equals(action)) {
+                changeWallpaper(url);
             }
         } catch (Exception e) {
             logError(intent, e);
             notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode());
+        }
+    }
+
+    private void changeWallpaper(Uri imageUrl) {
+        try {
+            WallpaperManager wpm = WallpaperManager.getInstance(this);
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            Bitmap bitmap = ImageUtils.getScaledBitmap(ImageUtils.readImageFromUrl(imageUrl.toString()), metrics.widthPixels , metrics.heightPixels, true);
+            wpm.setBitmap(bitmap);
+            showToast(R.string.wallpaper_changed_title);
+        } catch (Exception e) {
+            notificationUtil.notifyError(e, null, null);
         }
     }
 
@@ -117,8 +139,8 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
     }
 
     private void logError(Intent intent, Exception e) {
-        Uri url = intent.getParcelableExtra(URL);
-        String postTags = intent.getStringExtra(POST_TAGS);
+        Uri url = intent.getParcelableExtra(EXTRA_URI);
+        String postTags = intent.getStringExtra(EXTRA_POST_TAGS);
 
         try {
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "publish_errors.txt");
@@ -134,11 +156,11 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
                                          @NonNull String postTags,
                                          @NonNull String publishAction) {
         Intent intent = new Intent(context, PublishIntentService.class);
-        intent.putExtra(URL, url);
-        intent.putExtra(BLOG_NAME, blogName);
-        intent.putExtra(POST_TITLE, postTitle);
-        intent.putExtra(POST_TAGS, postTags);
-        intent.putExtra(ACTION, publishAction);
+        intent.putExtra(EXTRA_URI, url);
+        intent.putExtra(EXTRA_BLOG_NAME, blogName);
+        intent.putExtra(EXTRA_POST_TITLE, postTitle);
+        intent.putExtra(EXTRA_POST_TAGS, postTags);
+        intent.putExtra(EXTRA_ACTION, publishAction);
 
         context.startService(intent);
     }
@@ -146,8 +168,8 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
     public static void startBirthdayListIntent(Context context,
                                                Calendar date) {
         Intent intent = new Intent(context, PublishIntentService.class);
-        intent.putExtra(BIRTHDAY_DATE, date);
-        intent.putExtra(ACTION, BIRTHDAY_LIST_BY_DATE_ACTION);
+        intent.putExtra(EXTRA_BIRTHDAY_DATE, date);
+        intent.putExtra(EXTRA_ACTION, ACTION_BIRTHDAY_LIST_BY_DATE);
 
         context.startService(intent);
     }
@@ -160,16 +182,25 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
             return;
         }
         Intent intent = new Intent(context, PublishIntentService.class);
-        intent.putExtra(LIST1, list);
-        intent.putExtra(BLOG_NAME, blogName);
-        intent.putExtra(BOOLEAN1, publishAsDraft);
-        intent.putExtra(ACTION, BIRTHDAY_PUBLISH_ACTION);
+        intent.putExtra(EXTRA_LIST1, list);
+        intent.putExtra(EXTRA_BLOG_NAME, blogName);
+        intent.putExtra(EXTRA_BOOLEAN1, publishAsDraft);
+        intent.putExtra(EXTRA_ACTION, ACTION_BIRTHDAY_PUBLISH);
+
+        context.startService(intent);
+    }
+
+    public static void startChangeWallpaperIntent(Context context,
+                                                  @NonNull Uri imageUri) {
+        Intent intent = new Intent(context, PublishIntentService.class);
+        intent.putExtra(EXTRA_URI, imageUri);
+        intent.putExtra(EXTRA_ACTION, ACTION_CHANGE_WALLPAPER);
 
         context.startService(intent);
     }
 
     private void broadcastBirthdaysByDate(Intent intent) {
-        Calendar birthday = (Calendar) intent.getSerializableExtra(BIRTHDAY_DATE);
+        Calendar birthday = (Calendar) intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE);
         if (birthday == null) {
             birthday = Calendar.getInstance(Locale.US);
         }
@@ -185,9 +216,9 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
     }
 
     private void birthdaysPublish(Intent intent) {
-        @SuppressWarnings("unchecked") List<TumblrPhotoPost> posts = (List<TumblrPhotoPost>)intent.getSerializableExtra(LIST1);
-        final String blogName = intent.getStringExtra(BLOG_NAME);
-        final boolean publishAsDraft = intent.getBooleanExtra(BOOLEAN1, true);
+        @SuppressWarnings("unchecked") List<TumblrPhotoPost> posts = (List<TumblrPhotoPost>)intent.getSerializableExtra(EXTRA_LIST1);
+        final String blogName = intent.getStringExtra(EXTRA_BLOG_NAME);
+        final boolean publishAsDraft = intent.getBooleanExtra(EXTRA_BOOLEAN1, true);
         String name = "";
 
         try {
@@ -206,5 +237,14 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
         try (InputStream is = getAssets().open("cake.png")) {
             return BitmapFactory.decodeStream(is);
         }
+    }
+
+    private void showToast(final @StringRes int res) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), res, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

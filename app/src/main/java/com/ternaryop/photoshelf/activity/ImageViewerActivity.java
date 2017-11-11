@@ -2,27 +2,29 @@ package com.ternaryop.photoshelf.activity;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.concurrent.Callable;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.app.DownloadManager;
 import android.app.Fragment;
-import android.app.WallpaperManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.Html;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,12 +38,16 @@ import android.widget.Toast;
 
 import com.ternaryop.photoshelf.AppSupport;
 import com.ternaryop.photoshelf.R;
+import com.ternaryop.photoshelf.service.PublishIntentService;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.IOUtils;
-import com.ternaryop.utils.ImageUtils;
 import com.ternaryop.utils.ShareUtils;
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class ImageViewerActivity extends AbsPhotoShelfActivity {
@@ -61,8 +67,10 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.webview_progressbar);
         detailsText = (TextView) findViewById(R.id.details_text);
 
-        Bundle bundle = getIntent().getExtras();
-        String imageUrl = bundle.getString(IMAGE_URL);
+        String imageUrl = getImageUrl();
+        if (imageUrl == null) {
+            return;
+        }
         String data = "<body><img src=\"" + imageUrl + "\"/></body>";
         prepareWebView(progressBar).loadDataWithBaseURL(null, data, "text/html", "UTF-8", null);
         try {
@@ -182,7 +190,7 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_image_viewer_wallpaper:
-                setWallpaper();
+                changeWallpaper();
                 return true;
             case R.id.action_image_viewer_share:
                 shareImage();
@@ -207,53 +215,34 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
 
     private void download() {
         try {
-            final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
-            String fileName = getIntent().getExtras().getString(IMAGE_TAG);
+            final String imageUrl = getImageUrl();
 
             if (imageUrl == null) {
                 return;
             }
 
-            if (fileName == null) {
-                fileName = new URI(imageUrl).getPath();
-                int index = fileName.lastIndexOf('/');
-                if (index != -1) {
-                    fileName = fileName.substring(index + 1);
-                }
-            } else {
-                int index = imageUrl.lastIndexOf(".");
-                // append extension with "."
-                if (index != -1) {
-                    fileName += imageUrl.substring(index);
-                }
+            DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            if (downloadManager != null) {
+                String imageTag = getIntent().getExtras() == null ? null : getIntent().getExtras().getString(IMAGE_TAG);
+                String fileName = buildFileName(imageUrl, imageTag);
+                DownloadManager.Request request = new DownloadManager
+                        .Request(Uri.parse(imageUrl))
+                        .setDestinationUri(Uri.fromFile(new File(AppSupport.getPicturesDirectory(), fileName)));
+                downloadManager.enqueue(request);
             }
-
-            final File destFile = new File(AppSupport.getPicturesDirectory(), fileName);
-            new DownloadImageUrl(this, getString(R.string.downloading_image), new URL(imageUrl), destFile) {
-                @Override
-                protected void onPostExecute(Void result) {
-                    super.onPostExecute(result);
-                    if (hasError()) {
-                        return;
-                    }
-                    Toast.makeText(getContext(),
-                            getString(R.string.image_saved_at_path, destFile.getAbsolutePath()),
-                            Toast.LENGTH_SHORT)
-                            .show();
-                }
-            }.execute();
         } catch (Exception e) {
             DialogUtils.showErrorDialog(this, e);
         }
     }
 
     private void copyURL() {
-        Bundle bundle = getIntent().getExtras();
-        String imageUrl = bundle.getString(IMAGE_URL);
+        String imageUrl = getImageUrl();
 
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(getString(R.string.image_url_description), imageUrl);
-        clipboardManager.setPrimaryClip(clip);
+        if (clipboardManager == null) {
+            return;
+        }
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(getString(R.string.image_url_description), imageUrl));
         Toast.makeText(this,
                 R.string.url_copied_to_clipboard_title,
                 Toast.LENGTH_SHORT)
@@ -262,127 +251,94 @@ public class ImageViewerActivity extends AbsPhotoShelfActivity {
 
     private void shareImage() {
         try {
-            final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
+            final String imageUrl = getImageUrl();
             if (imageUrl == null) {
                 return;
             }
-            String fileName = new URI(imageUrl).getPath();
-            int index = fileName.lastIndexOf('/');
-            if (index != -1) {
-                fileName = fileName.substring(index + 1);
-            }
+            String fileName = buildFileName(imageUrl, null);
             // write to a public location otherwise the called app can't access to file
             final File destFile = new File(AppSupport.getPicturesDirectory(), fileName);
-            new DownloadImageUrl(this, getString(R.string.downloading_image), new URL(imageUrl), destFile) {
-                @Override
-                protected void onPostExecute(Void result) {
-                    super.onPostExecute(result);
-                    if (hasError()) {
-                        return;
-                    }
-                    String title = getIntent().getExtras().getString(IMAGE_TITLE);
-                    if (title == null) {
-                        title = "";
-                    } else {
-                        title = Html.fromHtml(title).toString();
-                    }
-
-                    ShareUtils.shareImage(ImageViewerActivity.this,
-                            destFile.getAbsolutePath(),
-                            "image/jpeg",
-                            title,
-                            getString(R.string.share_image_title));
-                }
-            }.execute();
+            downloadImageUrl(new URL(imageUrl), destFile)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action() {
+                                   @Override
+                                   public void run() throws Exception {
+                                        startShareImage(destFile);
+                                   }
+                               },
+                            new Consumer<Throwable>() {
+                                @Override
+                                public void accept(Throwable throwable) throws Exception {
+                                    DialogUtils.showErrorDialog(ImageViewerActivity.this, throwable);
+                                }
+                            });
         } catch (Exception e) {
             DialogUtils.showErrorDialog(this, e);
         }
     }
 
-    private void setWallpaper() {
-        new AbsProgressIndicatorAsyncTask<Void, Void, Bitmap>(this, getString(R.string.downloading_image)) {
-            @Override
-            protected Bitmap doInBackground(Void... params) {
-                try {
-                    final String imageUrl = getIntent().getExtras().getString(IMAGE_URL);
-                    return ImageUtils.readImageFromUrl(imageUrl);
-                } catch (Exception e) {
-                    setError(e);
-                }
+    private void startShareImage(File destFile) {
+        String title = getIntent().getExtras() == null ? null : getIntent().getExtras().getString(IMAGE_TITLE);
+        if (title == null) {
+            title = "";
+        } else {
+            title = Html.fromHtml(title).toString();
+        }
 
+        ShareUtils.shareImage(this,
+                destFile.getAbsolutePath(),
+                "image/jpeg",
+                title,
+                getString(R.string.share_image_title));
+    }
+
+    private void changeWallpaper() {
+        PublishIntentService.startChangeWallpaperIntent(this, Uri.parse(getImageUrl()));
+    }
+
+    public Completable downloadImageUrl(final URL imageUrl, final File destFile) {
+        return Completable.fromCallable(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
+                try (InputStream is = connection.getInputStream(); FileOutputStream os = new FileOutputStream(destFile)) {
+                    IOUtils.copy(is, os);
+                }
                 return null;
             }
-
-            @Override
-            protected void onPostExecute(Bitmap bitmap) {
-                super.onPostExecute(null);
-                if (bitmap == null) {
-                    return;
-                }
-                try {
-                    WallpaperManager wpm = WallpaperManager.getInstance(ImageViewerActivity.this);
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                    bitmap = getScaledBitmap(bitmap, metrics.widthPixels , metrics.heightPixels, true);
-                    wpm.setBitmap(bitmap);
-                    Toast.makeText(ImageViewerActivity.this,
-                            getString(R.string.wallpaper_changed_title),
-                            Toast.LENGTH_LONG)
-                            .show();
-                } catch (IOException e) {
-                    DialogUtils.showErrorDialog(ImageViewerActivity.this, e);
-                }
-            }
-        }.execute();
-    }
-
-    public Bitmap getScaledBitmap(Bitmap bitmap, int scaledWidth, int scaledHeight, boolean portrait) {
-        if (portrait) {
-            if (bitmap.getHeight() > scaledHeight) {
-                return ImageUtils.getResizedBitmap(bitmap, scaledWidth, scaledHeight);
-            }
-        }
-        return bitmap;
-    }
-
-    private abstract class DownloadImageUrl extends AbsProgressIndicatorAsyncTask<Void, Void, Void> {
-        private final URL imageUrl;
-        private final File destFile;
-
-        public DownloadImageUrl(Context context, String message, URL imageUrl, File destFile) {
-            super(context, message);
-            this.imageUrl = imageUrl;
-            this.destFile = destFile;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voidParams) {
-            FileOutputStream os = null;
-            InputStream is = null;
-            try {
-                HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
-                is = connection.getInputStream();
-                os = new FileOutputStream(destFile);
-                IOUtils.copy(is, os);
-            } catch (Exception e) {
-                setError(e);
-            } finally {
-                if (is != null) try {
-                    is.close();
-                } catch (Exception ignored) {
-                }
-                if (os != null) try {
-                    os.close();
-                } catch (Exception ignored) {
-                }
-            }
-            return null;
-        }
+        });
     }
 
     @Override
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right);
+    }
+
+    private @Nullable String getImageUrl() {
+        final Bundle extras = getIntent().getExtras();
+        if (extras == null) {
+            return null;
+        }
+        return extras.getString(IMAGE_URL);
+    }
+
+    @NonNull
+    private String buildFileName(final String imageUrl, final String fileName) throws URISyntaxException {
+        if (fileName == null) {
+            String nameFromUrl = new URI(imageUrl).getPath();
+            int index = nameFromUrl.lastIndexOf('/');
+            if (index != -1) {
+                nameFromUrl = nameFromUrl.substring(index + 1);
+            }
+            return nameFromUrl;
+        }
+        int index = imageUrl.lastIndexOf(".");
+        // append extension with "."
+        if (index != -1) {
+            return fileName + imageUrl.substring(index);
+        }
+        return fileName;
     }
 }

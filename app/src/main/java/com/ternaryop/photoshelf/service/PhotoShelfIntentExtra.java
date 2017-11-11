@@ -7,21 +7,22 @@ package com.ternaryop.photoshelf.service;
 
 interface PhotoShelfIntentExtra {
     // Extra arguments
-    String URL = "url";
-    String BLOG_NAME = "blogName";
-    String POST_TITLE = "postTitle";
-    String POST_TAGS = "postTags";
-    String TYPE = "type";
+    String EXTRA_URI = "uri";
+    String EXTRA_BLOG_NAME = "blogName";
+    String EXTRA_POST_TITLE = "postTitle";
+    String EXTRA_POST_TAGS = "postTags";
+    String EXTRA_TYPE = "type";
+    String EXTRA_ACTION = "action";
+
+    String EXTRA_BIRTHDAY_DATE = "birthDate";
+    String EXTRA_LIST1 = "list1";
+    String EXTRA_BOOLEAN1 = "boolean1";
 
     // Action
-    String ACTION = "action";
-    String PUBLISH_ACTION_DRAFT = "draft";
-    String PUBLISH_ACTION_PUBLISH = "publish";
-    String FETCH_COUNTER_ACTION = "fetchCounter";
-    String BIRTHDAY_LIST_BY_DATE_ACTION = "birthdayListByDate";
-    String BIRTHDAY_PUBLISH_ACTION = "birthdayPublish";
-
-    String BIRTHDAY_DATE = "birthDate";
-    String LIST1 = "list1";
-    String BOOLEAN1 = "boolean1";
+    String ACTION_PUBLISH_DRAFT = "draft";
+    String ACTION_PUBLISH_PUBLISH = "publish";
+    String ACTION_FETCH_COUNTER = "fetchCounter";
+    String ACTION_BIRTHDAY_LIST_BY_DATE = "birthdayListByDate";
+    String ACTION_BIRTHDAY_PUBLISH = "birthdayPublish";
+    String ACTION_CHANGE_WALLPAPER = "changeWallpaper";
 }

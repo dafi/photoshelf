@@ -28,11 +28,11 @@ public class CounterIntentService extends IntentService implements PhotoShelfInt
         if (intent == null) {
             return;
         }
-        String selectedBlogName = intent.getStringExtra(BLOG_NAME);
-        int type = intent.getIntExtra(TYPE, CounterEvent.NONE);
-        String action = intent.getStringExtra(ACTION);
+        String selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME);
+        int type = intent.getIntExtra(EXTRA_TYPE, CounterEvent.NONE);
+        String action = intent.getStringExtra(EXTRA_ACTION);
 
-        if (FETCH_COUNTER_ACTION.equals(action)) {
+        if (ACTION_FETCH_COUNTER.equals(action)) {
             fetchCounterByType(type, selectedBlogName);
         }
     }
@@ -41,9 +41,9 @@ public class CounterIntentService extends IntentService implements PhotoShelfInt
                                     @NonNull String blogName,
                                     @CounterEvent.CounterType int type) {
         Intent intent = new Intent(context, CounterIntentService.class);
-        intent.putExtra(TYPE, type);
-        intent.putExtra(BLOG_NAME, blogName);
-        intent.putExtra(ACTION, FETCH_COUNTER_ACTION);
+        intent.putExtra(EXTRA_TYPE, type);
+        intent.putExtra(EXTRA_BLOG_NAME, blogName);
+        intent.putExtra(EXTRA_ACTION, ACTION_FETCH_COUNTER);
 
         context.startService(intent);
     }
