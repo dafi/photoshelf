@@ -18,6 +18,7 @@ import com.ternaryop.photoshelf.birthday.BirthdayUtils;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 
+@SuppressWarnings("ALL")
 public class BestOfFragment extends AbsPhotoShelfFragment implements GridView.MultiChoiceModeListener {
     private static final int PICK_IMAGE_REQUEST_CODE = 100;
     private static final String LOADER_PREFIX = "mediumThumb";
