@@ -29,10 +29,6 @@ import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
 public class TumblrHttpOAuthConsumer {
-    private static final String PREFS_NAME = "tumblr";
-    private static final String PREF_OAUTH_SECRET = "oAuthSecret";
-    private static final String PREF_OAUTH_TOKEN = "oAuthToken";
-
     private final OAuthService oAuthService;
     private final Token accessToken;
     private final String consumerKey;
@@ -47,23 +43,15 @@ public class TumblrHttpOAuthConsumer {
         .callback(context.getString(R.string.CALLBACK_URL))
         .build();
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        accessToken = new Token(
-                preferences.getString(PREF_OAUTH_TOKEN, null),
-                preferences.getString(PREF_OAUTH_SECRET, null));
+        accessToken = TokenPreference.from(context).getAccessToken();
     }
 
     public static boolean isLogged(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return preferences.contains(PREF_OAUTH_TOKEN) && preferences.contains(PREF_OAUTH_SECRET);
+        return TokenPreference.from(context).isAccessTokenValid();
     }
     
     public static void logout(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        Editor edit = preferences.edit();
-        edit.remove(PREF_OAUTH_TOKEN);
-        edit.remove(PREF_OAUTH_SECRET);
-        edit.apply();
+        TokenPreference.from(context).clearAccessToken();
     }
     
     public String getConsumerKey() {
@@ -79,10 +67,7 @@ public class TumblrHttpOAuthConsumer {
         .callback(context.getString(R.string.CALLBACK_URL))
         .build();
         Token requestToken = oAuthService.getRequestToken();
-        Editor edit = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        edit.putString(PREF_OAUTH_TOKEN, requestToken.getToken());
-        edit.putString(PREF_OAUTH_SECRET, requestToken.getSecret());
-        edit.apply();
+        TokenPreference.from(context).storeRequestToken(requestToken);
         String authorizationUrl = oAuthService.getAuthorizationUrl(requestToken);
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authorizationUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -90,55 +75,11 @@ public class TumblrHttpOAuthConsumer {
     }
 
     private static void access(final Context context, final Uri uri, final AuthenticationCallback callback) {
-        new AsyncTask<Void, Void, Token>() {
-            Exception error;
-            @Override
-            protected Token doInBackground(Void... params) {
-                Token accessToken = null;
-                try {
-                    OAuthService oAuthService = new ServiceBuilder()
-                    .provider(TumblrApi.class)
-                    .apiKey(context.getString(R.string.CONSUMER_KEY))
-                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                    .callback(context.getString(R.string.CALLBACK_URL))
-                    .build();
-                    SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-                    Token requestToken = new Token(
-                            prefs.getString(PREF_OAUTH_TOKEN, ""),
-                            prefs.getString(PREF_OAUTH_SECRET, ""));
-                    accessToken = oAuthService.getAccessToken(requestToken,
-                                    new Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)));
-                } catch (Exception e) {
-                    error = e;
-                }
-                return accessToken;
-            }
-            protected void onPostExecute(Token token) {
-                if (token != null && error == null) {
-                    Editor edit = PreferenceManager.getDefaultSharedPreferences(context).edit();
-                    edit.putString(PREF_OAUTH_TOKEN,  token.getToken());
-                    edit.putString(PREF_OAUTH_SECRET, token.getSecret());
-                    edit.apply();
-                }
-                if (callback != null) {
-                    if (token == null) {
-                        callback.tumblrAuthenticated(null, null, error);
-                    } else {
-                        callback.tumblrAuthenticated(token.getToken(), token.getSecret(), error);
-                    }
-                }
-            }
-        }.execute();
+        new AccessAsyncTask(uri, callback, TokenPreference.from(context)).execute();
     }
 
     public static void loginWithActivity(final Context context) {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                TumblrHttpOAuthConsumer.authorize(context);
-                return null;
-            }
-        }.execute();
+        new LoginAsyncTask().execute(context);
     }
     
     /**
@@ -263,4 +204,118 @@ public class TumblrHttpOAuthConsumer {
         return null;
     }
 
+    private static class AccessAsyncTask extends AsyncTask<Void, Void, Token> {
+        private final Uri uri;
+        private AuthenticationCallback callback;
+        private final TokenPreference prefs;
+        private Exception error;
+
+        public AccessAsyncTask(Uri uri, final AuthenticationCallback callback, TokenPreference prefs) {
+            this.uri = uri;
+            this.callback = callback;
+            this.prefs = prefs;
+        }
+
+        @Override
+        protected Token doInBackground(Void... params) {
+            Context context = prefs.getContext();
+            try {
+                OAuthService oAuthService = new ServiceBuilder()
+                        .provider(TumblrApi.class)
+                        .apiKey(context.getString(R.string.CONSUMER_KEY))
+                        .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+                        .callback(context.getString(R.string.CALLBACK_URL))
+                        .build();
+                return oAuthService.getAccessToken(prefs.getRequestToken(),
+                        new Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)));
+            } catch (Exception e) {
+                error = e;
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Token token) {
+            if (token != null && error == null) {
+                prefs.storeAccessToken(token);
+            }
+            if (callback != null) {
+                if (token == null) {
+                    callback.tumblrAuthenticated(null, null, error);
+                } else {
+                    callback.tumblrAuthenticated(token.getToken(), token.getSecret(), error);
+                }
+            }
+        }
+    }
+
+    private static class LoginAsyncTask extends AsyncTask<Context, Void, Void> {
+        @Override
+        protected Void doInBackground(Context... params) {
+            TumblrHttpOAuthConsumer.authorize(params[0]);
+            return null;
+        }
+    }
+
+    private static class TokenPreference {
+        private static final String PREFS_NAME = "tumblr";
+        private static final String PREF_OAUTH_SECRET = "oAuthSecret";
+        private static final String PREF_OAUTH_TOKEN = "oAuthToken";
+
+        private Context context;
+
+        public TokenPreference(Context context) {
+            this.context = context;
+        }
+
+        public static TokenPreference from(Context context) {
+            return new TokenPreference(context);
+        }
+
+        public Context getContext() {
+            return context;
+        }
+
+        public Token getRequestToken() {
+            return getToken(context.getSharedPreferences(PREFS_NAME, 0));
+        }
+
+        public void storeRequestToken(Token requestToken) {
+            storeToken(context.getSharedPreferences(PREFS_NAME, 0), requestToken);
+        }
+
+        public Token getAccessToken() {
+            return getToken(PreferenceManager.getDefaultSharedPreferences(context));
+        }
+
+        public void storeAccessToken(Token accessToken) {
+            storeToken(PreferenceManager.getDefaultSharedPreferences(context), accessToken);
+        }
+
+        public boolean isAccessTokenValid() {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            return preferences.contains(PREF_OAUTH_TOKEN) && preferences.contains(PREF_OAUTH_SECRET);
+        }
+
+        public void clearAccessToken() {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            Editor edit = preferences.edit();
+            edit.remove(PREF_OAUTH_TOKEN);
+            edit.remove(PREF_OAUTH_SECRET);
+            edit.apply();
+        }
+
+        private static Token getToken(SharedPreferences sharedPreferences) {
+            return new Token(
+                    sharedPreferences.getString(PREF_OAUTH_TOKEN, null),
+                    sharedPreferences.getString(PREF_OAUTH_SECRET, null));
+        }
+
+        private static void storeToken(SharedPreferences sharedPreferences, Token token) {
+            sharedPreferences
+                    .edit()
+                    .putString(PREF_OAUTH_TOKEN, token.getToken())
+                    .putString(PREF_OAUTH_SECRET, token.getSecret())
+                    .apply();
+        }
+    }
 }
