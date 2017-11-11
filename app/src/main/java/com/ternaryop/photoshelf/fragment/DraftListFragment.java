@@ -1,10 +1,7 @@
 package com.ternaryop.photoshelf.fragment;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,30 +26,34 @@ import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
-import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.db.Importer.ImportCompleteCallback;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog;
+import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
-import com.ternaryop.utils.TaskWithUI;
 import com.ternaryop.widget.ProgressHighlightViewLayout;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
 import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
     private static final int TAG_NAVIGATOR_DIALOG = 1;
     public static final String PREF_DRAFT_SORT_TYPE = "draft_sort_type";
     public static final String PREF_DRAFT_SORT_ASCENDING = "draft_sort_ascending";
 
-    private HashMap<String, TumblrPost> queuedPosts;
+    private Map<String, List<TumblrPost>> queuedPosts;
     private Calendar lastScheduledDate;
     private WaitingResultSwipeRefreshLayout swipeLayout;
 
@@ -189,55 +190,68 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     @Override
     protected void readPhotoPosts() {
-        task = (TaskWithUI) new AbsProgressIndicatorAsyncTask<Void, String, List<PhotoShelfPost>>(getActivity(), getString(R.string.reading_draft_posts), getCurrentTextView()) {
-            @Override
-            protected void onProgressUpdate(String... values) {
-                progressHighlightViewLayout.incrementProgress();
-            }
-
-            @Override
-            protected void onPostExecute(List<PhotoShelfPost> posts) {
-                super.onPostExecute(posts);
-
-                if (!hasError()) {
-                    photoAdapter.addAll(posts);
-                    photoAdapter.sort();
-                }
-                onRefreshCompleted();
-                refreshUI();
-            }
-
-            @Override
-            public void recreateUI() {
-                super.recreateUI();
-                onRefreshStarted();
-            }
-
-            @Override
-            protected List<PhotoShelfPost> doInBackground(Void... params) {
-                try {
-                    // reading drafts
-                    HashMap<String, List<TumblrPost>> tagsForDraftPosts = new HashMap<>();
-                    queuedPosts = new HashMap<>();
-                    draftPostHelper.getDraftAndQueueTags(tagsForDraftPosts, queuedPosts);
-
-                    ArrayList<String> tags = new ArrayList<>(tagsForDraftPosts.keySet());
-
-                    // get last published
-                    this.publishProgress(getContext().getString(R.string.finding_last_published_posts));
-                    Map<String, Long> lastPublishedPhotoByTags = draftPostHelper.getLastPublishedPhotoByTags(tags);
-
-                    return draftPostHelper.getDraftPosts(
-                            tagsForDraftPosts,
-                            queuedPosts,
-                            lastPublishedPhotoByTags);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    setError(e);
-                }
-                return Collections.emptyList();
-            }
-        }.execute();
+        Single
+                .zip(
+                        draftPostHelper.getDraftTags().subscribeOn(Schedulers.io()),
+                        draftPostHelper.getQueueTags().subscribeOn(Schedulers.io()),
+                        new BiFunction<Map<String, List<TumblrPost>>, Map<String, List<TumblrPost>>, Map<String, List<TumblrPost>>>() {
+                            @Override
+                            public Map<String, List<TumblrPost>> apply(Map<String, List<TumblrPost>> tagsForDraftPosts, Map<String, List<TumblrPost>> queueTags) throws Exception {
+                                queuedPosts = queueTags;
+                                return tagsForDraftPosts;
+                            }
+                        }
+                )
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(new Consumer<Map<String, List<TumblrPost>>>() {
+                    @Override
+                    public void accept(Map<String, List<TumblrPost>> tagsForDraftPosts) throws Exception {
+                        progressHighlightViewLayout.incrementProgress();
+                    }
+                })
+                .observeOn(Schedulers.newThread())
+                .flatMap(new Function<Map<String, List<TumblrPost>>, SingleSource<List<PhotoShelfPost>>>() {
+                    @Override
+                    public SingleSource<List<PhotoShelfPost>> apply(final Map<String, List<TumblrPost>> tagsForDraftPosts) throws Exception {
+                        return draftPostHelper
+                                .getTagLastPublishedMap(tagsForDraftPosts.keySet())
+                                .flatMap(new Function<Map<String, Long>, SingleSource<List<PhotoShelfPost>>>() {
+                                             @Override
+                                             public SingleSource<List<PhotoShelfPost>> apply(Map<String, Long> lastPublished) throws Exception {
+                                                 return Single.just(draftPostHelper.getPhotoShelfPosts(
+                                                         tagsForDraftPosts,
+                                                         queuedPosts,
+                                                         lastPublished));
+                                             }
+                                         });
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        compositeDisposable.add(disposable);
+                    }
+                })
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        onRefreshCompleted();
+                        refreshUI();
+                    }
+                })
+                .subscribe(new Consumer<List<PhotoShelfPost>>() {
+                    @Override
+                    public void accept(List<PhotoShelfPost> posts) throws Exception {
+                        photoAdapter.addAll(posts);
+                        photoAdapter.sort();
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        DialogUtils.showErrorDialog(getActivity(), throwable);
+                    }
+                });
     }
 
     @Override
@@ -295,8 +309,8 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
             long maxScheduledTime = System.currentTimeMillis();
 
             try {
-                for (TumblrPost post : queuedPosts.values()) {
-                    long scheduledTime = post.getScheduledPublishTime() * 1000;
+                for (List<TumblrPost> posts : queuedPosts.values()) {
+                    long scheduledTime = posts.get(0).getScheduledPublishTime() * 1000;
                     if (scheduledTime > maxScheduledTime) {
                         maxScheduledTime = scheduledTime;
                     }
