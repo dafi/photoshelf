@@ -100,6 +100,7 @@ public class SchedulePostDialog extends Dialog implements View.OnClickListener, 
     }
 
     private void schedulePost() {
+        findViewById(R.id.schedule_button).setEnabled(false);
         final Completable completable = Completable
                 .fromAction(new Action() {
                     @Override
