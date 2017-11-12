@@ -412,14 +412,13 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         }
 
         private void createPosts(boolean publish, String selectedBlogName, List<Uri> urls, String postTitle, String postTags) {
-            final String action = publish ? PublishIntentService.ACTION_PUBLISH_PUBLISH : PublishIntentService.ACTION_PUBLISH_DRAFT;
             for (Uri url : urls) {
                 PublishIntentService.startActionIntent(getActivity(),
                         url,
                         selectedBlogName,
                         postTitle,
                         postTags,
-                        action);
+                        publish);
             }
         }
     }

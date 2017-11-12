@@ -44,6 +44,11 @@ import org.greenrobot.eventbus.EventBus;
  * Contains all methods used to publish posts
  */
 public class PublishIntentService extends IntentService implements PhotoShelfIntentExtra {
+    private final static String ACTION_PUBLISH_DRAFT = "draft";
+    private final static String ACTION_PUBLISH_PUBLISH = "publish";
+    private final static String ACTION_BIRTHDAY_LIST_BY_DATE = "birthdayListByDate";
+    private final static String ACTION_BIRTHDAY_PUBLISH = "birthdayPublish";
+    private final static String ACTION_CHANGE_WALLPAPER = "changeWallpaper";
 
     private NotificationUtil notificationUtil;
     private final Handler handler;
@@ -154,13 +159,13 @@ public class PublishIntentService extends IntentService implements PhotoShelfInt
                                          @NonNull String blogName,
                                          @NonNull String postTitle,
                                          @NonNull String postTags,
-                                         @NonNull String publishAction) {
+                                         boolean publish) {
         Intent intent = new Intent(context, PublishIntentService.class);
         intent.putExtra(EXTRA_URI, url);
         intent.putExtra(EXTRA_BLOG_NAME, blogName);
         intent.putExtra(EXTRA_POST_TITLE, postTitle);
         intent.putExtra(EXTRA_POST_TAGS, postTags);
-        intent.putExtra(EXTRA_ACTION, publishAction);
+        intent.putExtra(EXTRA_ACTION, publish ? ACTION_PUBLISH_PUBLISH : ACTION_PUBLISH_DRAFT);
 
         context.startService(intent);
     }

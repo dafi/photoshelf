@@ -19,6 +19,8 @@ import org.greenrobot.eventbus.EventBus;
  * Handle counters retrieval
  */
 public class CounterIntentService extends IntentService implements PhotoShelfIntentExtra {
+    private final static String ACTION_FETCH_COUNTER = "fetchCounter";
+
     public CounterIntentService() {
         super("counterIntent");
     }

@@ -17,12 +17,4 @@ interface PhotoShelfIntentExtra {
     String EXTRA_BIRTHDAY_DATE = "birthDate";
     String EXTRA_LIST1 = "list1";
     String EXTRA_BOOLEAN1 = "boolean1";
-
-    // Action
-    String ACTION_PUBLISH_DRAFT = "draft";
-    String ACTION_PUBLISH_PUBLISH = "publish";
-    String ACTION_FETCH_COUNTER = "fetchCounter";
-    String ACTION_BIRTHDAY_LIST_BY_DATE = "birthdayListByDate";
-    String ACTION_BIRTHDAY_PUBLISH = "birthdayPublish";
-    String ACTION_CHANGE_WALLPAPER = "changeWallpaper";
 }
