@@ -3,10 +3,10 @@ apply plugin: 'com.android.application'
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
 
-    compile 'com.android.support:appcompat-v7:27.0.0'
-    compile 'com.android.support:recyclerview-v7:27.0.0'
-    compile 'com.android.support:design:27.0.0'
-    compile 'com.android.support:cardview-v7:27.0.0'
+    compile 'com.android.support:appcompat-v7:27.0.1'
+    compile 'com.android.support:recyclerview-v7:27.0.1'
+    compile 'com.android.support:design:27.0.1'
+    compile 'com.android.support:cardview-v7:27.0.1'
 
     compile 'io.reactivex.rxjava2:rxjava:2.1.5'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
@@ -20,7 +20,7 @@ dependencies {
     compile 'com.ternaryop:utils:1.0'
 
     testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support:support-annotations:27.0.0'
+    androidTestCompile 'com.android.support:support-annotations:27.0.1'
     androidTestCompile 'com.android.support.test:rules:1.0.1'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
@@ -28,6 +28,11 @@ dependencies {
 android {
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
     signingConfigs {
         release {
