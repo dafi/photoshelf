@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.PluralsRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Pair;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 
 import com.ternaryop.photoshelf.Constants;
+import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImageViewerActivity;
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
@@ -38,21 +40,20 @@ import com.ternaryop.photoshelf.view.ColorItemDecoration;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
 import com.ternaryop.utils.DialogUtils;
 import io.reactivex.Completable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
     protected static final int POST_ACTION_PUBLISH = 1;
     protected static final int POST_ACTION_DELETE = 2;
     protected static final int POST_ACTION_EDIT = 3;
+    protected static final int POST_ACTION_SAVE_AS_DRAFT = 4;
 
-    public static final int POST_ACTION_ERROR = 0;
     public static final int POST_ACTION_OK = -1;
-    public static final int POST_ACTION_FIRST_USER = 1;
 
     private static final String LOADER_PREFIX_POSTS_THUMB = "postsThumb";
 
@@ -71,12 +72,12 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View rootView = inflater.inflate(getPostListViewResource(), container, false);
-        
+
         photoAdapter = new PhotoAdapter(getActivity(), LOADER_PREFIX_POSTS_THUMB);
 
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
+        recyclerView = rootView.findViewById(R.id.list);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(photoAdapter);
@@ -101,7 +102,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         });
 
         setHasOptionsMenu(true);
-        
         return rootView;
     }
 
@@ -118,52 +118,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     protected abstract void readPhotoPosts();
-    
+
     protected abstract int getActionModeMenuId();
-
-    protected void saveAsDraft(final ActionMode mode, final List<PhotoShelfPost> postList) {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    new ActionExecutor(getActivity(), R.string.saving_posts_to_draft_title, mode, postList) {
-                        @Override
-                        protected void executeAction(PhotoShelfPost post) {
-                            colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_save_as_draft_bg));
-                            Tumblr.getSharedTumblr(getContext()).saveDraft(
-                                    getBlogName(),
-                                    post.getPostId());
-                        }
-                    }.execute();
-                    break;
-                }
-            }
-        };
-
-        String message = getResources().getQuantityString(R.plurals.save_to_draft_confirm,
-                postList.size(),
-                postList.size(),
-                postList.get(0).getFirstTag());
-        new AlertDialog.Builder(getActivity())
-        .setMessage(message)
-        .setPositiveButton(android.R.string.yes, dialogClickListener)
-        .setNegativeButton(android.R.string.no, dialogClickListener)
-        .show();        
-    }
-
-    private void deletePost(final ActionMode mode, final List<PhotoShelfPost> postList) {
-        new ActionExecutor(getActivity(), R.string.deleting_posts_title, mode, postList) {
-            @Override
-            protected void executeAction(PhotoShelfPost post) {
-                colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_delete_bg));
-                Tumblr.getSharedTumblr(getContext()).deletePost(getBlogName(),
-                        post.getPostId());
-                DBHelper.getInstance(getContext()).getPostDAO().deleteById(post.getPostId());
-                onPostAction(post, POST_ACTION_DELETE, POST_ACTION_OK);
-            }
-        }.execute();
-    }
 
     public void finish(TumblrPhotoPost post) {
         Intent data = new Intent();
@@ -226,17 +182,14 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         // Show the cancel button without setting a listener
         // because it isn't necessary
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-        .setTitle(getString(R.string.menu_header_show_image, post.getFirstTag()))
-        .setNegativeButton(android.R.string.cancel, null);
+                .setTitle(getString(R.string.menu_header_show_image, post.getFirstTag()))
+                .setNegativeButton(android.R.string.cancel, null);
 
         builder.setAdapter(arrayAdapter,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final TumblrAltSize item = arrayAdapter.getItem(which);
-                        if (item != null) {
-                            ImageViewerActivity.startImageViewer(getActivity(), item.getUrl(), post);
-                        }
+                (dialog, which) -> {
+                    final TumblrAltSize item = arrayAdapter.getItem(which);
+                    if (item != null) {
+                        ImageViewerActivity.startImageViewer(getActivity(), item.getUrl(), post);
                     }
                 });
         builder.show();
@@ -249,57 +202,69 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     private void showConfirmDialog(final int postAction, final ActionMode mode, final List<PhotoShelfPost> postsList) {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    switch (postAction) {
-                    case POST_ACTION_PUBLISH:
-                        publishPost(mode, postsList);
-                        break;
-                    case POST_ACTION_DELETE:
-                        deletePost(mode, postsList);
-                        break;
-                    }
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (postAction) {
+                case POST_ACTION_PUBLISH:
+                    publishPost(mode, postsList);
                     break;
-                }
+                case POST_ACTION_DELETE:
+                    deletePost(mode, postsList);
+                    break;
+                case POST_ACTION_SAVE_AS_DRAFT:
+                    saveAsDraft(mode, postsList);
+                    break;
             }
         };
 
-        String message = null;
-        switch (postAction) {
-        case POST_ACTION_PUBLISH:
-            message = getResources().getQuantityString(R.plurals.publish_post_confirm,
-                    postsList.size(),
-                    postsList.size(),
-                    postsList.get(0).getFirstTag());
-            break;
-        case POST_ACTION_DELETE:
-            message = getResources().getQuantityString(R.plurals.delete_post_confirm,
-                    postsList.size(),
-                    postsList.size(),
-                    postsList.get(0).getFirstTag());
-            break;
-        }
-        
+        String message = getResources().getQuantityString(getActionConfirmStringId(postAction),
+                postsList.size(),
+                postsList.size(),
+                postsList.get(0).getFirstTag());
         new AlertDialog.Builder(getActivity())
-        .setMessage(message)
-        .setPositiveButton(android.R.string.yes, dialogClickListener)
-        .setNegativeButton(android.R.string.no, dialogClickListener)
-        .show();        
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, dialogClickListener)
+                .setNegativeButton(android.R.string.no, null)
+                .show();
     }
-    
+
+    private @PluralsRes int getActionConfirmStringId(int postAction) {
+        switch (postAction) {
+            case POST_ACTION_PUBLISH:
+                return R.plurals.publish_post_confirm;
+            case POST_ACTION_DELETE:
+                return R.plurals.delete_post_confirm;
+            case POST_ACTION_SAVE_AS_DRAFT:
+                return R.plurals.save_to_draft_confirm;
+            default:
+                throw new AssertionError("Invalid post action");
+        }
+    }
+
+    private void saveAsDraft(final ActionMode mode, final List<PhotoShelfPost> postList) {
+        executePostAction(mode, postList, post -> {
+            Tumblr.getSharedTumblr(getActivity()).saveDraft(
+                    getBlogName(),
+                    post.getPostId());
+            new DraftPostHelper(getActivity(), getBlogName()).getDraftCache().updateItem(post);
+            onPostAction(post, POST_ACTION_SAVE_AS_DRAFT, POST_ACTION_OK);
+        });
+    }
+
+    private void deletePost(final ActionMode mode, final List<PhotoShelfPost> postList) {
+        colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_delete_bg));
+        executePostAction(mode, postList, post -> {
+            Tumblr.getSharedTumblr(getActivity()).deletePost(getBlogName(), post.getPostId());
+            DBHelper.getInstance(getActivity()).getPostDAO().deleteById(post.getPostId());
+            onPostAction(post, POST_ACTION_DELETE, POST_ACTION_OK);
+        });
+    }
+
     private void publishPost(ActionMode mode, final List<PhotoShelfPost> postList) {
-        new ActionExecutor(getActivity(), R.string.publishing_posts_title, mode, postList) {
-            @Override
-            protected void executeAction(PhotoShelfPost post) {
-                colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_publish_bg));
-                Tumblr.getSharedTumblr(getContext()).publishPost(getBlogName(),
-                        post.getPostId());
-                onPostAction(post, POST_ACTION_PUBLISH, POST_ACTION_OK);
-            }
-        }.execute();
+        colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_publish_bg));
+        executePostAction(mode, postList, post -> {
+            Tumblr.getSharedTumblr(getActivity()).publishPost(getBlogName(), post.getPostId());
+            onPostAction(post, POST_ACTION_PUBLISH, POST_ACTION_OK);
+        });
     }
 
     protected void refreshUI() {
@@ -320,95 +285,61 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         // use post() to resolve the following error:
         // Cannot call this method in a scroll callback. Scroll callbacks mightbe run during a measure & layout pass where you cannot change theRecyclerView data.
         // Any method call that might change the structureof the RecyclerView or the adapter contents should be postponed tothe next frame.
-        recyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
-                // so we wait for finished animations before call it
-                recyclerView.getItemAnimator().isRunning(new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
-                    @Override
-                    public void onAnimationsFinished() {
-                        photoAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
+        recyclerView.post(() -> {
+            // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
+            // so we wait for finished animations before call it
+            recyclerView.getItemAnimator().isRunning(() -> photoAdapter.notifyDataSetChanged());
         });
     }
-    
-    abstract class ActionExecutor extends AbsProgressIndicatorAsyncTask<Void, PhotoShelfPost, List<PhotoShelfPost>> {
-        private final ActionMode mode;
-        private final List<PhotoShelfPost> postList;
-        Exception error; // contains the last error found
 
-        public ActionExecutor(Context context, int resId, ActionMode mode, List<PhotoShelfPost> postList) {
-            super(context, context.getString(resId));
-            this.mode = mode;
-            this.postList = postList;
-        }
-
-        @Override
-        protected void onProgressUpdate(PhotoShelfPost... values) {
-            PhotoShelfPost post = values[0];
-            photoAdapter.remove(post);
-            setProgressMessage(post.getTagsAsString());
-        }
-        
-        @Override
-        protected void onPostExecute(List<PhotoShelfPost> notDeletedPosts) {
-            super.onPostExecute(null);
-
-            refreshUI();
-            // all posts have been deleted so call actionMode.finish()
-            if (notDeletedPosts.size() == 0) {
-                if (mode != null) {
-                    // when action mode is on the finish() method could be called while the item animation is running stopping it
-                    // so we wait the animation is completed and then call finish()
-                    recyclerView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            recyclerView.getItemAnimator().isRunning(new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
-                                @Override
-                                public void onAnimationsFinished() {
-                                    mode.finish();
-                                }
-                            });
-                        }
-                    });
-                }
-                return;
+    private void updateUIAfterPostAction(final ActionMode mode, final List<Pair<PhotoShelfPost, Throwable>> postsWithError) {
+        refreshUI();
+        // all posts have been deleted so call actionMode.finish()
+        if (postsWithError.isEmpty()) {
+            if (mode != null) {
+                // when action mode is on the finish() method could be called while the item animation is running stopping it
+                // so we wait the animation is completed and then call finish()
+                recyclerView.post(() -> recyclerView.getItemAnimator().isRunning(mode::finish));
             }
-            // leave posts not processed checked
-            photoAdapter.getSelection().clear();
-            for (PhotoShelfPost post : notDeletedPosts) {
-                int position = photoAdapter.getPosition(post);
-                photoAdapter.getSelection().setSelected(position, true);
-            }
-            DialogUtils.showSimpleMessageDialog(getContext(),
-                    R.string.generic_error,
-                    getContext().getResources().getQuantityString(
-                            R.plurals.general_posts_error,
-                            notDeletedPosts.size(),
-                            error.getMessage(),
-                            notDeletedPosts.size()));
+            return;
         }
-
-        @Override
-        protected List<PhotoShelfPost> doInBackground(Void... voidParams) {
-            List<PhotoShelfPost> notDeletedPosts = new ArrayList<>();
-
-            for (final PhotoShelfPost post : postList) {
-                try {
-                    executeAction(post);
-                    this.publishProgress(post);
-                } catch (Exception e) {
-                    error = e;
-                    notDeletedPosts.add(post);
-                }
-            }
-            return notDeletedPosts;
+        // leave posts not processed checked
+        photoAdapter.getSelection().clear();
+        for (Pair<PhotoShelfPost, Throwable> pair : postsWithError) {
+            int position = photoAdapter.getPosition(pair.first);
+            photoAdapter.getSelection().setSelected(position, true);
         }
-        
-        protected abstract void executeAction(PhotoShelfPost post);
+        DialogUtils.showSimpleMessageDialog(getActivity(),
+                R.string.generic_error,
+                getActivity().getResources().getQuantityString(
+                        R.plurals.general_posts_error,
+                        postsWithError.size(),
+                        postsWithError.get(postsWithError.size() - 1).second.getMessage(),
+                        postsWithError.size()));
+
+    }
+
+    private void executePostAction(final ActionMode mode, final List<PhotoShelfPost> postList, final Consumer<PhotoShelfPost> consumer) {
+        compositeDisposable.add(Observable
+                .fromIterable(postList)
+                .flatMap(post -> {
+                    try {
+                        consumer.accept(post);
+                        return Observable.just(Pair.create(post, (Throwable)null));
+                    } catch (Throwable e) {
+                        return Observable.just(Pair.create(post, e));
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(pair -> {
+                    if (pair.second == null) {
+                        photoAdapter.remove(pair.first);
+                    }
+                })
+                .filter(pair -> pair.second != null)
+                .toList()
+                .subscribe(postsWithError -> updateUIAfterPostAction(mode, postsWithError)));
     }
 
     @Override
@@ -429,13 +360,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         PopupMenu popupMenu = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(getActionModeMenuId(), popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                ArrayList<PhotoShelfPost> postList = new ArrayList<>();
-                postList.add(post);
-                return handleMenuItem(item, postList, null);
-            }
+        popupMenu.setOnMenuItemClickListener(item -> {
+            ArrayList<PhotoShelfPost> postList = new ArrayList<>();
+            postList.add(post);
+            return handleMenuItem(item, postList, null);
         });
         popupMenu.show();
     }
@@ -496,7 +424,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
                 showEditDialog(postList.get(0), mode);
                 return true;
             case R.id.post_save_draft:
-                saveAsDraft(mode, postList);
+                showConfirmDialog(POST_ACTION_SAVE_AS_DRAFT, mode, postList);
                 return true;
             case R.id.show_post:
                 showPost(postList.get(0));
@@ -548,23 +476,10 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     @Override
     public void onEditDone(final TumblrPostDialog dialog, final TumblrPhotoPost photoPost, final Completable completable) {
         completable
-                .doOnSubscribe(new Consumer<Disposable>() {
-                    @Override
-                    public void accept(Disposable d) throws Exception {
-                        compositeDisposable.add(d);
-                    }
-                })
-                .subscribe(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        AbsPostsListFragment.super.onEditDone(dialog, photoPost, completable);
-                        onPostAction(photoPost, POST_ACTION_EDIT, POST_ACTION_OK);
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable t) throws Exception {
-                        DialogUtils.showErrorDialog(getActivity(), t);
-                    }
-                });
+                .doOnSubscribe(d -> compositeDisposable.add(d))
+                .subscribe(() -> {
+                    AbsPostsListFragment.super.onEditDone(dialog, photoPost, completable);
+                    onPostAction(photoPost, POST_ACTION_EDIT, POST_ACTION_OK);
+                }, t -> DialogUtils.showErrorDialog(getActivity(), t));
     }
 }
