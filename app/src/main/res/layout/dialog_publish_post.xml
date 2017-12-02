@@ -1,44 +1,61 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:paddingStart="4dp"
+              android:paddingEnd="4dp"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:theme="@style/Theme.PhotoShelf.Dialog"
-        android:layout_height="?actionBarSize" />
+        android:layout_height="?actionBarSize"/>
 
     <EditText
         android:id="@+id/post_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
         android:layout_marginTop="4dp"
         android:hint="@string/post_title_hint"
-        android:maxLines="4" />
+        android:maxLines="4"/>
 
-    <MultiAutoCompleteTextView
-        android:id="@+id/post_tags"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginTop="4dp"
-        android:hint="@string/post_tags_hint"
-        android:inputType="text" />
+        android:layout_height="wrap_content">
+
+        <MultiAutoCompleteTextView
+            android:id="@+id/post_tags"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/post_tags_hint"
+            android:inputType="text"/>
+
+        <ImageButton
+            android:id="@+id/mruTags"
+            android:background="?selectableItemBackground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/post_tags_hint"
+            android:src="@drawable/ic_tag_black_24dp"
+            />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/blog_list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/blog"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" >
+            android:layout_weight="1">
         </Spinner>
 
         <ImageButton
@@ -49,6 +66,6 @@
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:contentDescription="@string/refresh"
-            android:src="@drawable/navigation_refresh" />
+            android:src="@drawable/navigation_refresh"/>
     </LinearLayout>
 </LinearLayout>

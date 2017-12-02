@@ -252,5 +252,6 @@
     <string name="refresh_token">Refresh Token</string>
     <string name="token_expired">Token Expired</string>
     <string name="change_wallpaper_error">Wallpaper</string>
+    <string name="recently_used_tags">Recently Used Tags</string>
 
 </resources>

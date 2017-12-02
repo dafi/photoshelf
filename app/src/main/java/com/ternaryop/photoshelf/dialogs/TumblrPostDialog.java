@@ -1,9 +1,10 @@
 package com.ternaryop.photoshelf.dialogs;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -15,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -28,6 +30,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 
@@ -40,6 +43,7 @@ import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.photoshelf.service.PublishIntentService;
+import com.ternaryop.photoshelf.util.MRU;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPhotoPost;
 import com.ternaryop.utils.DialogUtils;
@@ -49,8 +53,6 @@ import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuItemClickListener {
@@ -64,6 +66,9 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     private static final int NAME_ALREADY_EXISTS = 0;
     private static final int NAME_NOT_FOUND = 1;
     private static final int NAME_MISSPELLED = 2;
+
+    private static final String MRU_TAGS_KEY = "mruTags";
+    private static final int MRU_TAGS_MAX_SIZE = 20;
 
     private EditText postTitle;
     private MultiAutoCompleteTextView postTags;
@@ -79,6 +84,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     private Drawable defaultPostTagsBackground;
 
     protected CompositeDisposable compositeDisposable;
+    private MRU mruTags;
 
     public static TumblrPostDialog newInstance(Bundle args, Fragment target) {
         TumblrPostDialog fragment = new TumblrPostDialog();
@@ -136,30 +142,15 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         setupUI(view);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                 .setView(view)
-                .setNegativeButton(R.string.cancel_title, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        compositeDisposable.clear();
-                    }
-                });
+                .setNegativeButton(R.string.cancel_title, (dialog, which) -> compositeDisposable.clear());
         if (photoPost == null) {
             OnClickPublishListener onClickPublishListener = new OnClickPublishListener();
             builder.setNeutralButton(R.string.publish_post, onClickPublishListener);
             builder.setPositiveButton(R.string.draft_title, onClickPublishListener);
-            view.findViewById(R.id.refreshBlogList).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    fetchBlogNames();
-                }
-            });
+            view.findViewById(R.id.refreshBlogList).setOnClickListener(v -> fetchBlogNames());
         } else {
             view.findViewById(R.id.blog_list).setVisibility(View.GONE);
-            builder.setPositiveButton(R.string.edit_post_title, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    editPost();
-                }
-            });
+            builder.setPositiveButton(R.string.edit_post_title, (dialog, which) -> editPost());
         }
 
         return builder.create();
@@ -175,13 +166,13 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     private void setupUI(View view) {
-        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.publish_post_overflow);
         toolbar.setOnMenuItemClickListener(this);
 
-        postTitle = (EditText)view.findViewById(R.id.post_title);
-        postTags = (MultiAutoCompleteTextView)view.findViewById(R.id.post_tags);
-        blogList = (Spinner) view.findViewById(R.id.blog);
+        postTitle = view.findViewById(R.id.post_title);
+        postTags = view.findViewById(R.id.post_tags);
+        blogList = view.findViewById(R.id.blog);
 
         // the ContextThemeWrapper is necessary otherwise the autocomplete drop down items and the toolbar overflow menu items are styled incorrectly
         // since the switch to the AlertDialog the toolbar isn't styled from code so to fix it the theme is declared directly into xml
@@ -194,6 +185,11 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         postTags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
 
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());
+
+        ImageButton mruTags = view.findViewById(R.id.mruTags);
+        mruTags.setOnClickListener(this::openMRUDialog);
+        this.mruTags = new MRU(getActivity(), MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE);
+        mruTags.setEnabled(!this.mruTags.getList().isEmpty());
 
         fillTags(initialTagList);
         postTitle.setText(Html.fromHtml(htmlTitle));
@@ -209,6 +205,41 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
                     size,
                     size));
         }
+    }
+
+    @SuppressWarnings("unused")
+    private void openMRUDialog(View view) {
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.select_dialog_item,
+                mruTags.getList());
+        new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.recently_used_tags)
+                .setAdapter(adapter, (dialog, which) -> {
+                    String selectedTag = adapter.getItem(which);
+                    final ArrayList<String> tags = getPostTagsAsList();
+                    if (!contains(tags, selectedTag)) {
+                        tags.add(selectedTag);
+                        this.postTags.setText(TextUtils.join(", ", tags));
+                    }
+                    mruTags.add(selectedTag);
+
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    @NonNull
+    private ArrayList<String> getPostTagsAsList() {
+        return new ArrayList<>(Arrays.asList(getPostTags().trim().split("\\s*,\\s*")));
+    }
+
+    public boolean contains(ArrayList<String> arr, String needle) {
+        for (String s : arr) {
+            if (s.trim().compareToIgnoreCase(needle) == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Uri> getImageUrls() {
@@ -236,17 +267,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             return;
         }
         final Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        searchMisspelledName(firstTag);
-                    }
-                });
-            }
-        };
+        Runnable runnable = () -> handler.post(() -> searchMisspelledName(firstTag));
         new Thread(runnable).start();
     }
 
@@ -254,34 +275,28 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
         Single
-                .fromCallable(new Callable<Pair<Integer, String>>() {
-                    @Override
-                    public Pair<Integer, String> call() throws Exception {
-                        final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
-                                .getPostCountByTag(name, appSupport.getSelectedBlogName());
-                        if (count > 0) {
-                            return Pair.create(NAME_ALREADY_EXISTS, name);
-                        }
-                        String correctedName = new GoogleCustomSearchClient(
-                                    getString(R.string.GOOGLE_CSE_APIKEY),
-                                    getString(R.string.GOOGLE_CSE_CX))
-                                    .getCorrectedQuery(name);
-                        if (correctedName == null) {
-                            return Pair.create(NAME_NOT_FOUND, name);
-                        }
-                        return Pair.create(NAME_MISSPELLED, correctedName);
+                .fromCallable(() -> {
+                    final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
+                            .getPostCountByTag(name, appSupport.getSelectedBlogName());
+                    if (count > 0) {
+                        return Pair.create(NAME_ALREADY_EXISTS, name);
                     }
+                    String correctedName = new GoogleCustomSearchClient(
+                                getString(R.string.GOOGLE_CSE_APIKEY),
+                                getString(R.string.GOOGLE_CSE_CX))
+                                .getCorrectedQuery(name);
+                    if (correctedName == null) {
+                        return Pair.create(NAME_NOT_FOUND, name);
+                    }
+                    return Pair.create(NAME_MISSPELLED, correctedName);
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        final AlertDialog dialog = (AlertDialog) getDialog();
-                        // protect against NPE because inside onDestroy the dialog is already null
-                        if (dialog != null) {
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                        }
+                .doFinally(() -> {
+                    final AlertDialog dialog = (AlertDialog) getDialog();
+                    // protect against NPE because inside onDestroy the dialog is already null
+                    if (dialog != null) {
+                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
                     }
                 })
                 .subscribe(new SingleObserver<Pair<Integer, String>>() {
@@ -408,6 +423,10 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             final String selectedBlogName = (String) blogList.getSelectedItem();
             appSupport.setSelectedBlogName(selectedBlogName);
 
+            final ArrayList<String> tags = getPostTagsAsList();
+            tags.remove(0);
+            mruTags.add(tags);
+            mruTags.save();
             createPosts(which == DialogInterface.BUTTON_NEUTRAL, selectedBlogName, getImageUrls(), getPostTitle(), getPostTags());
         }
 
@@ -431,27 +450,18 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         final String selectedBlogName = appSupport.getSelectedBlogName();
 
         final Completable completable = Completable
-                .fromAction(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        Tumblr.getSharedTumblr(getActivity()).editPost(selectedBlogName, newValues);
-                        newValues.put("tumblrName", selectedBlogName);
-                        DBHelper.getInstance(getActivity()).getPostDAO().update(newValues, getActivity());
-                    }
+                .fromAction(() -> {
+                    Tumblr.getSharedTumblr(getActivity()).editPost(selectedBlogName, newValues);
+                    newValues.put("tumblrName", selectedBlogName);
+                    DBHelper.getInstance(getActivity()).getPostDAO().update(newValues, getActivity());
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
         if (getTargetFragment() instanceof PostListener) {
             ((PostListener) getTargetFragment()).onEditDone(this, photoPost, completable);
         } else {
-            completable.subscribe(new Action() {
-                @Override
-                public void run() throws Exception {
-                }
-            }, new Consumer<Throwable>() {
-                @Override
-                public void accept(Throwable throwable) throws Exception {}
-            });
+            completable.subscribe(() -> {
+            }, throwable -> {});
         }
     }
 
@@ -498,6 +508,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     public interface PostListener {
+        @SuppressWarnings("unused")
         void onEditDone(TumblrPostDialog dialog, TumblrPhotoPost post, Completable completable);
     }
 }
