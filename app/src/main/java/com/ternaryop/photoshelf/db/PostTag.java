@@ -1,6 +1,11 @@
 package com.ternaryop.photoshelf.db;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+
+import com.ternaryop.tumblr.TumblrPost;
 
 public class PostTag extends Post {
     /**
@@ -69,6 +74,27 @@ public class PostTag extends Post {
 
     public void setTumblrName(String tumblrName) {
         this.tumblrName = tumblrName;
+    }
+
+    public static List<PostTag> from(Collection<TumblrPost> input) {
+        ArrayList<PostTag> list = new ArrayList<>();
+
+        for (TumblrPost p : input) {
+            list.addAll(from(p));
+        }
+
+        return list;
+    }
+
+    public static List<PostTag> from(TumblrPost post) {
+        int showOrder = 0;
+        ArrayList<PostTag> list = new ArrayList<>();
+
+        for (String tag : post.getTags()) {
+            list.add(new PostTag(post.getPostId(), post.getBlogName(), tag, post.getTimestamp(), ++showOrder));
+        }
+
+        return list;
     }
 
     @Override

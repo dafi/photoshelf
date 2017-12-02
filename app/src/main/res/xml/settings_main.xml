@@ -37,10 +37,6 @@
                     android:key="export_posts_csv"
                     android:persistent="false"
                     android:title="@string/export_posts_csv_title" />
-                <Preference
-                    android:key="import_posts_from_tumblr"
-                    android:persistent="false"
-                    android:title="@string/import_posts_from_tumblr_title" />
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/pref_birthdays_title" >
                 <Preference
@@ -50,7 +46,7 @@
                 <Preference
                     android:key="import_birthdays_from_wikipedia"
                     android:persistent="false"
-                    android:title="@string/import_missing_birthdays_from_wikipedia_title" />
+                    android:title="@string/import_missing_birthdays_from_web_title" />
                 <Preference
                     android:key="export_birthdays"
                     android:persistent="false"

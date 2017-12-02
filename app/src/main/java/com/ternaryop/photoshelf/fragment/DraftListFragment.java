@@ -27,9 +27,7 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.Importer;
-import com.ternaryop.photoshelf.db.Importer.ImportCompleteCallback;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
-import com.ternaryop.photoshelf.dialogs.SchedulePostDialog.onPostScheduleListener;
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog;
 import com.ternaryop.photoshelf.event.CounterEvent;
 import com.ternaryop.tumblr.TumblrPhotoPost;
@@ -37,15 +35,8 @@ import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.widget.ProgressHighlightViewLayout;
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout;
-import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
@@ -66,13 +57,13 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
 
         View view = View.inflate(getActivity(), R.layout.draft_empty_list, (ViewGroup) rootView);
-        progressHighlightViewLayout = (ProgressHighlightViewLayout) view.findViewById(android.R.id.empty);
+        progressHighlightViewLayout = view.findViewById(android.R.id.empty);
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
         photoAdapter.setEmptyView(progressHighlightViewLayout);
         photoAdapter.setCounterType(CounterEvent.DRAFT);
 
         if (rootView != null) {
-            swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+            swipeLayout = rootView.findViewById(R.id.swipe_container);
             swipeLayout.setColorScheme(R.array.progress_swipe_colors);
             swipeLayout.setOnRefreshListener(this);
         }
@@ -87,9 +78,6 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         photoAdapter.setOnPhotoBrowseClick(this);
         loadSettings();
 
-        if (taskUIRecreated()) {
-            return;
-        }
         draftPostHelper = new DraftPostHelper(getActivity(), getBlogName());
         refreshCache();
     }
@@ -164,13 +152,13 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
             return;
         }
         onRefreshStarted();
-        task = new Importer(getActivity(), null).importFromTumblr(getBlogName(), getCurrentTextView(), new ImportCompleteCallback() {
-            @Override
-            public void complete() {
-                progressHighlightViewLayout.incrementProgress();
-                readPhotoPosts();
-            }
-        });
+
+        compositeDisposable.add(new Importer(getActivity()).importFromTumblr(getBlogName(), Importer.schedulers(), getCurrentTextView())
+                .subscribe(total -> {
+                    progressHighlightViewLayout.incrementProgress();
+                    readPhotoPosts();
+                }, t -> DialogUtils.showErrorDialog(getActivity(), t))
+        );
     }
 
     public TextView getCurrentTextView() {
@@ -190,68 +178,36 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     @Override
     protected void readPhotoPosts() {
-        Single
-                .zip(
-                        draftPostHelper.getDraftTags().subscribeOn(Schedulers.io()),
-                        draftPostHelper.getQueueTags().subscribeOn(Schedulers.io()),
-                        new BiFunction<Map<String, List<TumblrPost>>, Map<String, List<TumblrPost>>, Map<String, List<TumblrPost>>>() {
-                            @Override
-                            public Map<String, List<TumblrPost>> apply(Map<String, List<TumblrPost>> tagsForDraftPosts, Map<String, List<TumblrPost>> queueTags) throws Exception {
-                                queuedPosts = queueTags;
-                                return tagsForDraftPosts;
-                            }
-                        }
-                )
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess(new Consumer<Map<String, List<TumblrPost>>>() {
-                    @Override
-                    public void accept(Map<String, List<TumblrPost>> tagsForDraftPosts) throws Exception {
-                        progressHighlightViewLayout.incrementProgress();
-                    }
-                })
-                .observeOn(Schedulers.newThread())
-                .flatMap(new Function<Map<String, List<TumblrPost>>, SingleSource<List<PhotoShelfPost>>>() {
-                    @Override
-                    public SingleSource<List<PhotoShelfPost>> apply(final Map<String, List<TumblrPost>> tagsForDraftPosts) throws Exception {
-                        return draftPostHelper
+        compositeDisposable.add(
+                Single
+                        .zip(
+                                draftPostHelper.getDraftTags().subscribeOn(Schedulers.io()),
+                                draftPostHelper.getQueueTags().subscribeOn(Schedulers.io()),
+                                (tagsForDraftPosts, queueTags) -> {
+                                    queuedPosts = queueTags;
+                                    return tagsForDraftPosts;
+                                }
+                        )
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnSuccess(tagsForDraftPosts -> progressHighlightViewLayout.incrementProgress())
+                        .observeOn(Schedulers.newThread())
+                        .flatMap(tagsForDraftPosts -> draftPostHelper
                                 .getTagLastPublishedMap(tagsForDraftPosts.keySet())
-                                .flatMap(new Function<Map<String, Long>, SingleSource<List<PhotoShelfPost>>>() {
-                                             @Override
-                                             public SingleSource<List<PhotoShelfPost>> apply(Map<String, Long> lastPublished) throws Exception {
-                                                 return Single.just(draftPostHelper.getPhotoShelfPosts(
-                                                         tagsForDraftPosts,
-                                                         queuedPosts,
-                                                         lastPublished));
-                                             }
-                                         });
-                    }
-                })
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(new Consumer<Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-                        compositeDisposable.add(disposable);
-                    }
-                })
-                .doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        onRefreshCompleted();
-                        refreshUI();
-                    }
-                })
-                .subscribe(new Consumer<List<PhotoShelfPost>>() {
-                    @Override
-                    public void accept(List<PhotoShelfPost> posts) throws Exception {
-                        photoAdapter.addAll(posts);
-                        photoAdapter.sort();
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        DialogUtils.showErrorDialog(getActivity(), throwable);
-                    }
-                });
+                                .flatMap(lastPublished -> Single.just(draftPostHelper.getPhotoShelfPosts(
+                                        tagsForDraftPosts,
+                                        queuedPosts,
+                                        lastPublished))))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnSubscribe(disposable -> compositeDisposable.add(disposable))
+                        .doFinally(() -> {
+                            onRefreshCompleted();
+                            refreshUI();
+                        })
+                        .subscribe(posts -> {
+                            photoAdapter.addAll(posts);
+                            photoAdapter.sort();
+                        }, t -> DialogUtils.showErrorDialog(getActivity(), t))
+        );
     }
 
     @Override
@@ -260,34 +216,14 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     }
 
     private void showScheduleDialog(final PhotoShelfPost item, final ActionMode mode) {
-        SchedulePostDialog dialog = new SchedulePostDialog(getActivity(),
+        new SchedulePostDialog(getActivity(),
                 getBlogName(),
                 item,
                 findScheduleTime(),
-                new onPostScheduleListener() {
-                    @Override
-                    public void onPostScheduled(final long id, final Calendar scheduledDateTime, final Completable completable) {
-                        completable
-                                .doOnSubscribe(new Consumer<Disposable>() {
-                                    @Override
-                                    public void accept(Disposable d) throws Exception {
-                                        compositeDisposable.add(d);
-                                    }
-                                })
-                                .subscribe(new Action() {
-                                    @Override
-                                    public void run() throws Exception {
-                                        onScheduleRefreshUI(item, mode, scheduledDateTime);
-                                    }
-                                }, new Consumer<Throwable>() {
-                                    @Override
-                                    public void accept(Throwable t) throws Exception {
-                                        DialogUtils.showErrorDialog(getActivity(), t);
-                                    }
-                                });
-                    }
-                });
-        dialog.show();
+                (id, scheduledDateTime, completable) -> completable
+                        .doOnSubscribe(d -> compositeDisposable.add(d))
+                        .subscribe(() -> onScheduleRefreshUI(item, mode, scheduledDateTime), t -> DialogUtils.showErrorDialog(getActivity(), t)))
+                .show();
     }
 
     private void onScheduleRefreshUI(final PhotoShelfPost item, final ActionMode mode, Calendar scheduledDateTime) {

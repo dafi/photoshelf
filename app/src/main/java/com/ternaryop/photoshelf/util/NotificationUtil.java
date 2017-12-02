@@ -37,14 +37,18 @@ public class NotificationUtil extends ContextWrapper {
     public static final String BIRTHDAY_CHANNEL_ID = "birthdayId";
     private static final String BIRTHDAY_ADDED_TAG = "com.ternaryop.photoshelf.birthday.added";
     private static final String BIRTHDAY_TODAY_TAG = "com.ternaryop.photoshelf.birthday.today";
+    private static final String EXPORT_TAG = "com.ternaryop.photoshelf.export";
 
     private static final String BIRTHDAY_CLEAR_ACTION = "com.ternaryop.photoshelf.birthday.clear";
 
     private static final String ERROR_TAG = "com.ternaryop.photoshelf.error";
 
     private static final int NOTIFICATION_ID = 1;
+    public static final int NOTIFICATION_ID_IMPORT_BIRTHDAY = 2;
+    public static final int NOTIFICATION_ID_IMPORT_POSTS = 3;
 
     private static final List<String> birthdaysContentLines = new ArrayList<>();
+
     private NotificationManager notificationManager;
 
     public NotificationUtil(Context context) {
@@ -59,7 +63,7 @@ public class NotificationUtil extends ContextWrapper {
     public void notifyError(Throwable t, String title, String ticker, int offsetId) {
         Notification notification = createNotification(title, ticker, t.getLocalizedMessage(), R.drawable.stat_notify_error).build();
         // add offsetId to ensure every notification is shown
-        getManager().notify(ERROR_TAG, NOTIFICATION_ID + offsetId, notification);
+        getNotificationManager().notify(ERROR_TAG, NOTIFICATION_ID + offsetId, notification);
     }
 
     public void clearBirthdaysNotification() {
@@ -77,8 +81,8 @@ public class NotificationUtil extends ContextWrapper {
                 R.drawable.stat_notify_bday,
                 getClearBirthdaysPendingIntent());
         // if notification is already visible the user doesn't receive any visual feedback so we clear it
-        getManager().cancel(BIRTHDAY_ADDED_TAG, NOTIFICATION_ID);
-        getManager().notify(BIRTHDAY_ADDED_TAG, NOTIFICATION_ID, notification);
+        getNotificationManager().cancel(BIRTHDAY_ADDED_TAG, NOTIFICATION_ID);
+        getNotificationManager().notify(BIRTHDAY_ADDED_TAG, NOTIFICATION_ID, notification);
     }
 
     public void notifyTodayBirthdays(List<Birthday> list, int currYear) {
@@ -104,7 +108,7 @@ public class NotificationUtil extends ContextWrapper {
         // remove notification when user clicks on it
         builder.setAutoCancel(true);
 
-        getManager().notify(BIRTHDAY_TODAY_TAG, NOTIFICATION_ID, builder.build());
+        getNotificationManager().notify(BIRTHDAY_TODAY_TAG, NOTIFICATION_ID, builder.build());
     }
 
     private void createChannel() {
@@ -113,6 +117,9 @@ public class NotificationUtil extends ContextWrapper {
         }
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null) {
+            return;
+        }
 
         CharSequence channelName = "Birthdays";
         int importance = NotificationManager.IMPORTANCE_LOW;
@@ -124,7 +131,7 @@ public class NotificationUtil extends ContextWrapper {
         notificationManager.createNotificationChannel(channel);
     }
 
-    private NotificationCompat.Builder createNotification(String contentText, String stringTicker, String subText, int iconId) {
+    public NotificationCompat.Builder createNotification(String contentText, String stringTicker, String subText, int iconId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, BIRTHDAY_CHANNEL_ID)
                 .setContentText(contentText)
                 .setTicker(stringTicker)
@@ -192,7 +199,7 @@ public class NotificationUtil extends ContextWrapper {
         return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private NotificationManager getManager() {
+    public NotificationManager getNotificationManager() {
         if (notificationManager == null) {
             notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         }
@@ -213,5 +220,9 @@ public class NotificationUtil extends ContextWrapper {
         Intent intent = new Intent(this, ClearBirthdayNotificationBroadcastReceiver.class);
         intent.setAction(BIRTHDAY_CLEAR_ACTION);
         return PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    public void notifyExport(String contentText, String ticker, String subText, int iconId) {
+        getNotificationManager().notify(EXPORT_TAG, 0, createNotification(contentText, ticker, subText, iconId).build());
     }
 }

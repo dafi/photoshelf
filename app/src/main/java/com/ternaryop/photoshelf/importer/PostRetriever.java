@@ -5,89 +5,68 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
-import android.widget.TextView;
+import android.support.annotation.NonNull;
 
-import com.ternaryop.photoshelf.R;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
+import io.reactivex.Observable;
 
-public class PostRetriever extends AbsProgressIndicatorAsyncTask<Void, Integer, List<TumblrPost> > {
-    private final Callback<List<TumblrPost>> callback;
-    private final long lastPublishTimestamp;
-    private HashMap<String, String> params;
-    private String tumblrName;
+public class PostRetriever {
+    private final Tumblr sharedTumblr;
+    private int offset;
+    private int total;
 
-    public PostRetriever(Context context, long publishTimestamp, Callback<List<TumblrPost>> callback) {
-        this(context, publishTimestamp, null, callback);
+    public PostRetriever(Context context) {
+        sharedTumblr = Tumblr.getSharedTumblr(context);
     }
 
-    public PostRetriever(Context context, long publishTimestamp, TextView textView, Callback<List<TumblrPost>> callback) {
-        super(context, context.getString(R.string.start_import_title), textView);
-        this.callback = callback;
-        this.lastPublishTimestamp = publishTimestamp;
+    public Observable<List<TumblrPost>> readPhotoPosts(final String tumblrName, final long lastPublishTimestamp) {
+        return readPhotoPosts(tumblrName, lastPublishTimestamp, null);
     }
 
-    public void readPhotoPosts(String tumblrName, String tag) {
-        this.tumblrName = tumblrName;
+    public Observable<List<TumblrPost>> readPhotoPosts(final String tumblrName, final long lastPublishTimestamp, final String tag) {
+        HashMap<String, String> params = buildParams(tag);
 
-        params = new HashMap<>();
+        offset = 0;
+        total = 0;
+        return Observable.generate(emitter -> {
+            params.put("offset", String.valueOf(offset));
+            List<TumblrPost> postsList = sharedTumblr.getPublicPosts(tumblrName, params);
+            boolean loadNext = postsList.size() > 0;
+            offset += postsList.size();
+
+            final ArrayList<TumblrPost> newerPosts = new ArrayList<>();
+            for (TumblrPost tumblrPost : postsList) {
+                if (lastPublishTimestamp < tumblrPost.getTimestamp()) {
+                    newerPosts.add(tumblrPost);
+                } else {
+                    loadNext = false;
+                    break;
+                }
+            }
+
+            total += newerPosts.size();
+
+            if (!newerPosts.isEmpty()) {
+                emitter.onNext(newerPosts);
+            }
+            if (!loadNext) {
+                emitter.onComplete();
+            }
+        });
+    }
+
+    @NonNull
+    private HashMap<String, String> buildParams(String tag) {
+        HashMap<String, String> params = new HashMap<>();
         params.put("type", "photo");
-        if (tag != null && tag.trim().length() > 0) {
+        if (tag != null && !tag.trim().isEmpty()) {
             params.put("tag", tag);
         }
-        execute();
+        return params;
     }
 
-    @Override
-    protected List<TumblrPost> doInBackground(Void... voidParams) {
-        ArrayList<TumblrPost> allPostList = new ArrayList<>();
-        try {
-            int offset = 0;
-            boolean loadNext;
-            
-            do {
-                params.put("offset", String.valueOf(offset));
-                List<TumblrPost> postsList = Tumblr
-                        .getSharedTumblr(getContext())
-                        .getPublicPosts(tumblrName, params);
-                loadNext = postsList.size() > 0;
-                offset += postsList.size();
-                
-                for (TumblrPost tumblrPost : postsList) {
-                    if (lastPublishTimestamp < tumblrPost.getTimestamp()) {
-                        allPostList.add(tumblrPost);
-                    } else {
-                        loadNext = false;
-                        break;
-                    }
-                }
-                // refresh UI
-                publishProgress(allPostList.size());
-            } while (loadNext);
-        } catch (Exception e) {
-            e.printStackTrace();
-            setError(e);
-        }
-        return allPostList;
-    }
-
-    @Override
-    protected void onPostExecute(List<TumblrPost> allPosts) {
-        // do not call super.onPostExecute() because it shows the alert message
-        dismiss();
-        if (!hasError()) {
-            callback.complete(allPosts);
-        } else {
-            callback.failure(getError());
-        }
-    }
-
-    protected void onProgressUpdate(Integer... values) {
-        setProgressMessage((getContext().getResources().getQuantityString(
-                R.plurals.posts_read_count,
-                values[0],
-                values[0])));
+    public int getTotal() {
+        return total;
     }
 }

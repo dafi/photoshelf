@@ -25,6 +25,7 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.db.Importer;
 import com.ternaryop.photoshelf.dropbox.DropboxManager;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
+import com.ternaryop.photoshelf.service.ImportIntentService;
 import com.ternaryop.photoshelf.util.security.PermissionUtil;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.utils.DateTimeUtils;
@@ -38,8 +39,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private static final String KEY_DROPBOX_LOGIN = "dropbox_login";
     private static final String KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv";
     private static final String KEY_EXPORT_POSTS_FROM_CSV = "export_posts_csv";
-    private static final String KEY_IMPORT_POSTS_FROM_TUMBLR = "import_posts_from_tumblr";
-    private static final String KEY_IMPORT_DOM_FILTERS = "import_dom_filters";
     private static final String KEY_IMPORT_TITLE_PARSER = "import_title_parser";
     private static final String KEY_IMPORT_BIRTHDAYS = "import_birthdays";
     private static final String KEY_EXPORT_BIRTHDAYS = "export_birthdays";
@@ -56,8 +55,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     private Preference preferenceTumblrLogin;
     private Preference preferenceImportPostsFromCSV;
     private Preference preferenceExportPostsToCSV;
-    private Preference preferenceImportPostsFromTumblr;
-    private Preference preferenceImportDOMFilters;
     private Preference preferenceImportTitleParser;
     private Preference preferenceImportBirthdays;
     private Preference preferenceExportBirthdays;
@@ -104,8 +101,6 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
 
         preferenceExportPostsToCSV = preferenceScreen.findPreference(KEY_EXPORT_POSTS_FROM_CSV);
         preferenceExportPostsToCSV.setSummary(csvPath);
-        
-        preferenceImportPostsFromTumblr = preferenceScreen.findPreference(KEY_IMPORT_POSTS_FROM_TUMBLR);
         
         preferenceImportTitleParser = setupPreferenceFilePath(Importer.getTitleParserPath(), KEY_IMPORT_TITLE_PARSER, preferenceScreen);
         preferenceImportTitleParser.setTitle(getString(R.string.import_title_parser_title, new AndroidTitleParserConfig(getActivity()).getVersion()));
@@ -204,32 +199,30 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
             }
             return true;
         } else if (preference == preferenceImportPostsFromCSV) {
-            getImporter().importPostsFromCSV(Importer.getPostsPath());
+            ImportIntentService.startImportPostsFromCSV(getActivity(), Importer.getPostsPath());
             return true;
         } else {
-            if (preference == preferenceImportPostsFromTumblr) {
-                getImporter().importFromTumblr(appSupport.getSelectedBlogName());
-                return true;
-            } else if (preference == preferenceImportTitleParser) {
+            if (preference == preferenceImportTitleParser) {
                 getImporter().importFile(Importer.getTitleParserPath(), Importer.TITLE_PARSER_FILE_NAME);
                 return true;
             } else if (preference == preferenceImportBirthdays) {
-                getImporter().importBirthdays(Importer.getBirthdaysPath());
+                ImportIntentService.startImportBirthdaysFromCSV(getActivity(), Importer.getBirthdaysPath());
                 return true;
             } else if (preference == preferenceExportPostsToCSV) {
-                getImporter().exportPostsToCSV(Importer.getExportPath(Importer.getPostsPath()));
+                ImportIntentService.startExportPostsCSV(getActivity(), Importer.getExportPath(Importer.getPostsPath()));
                 return true;
             } else if (preference == preferenceExportBirthdays) {
-                getImporter().exportBirthdaysToCSV(Importer.getExportPath(Importer.getBirthdaysPath()));
+                ImportIntentService.startExportBirthdaysCSV(getActivity(), Importer.getExportPath(Importer.getBirthdaysPath()));
                 return true;
             } else if (preference == preferenceImportBirthdaysFromWikipedia) {
-                getImporter().importMissingBirthdaysFromWikipedia(appSupport.getSelectedBlogName());
+                ImportIntentService.startImportBirthdaysFromWeb(getActivity(), appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceClearImageCache) {
                 clearImageCache();
                 return true;
             } else if (preference == preferenceExportMissingBirthdays) {
-                getImporter().exportMissingBirthdaysToCSV(Importer.getExportPath(Importer.getMissingBirthdaysPath()),
+                ImportIntentService.startExportMissingBirthdaysCSV(getActivity(),
+                        Importer.getExportPath(Importer.getMissingBirthdaysPath()),
                         appSupport.getSelectedBlogName());
                 return true;
             } else if (preference == preferenceDropboxLogin) {
@@ -246,14 +239,11 @@ public class PhotoPreferencesFragment extends PreferenceFragment implements OnSh
     }
 
     private void logout() {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    Tumblr.logout(getActivity().getApplicationContext());
-                    break;
-                }
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which) {
+            case DialogInterface.BUTTON_POSITIVE:
+                Tumblr.logout(getActivity().getApplicationContext());
+                break;
             }
         };
         

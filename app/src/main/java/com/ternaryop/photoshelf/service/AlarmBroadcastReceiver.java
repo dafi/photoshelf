@@ -36,6 +36,11 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
     }
 
     public static void createBirthdayAlarm(Context context, long triggerAtMillis) {
+        AlarmManager alarmManager = (AlarmManager)context.getApplicationContext()
+                .getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager == null) {
+            return;
+        }
         final Intent serviceIntent = new Intent(context.getApplicationContext(), AlarmBroadcastReceiver.class);
         serviceIntent.setAction(BIRTHDAY_ACTION);
 
@@ -44,12 +49,15 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
                 serviceIntent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        AlarmManager alarmManager = (AlarmManager)context.getApplicationContext()
-                .getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_DAY, pendingIntent);
     }
 
     public static void createExportAlarm(Context context, long triggerAtMillis) {
+        AlarmManager alarmManager = (AlarmManager)context.getApplicationContext()
+                .getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager == null) {
+            return;
+        }
         final Intent serviceIntent = new Intent(context.getApplicationContext(), AlarmBroadcastReceiver.class);
         serviceIntent.setAction(EXPORT_ACTION);
 
@@ -58,8 +66,6 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
                 serviceIntent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        AlarmManager alarmManager = (AlarmManager)context.getApplicationContext()
-                .getSystemService(Context.ALARM_SERVICE);
         // every 3 hours
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_HOUR * 3, pendingIntent);
     }
@@ -92,7 +98,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
             private void exportBirthdays(Importer importer) {
                 try {
-                    importer.syncExportBirthdaysToCSV(Importer.getBirthdaysPath());
+                    importer.exportBirthdaysToCSV(Importer.getBirthdaysPath());
                 } catch (Exception e) {
                     Log.error(e, getLogPath(), "Export birthdays");
                 }
@@ -100,7 +106,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
             private void exportPosts(Importer importer) {
                 try {
-                    importer.syncExportPostsToCSV(Importer.getPostsPath());
+                    importer.exportPostsToCSV(Importer.getPostsPath());
                 } catch (Exception e) {
                     Log.error(e, getLogPath(), "Export posts");
                 }

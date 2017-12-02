@@ -15,13 +15,11 @@ import android.widget.TextView;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog;
 import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.utils.TaskWithUI;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 
 public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPostDialog.PostListener {
     protected FragmentActivityStatus fragmentActivityStatus;
-    protected TaskWithUI task;
     private ActionMode actionMode;
 
     protected CompositeDisposable compositeDisposable;
@@ -41,9 +39,6 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
 
     @Override
     public void onDetach() {
-        if (task != null) {
-            task.dismiss();
-        }
         compositeDisposable.clear();
         super.onDetach();
     }
@@ -54,14 +49,6 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
      
         // all Activities must adhere to FragmentActivityStatus
         fragmentActivityStatus = (FragmentActivityStatus)activity;
-    }
-    
-    protected boolean taskUIRecreated() {
-        if (task != null && task.isRunning()) {
-            task.recreateUI();
-            return true;
-        }
-        return false;
     }
     
     public String getBlogName() {
@@ -94,7 +81,7 @@ public abstract class AbsPhotoShelfFragment extends Fragment implements TumblrPo
     protected void showSnackbar(@NonNull Snackbar snackbar) {
         View sbView = snackbar.getView();
         sbView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.image_picker_detail_text_bg));
-        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
         textView.setTextColor(ContextCompat.getColor(getActivity(), R.color.image_picker_detail_text_text));
         textView.setMaxLines(3);
         snackbar.show();

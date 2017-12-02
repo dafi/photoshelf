@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -20,7 +21,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import android.text.TextUtils;
+import android.support.annotation.Nullable;
+import android.support.annotation.PluralsRes;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,12 +33,13 @@ import com.ternaryop.photoshelf.dropbox.DropboxManager;
 import com.ternaryop.photoshelf.importer.CSVIterator;
 import com.ternaryop.photoshelf.importer.CSVIterator.CSVBuilder;
 import com.ternaryop.photoshelf.importer.PostRetriever;
-import com.ternaryop.tumblr.Callback;
 import com.ternaryop.tumblr.Tumblr;
 import com.ternaryop.tumblr.TumblrPost;
-import com.ternaryop.utils.AbsProgressIndicatorAsyncTask;
-import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.utils.IOUtils;
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class Importer {
     public static final String CSV_FILE_NAME = "tags.csv";
@@ -46,62 +49,29 @@ public class Importer {
     public static final String TOTAL_USERS_FILE_NAME = "totalUsers.csv";
 
     private static final SimpleDateFormat ISO_8601_DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+    private static final ObservableTransformer<List<TumblrPost>, List<TumblrPost>> DO_NOTHING_TRANSFORMER = upstream -> upstream;
 
     private final Context context;
     private final DropboxManager dropboxManager;
+
+    public Importer(final Context context) {
+        this(context, null);
+    }
 
     public Importer(final Context context, DropboxManager dropboxManager) {
         this.context = context;
         this.dropboxManager = dropboxManager;
     }
 
-    public void importPostsFromCSV(final String importPath) {
-        try {
-            new DbImportAsyncTask<>(context,
-                    new CSVIterator<>(importPath, new PostTagCSVBuilder()),
-                    DBHelper.getInstance(context).getBulkImportPostDAOWrapper(),
-                    true).execute();
-//            if (dropboxManager.hasLinkedAccount()) {
-//                DbxFileSystem dbxFs = DbxFileSystem.forAccount(dropboxManager.getLinkedAccount());
-//                File exportFile = new File(importPath);
-//                final DbxFile file = dbxFs.open(new DbxPath(exportFile.getName()));
-//                new DbImportAsyncTask<PostTag>(context,
-//                        new CSVIterator<PostTag>(importPath, new PostTagCSVBuilder()),
-//                        DBHelper.getInstance(context).getPostTagDAO(),
-//                        true) {
-//                    protected void onPostExecute(Void result) {
-//                        super.onPostExecute(result);
-//                        file.close();
-//                    }
-//                }.execute();
-//            }
-        } catch (Exception error) {
-            DialogUtils.showErrorDialog(context, error);
-        }
+    public Observable<Integer> importPostsFromCSV(final String importPath) throws IOException {
+        return new DbImport<>(DBHelper.getInstance(context).getBulkImportPostDAOWrapper())
+                .importer(new CSVIterator<>(importPath, new PostTagCSVBuilder()), true);
     }
 
-    public void exportPostsToCSV(final String exportPath) {
-        try {
-            new AbsProgressIndicatorAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
-                @Override
-                protected Void doInBackground(Void... voidParams) {
-                    try {
-                        syncExportPostsToCSV(exportPath);
-                    } catch (Exception e) {
-                        setError(e);
-                    }
-
-                    return null;
-                }
-            }.execute();
-        } catch (Exception error) {
-            DialogUtils.showErrorDialog(context, error);
-        }
-    }
-
-    public void syncExportPostsToCSV(final String exportPath) throws Exception {
+    public int exportPostsToCSV(final String exportPath) throws Exception {
         try (Cursor c = DBHelper.getInstance(context).getPostTagDAO().cursorExport()) {
             PrintWriter pw = fastPrintWriter(exportPath);
+            int count = 0;
             while (c.moveToNext()) {
                 pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$d;%5$d",
                         c.getLong(c.getColumnIndex(PostTagDAO._ID)),
@@ -110,72 +80,60 @@ public class Importer {
                         c.getLong(c.getColumnIndex(PostTagDAO.PUBLISH_TIMESTAMP)),
                         c.getLong(c.getColumnIndex(PostTagDAO.SHOW_ORDER))
                 ));
+                ++count;
             }
             pw.flush();
             pw.close();
 
             copyFileToDropbox(exportPath);
+            return count;
         }
     }
 
-    public void importFromTumblr(final String blogName) {
-        importFromTumblr(blogName, null, null);
+    /**
+     * Create the Observable to import newer posts and inserted them into database
+     * @param blogName the blog name
+     * @param transformer used to set the schedulers to used
+     * @param textView the textView used to show the progress, can be null
+     * @return the Observable
+     */
+    public Observable<Integer> importFromTumblr(final String blogName,
+                                                @Nullable final ObservableTransformer<List<TumblrPost>, List<TumblrPost>> transformer,
+                                                @Nullable final TextView textView) {
+        PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
+
+        if (textView != null) {
+            textView.setText(context.getString(R.string.start_import_title));
+        }
+
+        final PostRetriever postRetriever = new PostRetriever(context);
+
+        return postRetriever
+                .readPhotoPosts(blogName, post == null ? 0 : post.getPublishTimestamp())
+                .compose(transformer == null ? DO_NOTHING_TRANSFORMER : transformer)
+                .doOnNext(posts -> updateText(textView, postRetriever.getTotal(), R.plurals.posts_read_count))
+                .flatMap(posts -> Observable.fromIterable(PostTag.from(posts)))
+                .toList()
+                .flatMapObservable(postTags -> new DbImport<>(DBHelper.getInstance(context).getBulkImportPostDAOWrapper())
+                        .importer(postTags.iterator(), false))
+                .doOnNext(total -> updateText(textView, total, R.plurals.imported_items))
+                .takeLast(1);
     }
 
-    public PostRetriever importFromTumblr(final String blogName, final TextView textView, final ImportCompleteCallback callback) {
-        PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
-        long publishTimestamp = post == null ? 0 : post.getPublishTimestamp();
-        Callback<List<TumblrPost>> wrapperCallback = new Callback<List<TumblrPost>>() {
+    private void updateText(TextView textView, int total, @PluralsRes int id) {
+        if (textView != null) {
+            String message = context.getResources().getQuantityString(
+                    id,
+                    total,
+                    total);
+            textView.setText(message);
+        }
+    }
 
-            @Override
-            public void failure(Exception error) {
-                if (error != null) {
-                    DialogUtils.showErrorDialog(context, error);
-                }
-            }
-
-            @Override
-            public void complete(List<TumblrPost> allPosts) {
-                if (allPosts.isEmpty()) {
-                    if (callback != null) {
-                        callback.complete();
-                    }
-                    return;
-                }
-                List<PostTag> allPostTags = new ArrayList<>();
-                for (TumblrPost tumblrPost : allPosts) {
-                    allPostTags.addAll(postTagsFromTumblrPost(tumblrPost));
-                }
-                new DbImportAsyncTask<PostTag>(context,
-                        textView,
-                        allPostTags.iterator(),
-                        DBHelper.getInstance(context).getBulkImportPostDAOWrapper(),
-                        false) {
-                    @Override
-                    protected void onPostExecute(Void result) {
-                        super.onPostExecute(result);
-                        if (callback != null) {
-                            callback.complete();
-                        }
-                    }
-                }.execute();
-            }
-
-            private List<PostTag> postTagsFromTumblrPost(TumblrPost tumblrPost) {
-                int showOrder = 1;
-                ArrayList<PostTag> list = new ArrayList<>();
-
-                for (String tag : tumblrPost.getTags()) {
-                    list.add(new PostTag(tumblrPost.getPostId(), tumblrPost.getBlogName(), tag, tumblrPost.getTimestamp(), showOrder));
-                    ++showOrder;
-                }
-
-                return list;
-            }
-        };
-        PostRetriever postRetriever = new PostRetriever(context, publishTimestamp, textView, wrapperCallback);
-        postRetriever.readPhotoPosts(blogName, null);
-        return postRetriever;
+    public static ObservableTransformer<List<TumblrPost>, List<TumblrPost>> schedulers() {
+        return upstream -> upstream
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     public void importFile(String importPath, String contextFileName) {
@@ -188,66 +146,29 @@ public class Importer {
     }
 
     public void copyFileToContext(String fullPath, String contextFileName) throws IOException {
-        InputStream in = null;
-        OutputStream out = null;
-
-        try {
-            in = new FileInputStream(fullPath);
-            out = context.openFileOutput(contextFileName, 0);
-
+        try (InputStream in = new FileInputStream(fullPath); OutputStream out = context.openFileOutput(contextFileName, 0)) {
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-        } finally {
-            if (in != null) try { in.close(); } catch (Exception ignored) {}
-            if (out != null) try { out.close(); } catch (Exception ignored) {}
         }
     }
 
-    public void importBirthdays(final String importPath) {
-        try {
-            new DbImportAsyncTask<>(context,
-                    new CSVIterator<>(importPath, new CSVBuilder<Birthday>() {
-
-                        @Override
-                        public Birthday parseCSVFields(String[] fields) throws ParseException {
-                            // id is skipped
-                            return new Birthday(fields[1], fields[2], fields[3]);
-                        }
-                    }),
-                    DBHelper.getInstance(context).getBirthdayDAO(),
-                    true).execute();
-        } catch (Exception error) {
-            DialogUtils.showErrorDialog(context, error);
-        }
+    public Observable<Integer> importBirthdays(final String importPath) throws IOException {
+        return new DbImport<>(DBHelper.getInstance(context).getBirthdayDAO())
+                .importer(new CSVIterator<>(importPath, fields -> {
+                    // id is skipped
+                    return new Birthday(fields[1], fields[2], fields[3]);
+                }), true);
     }
 
-    public void exportBirthdaysToCSV(final String exportPath) {
-        try {
-            new AbsProgressIndicatorAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
-                @Override
-                protected Void doInBackground(Void... voidParams) {
-                    try {
-                        syncExportBirthdaysToCSV(exportPath);
-                    } catch (Exception e) {
-                        setError(e);
-                    }
-
-                    return null;
-                }
-            }.execute();
-        } catch (Exception error) {
-            DialogUtils.showErrorDialog(context, error);
-        }
-    }
-
-    public void syncExportBirthdaysToCSV(final String exportPath) throws Exception {
+    public int exportBirthdaysToCSV(final String exportPath) throws Exception {
         SQLiteDatabase db = DBHelper.getInstance(context).getReadableDatabase();
         try (Cursor c = db.query(BirthdayDAO.TABLE_NAME, null, null, null, null, null, BirthdayDAO.NAME)) {
             PrintWriter pw = fastPrintWriter(exportPath);
             long id = 1;
+            int count = 0;
             while (c.moveToNext()) {
                 String birthdate = c.getString(c.getColumnIndex(BirthdayDAO.BIRTH_DATE));
                 // ids are recomputed
@@ -259,104 +180,84 @@ public class Importer {
                         c.getString(c.getColumnIndex(BirthdayDAO.TUMBLR_NAME))
                 );
                 pw.println(csvLine);
+                ++count;
             }
             pw.flush();
             pw.close();
 
             copyFileToDropbox(exportPath);
+            return count;
         }
     }
 
-    public void importMissingBirthdaysFromWikipedia(final String blogName) {
-        new AbsProgressIndicatorAsyncTask<Void, String, String>(context,
-                context.getString(R.string.import_missing_birthdays_from_wikipedia_title)) {
-            @Override
-            protected void onProgressUpdate(String... values) {
-                setProgressMessage(values[0]);
-            }
+    public Observable<ImportProgressInfo<Birthday>> importMissingBirthdaysFromWeb(final String blogName) {
+        BirthdayDAO birthdayDAO = DBHelper.getInstance(context).getBirthdayDAO();
+        List<String> names = birthdayDAO.getNameWithoutBirthDays(blogName);
+        SimpleImportProgressInfo<Birthday> info = new SimpleImportProgressInfo<>(names.size());
+        Iterator<String> nameIterator = names.iterator();
 
-            @Override
-            protected String doInBackground(Void... params) {
-                BirthdayDAO birthdayDAO = DBHelper.getInstance(context).getBirthdayDAO();
-                List<String> names = birthdayDAO.getNameWithoutBirthDays(blogName);
-                List<Birthday> birthdays = new ArrayList<>();
-                int curr = 1;
-                int size = names.size();
-                StringBuilder found = new StringBuilder();
-
-                for (final String name : names) {
-                    publishProgress(name + " (" + curr + "/" + size + ")" + found);
-                    try {
-                        Birthday birthday = BirthdayUtils.searchBirthday(context, name, blogName);
-                        if (birthday != null) {
-                            birthdays.add(birthday);
-                            found.append("\n").append(birthday.toString());
-                        }
-                    } catch (Exception e) {
-                        // simply skip
-                    }
-                    ++curr;
-                }
-                // store to db and write the csv file
-                SQLiteDatabase db = birthdayDAO.getDbHelper().getWritableDatabase();
+        return Observable.generate(emitter -> {
+            if (nameIterator.hasNext()) {
+                ++info.progress;
+                String name = nameIterator.next();
                 try {
-                    db.beginTransaction();
-                    String fileName = "birthdays-" + new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()) + ".csv";
-                    String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + fileName;
-                    PrintWriter pw = fastPrintWriter(path);
-                    for (Birthday birthday : birthdays) {
-                        pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$s",
-                                1L,
-                                birthday.getName(),
-                                Birthday.ISO_DATE_FORMAT.format(birthday.getBirthDate()),
-                                blogName));
-                        birthdayDAO.insert(birthday);
+                    Birthday birthday = BirthdayUtils.searchBirthday(context, name, blogName);
+                    if (birthday != null) {
+                        info.items.add(birthday);
                     }
-                    pw.flush();
-                    pw.close();
-                    db.setTransactionSuccessful();
                 } catch (Exception e) {
-                    setError(e);
-                } finally {
-                    db.endTransaction();
+                    // simply skip
                 }
-                return getContext().getString(R.string.import_progress_title, birthdays.size()) + "\n" + TextUtils.join("\n", birthdays);
+                emitter.onNext(info);
+            } else {
+                saveBirthdaysToDatabase(info.items);
+                saveBirthdaysToFile(info.items);
+                emitter.onNext(info);
+                emitter.onComplete();
             }
-
-            protected void onPostExecute(String message) {
-                super.onPostExecute(null);
-
-                if (!hasError()) {
-                    DialogUtils.showSimpleMessageDialog(getContext(),
-                            R.string.import_missing_birthdays_from_wikipedia_title,
-                            message);
-                }
-            }
-        }.execute();
+        });
     }
 
-    public void exportMissingBirthdaysToCSV(final String exportPath, final String tumblrName) {
+    private void saveBirthdaysToDatabase(List<Birthday> birthdays) {
+        BirthdayDAO birthdayDAO = DBHelper.getInstance(context).getBirthdayDAO();
+        SQLiteDatabase db = birthdayDAO.getDbHelper().getWritableDatabase();
         try {
-            new AbsProgressIndicatorAsyncTask<Void, Void, Void>(context, context.getString(R.string.exporting_to_csv)) {
-                @Override
-                protected Void doInBackground(Void... voidParams) {
-                    List<String> list = DBHelper.getInstance(context).getBirthdayDAO().getNameWithoutBirthDays(tumblrName);
-                    try (PrintWriter pw = fastPrintWriter(exportPath)) {
-                        for (String name : list) {
-                            pw.println(name);
-                        }
-                        pw.flush();
+            db.beginTransaction();
+            for (Birthday birthday : birthdays) {
+                birthdayDAO.insert(birthday);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
 
-                        copyFileToDropbox(exportPath);
-                    } catch (Exception e) {
-                        setError(e);
-                    }
+    private void saveBirthdaysToFile(List<Birthday> birthdays) throws IOException {
+        String fileName = "birthdays-" + new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()) + ".csv";
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + fileName;
 
-                    return null;
-                }
-            }.execute();
-        } catch (Exception error) {
-            DialogUtils.showErrorDialog(context, error);
+        try (PrintWriter pw = fastPrintWriter(path)) {
+            for (Birthday birthday : birthdays) {
+                pw.println(String.format(Locale.US, "%1$d;%2$s;%3$s;%4$s",
+                        1L,
+                        birthday.getName(),
+                        Birthday.ISO_DATE_FORMAT.format(birthday.getBirthDate()),
+                        birthday.getTumblrName()));
+            }
+            pw.flush();
+        }
+    }
+
+    public int exportMissingBirthdaysToCSV(final String exportPath, final String tumblrName) throws Exception {
+        try (PrintWriter pw = fastPrintWriter(exportPath)) {
+            List<String> list = DBHelper.getInstance(context).getBirthdayDAO().getNameWithoutBirthDays(tumblrName);
+            for (String name : list) {
+                pw.println(name);
+            }
+            pw.flush();
+
+            copyFileToDropbox(exportPath);
+            return list.size();
         }
     }
 
@@ -370,10 +271,6 @@ public class Importer {
                     Long.parseLong(fields[3]),
                     Long.parseLong(fields[4]));
         }
-    }
-
-    public interface ImportCompleteCallback {
-        void complete();
     }
 
     private void copyFileToDropbox(final String exportPath) throws Exception {
@@ -449,5 +346,42 @@ public class Importer {
      */
     public static PrintWriter fastPrintWriter(String path) throws IOException {
         return new PrintWriter(new BufferedWriter(new FileWriter(path)), false);
+    }
+
+    public interface ImportProgressInfo<T> {
+        int getProgress();
+        int getMax();
+        Collection<T> getItems();
+    }
+
+    public class SimpleImportProgressInfo<T> implements ImportProgressInfo<T> {
+        int progress;
+        final int max;
+        final ArrayList<T> items;
+
+        public SimpleImportProgressInfo(int max) {
+            this.max = max;
+            items = new ArrayList<>();
+        }
+
+        @Override
+        public int getProgress() {
+            return progress;
+        }
+
+        @Override
+        public int getMax() {
+            return max;
+        }
+
+        @Override
+        public Collection<T> getItems() {
+            return items;
+        }
+
+        @Override
+        public String toString() {
+            return "progress " + progress + " max " + max + " items " + items;
+        }
     }
 }

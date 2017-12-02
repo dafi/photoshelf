@@ -45,15 +45,12 @@
     <string name="reading_tags_title">Reading posts tagged with \'%1$s\'&#8230;</string>
     <string name="import_posts_from_csv_title">Import Posts from CSV File</string>
     <string name="export_posts_csv_title">Export Posts to CSV File</string>
-    <string name="import_posts_from_tumblr_title">Import Posts From Tumblr</string>
-    <string name="import_dom_filters_title">Import DOM Filters (current version %1$d)</string>
     <string name="import_title_parser_title">Import Title Parsers (current version %1$d)</string>
     <string name="import_birthdays_title">Import Birthdays</string>
-    <string name="import_missing_birthdays_from_wikipedia_title">Import Missing Birthdays from Wikipedia</string>
+    <string name="import_missing_birthdays_from_web_title">Import Missing Birthdays from Web</string>
     <string name="export_birthdays_title">Export Birthdays to CSV File</string>
     <string name="exporting_to_csv">Exporting to CSV&#8230;</string>
     <string name="start_import_title">Start Import&#8230;</string>
-    <string name="import_progress_title" tools:ignore="PluralsCandidate">Imported %1$d items</string>
     <string name="enter_tag_hint">Enter tag to search</string>
     <string name="tag_with_post_count">%1$s (%2$d)</string>
     <string name="generic_error">Error</string>
@@ -159,6 +156,18 @@
     <plurals name="download_url_with_count">
         <item quantity="one">Download URL</item>
         <item quantity="other">Download URL, bytes read %1$d</item>
+    </plurals>
+    <plurals name="exported_items">
+        <item quantity="one">Exported one item</item>
+        <item quantity="other">Exported %1$d items</item>
+    </plurals>
+    <plurals name="imported_items">
+        <item quantity="one">Imported one item</item>
+        <item quantity="other">Imported %1$d items</item>
+    </plurals>
+    <plurals name="item_found">
+        <item quantity="one">Found %1$d item</item>
+        <item quantity="other">Found %1$d items</item>
     </plurals>
 
     <string name="saving_posts_to_draft_title">Saving posts to draft&#8230;</string>
