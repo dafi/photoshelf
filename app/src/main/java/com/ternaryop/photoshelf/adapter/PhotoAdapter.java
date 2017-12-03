@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -69,11 +68,13 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
         View.OnClickListener listener = onPhotoBrowseClick == null ? null : this;
         boolean showUploadTime = getCurrentSort() == SORT_UPLOAD_TIME;
-        holder.bindModel(visiblePosts.get(position), imageLoader, thumbnailWidth, showUploadTime);
-        holder.setOnClickListeners(visiblePosts.get(position), listener);
+        final PhotoShelfPost post = visiblePosts.get(position);
+        holder.bindModel(post, imageLoader, thumbnailWidth, showUploadTime);
+        holder.setOnClickListeners(post, listener);
         if (onPhotoBrowseClick instanceof OnPhotoBrowseClickMultiChoice) {
             holder.setOnClickMultiChoiceListeners(listener, this);
         }
+        holder.setOtherTagsClickListener(listener);
         holder.itemView.setSelected(selection.isSelected(position));
     }
 
@@ -91,10 +92,14 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
                 onPhotoBrowseClick.onThumbnailImageClick((Integer) v.getTag());
                 break;
             case R.id.menu:
-                onPhotoBrowseClick.onOverflowClick(v, (Integer) v.getTag());
+                onPhotoBrowseClick.onOverflowClick((Integer) v.getTag(), v);
                 break;
             case R.id.list_row:
                 ((OnPhotoBrowseClickMultiChoice)onPhotoBrowseClick).onItemClick((Integer) v.getTag());
+                break;
+            case R.id.other_tag_text_view:
+                int position = (int) ((ViewGroup) v.getParent()).getTag();
+                onPhotoBrowseClick.onOtherTagClick(position, (String) v.getTag());
                 break;
         }
     }
@@ -375,12 +380,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
         }
 
         public void sort() {
-            Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
-                @Override
-                public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
-                    return LastPublishedTimestampComparator.compareTag(lhs, rhs, isAscending());
-                }
-            });
+            Collections.sort(visiblePosts, (lhs, rhs) -> LastPublishedTimestampComparator.compareTag(lhs, rhs, isAscending()));
             calcGroupIds();
         }
     }
@@ -403,16 +403,13 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
 
         @Override
         public void sort() {
-            Collections.sort(visiblePosts, new Comparator<PhotoShelfPost>() {
-                @Override
-                public int compare(PhotoShelfPost lhs, PhotoShelfPost rhs) {
-                    long diff = lhs.getTimestamp() - rhs.getTimestamp();
-                    int compare = diff < -1 ? -1 : diff > 1 ? 1 : 0;
-                    if (compare == 0) {
-                        return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
-                    }
-                    return isAscending() ? compare : -compare;
+            Collections.sort(visiblePosts, (lhs, rhs) -> {
+                long diff = lhs.getTimestamp() - rhs.getTimestamp();
+                int compare = diff < -1 ? -1 : diff > 1 ? 1 : 0;
+                if (compare == 0) {
+                    return lhs.getFirstTag().compareToIgnoreCase(rhs.getFirstTag());
                 }
+                return isAscending() ? compare : -compare;
             });
             calcGroupIds();
         }

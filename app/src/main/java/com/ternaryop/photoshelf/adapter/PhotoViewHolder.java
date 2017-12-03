@@ -1,9 +1,12 @@
 package com.ternaryop.photoshelf.adapter;
 
+import java.util.List;
+
 import android.content.res.TypedArray;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -26,22 +29,50 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
     final ImageView thumbImage;
     final ImageView menu;
     final TextView noteCountText;
+    final ViewGroup otherTagsContainer;
 
     public PhotoViewHolder(View itemView) {
         super(itemView);
-        title = (TextView) itemView.findViewById(R.id.title_textview);
-        timeDesc = (TextView) itemView.findViewById(R.id.time_desc);
-        caption = (TextView) itemView.findViewById(R.id.caption);
-        menu = (ImageView) itemView.findViewById(R.id.menu);
-        noteCountText = (TextView) itemView.findViewById(R.id.note_count);
+        title = itemView.findViewById(R.id.title_textview);
+        timeDesc = itemView.findViewById(R.id.time_desc);
+        caption = itemView.findViewById(R.id.caption);
+        menu = itemView.findViewById(R.id.menu);
+        noteCountText = itemView.findViewById(R.id.note_count);
 
-        thumbImage = (ImageView) itemView.findViewById(R.id.thumbnail_image);
+        thumbImage = itemView.findViewById(R.id.thumbnail_image);
+        otherTagsContainer = itemView.findViewById(R.id.other_tags_container);
     }
 
     public void bindModel(PhotoShelfPost post, ImageLoader imageLoader, int thumbnailWidth, boolean showUploadTime) {
-        updateItemColors(post);
         updateTitles(post, showUploadTime);
         displayImage(post, imageLoader, thumbnailWidth);
+        setupOtherTags(post);
+        updateItemColors(post);
+    }
+
+    private void setupOtherTags(PhotoShelfPost post) {
+        final List<String> tags = post.getTags();
+        int tagsCount = tags.isEmpty() ? 0 : tags.size() - 1;
+        int viewCount = otherTagsContainer.getChildCount();
+        int delta = tagsCount - viewCount;
+
+        if (delta < 0) {
+            for (int i = tagsCount; i < viewCount; i++) {
+                otherTagsContainer.getChildAt(i).setVisibility(View.GONE);
+            }
+        } else if (delta > 0) {
+            for (int i = 0; i < delta; i++) {
+                otherTagsContainer.addView(LayoutInflater.from(otherTagsContainer.getContext()).inflate(R.layout.other_tag, null));
+            }
+        }
+        for (int i = 1; i < tags.size(); i++) {
+            String tag = tags.get(i);
+            final TextView view = (TextView) otherTagsContainer.getChildAt(i - 1);
+            view.setId(R.id.other_tag_text_view);
+            view.setText(String.format("#%s", tag));
+            view.setTag(tag);
+            view.setVisibility(View.VISIBLE);
+        }
     }
 
     @SuppressWarnings("ResourceType")
@@ -53,6 +84,12 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
         caption.setTextColor(array.getColorStateList(3));
         menu.setImageDrawable(array.getDrawable(4));
         noteCountText.setTextColor(array.getColorStateList(3));
+
+        for (int i = 0; i < otherTagsContainer.getChildCount(); i++) {
+            final TextView view = (TextView) otherTagsContainer.getChildAt(i);
+            view.setTextColor(array.getColorStateList(3));
+        }
+
         array.recycle();
     }
 
@@ -121,11 +158,10 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
 
     public void setOnClickMultiChoiceListeners(View.OnClickListener listener, View.OnLongClickListener longClickListener) {
         if (listener != null) {
-            final int position = getAdapterPosition();
             itemView.setOnClickListener(listener);
             itemView.setOnLongClickListener(longClickListener);
             itemView.setLongClickable(true);
-            itemView.setTag(position);
+            itemView.setTag(getAdapterPosition());
         }
     }
 
@@ -140,6 +176,15 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
             default:
                 setColors(post.getGroupId() % 2 == 0 ? R.array.post_even : R.array.post_odd);
                 break;
+        }
+    }
+
+    public void setOtherTagsClickListener(View.OnClickListener listener) {
+        if (listener != null) {
+            otherTagsContainer.setTag(getAdapterPosition());
+            for (int i = 0; i < otherTagsContainer.getChildCount(); i++) {
+                otherTagsContainer.getChildAt(i).setOnClickListener(listener);
+            }
         }
     }
 }

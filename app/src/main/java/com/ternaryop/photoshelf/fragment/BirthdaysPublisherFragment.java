@@ -53,12 +53,12 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
         gridViewPhotoAdapter.setOnPhotoBrowseClick(this);
 
         RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.grid_layout_thumb_width));
-        RecyclerView gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
+        RecyclerView gridView = rootView.findViewById(R.id.gridview);
         gridView.setAdapter(gridViewPhotoAdapter);
         gridView.setHasFixedSize(true);
         gridView.setLayoutManager(layout);
 
-        swipeLayout = (WaitingResultSwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        swipeLayout = rootView.findViewById(R.id.swipe_container);
         swipeLayout.setColorScheme(R.array.progress_swipe_colors);
         swipeLayout.setOnRefreshListener(this);
         swipeLayout.setRefreshing(true);
@@ -146,6 +146,10 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     @Override
+    public void onOtherTagClick(int position, String tag) {
+    }
+
+    @Override
     public void onItemLongClick(int position) {
         if (actionMode == null) {
             actionMode = getActivity().startActionMode(this);
@@ -183,7 +187,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     @Override
-    public void onOverflowClick(View view, int position) {
+    public void onOverflowClick(int position, View view) {
     }
 
     @Override

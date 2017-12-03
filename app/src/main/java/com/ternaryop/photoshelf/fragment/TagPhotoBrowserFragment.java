@@ -19,15 +19,10 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe;
 import com.ternaryop.tumblr.Tumblr;
-import com.ternaryop.tumblr.TumblrPhotoPost;
-import com.ternaryop.tumblr.TumblrPost;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class TagPhotoBrowserFragment extends AbsPostsListFragment implements SearchView.OnSuggestionListener {
@@ -110,29 +105,14 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
 
         Observable
                 .just(params)
-                .doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        isScrolling = false;
-                    }
-                })
-                .flatMap(new Function<HashMap<String, String>, ObservableSource<TumblrPhotoPost>>() {
-                    @Override
-                    public ObservableSource<TumblrPhotoPost> apply(HashMap<String, String> params) throws Exception {
-                        return Observable.fromIterable(Tumblr.getSharedTumblr(getActivity())
-                                .getPhotoPosts(getBlogName(), params));
-                    }
-                })
-                .map(new Function<TumblrPost, PhotoShelfPost>() {
-                    @Override
-                    public PhotoShelfPost apply(TumblrPost tumblrPost) throws Exception {
-                        return new PhotoShelfPost((TumblrPhotoPost)tumblrPost, tumblrPost.getTimestamp() * 1000);
-                    }
-                })
+                .doFinally(() -> isScrolling = false)
+                .flatMap(params1 -> Observable.fromIterable(Tumblr.getSharedTumblr(getActivity())
+                        .getPhotoPosts(getBlogName(), params1)))
+                .map(tumblrPost -> new PhotoShelfPost(tumblrPost, tumblrPost.getTimestamp() * 1000))
                 .toList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .compose(photoShelfSwipe.<List<PhotoShelfPost>>applySwipe())
+                .compose(photoShelfSwipe.applySwipe())
                 .subscribe(new SingleObserver<List<PhotoShelfPost>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -190,9 +170,14 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
     @Override
     public void onTagClick(int position) {
         final PhotoShelfPost post = photoAdapter.getItem(position);
+        onOtherTagClick(position, post.getFirstTag());
+    }
+
+    @Override
+    public void onOtherTagClick(int position, String tag) {
         // do nothing if tags are equal otherwise a new TagBrowser on same tag is launched
-        if (!postTag.equalsIgnoreCase(post.getFirstTag())) {
-            super.onTagClick(position);
+        if (!postTag.equalsIgnoreCase(tag)) {
+            super.onOtherTagClick(position, tag);
         }
     }
 }

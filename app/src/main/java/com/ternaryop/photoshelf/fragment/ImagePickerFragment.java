@@ -20,7 +20,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ternaryop.photoshelf.Constants;
@@ -39,8 +38,6 @@ import com.ternaryop.photoshelf.parsers.TitleParser;
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager;
 import com.ternaryop.utils.DialogUtils;
 import com.ternaryop.widget.ProgressHighlightViewLayout;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 
 public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private RecyclerView gridView;
@@ -58,16 +55,16 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
         View rootView = inflater.inflate(R.layout.fragment_image_picker, container, false);
         getActivity().setTitle(R.string.image_picker_activity_title);
 
-        progressHighlightViewLayout = (ProgressHighlightViewLayout) rootView.findViewById(android.R.id.empty);
+        progressHighlightViewLayout = rootView.findViewById(android.R.id.empty);
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
 
         imagePickerAdapter = new ImagePickerAdapter(getActivity());
         imagePickerAdapter.setOnPhotoBrowseClick(this);
         imagePickerAdapter.setEmptyView(progressHighlightViewLayout);
-        imageUrlRetriever = new ImageUrlRetriever(getActivity(), (ProgressBar) rootView.findViewById(R.id.progressbar));
+        imageUrlRetriever = new ImageUrlRetriever(getActivity(), rootView.findViewById(R.id.progressbar));
 
         RecyclerView.LayoutManager layout = new AutofitGridLayoutManager(getActivity(), (int) getResources().getDimension(R.dimen.image_picker_grid_width));
-        gridView = (RecyclerView) rootView.findViewById(R.id.gridview);
+        gridView = rootView.findViewById(R.id.gridview);
         gridView.setAdapter(imagePickerAdapter);
         gridView.setHasFixedSize(true);
         gridView.setLayoutManager(layout);
@@ -136,24 +133,9 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
 
     private void readImageGallery(String url) {
         imageUrlRetriever.readImageGallery(url)
-                .doOnSubscribe(new Consumer<Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-                        compositeDisposable.add(disposable);
-                    }
-                })
-                .subscribe(new Consumer<ImageGallery>() {
-                               @Override
-                               public void accept(ImageGallery gallery) throws Exception {
-                                   onGalleryRetrieved(gallery);
-                               }
-                           },
-                new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        DialogUtils.showErrorDialog(getActivity(), throwable);
-                    }
-                });
+                .doOnSubscribe(disposable -> compositeDisposable.add(disposable))
+                .subscribe(this::onGalleryRetrieved,
+                        throwable -> DialogUtils.showErrorDialog(getActivity(), throwable));
     }
 
     public TextView getCurrentTextView() {
@@ -205,25 +187,10 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
 
     private void retrieveImages(boolean useFile) {
         imageUrlRetriever.retrieve(imagePickerAdapter.getSelectedItems(), useFile)
-                .doOnSubscribe(new Consumer<Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-                        compositeDisposable.add(disposable);
-                    }
-                })
+                .doOnSubscribe(disposable -> compositeDisposable.add(disposable))
                 .toList()
-                .subscribe(new Consumer<List<Uri>>() {
-                               @Override
-                               public void accept(List<Uri> uris) throws Exception {
-                                   onImagesRetrieved(uris);
-                               }
-                           },
-                        new Consumer<Throwable>() {
-                            @Override
-                            public void accept(Throwable throwable) throws Exception {
-                                DialogUtils.showSimpleMessageDialog(getActivity(), R.string.url_not_found, throwable.getLocalizedMessage());
-                            }
-                        });
+                .subscribe(this::onImagesRetrieved,
+                        throwable -> DialogUtils.showSimpleMessageDialog(getActivity(), R.string.url_not_found, throwable.getLocalizedMessage()));
     }
 
     public void onImagesRetrieved(List<Uri> imageUriList) {
@@ -261,41 +228,32 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
     }
 
     @Override
+    public void onOtherTagClick(int position, String tag) {
+    }
+
+    @Override
     public void onThumbnailImageClick(int position) {
         final ImageInfo imageInfo = imagePickerAdapter.getItem(position);
         if (imageInfo.getImageUrl() == null) {
             List<ImageInfo> imageInfoList = new ArrayList<>();
             imageInfoList.add(imageInfo);
             imageUrlRetriever.retrieve(imageInfoList, false)
-                    .doOnSubscribe(new Consumer<Disposable>() {
-                        @Override
-                        public void accept(Disposable disposable) throws Exception {
-                            compositeDisposable.add(disposable);
-                        }
-                    })
+                    .doOnSubscribe(disposable -> compositeDisposable.add(disposable))
                     .take(1)
-                    .subscribe(new Consumer<Uri>() {
-                                   @Override
-                                   public void accept(Uri uri) throws Exception {
-                                       // cache retrieved value
-                                       final String url = uri.toString();
-                                       imageInfo.setImageUrl(url);
-                                       ImageViewerActivity.startImageViewer(getActivity(), url, null);
-                                   }
-                               },
-                            new Consumer<Throwable>() {
-                                @Override
-                                public void accept(Throwable throwable) throws Exception {
-                                    DialogUtils.showSimpleMessageDialog(getActivity(), R.string.url_not_found, throwable.getLocalizedMessage());
-                                }
-                            });
+                    .subscribe(uri -> {
+                        // cache retrieved value
+                        final String url = uri.toString();
+                        imageInfo.setImageUrl(url);
+                        ImageViewerActivity.startImageViewer(getActivity(), url, null);
+                    },
+                            throwable -> DialogUtils.showSimpleMessageDialog(getActivity(), R.string.url_not_found, throwable.getLocalizedMessage()));
         } else {
             ImageViewerActivity.startImageViewer(getActivity(), imageInfo.getImageUrl(), null);
         }
     }
 
     @Override
-    public void onOverflowClick(View view, int position) {
+    public void onOverflowClick(int position, View view) {
     }
 
     @Override
@@ -351,7 +309,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
         Snackbar snackbar = Snackbar.make(gridView, detailsText, duration);
         View sbView = snackbar.getView();
         sbView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.image_picker_detail_text_bg));
-        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
         textView.setTextColor(ContextCompat.getColor(getActivity(), R.color.image_picker_detail_text_text));
         textView.setMaxLines(3);
         snackbar.show();

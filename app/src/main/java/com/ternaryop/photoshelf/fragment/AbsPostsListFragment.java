@@ -241,6 +241,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     private void saveAsDraft(final ActionMode mode, final List<PhotoShelfPost> postList) {
+        colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_save_as_draft_bg));
         executePostAction(mode, postList, post -> {
             Tumblr.getSharedTumblr(getActivity()).saveDraft(
                     getBlogName(),
@@ -344,8 +345,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
 
     @Override
     public void onTagClick(int position) {
-        final PhotoShelfPost post = photoAdapter.getItem(position);
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), post.getFirstTag(), false);
+        onOtherTagClick(position, photoAdapter.getItem(position).getFirstTag());
     }
 
     @Override
@@ -355,7 +355,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     @Override
-    public void onOverflowClick(View view, int position) {
+    public void onOverflowClick(int position, View view) {
         final PhotoShelfPost post = photoAdapter.getItem(position);
         PopupMenu popupMenu = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popupMenu.getMenuInflater();
@@ -366,6 +366,11 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             return handleMenuItem(item, postList, null);
         });
         popupMenu.show();
+    }
+
+    @Override
+    public void onOtherTagClick(int position, String tag) {
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), tag, false);
     }
 
     @Override

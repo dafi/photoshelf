@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:top="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/list_row"
                 android:layout_width="fill_parent"
@@ -15,12 +16,12 @@
         android:layout_alignParentStart="true"
         android:layout_marginEnd="5dip"
         android:background="@drawable/image_bg"
-        android:padding="3dip" >
+        android:padding="3dip">
 
         <com.ternaryop.widget.ClickableImageView
             android:id="@+id/thumbnail_image"
             android:layout_width="75dip"
-            android:layout_height="75dip" />
+            android:layout_height="75dip"/>
     </LinearLayout>
 
     <com.ternaryop.widget.ClickableTextView
@@ -33,7 +34,7 @@
         android:textStyle="bold"
         top:clickedColor="@color/link_text_color_clicked"
         top:clickedBackground="@color/link_text_color_clicked_bg"
-        android:typeface="sans" />
+        android:typeface="sans"/>
 
     <TextView
         android:id="@+id/time_desc"
@@ -43,7 +44,7 @@
         android:layout_marginTop="1dip"
         android:layout_toEndOf="@+id/thumbnail"
         android:textColor="#343434"
-        android:textSize="12sp" />
+        android:textSize="12sp"/>
 
     <TextView
         android:id="@+id/caption"
@@ -54,7 +55,7 @@
         android:layout_toStartOf="@+id/menu"
         android:paddingTop="4dp"
         android:textColor="#343434"
-        android:textSize="12sp" />
+        android:textSize="12sp"/>
 
     <TextView
         android:id="@+id/note_count"
@@ -64,7 +65,23 @@
         android:layout_toEndOf="@+id/thumbnail"
         android:layout_toStartOf="@+id/menu"
         android:paddingTop="4dp"
-        android:textSize="12sp" />
+        android:textSize="12sp"/>
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/other_tags_container"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/note_count"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:layout_toStartOf="@+id/menu"
+        android:paddingTop="4dp"
+
+        app:alignItems="flex_start"
+        app:alignContent="center"
+        app:flexDirection="row"
+        app:flexWrap="wrap">
+    </com.google.android.flexbox.FlexboxLayout>
 
     <ImageView
         android:id="@+id/menu"
@@ -80,5 +97,5 @@
         android:src="@drawable/ic_overflow_dark"
         android:scaleType="fitXY"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"/>
 </RelativeLayout>
