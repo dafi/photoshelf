@@ -256,7 +256,8 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
     }
 
     public String getPostTags() {
-        return postTags.getText().toString();
+        // remove the empty string at the end, if present
+        return postTags.getText().toString().replaceAll(",\\s*$", "");
     }
 
     private void fillTags(List<String> tags) {
