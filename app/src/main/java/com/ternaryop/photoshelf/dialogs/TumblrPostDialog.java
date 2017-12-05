@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -17,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -85,6 +87,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
     protected CompositeDisposable compositeDisposable;
     private MRU mruTags;
+    private ImageButton mruTagsButton;
 
     public static TumblrPostDialog newInstance(Bundle args, Fragment target) {
         TumblrPostDialog fragment = new TumblrPostDialog();
@@ -138,6 +141,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        @SuppressLint("InflateParams") // for dialogs passing null for root is valid, ignore the warning
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_publish_post, null);
         setupUI(view);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
@@ -186,10 +190,10 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());
 
-        ImageButton mruTags = view.findViewById(R.id.mruTags);
-        mruTags.setOnClickListener(this::openMRUDialog);
+        mruTagsButton = view.findViewById(R.id.mruTags);
+        mruTagsButton.setOnClickListener(this::openMRUDialog);
         this.mruTags = new MRU(getActivity(), MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE);
-        mruTags.setEnabled(!this.mruTags.getList().isEmpty());
+        mruTagsButton.setEnabled(!this.mruTags.getList().isEmpty());
 
         fillTags(initialTagList);
         postTitle.setText(Html.fromHtml(htmlTitle));
@@ -307,8 +311,8 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
                     }
 
                     @Override
-                    public void onSuccess(Pair<Integer, String> mispelledInfo) {
-                        highlightTagName(mispelledInfo.first, mispelledInfo.second);
+                    public void onSuccess(Pair<Integer, String> misspelledInfo) {
+                        highlightTagName(misspelledInfo.first, misspelledInfo.second);
                     }
 
                     @Override
@@ -326,15 +330,22 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             case NAME_ALREADY_EXISTS:
                 postTags.setTextColor(defaultPostTagsColor);
                 postTags.setBackground(defaultPostTagsBackground);
+                int[] enabledState = {android.R.attr.state_enabled};
+                DrawableCompat.setTint(mruTagsButton.getDrawable(), defaultPostTagsColor.getColorForState(enabledState, Color.GREEN));
+                mruTagsButton.setBackgroundColor(Color.TRANSPARENT);
                 break;
             case NAME_MISSPELLED:
                 postTags.setTextColor(Color.RED);
                 postTags.setBackgroundColor(Color.YELLOW);
                 postTags.setText(correctedName);
+                DrawableCompat.setTint(mruTagsButton.getDrawable(), Color.RED);
+                mruTagsButton.setBackgroundColor(Color.YELLOW);
                 break;
             case NAME_NOT_FOUND:
                 postTags.setTextColor(Color.WHITE);
                 postTags.setBackgroundColor(Color.RED);
+                DrawableCompat.setTint(mruTagsButton.getDrawable(), Color.WHITE);
+                mruTagsButton.setBackgroundColor(Color.RED);
                 break;
         }
     }
