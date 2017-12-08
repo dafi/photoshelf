@@ -284,8 +284,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
         }
 
         // use post() to resolve the following error:
-        // Cannot call this method in a scroll callback. Scroll callbacks mightbe run during a measure & layout pass where you cannot change theRecyclerView data.
-        // Any method call that might change the structureof the RecyclerView or the adapter contents should be postponed tothe next frame.
+        // Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change theRecyclerView data.
+        // Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
         recyclerView.post(() -> {
             // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
             // so we wait for finished animations before call it
@@ -344,8 +344,8 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
     }
 
     @Override
-    public void onTagClick(int position) {
-        onOtherTagClick(position, photoAdapter.getItem(position).getFirstTag());
+    public void onTagClick(int position, String tag) {
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), tag, false);
     }
 
     @Override
@@ -366,11 +366,6 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             return handleMenuItem(item, postList, null);
         });
         popupMenu.show();
-    }
-
-    @Override
-    public void onOtherTagClick(int position, String tag) {
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(getActivity(), getBlogName(), tag, false);
     }
 
     @Override

@@ -70,11 +70,10 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
         boolean showUploadTime = getCurrentSort() == SORT_UPLOAD_TIME;
         final PhotoShelfPost post = visiblePosts.get(position);
         holder.bindModel(post, imageLoader, thumbnailWidth, showUploadTime);
-        holder.setOnClickListeners(post, listener);
+        holder.setOnClickListeners(listener);
         if (onPhotoBrowseClick instanceof OnPhotoBrowseClickMultiChoice) {
             holder.setOnClickMultiChoiceListeners(listener, this);
         }
-        holder.setOtherTagsClickListener(listener);
         holder.itemView.setSelected(selection.isSelected(position));
     }
 
@@ -85,9 +84,6 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
 
     public void onClick(final View v) {
         switch (v.getId()) {
-            case R.id.title_textview:
-                onPhotoBrowseClick.onTagClick((Integer) v.getTag());
-                break;
             case R.id.thumbnail_image:
                 onPhotoBrowseClick.onThumbnailImageClick((Integer) v.getTag());
                 break;
@@ -97,9 +93,9 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder> implemen
             case R.id.list_row:
                 ((OnPhotoBrowseClickMultiChoice)onPhotoBrowseClick).onItemClick((Integer) v.getTag());
                 break;
-            case R.id.other_tag_text_view:
+            case R.id.tag_text_view:
                 int position = (int) ((ViewGroup) v.getParent()).getTag();
-                onPhotoBrowseClick.onOtherTagClick(position, (String) v.getTag());
+                onPhotoBrowseClick.onTagClick(position, (String) v.getTag());
                 break;
         }
     }

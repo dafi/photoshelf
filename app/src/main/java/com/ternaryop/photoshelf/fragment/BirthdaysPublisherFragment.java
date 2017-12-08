@@ -142,11 +142,7 @@ public class BirthdaysPublisherFragment extends AbsPhotoShelfFragment implements
     }
 
     @Override
-    public void onTagClick(int position) {
-    }
-
-    @Override
-    public void onOtherTagClick(int position, String tag) {
+    public void onTagClick(int position, String tag) {
     }
 
     @Override

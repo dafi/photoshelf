@@ -224,11 +224,7 @@ public class ImagePickerFragment extends AbsPhotoShelfFragment implements OnPhot
     }
 
     @Override
-    public void onTagClick(int position) {
-    }
-
-    @Override
-    public void onOtherTagClick(int position, String tag) {
+    public void onTagClick(int position, String tag) {
     }
 
     @Override

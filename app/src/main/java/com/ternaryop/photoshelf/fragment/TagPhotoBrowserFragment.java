@@ -168,16 +168,10 @@ public class TagPhotoBrowserFragment extends AbsPostsListFragment implements Sea
     }
 
     @Override
-    public void onTagClick(int position) {
-        final PhotoShelfPost post = photoAdapter.getItem(position);
-        onOtherTagClick(position, post.getFirstTag());
-    }
-
-    @Override
-    public void onOtherTagClick(int position, String tag) {
+    public void onTagClick(int position, String tag) {
         // do nothing if tags are equal otherwise a new TagBrowser on same tag is launched
         if (!postTag.equalsIgnoreCase(tag)) {
-            super.onOtherTagClick(position, tag);
+            super.onTagClick(position, tag);
         }
     }
 }
