@@ -3,34 +3,24 @@ package com.ternaryop.photoshelf.parsers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 
 public class TitleData {
-    // if strings starts with
-    // 're:' will be used as regular expression (ignore case)
-    // 's:' will be used as normal string
-    // No prefix means 's:'
-    private static final String[] locationPrefixes = {"re:\\b(attends|shopping|arrives|arriving|leaves?|leaving)\\b", "re:^(at|on)\\s?(the)?", "re:^(night\\s+)?out\\s?(and about|for *)?"};
-
-    private static final HashMap<String, Pattern> cities = new HashMap<>();
-    private static final String RE_IGNORECASE = "re:";
-    private static final String NORMAL_STRING = "s:";
-
-    static {
-        cities.put("Los Angeles", Pattern.compile("L.?A.?"));
-        cities.put("New York", Pattern.compile("N.?Y.?"));
-        cities.put("New York City", Pattern.compile("NYC.?"));
-    }
-
     private List<String> who = Collections.emptyList();
     private String location;
     private String city;
     private List<String> tags = Collections.emptyList();
     private String when;
+
+    private final TitleParserConfig config;
+
+    public TitleData(TitleParserConfig config) {
+        this.config = config;
+    }
 
     public List<String> getWho() {
         return who;
@@ -70,18 +60,9 @@ public class TitleData {
     }
 
     private boolean hasLocationPrefix(String location) {
-        for (String prefix : locationPrefixes) {
-            if (prefix.startsWith(RE_IGNORECASE)) {
-                if (Pattern.compile(prefix.substring(RE_IGNORECASE.length()), Pattern.CASE_INSENSITIVE).matcher(location).find()) {
-                    return true;
-                }
-            } else {
-                if (prefix.startsWith(NORMAL_STRING)) {
-                    prefix = prefix.substring(NORMAL_STRING.length());
-                }
-                if (location.toLowerCase(Locale.ENGLISH).startsWith(prefix)) {
-                    return true;
-                }
+        for (LocationPrefix lp : config.getLocationPrefixes()) {
+            if (lp.hasLocationPrefix(location)) {
+                return true;
             }
         }
         return false;
@@ -103,9 +84,9 @@ public class TitleData {
         if (aCity.isEmpty()) {
             return null;
         }
-        for (String name : cities.keySet()) {
-            if (name.equalsIgnoreCase(aCity) || cities.get(name).matcher(aCity).find()) {
-                return name;
+        for (Map.Entry<String, Pattern> e : config.getCities().entrySet()) {
+            if (e.getKey().equalsIgnoreCase(aCity) || e.getValue().matcher(aCity).find()) {
+                return e.getKey();
             }
         }
         return aCity;
@@ -124,8 +105,8 @@ public class TitleData {
             String tag = tag1
                     .replaceFirst("[0-9]*(st|nd|rd|th)?", "")
                     .replaceAll("\"|'", "");
-            for (String prefix : locationPrefixes) {
-                tag = tag.replaceFirst(prefix, "");
+            for (LocationPrefix prefix : config.getLocationPrefixes()) {
+                tag = prefix.removePrefix(tag);
             }
             tag = tag.trim();
             if (tag.length() > 0) {

@@ -1,6 +1,8 @@
 package com.ternaryop.photoshelf.parsers;
 
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Created by dave on 21/03/15.
@@ -9,6 +11,9 @@ import java.util.List;
 public interface TitleParserConfig {
     List<TitleParserRegExp> getTitleCleanerList();
     String applyList(List<TitleParserRegExp> titleParserRegExpList, String input);
+    Pattern getTitleParserPattern();
+    List<LocationPrefix> getLocationPrefixes();
+    Map<String, Pattern> getCities();
 
     class TitleParserRegExp {
         final String pattern;

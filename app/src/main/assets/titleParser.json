@@ -1,5 +1,16 @@
 {
-    "version":10,
+    "version":11,
+    "titleParserRegExp":"(.*?)\\s+(at the|at|in|on the|on|for|by|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s",
+    "locationPrefixes":[
+      "\\b(attends|shopping|arrives|arriving|leaves?|leaving|for|by)\\b",
+      "^(at|on)\\s?(the)?",
+      "^(night\\s+)?out\\s?(and about|for *)?"
+    ],
+    "cities": {
+      "Los Angeles": "L.?A.?",
+      "New York": "N.?Y.?",
+      "New York City": "NYC.?"
+    },
     "titleCleaner":{
             "regExprs":[
               ["\\s+(x\\d+|\\(?\\d+\\)?\\s?HQ\\b|\\d+\\s+pics)", "", "remove image count (eg 'x34' '(8)HQ' '20 HQ')"],

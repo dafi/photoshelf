@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 import com.ternaryop.utils.StringUtils;
 
 public class TitleParser {
-    private static final Pattern titleRE = Pattern.compile("(.*?)\\s+(at the|at|in|on the|on|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s", Pattern.CASE_INSENSITIVE);
-
     private static TitleParser instance;
     private final TitleParserConfig config;
 
@@ -25,7 +23,7 @@ public class TitleParser {
     }
 
     public TitleData parseTitle(String title, boolean swapDayMonth, boolean checkDateInTheFuture) {
-        TitleData titleData = new TitleData();
+        TitleData titleData = new TitleData(config);
 
         title = config.applyList(config.getTitleCleanerList(), title).trim();
         title = StringUtils.replaceUnicodeWithClosestAscii(title);
@@ -43,7 +41,7 @@ public class TitleParser {
     }
 
     private String setWho(String title, TitleData titleData) {
-        Matcher m = titleRE.matcher(title);
+        Matcher m = config.getTitleParserPattern().matcher(title);
         if (m.find() && m.groupCount() > 1) {
             titleData.setWhoFromString(StringUtils.capitalize(m.group(1)));
             // remove the 'who' chunk and any not alphabetic character (eg the dash used to separated "who" from location)
