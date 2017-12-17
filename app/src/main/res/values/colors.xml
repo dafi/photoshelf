@@ -57,9 +57,11 @@
     <color name="dialog_popup_text">#000000</color>
 
     <color name="photo_item_animation_save_as_draft_bg">#D8D16E</color>
-    <color name="photo_item_animation_delete_bg">#ff0000</color>
+    <color name="photo_item_animation_delete_bg">#f44336</color>
     <color name="photo_item_animation_publish_bg">#0000ff</color>
     <color name="photo_item_animation_schedule_bg">#719E89</color>
+
+    <color name="animation_delete_bg">#f44336</color>
 
     <array name="progress_swipe_colors">
         <item>@color/actionbar_bg</item>

@@ -41,6 +41,8 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient;
 import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.TagCursorAdapter;
+import com.ternaryop.photoshelf.dialogs.mru.MRUDialog;
+import com.ternaryop.photoshelf.dialogs.mru.OnMRUListener;
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig;
 import com.ternaryop.photoshelf.parsers.TitleData;
 import com.ternaryop.photoshelf.parsers.TitleParser;
@@ -57,7 +59,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuItemClickListener {
+public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuItemClickListener, OnMRUListener {
 
     public static final String ARG_PHOTO_POST = "photoPost";
     public static final String ARG_IMAGE_URLS = "imageUrls";
@@ -71,6 +73,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
     private static final String MRU_TAGS_KEY = "mruTags";
     private static final int MRU_TAGS_MAX_SIZE = 20;
+    public static final String MRU_FRAGMENT_DIALOG_TAG = "mruFragmentDialogTag";
 
     private EditText postTitle;
     private MultiAutoCompleteTextView postTags;
@@ -131,6 +134,15 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_PhotoShelf_Dialog);
 
         compositeDisposable = new CompositeDisposable();
+
+        // if the device rotates set again the listener
+        if (savedInstanceState != null) {
+            MRUDialog mruDialog = (MRUDialog) getFragmentManager()
+                    .findFragmentByTag(MRU_FRAGMENT_DIALOG_TAG);
+            if (mruDialog != null) {
+                mruDialog.setOnMRUListener(this);
+            }
+        }
     }
 
     @Override
@@ -213,23 +225,9 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
 
     @SuppressWarnings("unused")
     private void openMRUDialog(View view) {
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.select_dialog_item,
-                mruTags.getList());
-        new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.recently_used_tags)
-                .setAdapter(adapter, (dialog, which) -> {
-                    String selectedTag = adapter.getItem(which);
-                    final ArrayList<String> tags = getPostTagsAsList();
-                    if (!contains(tags, selectedTag)) {
-                        tags.add(selectedTag);
-                        this.postTags.setText(TextUtils.join(", ", tags));
-                    }
-                    mruTags.add(selectedTag);
-
-                    dialog.dismiss();
-                })
-                .show();
+        MRUDialog.newInstance(mruTags.getList())
+                .setOnMRUListener(this)
+                .show(getFragmentManager(), MRU_FRAGMENT_DIALOG_TAG);
     }
 
     @NonNull
@@ -517,6 +515,27 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
             this.sourceTitle = args.getString(ARG_SOURCE_TITLE);
             setInitialTagList(args.getStringArrayList(ARG_INITIAL_TAG_LIST));
         }
+    }
+
+    @Override
+    public void onItemsSelected(MRUDialog dialog, int[] positions) {
+        final ArrayList<String> tags = getPostTagsAsList();
+        for (int position : positions) {
+            final String selectedTag = dialog.getItem(position);
+            if (!contains(tags, selectedTag)) {
+                tags.add(selectedTag);
+            }
+            mruTags.add(selectedTag);
+        }
+        postTags.setText(TextUtils.join(", ", tags));
+        dialog.dismiss();
+    }
+
+    @Override
+    public void onItemDelete(MRUDialog dialog, int position) {
+        final String selectedTag = dialog.getItem(position);
+        mruTags.remove(selectedTag);
+        mruTags.save();
     }
 
     public interface PostListener {

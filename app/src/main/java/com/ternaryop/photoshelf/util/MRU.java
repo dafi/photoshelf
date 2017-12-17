@@ -41,9 +41,9 @@ public class MRU {
         }
     }
 
-    public void add(String item) {
+    public boolean add(String item) {
         if (item == null) {
-            return;
+            return false;
         }
         String lowerCaseItem = item.toLowerCase(Locale.US);
         List<String> list = getList();
@@ -51,6 +51,11 @@ public class MRU {
             list.remove(list.size() - 1);
         }
         list.add(0, lowerCaseItem);
+        return true;
+    }
+
+    public boolean remove(String item) {
+        return getList().remove(item.toLowerCase(Locale.US));
     }
 
     public void save() {
