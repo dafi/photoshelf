@@ -26,7 +26,6 @@ import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 
 import com.ternaryop.photoshelf.Constants;
-import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.activity.ImageViewerActivity;
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity;
@@ -46,6 +45,8 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+
+import static com.ternaryop.photoshelf.db.TumblrPostCache.CACHE_TYPE_DRAFT;
 
 public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment implements OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
     protected static final int POST_ACTION_PUBLISH = 1;
@@ -246,7 +247,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             Tumblr.getSharedTumblr(getActivity()).saveDraft(
                     getBlogName(),
                     post.getPostId());
-            new DraftPostHelper(getActivity(), getBlogName()).getDraftCache().updateItem(post);
+            DBHelper.getInstance(getActivity()).getTumblrPostCacheDAO().updateItem(post, CACHE_TYPE_DRAFT);
             onPostAction(post, POST_ACTION_SAVE_AS_DRAFT, POST_ACTION_OK);
         });
     }

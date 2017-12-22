@@ -51,8 +51,6 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP VIEW IF EXISTS " + TABLE_NAME);
-        onCreate(db);
     }
 
     public ContentValues getContentValues(PostTag postTag) {
@@ -159,7 +157,7 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
         String args[] = new String[tags.size() + 1];
         args[0] = tumblrName;
         int pos = 1;
-        // make lowercase to match using ignorecase
+        // make lowercase to match using ignore case
         for (String tag : tags) {
             args[pos++] = tag.toLowerCase(Locale.US);
         }
@@ -167,19 +165,12 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     }
 
     private Cursor getCursorLastPublishedTime(Collection<String> tags, String tumblrName, String[] selectArgs) {
-        StringBuilder inClause = new StringBuilder();
-        for (int i = 0; i < tags.size(); i++) {
-            inClause.append("?");
-            if (i < (tags.size() - 1)) {
-                inClause.append(",");
-            }
-        }
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
         
         return db.rawQuery("SELECT " + TextUtils.join(",", selectArgs) 
                 + " FROM vw_post_tag AS t"
                 + " WHERE t.tumblr_name = ?"
-                + " AND lower(t.tag) IN (" + inClause + ")"
+                + " AND lower(t.tag) IN (" + inClauseParameters(tags.size()) + ")"
                 + " AND publish_timestamp = "
                 + " (SELECT MAX(publish_timestamp)"
                 + "   FROM vw_post_tag p"

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "photoshelf.db";
-    private static final int SCHEMA_VERSION = 1;
+    private static final int SCHEMA_VERSION = 2;
 
     private static DBHelper instance = null;
 
@@ -16,6 +16,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private final BlogDAO blogDAO;
     private final TagDAO tagDAO;
+
+    private final TumblrPostCacheDAO tumblrPostCacheDAO;
 
     private final BulkImportPostDAOWrapper bulkImportPostDAOWrapper;
 
@@ -43,6 +45,7 @@ public class DBHelper extends SQLiteOpenHelper {
         postTagDAO = new PostTagDAO(this);
         birthdayDAO = new BirthdayDAO(this);
         bulkImportPostDAOWrapper = new BulkImportPostDAOWrapper(this, context);
+        tumblrPostCacheDAO = new TumblrPostCacheDAO(this);
     }
 
     @Override
@@ -53,6 +56,7 @@ public class DBHelper extends SQLiteOpenHelper {
         postTagDAO.onCreate(db);
         birthdayDAO.onCreate(db);
         bulkImportPostDAOWrapper.onCreate(db);
+        tumblrPostCacheDAO.onCreate(db);
     }
 
     @Override
@@ -63,6 +67,7 @@ public class DBHelper extends SQLiteOpenHelper {
         postTagDAO.onUpgrade(db, oldVersion, newVersion);
         birthdayDAO.onUpgrade(db, oldVersion, newVersion);
         bulkImportPostDAOWrapper.onUpgrade(db, oldVersion, newVersion);
+        tumblrPostCacheDAO.onUpgrade(db, oldVersion, newVersion);
     }
 
     @Override
@@ -92,5 +97,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public BulkImportPostDAOWrapper getBulkImportPostDAOWrapper() {
         return bulkImportPostDAOWrapper;
+    }
+
+    public TumblrPostCacheDAO getTumblrPostCacheDAO() {
+        return tumblrPostCacheDAO;
     }
 }

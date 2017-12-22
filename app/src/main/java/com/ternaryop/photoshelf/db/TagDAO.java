@@ -34,7 +34,6 @@ public class TagDAO extends AbsDAO<Tag> implements BaseColumns {
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        onCreate(db);
     }
 
     @Override

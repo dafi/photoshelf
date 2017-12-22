@@ -47,9 +47,7 @@ public class PostRetriever {
 
             total += newerPosts.size();
 
-            if (!newerPosts.isEmpty()) {
-                emitter.onNext(newerPosts);
-            }
+            emitter.onNext(newerPosts);
             if (!loadNext) {
                 emitter.onComplete();
             }

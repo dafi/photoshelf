@@ -26,7 +26,9 @@ import com.ternaryop.photoshelf.DraftPostHelper;
 import com.ternaryop.photoshelf.R;
 import com.ternaryop.photoshelf.adapter.PhotoAdapter;
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost;
+import com.ternaryop.photoshelf.db.DBHelper;
 import com.ternaryop.photoshelf.db.Importer;
+import com.ternaryop.photoshelf.db.TumblrPostCacheDAO;
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog;
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog;
 import com.ternaryop.photoshelf.event.CounterEvent;
@@ -39,17 +41,20 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.ternaryop.photoshelf.db.TumblrPostCache.CACHE_TYPE_DRAFT;
+
 public class DraftListFragment extends AbsPostsListFragment implements WaitingResultSwipeRefreshLayout.OnRefreshListener {
     private static final int TAG_NAVIGATOR_DIALOG = 1;
     public static final String PREF_DRAFT_SORT_TYPE = "draft_sort_type";
     public static final String PREF_DRAFT_SORT_ASCENDING = "draft_sort_ascending";
 
-    private Map<String, List<TumblrPost>> queuedPosts;
+    private List<TumblrPost> queuedPosts;
     private Calendar lastScheduledDate;
     private WaitingResultSwipeRefreshLayout swipeLayout;
 
     private ProgressHighlightViewLayout progressHighlightViewLayout;
     private DraftPostHelper draftPostHelper;
+    private TumblrPostCacheDAO draftCache;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,6 +84,8 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         loadSettings();
 
         draftPostHelper = new DraftPostHelper(getActivity(), getBlogName());
+        draftCache = DBHelper.getInstance(getActivity()).getTumblrPostCacheDAO();
+
         refreshCache();
     }
 
@@ -111,7 +118,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
         switch (item.getItemId()) {
             case R.id.clear_draft_cache:
-                draftPostHelper.getDraftCache().clearCache();
+                draftCache.clearCache(CACHE_TYPE_DRAFT);
                 refreshCache();
                 return true;
             case R.id.reload_draft:
@@ -154,8 +161,11 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         onRefreshStarted();
 
         compositeDisposable.add(new Importer(getActivity()).importFromTumblr(getBlogName(), Importer.schedulers(), getCurrentTextView())
-                .subscribe(total -> {
+                .subscribe(posts -> {
                     progressHighlightViewLayout.incrementProgress();
+                    // delete from cache the published posts
+                    draftCache.delete(posts, CACHE_TYPE_DRAFT);
+
                     readPhotoPosts();
                 }, t -> DialogUtils.showErrorDialog(getActivity(), t))
         );
@@ -178,25 +188,27 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     @Override
     protected void readPhotoPosts() {
+        final long maxTimestamp = draftCache.findMostRecentTimestamp(getBlogName(), CACHE_TYPE_DRAFT);
         compositeDisposable.add(
                 Single
                         .zip(
-                                draftPostHelper.getDraftTags().subscribeOn(Schedulers.io()),
-                                draftPostHelper.getQueueTags().subscribeOn(Schedulers.io()),
-                                (tagsForDraftPosts, queueTags) -> {
-                                    queuedPosts = queueTags;
-                                    return tagsForDraftPosts;
-                                }
+                                draftPostHelper.getNewerDraftPosts(maxTimestamp).subscribeOn(Schedulers.io()),
+                                draftPostHelper.getQueuePosts().subscribeOn(Schedulers.io()),
+                                this::getCachedPhotoPosts
                         )
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnSuccess(tagsForDraftPosts -> progressHighlightViewLayout.incrementProgress())
                         .observeOn(Schedulers.newThread())
-                        .flatMap(tagsForDraftPosts -> draftPostHelper
-                                .getTagLastPublishedMap(tagsForDraftPosts.keySet())
-                                .flatMap(lastPublished -> Single.just(draftPostHelper.getPhotoShelfPosts(
-                                        tagsForDraftPosts,
-                                        queuedPosts,
-                                        lastPublished))))
+                        .flatMap(draftPosts -> {
+                            final Map<String, List<TumblrPost>> tagsForDraftPosts = draftPostHelper.groupPostByTag(draftPosts);
+                            final Map<String, List<TumblrPost>> tagsForQueuePosts = draftPostHelper.groupPostByTag(queuedPosts);
+                            return draftPostHelper
+                                    .getTagLastPublishedMap(tagsForDraftPosts.keySet())
+                                    .flatMap(lastPublished -> Single.just(draftPostHelper.getPhotoShelfPosts(
+                                            tagsForDraftPosts,
+                                            tagsForQueuePosts,
+                                            lastPublished)));
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnSubscribe(disposable -> compositeDisposable.add(disposable))
                         .doFinally(() -> {
@@ -208,6 +220,18 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
                             photoAdapter.sort();
                         }, t -> DialogUtils.showErrorDialog(getActivity(), t))
         );
+    }
+
+    private List<TumblrPost> getCachedPhotoPosts(List<TumblrPost> newerDraftPosts, List<TumblrPost> queuePosts) {
+        // save queue for future use
+        this.queuedPosts = queuePosts;
+
+        // update the cache with new draft posts
+        draftCache.write(newerDraftPosts, CACHE_TYPE_DRAFT);
+        // delete from the cache any post moved from draft to scheduled
+        draftCache.delete(queuePosts, CACHE_TYPE_DRAFT);
+        // return the updated/cleaned up cache
+        return draftCache.read(getBlogName(), CACHE_TYPE_DRAFT);
     }
 
     @Override
@@ -230,7 +254,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         colorItemDecoration.setColor(ContextCompat.getColor(getActivity(), R.color.photo_item_animation_schedule_bg));
         lastScheduledDate = (Calendar) scheduledDateTime.clone();
         photoAdapter.removeAndRecalcGroups(item, lastScheduledDate);
-        draftPostHelper.getDraftCache().deleteItem(item);
+        draftCache.deleteItem(item);
         refreshUI();
         if (mode != null) {
             mode.finish();
@@ -245,8 +269,8 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
             long maxScheduledTime = System.currentTimeMillis();
 
             try {
-                for (List<TumblrPost> posts : queuedPosts.values()) {
-                    long scheduledTime = posts.get(0).getScheduledPublishTime() * 1000;
+                for (TumblrPost post : queuedPosts) {
+                    long scheduledTime = post.getScheduledPublishTime() * 1000;
                     if (scheduledTime > maxScheduledTime) {
                         maxScheduledTime = scheduledTime;
                     }
@@ -286,11 +310,11 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         if (resultCode == POST_ACTION_OK) {
             switch (postAction) {
                 case POST_ACTION_EDIT:
-                    draftPostHelper.getDraftCache().updateItem(post);
+                    draftCache.updateItem(post, CACHE_TYPE_DRAFT);
                     break;
                 case POST_ACTION_PUBLISH:
                 case POST_ACTION_DELETE:
-                    draftPostHelper.getDraftCache().deleteItem(post);
+                    draftCache.deleteItem(post);
                     break;
             }
         }

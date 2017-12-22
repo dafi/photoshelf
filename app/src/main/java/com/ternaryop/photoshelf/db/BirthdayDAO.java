@@ -58,9 +58,6 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
     }
 
     protected void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        db.execSQL("DROP VIEW IF EXISTS VW_MISSING_BIRTHDAYS");
-        onCreate(db);
     }
 
     public List<Birthday> getBirthdayByDate(Date date) {
@@ -74,12 +71,12 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
                 BIRTH_DATE,
                 TUMBLR_NAME,
                 MONTH_DAY_FORMAT.format(date));
-        return cursorToBirtdayList(db.rawQuery(sqlQuery, null));
+        return cursorToBirthdayList(db.rawQuery(sqlQuery, null));
     }
 
     public List<Birthday> getBirthdayByMonth(int month, String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
-        return cursorToBirtdayList(db.query(TABLE_NAME,
+        return cursorToBirthdayList(db.query(TABLE_NAME,
                 new String[]{NAME, BIRTH_DATE, TUMBLR_NAME},
                 String.format("strftime('%%m', %1$s) = ? and %2$s = ?", BIRTH_DATE, TUMBLR_NAME),
                 new String[]{month < 10 ? "0" + month : "" + month, tumblrName},
@@ -126,7 +123,7 @@ public class BirthdayDAO extends BulkImportAbsDAO<Birthday> implements BaseColum
                 new String[]{"%" + patternName + "%", tumblrName});
     }
 
-    private List<Birthday> cursorToBirtdayList(Cursor c) {
+    private List<Birthday> cursorToBirthdayList(Cursor c) {
         ArrayList<Birthday> list = new ArrayList<>();
         try {
             while (c.moveToNext()) {

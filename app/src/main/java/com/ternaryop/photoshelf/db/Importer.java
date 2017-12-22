@@ -97,7 +97,7 @@ public class Importer {
      * @param textView the textView used to show the progress, can be null
      * @return the Observable
      */
-    public Observable<Integer> importFromTumblr(final String blogName,
+    public Observable<List<TumblrPost>> importFromTumblr(final String blogName,
                                                 @Nullable final ObservableTransformer<List<TumblrPost>, List<TumblrPost>> transformer,
                                                 @Nullable final TextView textView) {
         PostTag post = DBHelper.getInstance(context).getPostTagDAO().findLastPublishedPost(blogName);
@@ -112,12 +112,17 @@ public class Importer {
                 .readPhotoPosts(blogName, post == null ? 0 : post.getPublishTimestamp())
                 .compose(transformer == null ? DO_NOTHING_TRANSFORMER : transformer)
                 .doOnNext(posts -> updateText(textView, postRetriever.getTotal(), R.plurals.posts_read_count))
-                .flatMap(posts -> Observable.fromIterable(PostTag.from(posts)))
-                .toList()
-                .flatMapObservable(postTags -> new DbImport<>(DBHelper.getInstance(context).getBulkImportPostDAOWrapper())
-                        .importer(postTags.iterator(), false))
+                .observeOn(Schedulers.computation())
+                .flatMap(postTags -> importToDB(postTags, textView));
+    }
+
+    private Observable<List<TumblrPost>> importToDB(List<TumblrPost> postTags, @Nullable final TextView textView) {
+        return new DbImport<>(DBHelper.getInstance(context).getBulkImportPostDAOWrapper())
+                .importer(PostTag.from(postTags).iterator(), false)
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(total -> updateText(textView, total, R.plurals.imported_items))
-                .takeLast(1);
+                .takeLast(1)
+                .flatMap(total -> Observable.just(postTags));
     }
 
     private void updateText(TextView textView, int total, @PluralsRes int id) {

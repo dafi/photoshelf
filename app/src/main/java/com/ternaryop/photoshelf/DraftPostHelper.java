@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,27 +21,18 @@ import com.ternaryop.tumblr.TumblrPost;
 import com.ternaryop.tumblr.TumblrUtils;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
 public class DraftPostHelper {
     private final Context context;
     private final String blogName;
     private final Tumblr tumblr;
-    private final TumblrPostCache draftCache;
 
     public DraftPostHelper(Context context, String blogName) {
         this.context = context;
         this.blogName = blogName;
-        draftCache = new TumblrPostCache(context, blogName + "Draft");
         tumblr = Tumblr.getSharedTumblr(context);
-    }
-
-    public TumblrPostCache getDraftCache() {
-        return draftCache;
     }
 
     /**
@@ -50,7 +40,7 @@ public class DraftPostHelper {
      * @param posts posts to group by tag
      * @return the (tag, posts) map
      */
-    private Map<String, List<TumblrPost>> groupPostByTag(Collection<TumblrPost> posts) {
+    public Map<String, List<TumblrPost>> groupPostByTag(Collection<TumblrPost> posts) {
         HashMap<String, List<TumblrPost>> map = new HashMap<>();
 
         for (TumblrPost post : posts) {
@@ -70,29 +60,16 @@ public class DraftPostHelper {
 
     private Maybe<TumblrPhotoPost> findLastPublishedPost(final String tag) {
         return Single
-                .fromCallable(new Callable<List<TumblrPhotoPost>>() {
-                    @Override
-                    public List<TumblrPhotoPost> call() throws Exception {
-                        final HashMap<String, String> params = new HashMap<>();
-                        params.put("type", "photo");
-                        params.put("limit", "1");
-                        params.put("tag", tag);
+                .fromCallable(() -> {
+                    final HashMap<String, String> params = new HashMap<>();
+                    params.put("type", "photo");
+                    params.put("limit", "1");
+                    params.put("tag", tag);
 
-                        return tumblr.getPhotoPosts(blogName, params);
-                    }
+                    return tumblr.getPhotoPosts(blogName, params);
                 })
-                .filter(new Predicate<List<TumblrPhotoPost>>() {
-                    @Override
-                    public boolean test(List<TumblrPhotoPost> posts) throws Exception {
-                        return !posts.isEmpty();
-                    }
-                })
-                .map(new Function<List<TumblrPhotoPost>, TumblrPhotoPost>() {
-                    @Override
-                    public TumblrPhotoPost apply(List<TumblrPhotoPost> posts) throws Exception {
-                        return posts.get(0);
-                    }
-                });
+                .filter(posts -> !posts.isEmpty())
+                .map(posts -> posts.get(0));
     }
 
     public Single<Map<String, Long>> getTagLastPublishedMap(final Set<String> tags) {
@@ -102,31 +79,18 @@ public class DraftPostHelper {
 
         return Observable
                 .fromIterable(tags)
-                .flatMap(new Function<String, ObservableSource<TumblrPhotoPost>>() {
-                    @Override
-                    public ObservableSource<TumblrPhotoPost> apply(String tag) throws Exception {
-                        Long lastPublishedTime = postByTags.get(tag);
-                        if (lastPublishedTime == null) {
-                            return findLastPublishedPost(tag)
-                                    .subscribeOn(Schedulers.from(executorService)).toObservable();
-                        }
-                        final TumblrPhotoPost post = new TumblrPhotoPost();
-                        post.setTags(tag);
-                        post.setTimestamp(lastPublishedTime);
-                        return Observable.just(post);
+                .flatMap(tag -> {
+                    Long lastPublishedTime = postByTags.get(tag);
+                    if (lastPublishedTime == null) {
+                        return findLastPublishedPost(tag)
+                                .subscribeOn(Schedulers.from(executorService)).toObservable();
                     }
+                    final TumblrPhotoPost post = new TumblrPhotoPost();
+                    post.setTags(tag);
+                    post.setTimestamp(lastPublishedTime);
+                    return Observable.just(post);
                 })
-                .toMap(new Function<TumblrPhotoPost, String>() {
-                    @Override
-                    public String apply(TumblrPhotoPost post) throws Exception {
-                        return post.getTags().get(0).toLowerCase(Locale.US);
-                    }
-                }, new Function<TumblrPhotoPost, Long>() {
-                    @Override
-                    public Long apply(TumblrPhotoPost post) throws Exception {
-                        return post.getTimestamp();
-                    }
-                });
+                .toMap(post -> post.getTags().get(0).toLowerCase(Locale.US), TumblrPost::getTimestamp);
     }
 
     public List<PhotoShelfPost> getPhotoShelfPosts(
@@ -168,41 +132,11 @@ public class DraftPostHelper {
         return lastPublishedTimestamp * 1000;
     }
 
-    public Single< Map<String, List<TumblrPost> > > getDraftTags() {
-        return Single.fromCallable(new Callable<Map<String, List<TumblrPost>>>() {
-            @Override
-            public Map<String, List<TumblrPost>> call() throws Exception {
-                List<TumblrPost> draftPosts = draftCache.read();
-                List<TumblrPost> newerPosts = tumblr.getDraftPosts(blogName, findMostRecentTimestamp(draftPosts));
-
-                if (newerPosts.size() > 0) {
-                    ArrayList<TumblrPost> arr = new ArrayList<>(newerPosts);
-                    arr.addAll(draftPosts);
-                    draftPosts = arr;
-                    draftCache.write(arr, true);
-                }
-                return groupPostByTag(draftPosts);
-            }
-        });
+    public Single<List<TumblrPost>> getNewerDraftPosts(long maxTimestamp) {
+        return Single.fromCallable(() -> tumblr.getDraftPosts(blogName, maxTimestamp));
     }
 
-    private long findMostRecentTimestamp(List<TumblrPost> posts) {
-        long maxTimestamp = 0;
-
-        for (TumblrPost p : posts) {
-            if (p.getTimestamp() > maxTimestamp) {
-                maxTimestamp = p.getTimestamp();
-            }
-        }
-        return maxTimestamp;
-    }
-
-    public Single<Map<String, List<TumblrPost>>> getQueueTags() {
-        return Single.fromCallable(new Callable<Map<String, List<TumblrPost>>>() {
-            @Override
-            public Map<String, List<TumblrPost>> call() throws Exception {
-                return groupPostByTag(TumblrUtils.getQueueAll(tumblr, blogName));
-            }
-        });
+    public Single<List<TumblrPost>> getQueuePosts() {
+        return Single.fromCallable(() -> TumblrUtils.getQueueAll(tumblr, blogName));
     }
 }
