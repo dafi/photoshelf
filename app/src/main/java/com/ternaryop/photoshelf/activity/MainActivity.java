@@ -58,6 +58,10 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
     private final static int DRAWER_ITEM_SETTINGS = 10;
     private final static int DRAWER_ITEM_FEEDLY = 11;
 
+    public static final String SHORTCUT_ACTION_DRAFT = "com.ternaryop.photoshelf.shortcut.draft";
+    public static final String SHORTCUT_ACTION_SCHEDULED = "com.ternaryop.photoshelf.shortcut.scheduled";
+    public static final String SHORTCUT_ACTION_PUBLISHED = "com.ternaryop.photoshelf.shortcut.published";
+
     private AppSupport appSupport;
     private Spinner blogList;
 
@@ -68,13 +72,15 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
         appSupport = new AppSupport(this);
         rebuildDrawerMenu();
 
-        blogList = (Spinner) findViewById(R.id.blogs_spinner);
+        blogList = findViewById(R.id.blogs_spinner);
         blogList.setOnItemSelectedListener(new BlogItemSelectedListener());
 
         boolean logged = Tumblr.isLogged(this);
         if (savedInstanceState == null) {
             if (logged) {
-                showHome();
+                if (!handleShortcutAction()) {
+                    showHome();
+                }
             } else {
                 showSettings();
             }
@@ -102,6 +108,23 @@ public class MainActivity extends DrawerActionBarActivity implements Authenticat
     private void showHome() {
         selectClickedItem(0);
         openDrawer();
+    }
+
+    private boolean handleShortcutAction() {
+        final String action = getIntent().getAction();
+        if (action == null) {
+            return false;
+        }
+        if (SHORTCUT_ACTION_DRAFT.equals(action)) {
+            selectClickedItem(1);
+        } else if (SHORTCUT_ACTION_SCHEDULED.equals(action)) {
+            selectClickedItem(2);
+        } else if (SHORTCUT_ACTION_PUBLISHED.equals(action)) {
+            selectClickedItem(3);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     private void showSettings() {

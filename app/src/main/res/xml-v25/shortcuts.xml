@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- NOTE: This file is duplicated in any build type because I was unable
+    to distinguish targetPackage application IDs -->
+    <shortcut
+        android:shortcutId="Published"
+        android:icon="@drawable/published_launcher_shortcut_icon"
+        android:shortcutShortLabel="@string/published_post">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.published"
+            android:targetPackage="com.ternaryop.photoshelf"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"/>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="Scheduled"
+        android:icon="@drawable/scheduled_launcher_shortcut_icon"
+        android:shortcutShortLabel="@string/schedule_title">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.scheduled"
+            android:targetPackage="com.ternaryop.photoshelf"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"/>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="Draft"
+        android:icon="@drawable/draft_launcher_shortcut_icon"
+        android:shortcutShortLabel="@string/draft_title">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.draft"
+            android:targetPackage="com.ternaryop.photoshelf"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"/>
+    </shortcut>
+</shortcuts>
