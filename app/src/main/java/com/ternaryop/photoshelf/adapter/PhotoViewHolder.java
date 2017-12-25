@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.adapter;
 
 import java.util.List;
 
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -17,6 +18,8 @@ import com.ternaryop.photoshelf.R;
 import com.ternaryop.tumblr.TumblrAltSize;
 import com.ternaryop.utils.StringUtils;
 import org.joda.time.format.DateTimeFormat;
+
+import static com.ternaryop.photoshelf.adapter.PostStyle.*;
 
 /**
  * Created by dave on 13/04/16.
@@ -78,15 +81,16 @@ class PhotoViewHolder extends RecyclerView.ViewHolder {
     @SuppressWarnings("ResourceType")
     private void setColors(int resArray) {
         TypedArray array = itemView.getContext().getResources().obtainTypedArray(resArray);
-        itemView.setBackground(array.getDrawable(0));
-        timeDesc.setTextColor(array.getColorStateList(2));
-        caption.setTextColor(array.getColorStateList(3));
-        menu.setImageDrawable(array.getDrawable(4));
-        noteCountText.setTextColor(array.getColorStateList(3));
+        itemView.setBackground(array.getDrawable(INDEX_VIEW_BACKGROUND));
+        timeDesc.setTextColor(array.getColorStateList(INDEX_TIME_DESC_TEXT_COLOR));
+        caption.setTextColor(array.getColorStateList(INDEX_CAPTION_TEXT_COLOR));
+        menu.setImageTintList(array.getColorStateList(INDEX_MENU_OVERFLOW_COLOR));
+        noteCountText.setTextColor(array.getColorStateList(INDEX_CAPTION_TEXT_COLOR));
 
+        final ColorStateList titleTextColor = array.getColorStateList(INDEX_TITLE_TEXT_COLOR);
         for (int i = 0; i < tagsContainer.getChildCount(); i++) {
             final TextView view = (TextView) tagsContainer.getChildAt(i);
-            view.setTextColor(array.getColorStateList(1));
+            view.setTextColor(titleTextColor);
         }
 
         array.recycle();

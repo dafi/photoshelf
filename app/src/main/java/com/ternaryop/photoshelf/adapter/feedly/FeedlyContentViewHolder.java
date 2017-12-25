@@ -15,6 +15,10 @@ import com.ternaryop.feedly.FeedlyContent;
 import com.ternaryop.lazyimageloader.ImageLoader;
 import com.ternaryop.photoshelf.R;
 
+import static com.ternaryop.photoshelf.adapter.PostStyle.INDEX_TITLE_STYLE;
+import static com.ternaryop.photoshelf.adapter.PostStyle.INDEX_TITLE_TEXT_COLOR;
+import static com.ternaryop.photoshelf.adapter.PostStyle.INDEX_VIEW_BACKGROUND;
+
 /**
  * Created by dave on 24/02/17.
  * The ViewHolder used by the Feedly list
@@ -30,10 +34,10 @@ class FeedlyContentViewHolder extends RecyclerView.ViewHolder {
     public FeedlyContentViewHolder(View itemView) {
         super(itemView);
         sidebar = itemView.findViewById(R.id.sidebar);
-        title = (TextView) itemView.findViewById(android.R.id.text1);
-        subtitle = (TextView) itemView.findViewById(android.R.id.text2);
-        checkbox = (CheckBox) itemView.findViewById(android.R.id.checkbox);
-        faviconImage = (ImageView) itemView.findViewById(R.id.thumbnail_image);
+        title = itemView.findViewById(android.R.id.text1);
+        subtitle = itemView.findViewById(android.R.id.text2);
+        checkbox = itemView.findViewById(android.R.id.checkbox);
+        faviconImage = itemView.findViewById(R.id.thumbnail_image);
     }
 
     public void bindModel(FeedlyContentDelegate content, ImageLoader imageLoader) {
@@ -86,17 +90,19 @@ class FeedlyContentViewHolder extends RecyclerView.ViewHolder {
     @SuppressWarnings("ResourceType")
     private void setColors(int resArray) {
         TypedArray array = itemView.getContext().getResources().obtainTypedArray(resArray);
-        itemView.setBackground(array.getDrawable(0));
+        itemView.setBackground(array.getDrawable(INDEX_VIEW_BACKGROUND));
 
+        final int titleStyle = array.getResourceId(INDEX_TITLE_STYLE, 0);
         if (Build.VERSION.SDK_INT < 23) {
-            title.setTextAppearance(itemView.getContext(), array.getResourceId(5, 0));
+            title.setTextAppearance(itemView.getContext(), titleStyle);
         } else {
-            title.setTextAppearance(array.getResourceId(5, 0));
+            title.setTextAppearance(titleStyle);
         }
-        subtitle.setTextColor(array.getColorStateList(1));
+        subtitle.setTextColor(array.getColorStateList(INDEX_TITLE_TEXT_COLOR));
         array.recycle();
     }
 
+    @SuppressWarnings("unused")
     public void setOnClickListeners(FeedlyContent content, View.OnClickListener listener) {
         if (listener == null) {
             return;
@@ -106,6 +112,7 @@ class FeedlyContentViewHolder extends RecyclerView.ViewHolder {
         itemView.setTag(position);
     }
 
+    @SuppressWarnings("unused")
     public void setOnCheckedChangeListener(FeedlyContentDelegate content, CompoundButton.OnCheckedChangeListener listener) {
         if (listener == null) {
             return;
