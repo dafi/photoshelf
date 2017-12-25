@@ -19,6 +19,7 @@
         android:id="@android:id/empty"
         android:layout_width="90dp"
         android:layout_height="90dp"
+        android:scaleType="fitXY"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:contentDescription="@string/content_description_empty_list"
