@@ -64,7 +64,6 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         View view = View.inflate(getActivity(), R.layout.draft_empty_list, (ViewGroup) rootView);
         progressHighlightViewLayout = view.findViewById(android.R.id.empty);
         progressHighlightViewLayout.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_loop));
-        photoAdapter.setEmptyView(progressHighlightViewLayout);
         photoAdapter.setCounterType(CounterEvent.DRAFT);
 
         if (rootView != null) {
@@ -177,6 +176,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
 
     private void onRefreshStarted() {
         photoAdapter.clear();
+        progressHighlightViewLayout.setVisibility(View.VISIBLE);
         progressHighlightViewLayout.startProgress();
         swipeLayout.setRefreshingAndWaintingResult(true);
     }
@@ -184,6 +184,7 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
     private void onRefreshCompleted() {
         swipeLayout.setRefreshingAndWaintingResult(false);
         progressHighlightViewLayout.stopProgress();
+        progressHighlightViewLayout.setVisibility(View.GONE);
     }
 
     @Override
