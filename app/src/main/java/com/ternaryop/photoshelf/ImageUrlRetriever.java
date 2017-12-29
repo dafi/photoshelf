@@ -20,8 +20,6 @@ import com.ternaryop.utils.reactivex.ProgressIndicatorObservable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
 public class ImageUrlRetriever {
@@ -42,44 +40,21 @@ public class ImageUrlRetriever {
     }
 
     public Observable<Uri> retrieve(@NonNull final List<ImageInfo> list, final boolean useFile) {
-        return retriveUrlsObservable(list, useFile)
-                .compose(ProgressIndicatorObservable.<Uri>apply( // cast needed, see http://blog.danlew.net/2015/03/02/dont-break-the-chain/ "Update 3/11/2015"
+        return Observable
+                .fromIterable(list)
+                .flatMap(imageInfo -> makeUriObservable(imageInfo, useFile))
+                .compose(ProgressIndicatorObservable.apply(
                         progressBar,
                         list.size()));
     }
 
     private Observable<ImageGallery> readImageGalleryObservable(final String url) {
-        return Observable
-                .just(url)
-                .flatMap(new Function<String, ObservableSource<ImageGallery>>() {
-                    @Override
-                    public ObservableSource<ImageGallery> apply(String url) throws Exception {
-                        final String galleryUrl = URLUtils.resolveShortenURL(url);
-                        return Observable.just(imageExtractorManager.getGallery(galleryUrl));
-                    }
-                });
-    }
-
-    private Observable<Uri> retriveUrlsObservable(final List<ImageInfo> list, final boolean useFile) {
-        return Observable
-                .fromIterable(list)
-                .flatMap(new Function<ImageInfo, ObservableSource<Uri>>() {
-                    @Override
-                    public ObservableSource<Uri> apply(ImageInfo imageInfo) throws Exception {
-                        return makeUriObservable(imageInfo, useFile);
-                    }
-                })
-                .filter(new Predicate<Uri>() {
-                    @Override
-                    public boolean test(Uri uri) throws Exception {
-                        return uri != null;
-                    }
-                });
+        return Observable.fromCallable(() -> imageExtractorManager.getGallery(URLUtils.resolveShortenURL(url)));
     }
 
     private ObservableSource<Uri> makeUriObservable(ImageInfo imageInfo, boolean useFile) throws Exception {
         final Uri uri = makeUri(retrieveImageUrl(imageInfo), useFile);
-        return uri == null ? Observable.<Uri>empty() : Observable.just(uri);
+        return uri == null ? Observable.empty() : Observable.just(uri);
     }
 
     private String retrieveImageUrl(ImageInfo imageInfo) throws Exception {
