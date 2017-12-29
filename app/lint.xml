@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- The full list is available at http://tools.android.com/tips/lint-checks -->
 <lint>
     <issue id="InvalidPackage" severity="error">
         <ignore path="**/scribe*.jar" />
+        <ignore path="**/dropbox*.jar" />
     </issue>
 
     <issue id="HardcodedText">
