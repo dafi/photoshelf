@@ -147,7 +147,7 @@ public class BirthdayUtils {
         try {
             final BirthdayInfo info = new BirthdayManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN)).search(name);
             if (info != null) {
-                return new Birthday(info.getName(), info.getBirthday(), blogName);
+                return new Birthday(info.getName(), info.getBirthdate(), blogName);
             }
         } catch (Exception ignored) {
         }
