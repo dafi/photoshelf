@@ -30,6 +30,9 @@ public class TitleParserFileTests {
     @Parameterized.Parameter(1)
     public String expectedTitle;
 
+    @Parameterized.Parameter(2)
+    public int lineNumber;
+
     @Parameterized.Parameters
     public static Collection<Object[]> data() throws IOException {
         BufferedReader inputReader = null;
@@ -43,9 +46,11 @@ public class TitleParserFileTests {
 
             String inputLine;
             String resultLine;
+            int lineNumber = 1;
+
             while ((inputLine = inputReader.readLine()) != null && (resultLine = resultReader.readLine()) != null) {
                 resultLine = resultLine.replace("%CURRENT_YEAR%", year);
-                objects.add(new Object[] {inputLine, resultLine});
+                objects.add(new Object[] {inputLine, resultLine, lineNumber++});
             }
         } finally {
             if (inputReader != null) try { inputReader.close(); } catch (IOException ignored) {}
@@ -62,7 +67,7 @@ public class TitleParserFileTests {
 
             String formattedInput = titleData.format("<strong>", "</strong>", "<em>", "</em>");
             if (!expectedTitle.equals(formattedInput)) {
-                System.out.println("\"" + inputTitle + "\",");
+                System.out.println(String.format("[%d] \"%s\",", lineNumber, inputTitle));
                 System.out.println("//expected " + expectedTitle);
                 System.out.println("//found    " + formattedInput);
                 System.out.println();
