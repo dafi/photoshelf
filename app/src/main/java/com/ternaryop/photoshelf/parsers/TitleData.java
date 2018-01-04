@@ -104,11 +104,8 @@ public class TitleData {
             }
             String tag = tag1
                     .replaceFirst("[0-9]*(st|nd|rd|th)?", "")
-                    .replaceAll("\"|'", "");
-            for (LocationPrefix prefix : config.getLocationPrefixes()) {
-                tag = prefix.removePrefix(tag);
-            }
-            tag = tag.trim();
+                    .replaceAll("\"|'", "")
+                    .trim();
             if (tag.length() > 0) {
                 list.add(tag);
             }
