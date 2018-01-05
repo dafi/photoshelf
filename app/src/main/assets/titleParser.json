@@ -1,8 +1,8 @@
 {
-    "version":11,
-    "titleParserRegExp":"(.*?)\\s+(at the|at|in|on the|on|for|by|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s",
+    "version":12,
+    "titleParserRegExp":"(.*?)\\s+(at the|at|in|on the|on|for|by|[a-z]*ing|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s",
     "locationPrefixes":[
-      "\\b(attends|shopping|arrives|arriving|leaves?|leaving|for|by)\\b",
+      "(?!during|morning)\\b(attends|^[a-z]*ing|arrives|leaves?|for|by)\\b",
       "^(at|on)\\s?(the)?",
       "^(night\\s+)?out\\s?(and about|for *)?"
     ],
@@ -13,7 +13,7 @@
     },
     "titleCleaner":{
             "regExprs":[
-              ["\\s+(x\\d+|\\(?\\d+\\)?\\s?HQ\\b|\\d+\\s+pics)", "", "remove image count (eg 'x34' '(8)HQ' '20 HQ')"],
+              ["\\s+(\\(?[x+]\\d+\\)?|\\(?\\d+\\)?\\s?HQ\\b|\\d+\\s+pics)", "", "remove image count (eg 'x34' '(8)HQ' '20 HQ')"],
               ["([a-z])- ", "$1 - ", "add a whitespace before dash"],
               ["(?i)(january|february|march|april|may|june|july|august|september|october|november|december) (\\d+)(?:st|nd|rd|th|-)\\s?(\\d{4}).*- SuperiorPics Celebrity\\s+.*", ", $1 $2 $3", "superiorpics: convert January 3-2015 to , January 3 2015"],
               ["\\s(\\d).(\\d+).(\\d+) - SuperiorPics Celebrity\\s+.*", " 0$2/$1/$3", "convert m/dd/yyyy to dd/mm/yyyy and zero fill"],
