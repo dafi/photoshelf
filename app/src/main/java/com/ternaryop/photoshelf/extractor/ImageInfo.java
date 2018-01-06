@@ -13,7 +13,8 @@ public class ImageInfo {
 
     public ImageInfo(JSONObject json) throws JSONException {
         thumbnailUrl = json.getString("thumbnailUrl");
-        documentUrl = json.getString("documentUrl");
+        documentUrl = json.optString("documentUrl", null);
+        imageUrl = json.optString("imageUrl", null);
     }
 
     /**
