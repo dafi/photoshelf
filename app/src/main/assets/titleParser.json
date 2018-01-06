@@ -1,8 +1,15 @@
 {
-    "version":12,
+    "version":13,
     "titleParserRegExp":"(.*?)\\s+(at the|at|in|on the|on|for|by|[a-z]*ing|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s",
+    "__comment_locationPrefixes": [
+      "remove verbs in the form *s (e.g. gets, grabs, leaves), the verbs length must be at least 3 characters, skip 'sports'",
+      "remove verbs in the form *ing (e.g. promoting, leaving), skip 'during' and 'morning' remove prepositions like for and by",
+      "remove 'at' 'on' and 'the'",
+      "remove 'night out' and 'for *'"
+    ],
     "locationPrefixes":[
-      "(?!during|morning)\\b(attends|^[a-z]*ing|arrives|leaves?|for|by)\\b",
+      "(?!sports)^\\b([a-z]{2,}s)\\b",
+      "(?!during|morning)\\b(^[a-z]*ing|for|by)\\b",
       "^(at|on)\\s?(the)?",
       "^(night\\s+)?out\\s?(and about|for *)?"
     ],

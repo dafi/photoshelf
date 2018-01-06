@@ -43,7 +43,7 @@ public class TitleParser {
     private String setWho(String title, TitleData titleData) {
         Matcher m = config.getTitleParserPattern().matcher(title);
         if (m.find() && m.groupCount() > 1) {
-            final String who = removeLocationPrefixes(m.group(1));
+            final String who = m.group(1);
             titleData.setWhoFromString(StringUtils.capitalize(who));
             // remove the 'who' chunk and any not alphabetic character (eg the dash used to separated "who" from location)
             if (Character.isLetter(m.group(2).charAt(0))) {
@@ -51,13 +51,6 @@ public class TitleParser {
             } else {
                 title = title.substring(m.group(0).length());
             }
-        }
-        return title;
-    }
-
-    private String removeLocationPrefixes(String title) {
-        for (LocationPrefix prefix : config.getLocationPrefixes()) {
-            title = prefix.removePrefix(title);
         }
         return title;
     }
