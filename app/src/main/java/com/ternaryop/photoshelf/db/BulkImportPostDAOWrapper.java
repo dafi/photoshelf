@@ -14,6 +14,10 @@ public class BulkImportPostDAOWrapper extends BulkImportAbsDAO<PostTag> {
     private final Context context;
     private SQLiteStatement blogStatement;
     private SQLiteStatement tagStatement;
+    private SQLiteStatement insertTagMatcherStatement;
+    private SQLiteStatement selectTagMatcherStatement;
+
+    private TagMatcherDAO tagMatcherDAO;
 
     public BulkImportPostDAOWrapper(SQLiteOpenHelper dbHelper, Context context) {
         super(dbHelper);
@@ -24,6 +28,9 @@ public class BulkImportPostDAOWrapper extends BulkImportAbsDAO<PostTag> {
     public SQLiteStatement getCompiledInsertStatement(SQLiteDatabase db) {
         blogStatement = db.compileStatement("insert or ignore into blog (name) values (?)");
         tagStatement = db.compileStatement("insert or ignore into tag (name) values (?)");
+        tagMatcherDAO = DBHelper.getInstance(context).getTagMatcherDAO();
+        insertTagMatcherStatement = TagMatcherDAO.getInsertTagMatcherStatement(db);
+        selectTagMatcherStatement = TagMatcherDAO.getSelectTagMatcherStatement(db);
         return db.compileStatement("insert into post(_id, tag_id, blog_id, publish_timestamp, show_order) values(" +
                 "?," +
                 "(SELECT _id FROM tag where name = ?)," +
@@ -36,6 +43,7 @@ public class BulkImportPostDAOWrapper extends BulkImportAbsDAO<PostTag> {
     public long insert(SQLiteStatement stmt, PostTag postTag) {
         insertBlog(postTag.getTumblrName());
         insertTag(postTag.getTag());
+        insertTagMatcher(postTag.getTag());
         // insert a Post using the PostTag because the insert statement uses the blogName and tagName contained into PostTag
         return insertPost(stmt, postTag);
     }
@@ -64,6 +72,7 @@ public class BulkImportPostDAOWrapper extends BulkImportAbsDAO<PostTag> {
         DBHelper.getInstance(context).getPostDAO().removeAll();
         DBHelper.getInstance(context).getTagDAO().removeAll();
         DBHelper.getInstance(context).getBlogDAO().removeAll();
+        DBHelper.getInstance(context).getTagMatcherDAO().removeAll();
     }
 
     private void insertBlog(String blogName) {
@@ -89,5 +98,11 @@ public class BulkImportPostDAOWrapper extends BulkImportAbsDAO<PostTag> {
         stmt.bindLong(++index, postTag.getShowOrder());
 
         return stmt.executeInsert();
+    }
+
+    private void insertTagMatcher(String tagName) {
+        if (tagMatcherDAO.getMatchingTag(selectTagMatcherStatement, tagName) == null) {
+            tagMatcherDAO.insert(insertTagMatcherStatement, tagName);
+        }
     }
 }

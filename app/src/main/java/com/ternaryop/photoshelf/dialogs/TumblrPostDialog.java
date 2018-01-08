@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -278,21 +279,7 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
         ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
         Single
-                .fromCallable(() -> {
-                    final long count = DBHelper.getInstance(getActivity()).getPostTagDAO()
-                            .getPostCountByTag(name, appSupport.getSelectedBlogName());
-                    if (count > 0) {
-                        return Pair.create(NAME_ALREADY_EXISTS, name);
-                    }
-                    String correctedName = new GoogleCustomSearchClient(
-                                getString(R.string.GOOGLE_CSE_APIKEY),
-                                getString(R.string.GOOGLE_CSE_CX))
-                                .getCorrectedQuery(name);
-                    if (correctedName == null) {
-                        return Pair.create(NAME_NOT_FOUND, name);
-                    }
-                    return Pair.create(NAME_MISSPELLED, correctedName);
-                })
+                .fromCallable(() -> getMisspelledInfo(name))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> {
@@ -316,6 +303,42 @@ public class TumblrPostDialog extends DialogFragment implements Toolbar.OnMenuIt
                     @Override
                     public void onError(Throwable e) {}
                 });
+    }
+
+    private Pair<Integer, String> getMisspelledInfo(String name) throws Exception {
+        Pair<Integer, String> pair = getMatchingName(name);
+        if (pair != null) {
+            return pair;
+        }
+        pair = getMisspelledName(name);
+        if (pair != null) {
+            return pair;
+        }
+        return Pair.create(NAME_NOT_FOUND, name);
+    }
+
+    @Nullable
+    private Pair<Integer, String> getMatchingName(String name) {
+        String correctedName = DBHelper.getInstance(getActivity()).getTagMatcherDAO().getMatchingTag(name);
+        if (name.equalsIgnoreCase(correctedName)) {
+            return Pair.create(NAME_ALREADY_EXISTS, correctedName);
+        }
+        if (correctedName == null) {
+            return null;
+        }
+        return Pair.create(NAME_MISSPELLED, correctedName);
+    }
+
+    @Nullable
+    private Pair<Integer, String> getMisspelledName(String name) throws Exception {
+        String correctedName = new GoogleCustomSearchClient(
+                getString(R.string.GOOGLE_CSE_APIKEY),
+                getString(R.string.GOOGLE_CSE_CX))
+                .getCorrectedQuery(name);
+        if (correctedName == null) {
+            return null;
+        }
+        return Pair.create(NAME_MISSPELLED, correctedName);
     }
 
     private void highlightTagName(int nameType, String correctedName) {

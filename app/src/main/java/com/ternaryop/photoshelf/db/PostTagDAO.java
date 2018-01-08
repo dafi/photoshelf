@@ -10,7 +10,6 @@ import java.util.Map;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -25,7 +24,6 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
     public static final String TUMBLR_NAME = "tumblr_name";
     public static final String PUBLISH_TIMESTAMP = "publish_timestamp";
     public static final String SHOW_ORDER = "show_order";
-    public static final String TAG_ID = "tag_id";
     public static final String BLOG_ID = "blog_id";
 
     public static final String[] COLUMNS = new String[] { _ID, TUMBLR_NAME, TAG, PUBLISH_TIMESTAMP, SHOW_ORDER };
@@ -178,26 +176,6 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
                 buildArguments(tags, tumblrName));
     }
 
-    private List<PostTag> cursorToList(Cursor c) {
-        ArrayList<PostTag> list = new ArrayList<>();
-        try {
-            while (c.moveToNext()) {
-                PostTag postTag = new PostTag(
-                        c.getLong(c.getColumnIndex(_ID)),
-                        c.getString(c.getColumnIndex(TUMBLR_NAME)),
-                        c.getString(c.getColumnIndex(TAG)),
-                        c.getLong(c.getColumnIndex(PUBLISH_TIMESTAMP)),
-                        c.getLong(c.getColumnIndex(SHOW_ORDER)));
-                list.add(postTag);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            c.close();
-        }
-        return list;
-    }   
-    
     public PostTag findLastPublishedPost(String tumblrName) {
         SQLiteDatabase db = getDbHelper().getReadableDatabase();
 
@@ -244,16 +222,6 @@ public class PostTagDAO extends AbsDAO<PostTag> implements BaseColumns {
             }
         }
         return map;
-    }
-
-    public long getPostCountByTag(String tag, String tumblrName) {
-        SQLiteDatabase db = getDbHelper().getReadableDatabase();
-
-        return DatabaseUtils.queryNumEntries(db,
-                TABLE_NAME,
-                TAG + " = ?"
-                + " and " + TUMBLR_NAME + " = ?",
-                new String[]{tag.toLowerCase(), tumblrName});
     }
 
     @Override
