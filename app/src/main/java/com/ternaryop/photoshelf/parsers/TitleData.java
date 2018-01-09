@@ -156,7 +156,7 @@ public class TitleData {
         return sb.toString();
     }
 
-    private void formatWho(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose, StringBuilder sb) {
+    public void formatWho(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose, StringBuilder sb) {
         if (who.isEmpty()) {
             return;
         }
