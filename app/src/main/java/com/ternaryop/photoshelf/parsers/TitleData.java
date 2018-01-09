@@ -127,10 +127,11 @@ public class TitleData {
     }
 
     public String format(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose) {
-        StringBuilder sb = new StringBuilder();
-
-        formatWho(whoTagOpen, whoTagClose, descTagOpen, descTagClose, sb);
+        final StringBuilder sb = formatWho(whoTagOpen, whoTagClose, descTagOpen, descTagClose, new StringBuilder());
         if (location != null || when != null || city != null) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
             sb.append(descTagOpen);
             if (location != null) {
                 sb.append(location);
@@ -156,9 +157,9 @@ public class TitleData {
         return sb.toString();
     }
 
-    public void formatWho(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose, StringBuilder sb) {
+    public StringBuilder formatWho(String whoTagOpen, String whoTagClose, String descTagOpen, String descTagClose, StringBuilder sb) {
         if (who.isEmpty()) {
-            return;
+            return sb;
         }
         boolean appendSep = false;
         for (int i = 0; i < who.size() - 1; i++) {
@@ -178,7 +179,7 @@ public class TitleData {
         }
         sb.append(whoTagOpen)
                 .append(who.get(who.size() - 1))
-                .append(whoTagClose)
-                .append(" ");
+                .append(whoTagClose);
+        return sb;
     }
 }
