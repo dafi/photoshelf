@@ -42,7 +42,7 @@ public class MRU {
     }
 
     public boolean add(String item) {
-        if (item == null) {
+        if (item == null || item.trim().isEmpty()) {
             return false;
         }
         String lowerCaseItem = item.toLowerCase(Locale.US);
