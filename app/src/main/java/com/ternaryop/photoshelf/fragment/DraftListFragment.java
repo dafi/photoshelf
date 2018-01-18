@@ -160,12 +160,11 @@ public class DraftListFragment extends AbsPostsListFragment implements WaitingRe
         onRefreshStarted();
 
         compositeDisposable.add(new Importer(getActivity()).importFromTumblr(getBlogName(), Importer.schedulers(), getCurrentTextView())
+                .doOnComplete(this::readPhotoPosts)
                 .subscribe(posts -> {
                     progressHighlightViewLayout.incrementProgress();
                     // delete from cache the published posts
                     draftCache.delete(posts, CACHE_TYPE_DRAFT);
-
-                    readPhotoPosts();
                 }, t -> DialogUtils.showErrorDialog(getActivity(), t))
         );
     }
