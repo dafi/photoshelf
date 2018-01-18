@@ -36,7 +36,7 @@ public class MRUAdapter extends RecyclerView.Adapter<MRUViewHolder> implements V
         final String item = items.get(position);
         holder.bindModel(item);
 
-        holder.setOnClickListeners(onMRUListener == null ? null : this);
+        holder.setOnClickListeners(item, onMRUListener == null ? null : this);
     }
 
     @Override
@@ -48,9 +48,13 @@ public class MRUAdapter extends RecyclerView.Adapter<MRUViewHolder> implements V
         return items.get(position);
     }
 
+    public int getPosition(String item) {
+        return items.indexOf(item);
+    }
+
     @Override
     public void onClick(View v) {
-        final int[] positions = new int[]{(int) v.getTag()};
+        final int[] positions = new int[]{getPosition((String) v.getTag())};
         onMRUListener.onItemsSelected(dialog, positions);
     }
 

@@ -20,9 +20,8 @@ class MRUViewHolder extends RecyclerView.ViewHolder {
         textView.setText(item);
     }
 
-    public void setOnClickListeners(View.OnClickListener listener) {
-        final int position = getAdapterPosition();
+    public void setOnClickListeners(String item, View.OnClickListener listener) {
         textView.setOnClickListener(listener);
-        textView.setTag(position);
+        textView.setTag(item);
     }
 }
