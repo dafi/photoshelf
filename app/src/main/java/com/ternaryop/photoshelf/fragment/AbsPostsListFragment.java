@@ -247,7 +247,7 @@ public abstract class AbsPostsListFragment extends AbsPhotoShelfFragment impleme
             Tumblr.getSharedTumblr(getActivity()).saveDraft(
                     getBlogName(),
                     post.getPostId());
-            DBHelper.getInstance(getActivity()).getTumblrPostCacheDAO().updateItem(post, CACHE_TYPE_DRAFT);
+            DBHelper.getInstance(getActivity()).getTumblrPostCacheDAO().insertItem(post, CACHE_TYPE_DRAFT);
             onPostAction(post, POST_ACTION_SAVE_AS_DRAFT, POST_ACTION_OK);
         });
     }

@@ -77,6 +77,10 @@ public class TumblrPostCacheDAO extends AbsDAO<TumblrPostCache> implements BaseC
         return db.delete(TABLE_NAME, _ID + "=? and " + BLOG_NAME + "=?", new String[] {item.getReblogKey(), item.getBlogName()});
     }
 
+    public long insertItem(TumblrPost post, int cacheType) {
+        return insert(new TumblrPostCache(post.getReblogKey(), post, cacheType));
+    }
+
     public boolean updateItem(TumblrPost post, int cacheType) {
         final TumblrPostCache cache = new TumblrPostCache(post.getReblogKey(), post, cacheType);
 
