@@ -72,7 +72,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".util.NotificationUtil$ClearBirthdayNotificationBroadcastReceiver"
+            android:name=".util.notification.NotificationUtil$ClearBirthdayNotificationBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.ternaryop.photoshelf.birthday.clear"/>

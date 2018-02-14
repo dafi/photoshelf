@@ -86,7 +86,7 @@
         <item name="colorAccent">@color/actionbar_text</item>
     </style>
 
-    <!-- Used to style the overflow menu shown is dialogfragment's toolbar -->
+    <!-- Used to style the overflow menu shown is dialogFragment's toolbar -->
     <style name="Theme.PhotoShelf.Dialog"
            parent="@style/Theme.AppCompat.Light.Dialog">
         <item name="textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall</item>
@@ -95,7 +95,7 @@
         <item name="textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge</item>
         <item name="android:textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge</item>
 
-        <!-- Not yet used but can be used to customize the autocomplete edittext color -->
+        <!-- Not yet used but can be used to customize the autocomplete editText color -->
         <!--<item name="android:autoCompleteTextViewStyle">@style/Theme.PhotoShelf.Dialog.AutoCompleteTextView</item>-->
 
         <!-- It's necessary to style the autocomplete dropdown -->
