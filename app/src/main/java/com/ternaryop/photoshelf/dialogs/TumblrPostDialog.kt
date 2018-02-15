@@ -362,10 +362,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
             val selectedBlogName = blogList.selectedItem as String
             appSupport.selectedBlogName = selectedBlogName
 
-            val tags = TumblrPost.tagsFromString(postTags)
-            tags.removeAt(0)
-            mruTags.add(tags)
-            mruTags.save()
+            updateMruList()
             createPosts(which == DialogInterface.BUTTON_NEUTRAL, selectedBlogName, imageUrls!!, postTitle, postTags)
         }
 
@@ -381,6 +378,13 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
         }
     }
 
+    private fun updateMruList() {
+        val tags = TumblrPost.tagsFromString(postTags)
+        tags.removeAt(0)
+        mruTags.add(tags)
+        mruTags.save()
+    }
+
     private fun editPost() {
         val newValues = mutableMapOf(
                 "id" to photoPost!!.postId.toString(),
@@ -389,6 +393,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
         )
         val selectedBlogName = appSupport.selectedBlogName!!
 
+        updateMruList()
         val completable = Completable
                 .fromAction {
                     Tumblr.getSharedTumblr(appSupport).editPost(selectedBlogName, newValues)
