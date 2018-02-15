@@ -51,7 +51,7 @@ class TitleDateComponents internal constructor(text: String, swapDayMonth: Boole
      * @return the date position on success, -1 otherwise
      */
     private fun extractComponentsFromTextualDate(text: String): Int {
-        val m = Pattern.compile("\\s?(?:[-|,]|\\bon\\b)?\\s+(\\d*)(?:st|ns|rd|th)?\\s?\\(?(jan\\w*|feb\\w*|mar\\w*|apr\\w*|may\\w*|jun\\w*|jul\\w*|aug\\w*|sep\\w*|oct\\w*|nov\\w*|dec\\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\\)?.*$", Pattern.CASE_INSENSITIVE).matcher(text)
+        val m = Pattern.compile("""\s?(?:[-|,]|\bon\b)?\s+(\d*)(?:st|ns|rd|th)?\s?\(?(jan\w*|feb\w*|mar\w*|apr\w*|may\w*|jun\w*|jul\w*|aug\w*|sep\w*|oct\w*|nov\w*|dec\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\)?.*${'$'}""", Pattern.CASE_INSENSITIVE).matcher(text)
         if (m.find() && m.groupCount() > 1) {
             var dayIndex = 3
             var monthIndex = 2
@@ -67,14 +67,14 @@ class TitleDateComponents internal constructor(text: String, swapDayMonth: Boole
             }
 
             month = indexOfMonthFromShort(m.group(monthIndex).toLowerCase(Locale.getDefault()))
-            day = if (m.group(dayIndex).isEmpty()) 0 else Integer.parseInt(m.group(dayIndex))
+            day = if (m.group(dayIndex).isEmpty()) 0 else m.group(dayIndex).toInt()
             // The date could have the form February 2011 so the day contains the year
             if (day > 2000) {
                 year = day
                 day = 0
             } else {
                 if (m.groupCount() == expectedGroupCount && !m.group(yearIndex).isEmpty()) {
-                    year = Integer.parseInt(m.group(yearIndex))
+                    year = m.group(yearIndex).toInt()
                 }
             }
             return m.start()
@@ -112,24 +112,59 @@ class TitleDateComponents internal constructor(text: String, swapDayMonth: Boole
     }
 
     /**
-     * handle dates in the form dd/dd/dd?? or (dd/dd/??) or (dddd)
      * @param text the string to parse
-     * @return matcher on success, null otherwise
+     * @return date position on success, -1 otherwise
      */
     private fun extractComponentsFromNumericDate(text: String): Int {
-        var m = Pattern.compile(".*\\D(\\d{1,2})\\s*\\D\\s*(\\d{1,2})\\s*\\D\\s*(\\d{2}|\\d{4})\\b").matcher(text)
+        var pos = extractMostCompleteDate(text)
+        if (pos != -1) {
+            return pos
+        }
+        pos = extractYear(text)
+        if (pos != -1) {
+            return pos
+        }
+        return extractIso8601Date(text)
+    }
+
+    /**
+     * Extract dates in the form dd/dd/dd?? or (dd/dd/??) or (dddd)
+     * @return date position on success, -1 otherwise
+     */
+    private fun extractMostCompleteDate(text: String): Int {
+        val m = Pattern.compile(""".*\D(\d{1,2})\s*\D\s*(\d{1,2})\s*\D\s*(\d{2}|\d{4})\b""").matcher(text)
         if (m.find() && m.groupCount() > 1) {
-            day = Integer.parseInt(m.group(1))
-            month = Integer.parseInt(m.group(2))
-            year = Integer.parseInt(m.group(3))
+            day = m.group(1).toInt()
+            month = m.group(2).toInt()
+            year = m.group(3).toInt()
             return m.start(1)
         }
-        // only year
-        m = Pattern.compile("\\(\\s*(2\\d{3})\\s*\\)").matcher(text)
+        return -1
+    }
+
+    /**
+     * Extract year starting with 2 (ie. 2ddd)
+     * @return date position on success, -1 otherwise
+     */
+    private fun extractYear(text: String): Int {
+        val m = Pattern.compile("""\(\s*(2\d{3})\s*\)""").matcher(text)
         if (m.find()) {
             day = -1
             month = -1
-            year = Integer.parseInt(m.group(1))
+            year = m.group(1).toInt()
+            return m.start(1)
+        }
+        return -1
+    }
+
+    private fun extractIso8601Date(text: String): Int {
+        val m = Pattern.compile(""".*\D(\d{4})\s*\D\s*(\d{1,2})\s*\D\s*(\d{2})\b""").matcher(text)
+
+        if (m.find()) {
+            year = m.group(1).toInt()
+            month = m.group(2).toInt()
+            day = m.group(3).toInt()
+
             return m.start(1)
         }
         return -1
