@@ -318,7 +318,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
             TumblrHttpOAuthConsumer.logout(context)
         }
 
-        fun handleOpenURI(context: Context, uri: Uri, callback: AuthenticationCallback): Boolean {
+        fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
             return TumblrHttpOAuthConsumer.handleOpenURI(context, uri, callback)
         }
 

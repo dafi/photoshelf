@@ -88,9 +88,9 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
     private fun handleShortcutAction(): Boolean {
         val action = intent.action ?: return false
         when {
-            SHORTCUT_ACTION_DRAFT == action -> selectClickedItem(1)
-            SHORTCUT_ACTION_SCHEDULED == action -> selectClickedItem(2)
-            SHORTCUT_ACTION_PUBLISHED == action -> selectClickedItem(3)
+            SHORTCUT_ACTION_DRAFT == action -> selectClickedItem(DRAWER_ITEM_DRAFT)
+            SHORTCUT_ACTION_SCHEDULED == action -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
+            SHORTCUT_ACTION_PUBLISHED == action -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
             else -> return false
         }
         return true
@@ -134,7 +134,7 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
 
         if (!Tumblr.isLogged(this)) {
             // if we are returning from authentication then enable the UI
-            val handled = Tumblr.handleOpenURI(this, intent.data!!, this)
+            val handled = Tumblr.handleOpenURI(this, intent.data, this)
 
             // show the preference only if we aren't in the middle of URI handling and not already logged in
             if (handled) {
