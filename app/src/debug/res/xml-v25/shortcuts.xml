@@ -3,6 +3,16 @@
     <!-- NOTE: This file is duplicated in any build type because I was unable
     to distinguish targetPackage application IDs -->
     <shortcut
+        android:shortcutId="Feedly"
+        android:icon="@drawable/feedly_launcher_shortcut_icon"
+        android:shortcutShortLabel="@string/feedly_title">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.feedly"
+            android:targetPackage="com.ternaryop.photoshelf.debug"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"/>
+    </shortcut>
+
+    <shortcut
         android:shortcutId="Published"
         android:enabled="true"
         android:icon="@drawable/published_launcher_shortcut_icon"

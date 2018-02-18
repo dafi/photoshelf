@@ -91,6 +91,7 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
             SHORTCUT_ACTION_DRAFT == action -> selectClickedItem(DRAWER_ITEM_DRAFT)
             SHORTCUT_ACTION_SCHEDULED == action -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
             SHORTCUT_ACTION_PUBLISHED == action -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
+            SHORTCUT_ACTION_FEEDLY == action -> selectClickedItem(DRAWER_ITEM_FEEDLY)
             else -> return false
         }
         return true
@@ -152,13 +153,13 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
             refreshCounters(blogName)
         }
 
-        fun refreshCounters(blogName: String) {
-            CounterIntentService.fetchCounter(this@MainActivity, blogName, CounterEvent.BIRTHDAY)
-            CounterIntentService.fetchCounter(this@MainActivity, blogName, CounterEvent.DRAFT)
-            CounterIntentService.fetchCounter(this@MainActivity, blogName, CounterEvent.SCHEDULE)
-        }
-
         override fun onNothingSelected(parent: AdapterView<*>) {}
+    }
+
+    fun refreshCounters(blogName: String) {
+        CounterIntentService.fetchCounter(this, blogName, CounterEvent.BIRTHDAY)
+        CounterIntentService.fetchCounter(this, blogName, CounterEvent.DRAFT)
+        CounterIntentService.fetchCounter(this, blogName, CounterEvent.SCHEDULE)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -274,5 +275,6 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
         const val SHORTCUT_ACTION_DRAFT = "com.ternaryop.photoshelf.shortcut.draft"
         const val SHORTCUT_ACTION_SCHEDULED = "com.ternaryop.photoshelf.shortcut.scheduled"
         const val SHORTCUT_ACTION_PUBLISHED = "com.ternaryop.photoshelf.shortcut.published"
+        const val SHORTCUT_ACTION_FEEDLY = "com.ternaryop.photoshelf.shortcut.feedly"
     }
 }

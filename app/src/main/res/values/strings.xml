@@ -253,5 +253,6 @@
     <string name="token_expired">Token Expired</string>
     <string name="change_wallpaper_error">Wallpaper</string>
     <string name="recently_used_tags">Recently Used Tags</string>
+    <string name="feedly_title">Feedly</string>
 
 </resources>
