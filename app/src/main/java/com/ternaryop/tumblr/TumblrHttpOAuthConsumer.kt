@@ -11,7 +11,6 @@ import com.ternaryop.utils.JSONUtils
 import org.json.JSONException
 import org.json.JSONObject
 import org.scribe.builder.ServiceBuilder
-import org.scribe.builder.api.TumblrApi
 import org.scribe.model.OAuthConstants
 import org.scribe.model.OAuthRequest
 import org.scribe.model.Response
@@ -20,6 +19,7 @@ import org.scribe.model.Verb
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuthService
 import java.io.IOException
+import java.net.HttpURLConnection
 
 class TumblrHttpOAuthConsumer(context: Context) {
     private val oAuthService: OAuthService
@@ -27,13 +27,12 @@ class TumblrHttpOAuthConsumer(context: Context) {
     val consumerKey = context.getString(R.string.CONSUMER_KEY)!!
 
     init {
-
         oAuthService = ServiceBuilder()
-                .provider(TumblrApi::class.java)
-                .apiKey(consumerKey)
-                .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                .callback(context.getString(R.string.CALLBACK_URL))
-                .build()
+            .provider(TumblrApiFix::class.java)
+            .apiKey(consumerKey)
+            .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+            .callback(context.getString(R.string.CALLBACK_URL))
+            .build()
 
         accessToken = TokenPreference.from(context).accessToken
     }
@@ -105,7 +104,8 @@ class TumblrHttpOAuthConsumer(context: Context) {
             throw TumblrException("Invalid tumblr response, meta not found")
         }
         val status = json.getJSONObject("meta").getInt("status")
-        if (status != 200 && status != 201) {
+
+        if (status != HttpURLConnection.HTTP_OK && status != HttpURLConnection.HTTP_CREATED) {
             var errorMessage = getErrorFromResponse(json)
             if (errorMessage == null) {
                 errorMessage = json.getJSONObject("meta").getString("msg")
@@ -139,13 +139,13 @@ class TumblrHttpOAuthConsumer(context: Context) {
             val context = prefs.context
             try {
                 val oAuthService = ServiceBuilder()
-                        .provider(TumblrApi::class.java)
-                        .apiKey(context.getString(R.string.CONSUMER_KEY))
-                        .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                        .callback(context.getString(R.string.CALLBACK_URL))
-                        .build()
+                    .provider(TumblrApiFix::class.java)
+                    .apiKey(context.getString(R.string.CONSUMER_KEY))
+                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+                    .callback(context.getString(R.string.CALLBACK_URL))
+                    .build()
                 return oAuthService.getAccessToken(prefs.requestToken,
-                        Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)))
+                    Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)))
             } catch (e: Exception) {
                 error = e
             }
@@ -242,11 +242,11 @@ class TumblrHttpOAuthConsumer(context: Context) {
         private fun authorize(context: Context) {
             // Callback url scheme is defined into manifest
             val oAuthService = ServiceBuilder()
-                    .provider(TumblrApi::class.java)
-                    .apiKey(context.getString(R.string.CONSUMER_KEY))
-                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                    .callback(context.getString(R.string.CALLBACK_URL))
-                    .build()
+                .provider(TumblrApiFix::class.java)
+                .apiKey(context.getString(R.string.CONSUMER_KEY))
+                .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+                .callback(context.getString(R.string.CALLBACK_URL))
+                .build()
             val requestToken = oAuthService.requestToken
             TokenPreference.from(context).storeRequestToken(requestToken)
             val authorizationUrl = oAuthService.getAuthorizationUrl(requestToken)
