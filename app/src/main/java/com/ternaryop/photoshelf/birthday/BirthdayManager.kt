@@ -50,7 +50,7 @@ class BirthdayManager(private val accessToken: String) {
     }
 
     @Throws(Exception::class) private fun handleError(conn: HttpURLConnection) {
-        if (conn.responseCode == 200) {
+        if (conn.responseCode == HttpURLConnection.HTTP_OK) {
             return
         }
         val error = toJson(conn.errorStream)

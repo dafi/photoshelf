@@ -49,12 +49,7 @@ class TitleSaveFormattedTest {
             return true
         }
         val newerLastModified = newerFile.lastModified()
-        for (f in files) {
-            if (f.lastModified() > newerLastModified) {
-                return true
-            }
-        }
-        return false
+        return files.any { it.lastModified() > newerLastModified }
     }
 
     @Throws(Exception::class)

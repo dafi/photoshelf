@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf
 
 import android.content.Context
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.tumblr.Tumblr
@@ -13,6 +14,8 @@ import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import java.util.Locale
 import java.util.concurrent.Executors
+
+const val MAX_TAG_LAST_PUBLISHED_THREAD_POOL = 5
 
 class DraftPostHelper(private val context: Context, private val blogName: String) {
     private val tumblr = Tumblr.getSharedTumblr(context)
@@ -60,7 +63,7 @@ class DraftPostHelper(private val context: Context, private val blogName: String
     fun getTagLastPublishedMap(tags: Set<String>): Single<Map<String, Long>> {
         val postTagDAO = DBHelper.getInstance(context).postTagDAO
         val postByTags = postTagDAO.getMapTagLastPublishedTime(tags, blogName)
-        val executorService = Executors.newFixedThreadPool(5)
+        val executorService = Executors.newFixedThreadPool(MAX_TAG_LAST_PUBLISHED_THREAD_POOL)
 
         return Observable
                 .fromIterable(tags)
@@ -91,7 +94,7 @@ class DraftPostHelper(private val context: Context, private val blogName: String
             val timestampToSave = if (queuedTimestamp > 0) queuedTimestamp else lastPublishedTimestamp
             for (post in posts) {
                 // preserve schedule time when present
-                post.scheduledPublishTime = queuedTimestamp / 1000
+                post.scheduledPublishTime = queuedTimestamp / SECOND_IN_MILLIS
                 list.add(PhotoShelfPost(post as TumblrPhotoPost, timestampToSave))
             }
         }
@@ -102,13 +105,13 @@ class DraftPostHelper(private val context: Context, private val blogName: String
         val list = queuedPosts[tag] ?: return 0
 
         // posts are sorted by schedule date so it's sufficient to get the first item
-        return list[0].scheduledPublishTime * 1000
+        return list[0].scheduledPublishTime * SECOND_IN_MILLIS
     }
 
     private fun getLastPublishedTimestampByTag(tag: String, lastPublished: Map<String, Long>): Long {
         val lastPublishedTimestamp = lastPublished[tag] ?: return java.lang.Long.MAX_VALUE
 
-        return lastPublishedTimestamp * 1000
+        return lastPublishedTimestamp * SECOND_IN_MILLIS
     }
 
     fun getNewerDraftPosts(maxTimestamp: Long): Single<List<TumblrPost>> {

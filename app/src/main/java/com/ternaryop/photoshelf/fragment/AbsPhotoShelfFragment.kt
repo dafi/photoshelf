@@ -72,7 +72,7 @@ abstract class AbsPhotoShelfFragment : Fragment(), TumblrPostDialog.PostListener
         sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_bg))
         val textView = sbView.findViewById<TextView>(android.support.design.R.id.snackbar_text)
         textView.setTextColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_text))
-        textView.maxLines = 3
+        textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()
     }
 

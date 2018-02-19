@@ -8,6 +8,7 @@ import com.ternaryop.tumblr.TumblrPost
 import java.io.IOException
 import java.util.Locale
 
+@Suppress("TooManyFunctions", "ObjectPropertyNaming")
 class TumblrPostCacheDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsDAO<TumblrPostCache>(dbHelper), BaseColumns {
     override val tableName: String
         get() = TABLE_NAME

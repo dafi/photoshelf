@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.adapter.feedly
 
 import android.content.Context
 import android.text.format.DateUtils
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.feedly.FeedlyContent
 import com.ternaryop.photoshelf.R
 import com.ternaryop.utils.DateTimeUtils
@@ -27,7 +28,7 @@ class FeedlyContentDelegate(private val delegated: FeedlyContent) : FeedlyConten
     fun getLastPublishTimestampAsString(context: Context): String {
         return if (lastPublishTimestamp <= 0) {
             context.getString(R.string.never_published)
-        } else DateTimeUtils.formatPublishDaysAgo(lastPublishTimestamp * 1000, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT)
+        } else DateTimeUtils.formatPublishDaysAgo(lastPublishTimestamp * SECOND_IN_MILLIS, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT)
     }
 
     fun getActionTimestampAsString(context: Context): String {

@@ -42,15 +42,15 @@ class CounterIntentService : IntentService("counterIntent") {
 
     private fun getCount(type: Int, blogName: String): Long {
         try {
-            when (type) {
-                CounterEvent.BIRTHDAY -> return DBHelper
+            return when (type) {
+                CounterEvent.BIRTHDAY -> DBHelper
                         .getInstance(applicationContext)
                         .birthdayDAO
                         .getBirthdaysCountInDate(Calendar.getInstance().time, blogName)
-                CounterEvent.DRAFT -> return TumblrUtils.getDraftCount(Tumblr.getSharedTumblr(applicationContext), blogName)
-                CounterEvent.SCHEDULE -> return TumblrUtils.getQueueCount(Tumblr.getSharedTumblr(applicationContext), blogName)
-                CounterEvent.NONE -> {
-                }
+                CounterEvent.DRAFT -> TumblrUtils.getDraftCount(Tumblr.getSharedTumblr(applicationContext), blogName)
+                CounterEvent.SCHEDULE -> TumblrUtils.getQueueCount(Tumblr.getSharedTumblr(applicationContext), blogName).toLong()
+                CounterEvent.NONE -> 0
+                else -> -1
             }
         } catch (ignored: Exception) {
         }

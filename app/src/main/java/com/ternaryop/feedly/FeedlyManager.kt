@@ -130,12 +130,12 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
     @Throws(Exception::class)
     private fun handleError(conn: HttpURLConnection) {
         val responseCode = conn.responseCode
-        if (responseCode == 200) {
+        if (responseCode == HttpURLConnection.HTTP_OK) {
             return
         }
         val error = toJson(conn.errorStream)
         val errorMessage = error.getString("errorMessage")
-        if (responseCode == 401) {
+        if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
             if (errorMessage != null && errorMessage.startsWith("token expired")) {
                 throw TokenExpiredException(errorMessage)
             }

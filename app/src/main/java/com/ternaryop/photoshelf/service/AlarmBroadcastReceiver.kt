@@ -91,6 +91,7 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
     companion object {
         const val BIRTHDAY_ACTION = "birthday"
         const val EXPORT_ACTION = "export"
+        const val EXPORT_INTERVAL_HOURS = 3
 
         fun createBirthdayAlarm(context: Context, triggerAtMillis: Long) {
             val alarmManager = context.applicationContext
@@ -117,8 +118,7 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
                     serviceIntent,
                     PendingIntent.FLAG_CANCEL_CURRENT)
 
-            // every 3 hours
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_HOUR * 3, pendingIntent)
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_HOUR * EXPORT_INTERVAL_HOURS, pendingIntent)
         }
     }
 }

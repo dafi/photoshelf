@@ -96,6 +96,7 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         notificationManager.notify(BIRTHDAY_TODAY_TAG, NOTIFICATION_ID, builder.build())
     }
 
+    @Suppress("MagicNumber")
     private fun createChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return

@@ -30,6 +30,8 @@ import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
 import com.ternaryop.utils.DialogUtils
 import com.ternaryop.widget.ProgressHighlightViewLayout
 
+const val MAX_DETAIL_LINES = 3
+
 class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private lateinit var gridView: RecyclerView
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
@@ -279,7 +281,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_bg))
         val textView = sbView.findViewById<TextView>(android.support.design.R.id.snackbar_text)
         textView.setTextColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_text))
-        textView.maxLines = 3
+        textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()
     }
 

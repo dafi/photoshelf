@@ -12,7 +12,7 @@ import java.util.regex.Pattern
  * Created by dave on 15/04/16.
  * Parse the string to extract date components
  */
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "MagicNumber")
 class TitleDateComponents internal constructor(text: String, swapDayMonth: Boolean = false, checkDateInTheFuture: Boolean = false) {
 
     internal var day: Int = 0

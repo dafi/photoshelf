@@ -13,11 +13,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class BirthdayDAO
 /**
  * Constructor is accessible only from package
  */
-internal constructor(dbHelper: SQLiteOpenHelper) : BulkImportAbsDAO<Birthday>(dbHelper), BaseColumns {
+@Suppress("TooManyFunctions", "ObjectPropertyNaming")
+class BirthdayDAO internal constructor(dbHelper: SQLiteOpenHelper) : BulkImportAbsDAO<Birthday>(dbHelper), BaseColumns {
 
     override val tableName: String
         get() = TABLE_NAME

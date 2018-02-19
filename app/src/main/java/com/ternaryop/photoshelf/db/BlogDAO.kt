@@ -9,6 +9,7 @@ import java.text.MessageFormat
 /**
  * Constructor is accessible only from package
  */
+@Suppress("TooManyFunctions", "ObjectPropertyNaming")
 class BlogDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsDAO<Blog>(dbHelper), BaseColumns {
 
     override val tableName: String

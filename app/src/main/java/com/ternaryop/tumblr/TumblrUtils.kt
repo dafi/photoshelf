@@ -4,20 +4,20 @@ import android.content.Context
 import com.ternaryop.photoshelf.db.DBHelper
 
 object TumblrUtils {
-    fun getQueueCount(tumblr: Tumblr, tumblrName: String): Long {
+    fun getQueueCount(tumblr: Tumblr, tumblrName: String): Int {
         // do not use Tumblr.getQueue() because it creates unused TumblrPost
         val apiUrl = tumblr.getApiUrl(tumblrName, "/posts/queue")
-        var count: Long = 0
-        var readCount: Long
+        var count = 0
+        var readCount: Int
 
         try {
             val params = HashMap<String, String>(1)
             do {
                 val arr = tumblr.consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts")
-                readCount = arr.length().toLong()
+                readCount = arr.length()
                 count += readCount
                 params["offset"] = count.toString()
-            } while (readCount == 20L)
+            } while (readCount == Tumblr.MAX_POST_PER_REQUEST)
         } catch (e: Exception) {
             throw TumblrException(e)
         }
@@ -50,16 +50,16 @@ object TumblrUtils {
 
     fun getQueueAll(tumblr: Tumblr, tumblrName: String): List<TumblrPost> {
         val list = mutableListOf<TumblrPost>()
-        var readCount: Long
+        var readCount = 0
 
         try {
             val params = HashMap<String, String>(1)
             do {
                 val queue = tumblr.getQueue(tumblrName, params)
-                readCount = queue.size.toLong()
+                readCount = queue.size
                 list.addAll(queue)
                 params["offset"] = list.size.toString()
-            } while (readCount == 20L)
+            } while (readCount == Tumblr.MAX_POST_PER_REQUEST)
         } catch (e: Exception) {
             throw TumblrException(e)
         }

@@ -77,6 +77,7 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         }
     }
 
+    @Suppress("MagicNumber")
     private fun setColors(resArray: Int) {
         val array = itemView.context.resources.obtainTypedArray(resArray)
         itemView.background = array.getDrawable(POST_STYLE_INDEX_VIEW_BACKGROUND)

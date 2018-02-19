@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.fragment
 
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -66,7 +67,7 @@ open class ScheduledListFragment : AbsPostsListFragment() {
                 }
                 .map { tumblrPost ->
                     PhotoShelfPost(tumblrPost as TumblrPhotoPost,
-                            tumblrPost.scheduledPublishTime * 1000)
+                            tumblrPost.scheduledPublishTime * SECOND_IN_MILLIS)
                 }
                 .toList()
                 .subscribeOn(Schedulers.io())

@@ -12,6 +12,7 @@ import java.util.Locale
 /**
  * Constructor is accessible only from package
  */
+@Suppress("TooManyFunctions", "ObjectPropertyNaming")
 class PostTagDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsDAO<PostTag>(dbHelper), BaseColumns {
 
     override val tableName: String

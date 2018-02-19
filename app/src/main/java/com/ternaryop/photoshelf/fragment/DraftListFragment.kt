@@ -7,6 +7,7 @@ import android.preference.PreferenceManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
@@ -260,7 +261,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             var maxScheduledTime = System.currentTimeMillis()
 
             for (post in queuedPosts) {
-                val scheduledTime = post.scheduledPublishTime * 1000
+                val scheduledTime = post.scheduledPublishTime * SECOND_IN_MILLIS
                 if (scheduledTime > maxScheduledTime) {
                     maxScheduledTime = scheduledTime
                 }

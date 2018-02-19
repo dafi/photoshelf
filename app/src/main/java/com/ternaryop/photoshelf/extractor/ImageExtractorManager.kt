@@ -14,15 +14,15 @@ import java.net.URLEncoder
  * Image Extractor Manager
  */
 
-// private val apiPrefix = "http://10.0.3.2/image";
-// private val apiPrefix = "http://192.168.0.2/image";
-private const val apiPrefix = "http://visualdiffer.com/image"
+// private val API_PREFIX = "http://10.0.3.2/image";
+// private val API_PREFIX = "http://192.168.0.2/image";
+private const val API_PREFIX = "http://visualdiffer.com/image"
 
 class ImageExtractorManager(private val accessToken: String) {
 
     @Throws(Exception::class)
     fun getGallery(url: String): ImageGallery {
-        val apiUrl = "$apiPrefix/v1/extract/gallery?url=${URLEncoder.encode(url, "UTF-8")}"
+        val apiUrl = "$API_PREFIX/v1/extract/gallery?url=${URLEncoder.encode(url, "UTF-8")}"
 
         var conn: HttpURLConnection? = null
         return try {
@@ -39,7 +39,7 @@ class ImageExtractorManager(private val accessToken: String) {
 
     @Throws(Exception::class)
     fun getImageUrl(url: String): String {
-        val apiUrl = "$apiPrefix/v1/extract/image?url=${URLEncoder.encode(url, "UTF-8")}"
+        val apiUrl = "$API_PREFIX/v1/extract/image?url=${URLEncoder.encode(url, "UTF-8")}"
 
         var conn: HttpURLConnection? = null
         return try {
@@ -68,7 +68,7 @@ class ImageExtractorManager(private val accessToken: String) {
     }
 
     @Throws(Exception::class) private fun handleError(conn: HttpURLConnection) {
-        if (conn.responseCode == 200) {
+        if (conn.responseCode == HttpURLConnection.HTTP_OK) {
             return
         }
         val error = toJson(conn.errorStream)

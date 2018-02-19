@@ -11,6 +11,7 @@ import android.widget.TextView
 import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Birthday
+import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.widget.CheckableImageView
 import java.util.Locale
@@ -130,7 +131,7 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String) : Recyc
         }
 
         private fun displayImage(post: TumblrPhotoPost, imageLoader: ImageLoader) {
-            imageLoader.displayImage(post.getClosestPhotoByWidth(250)!!.url, thumbImage)
+            imageLoader.displayImage(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url, thumbImage)
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

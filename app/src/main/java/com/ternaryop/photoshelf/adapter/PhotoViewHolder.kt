@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.adapter
 
 import android.annotation.SuppressLint
 import android.support.v7.widget.RecyclerView
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -108,7 +109,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun showUploadTime() {
         noteCountText.visibility = View.VISIBLE
-        noteCountText.text = itemView.resources.getString(R.string.uploaded_at_time, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").print(post.timestamp * 1000))
+        noteCountText.text = itemView.resources.getString(R.string.uploaded_at_time, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").print(post.timestamp * SECOND_IN_MILLIS))
     }
 
     private fun updateNote() {

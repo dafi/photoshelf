@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.fragment
 
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.tumblr.Tumblr
@@ -34,7 +35,7 @@ class PublishedPostsListFragment : ScheduledListFragment() {
                     Observable.fromIterable(Tumblr.getSharedTumblr(activity)
                             .getPublicPosts(blogName!!, params1))
                 }
-                .map { tumblrPost -> PhotoShelfPost(tumblrPost as TumblrPhotoPost, tumblrPost.timestamp * 1000) }
+                .map { tumblrPost -> PhotoShelfPost(tumblrPost as TumblrPhotoPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
                 .toList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

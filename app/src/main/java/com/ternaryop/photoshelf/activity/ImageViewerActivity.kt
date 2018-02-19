@@ -41,6 +41,8 @@ import java.net.URISyntaxException
 import java.net.URL
 import java.util.Locale
 
+const val DIMENSIONS_POST_DELAY_MILLIS = 3000L
+
 @SuppressLint("SetJavaScriptEnabled")
 class ImageViewerActivity : AbsPhotoShelfActivity() {
     private var webViewLoaded: Boolean = false
@@ -114,7 +116,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
         runOnUiThread {
             detailsText.visibility = View.VISIBLE
             detailsText.text = String.format(Locale.US, "%s (%1dx%2d)", imageHostUrl, w, h)
-            Handler().postDelayed({ detailsText.visibility = View.GONE }, 3 * 1000L)
+            Handler().postDelayed({ detailsText.visibility = View.GONE }, DIMENSIONS_POST_DELAY_MILLIS)
         }
     }
 

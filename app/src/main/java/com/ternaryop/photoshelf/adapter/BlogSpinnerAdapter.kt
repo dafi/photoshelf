@@ -12,6 +12,7 @@ import android.widget.TextView
 import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.Blog
+import com.ternaryop.tumblr.TumblrAltSize
 
 class BlogSpinnerAdapter(context: Context, prefix: String, blogNames: List<String>) : ArrayAdapter<String>(context, 0, blogNames), SpinnerAdapter {
     private val imageLoader = ImageLoader(context.applicationContext, prefix, R.drawable.stub)
@@ -32,7 +33,7 @@ class BlogSpinnerAdapter(context: Context, prefix: String, blogNames: List<Strin
         val blogName = getItem(position)
         holder.title.text = blogName
 
-        val imageUrl = Blog.getAvatarUrlBySize(blogName, 96)
+        val imageUrl = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
         imageLoader.displayImage(imageUrl, holder.image, true)
 
         return inflatedView

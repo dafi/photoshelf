@@ -13,6 +13,7 @@ import com.ternaryop.tumblr.TumblrPost
 /**
  * Constructor is accessible only from package
  */
+@Suppress("TooManyFunctions", "ObjectPropertyNaming")
 class PostDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsDAO<Post>(dbHelper), BaseColumns {
 
     override val tableName: String

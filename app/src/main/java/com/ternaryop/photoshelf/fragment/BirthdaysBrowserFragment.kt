@@ -58,7 +58,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
             return list
         }
 
-    protected enum class ITEM_ACTION {
+    enum class ItemAction {
         MARK_AS_IGNORED,
         DELETE
     }
@@ -121,11 +121,11 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.item_delete -> {
-                showConfirmDialog(ITEM_ACTION.DELETE, mode)
+                showConfirmDialog(ItemAction.DELETE, mode)
                 true
             }
             R.id.item_mark_as_ignored -> {
-                showConfirmDialog(ITEM_ACTION.MARK_AS_IGNORED, mode)
+                showConfirmDialog(ItemAction.MARK_AS_IGNORED, mode)
                 true
             }
             R.id.item_edit -> {
@@ -188,23 +188,23 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
                 selectCount)
     }
 
-    private fun showConfirmDialog(postAction: ITEM_ACTION, mode: ActionMode) {
+    private fun showConfirmDialog(postAction: ItemAction, mode: ActionMode) {
         val birthdays = selectedPosts
         val dialogClickListener = DialogInterface.OnClickListener { _, which ->
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> when (postAction) {
-                    BirthdaysBrowserFragment.ITEM_ACTION.DELETE -> deleteBirthdays(birthdays, mode)
-                    BirthdaysBrowserFragment.ITEM_ACTION.MARK_AS_IGNORED -> markAsIgnored(birthdays, mode)
+                    BirthdaysBrowserFragment.ItemAction.DELETE -> deleteBirthdays(birthdays, mode)
+                    BirthdaysBrowserFragment.ItemAction.MARK_AS_IGNORED -> markAsIgnored(birthdays, mode)
                 }
             }
         }
 
         val message = when (postAction) {
-            BirthdaysBrowserFragment.ITEM_ACTION.DELETE -> resources.getQuantityString(R.plurals.delete_items_confirm,
+            BirthdaysBrowserFragment.ItemAction.DELETE -> resources.getQuantityString(R.plurals.delete_items_confirm,
                     birthdays.size,
                     birthdays.size,
                     birthdays[0].name)
-            BirthdaysBrowserFragment.ITEM_ACTION.MARK_AS_IGNORED -> resources.getQuantityString(R.plurals.update_items_confirm,
+            BirthdaysBrowserFragment.ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(R.plurals.update_items_confirm,
                     birthdays.size,
                     birthdays.size,
                     birthdays[0].name)
@@ -331,7 +331,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
         toolbarSpinner.onItemSelectedListener = this
     }
 
-    override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
+    override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
         birthdayAdapter.month = pos
         birthdayAdapter.refresh(Filter.FilterListener {
             // when month changes scroll to first item unless must be scroll to first birthday item

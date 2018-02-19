@@ -4,6 +4,7 @@ import android.app.Activity
 import android.database.Cursor
 import android.os.Bundle
 import android.support.v7.widget.SearchView
+import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -104,7 +105,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
                     Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(activity)
                             .getPhotoPosts(blogName!!, params1))
                 }
-                .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * 1000) }
+                .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
                 .toList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

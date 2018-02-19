@@ -23,13 +23,13 @@ class AndroidTitleParserConfig(context: Context) : AssetsJsonConfig(), TitlePars
     override val cities: Map<String, Pattern>
         get() = titleParserConfig.cities
 
-    override val version: Int = _version
+    override val version: Int = objectVersion
 
     init {
         if (version <= 0) {
             try {
                 val jsonObject = readAssetsConfig(context, TITLE_PARSER_FILENAME)
-                _version = readVersion(jsonObject)
+                objectVersion = readVersion(jsonObject)
                 titleParserConfig.readConfig(jsonObject)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -42,7 +42,7 @@ class AndroidTitleParserConfig(context: Context) : AssetsJsonConfig(), TitlePars
     }
 
     companion object {
-        private var _version = -1
+        private var objectVersion = -1
         private val titleParserConfig = JSONTitleParserConfig()
     }
 }

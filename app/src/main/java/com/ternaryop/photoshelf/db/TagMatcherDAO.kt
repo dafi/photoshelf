@@ -11,6 +11,7 @@ import java.util.Locale
  * Searching into table Tag using functions (lower(), replace()) is very slow so we use a virtual table with FTS
  */
 
+@Suppress("TooManyFunctions")
 class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
 
     override val tableName: String
@@ -24,6 +25,7 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
                 STRIPPED_TAG))
     }
 
+    @Suppress("MagicNumber")
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 3) {
             onNewVersion3(db)
