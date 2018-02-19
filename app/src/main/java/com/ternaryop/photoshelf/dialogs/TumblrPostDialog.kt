@@ -203,8 +203,6 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
                     val dialog = dialog as AlertDialog?
                     // protect against NPE because inside onDestroy the dialog is already null
                     dialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
-                    if (dialog != null) {
-                    }
                 }
                 .subscribe(object : SingleObserver<Pair<Int, String>> {
                     override fun onSubscribe(d: Disposable) {
@@ -419,7 +417,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
     }
 
     private inner class BlogItemSelectedListener : OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
+        override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
             tagAdapter.blogName = blogList.selectedItem as String
             tagAdapter.notifyDataSetChanged()
         }
