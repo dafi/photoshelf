@@ -17,6 +17,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
+private const val RESOLVE_URL_RETRY_COUNT = 20
+
 class ImageUrlRetriever(private val context: Context, private val progressBar: ProgressBar) {
     private val imageExtractorManager = ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
 
@@ -56,10 +58,10 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
 
     @Throws(Exception::class)
     private fun resolveRelativeURL(baseURL: String?, link: String): String {
-        val uri = UriUtils.encodeIllegalChar(link, "UTF-8", 20)
+        val uri = UriUtils.encodeIllegalChar(link, "UTF-8", RESOLVE_URL_RETRY_COUNT)
         return if (uri.isAbsolute) {
             uri.toString()
-        } else UriUtils.encodeIllegalChar(baseURL, "UTF-8", 20).resolve(uri).toString()
+        } else UriUtils.encodeIllegalChar(baseURL, "UTF-8", RESOLVE_URL_RETRY_COUNT).resolve(uri).toString()
     }
 
     @Throws(Exception::class)

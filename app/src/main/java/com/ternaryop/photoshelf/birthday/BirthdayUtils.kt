@@ -14,6 +14,7 @@ import com.ternaryop.photoshelf.util.date.month
 import com.ternaryop.photoshelf.util.date.year
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.Tumblr
+import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.ImageUtils
 import java.io.File
@@ -22,6 +23,9 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Collections
 import java.util.Locale
+
+const val MAX_THUMB_COUNT = 9
+const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
 
 object BirthdayUtils {
     fun notifyBirthday(context: Context): Boolean {
@@ -63,7 +67,6 @@ object BirthdayUtils {
             context.getString(R.string.week_selection_over_age, fromAge)
         }
 
-        val thumbCount = 9
         val dbHelper = DBHelper.getInstance(context)
         val birthdays = dbHelper.birthdayDAO
                 .getBirthdayByAgeRange(fromAge, if (toAge == 0) Integer.MAX_VALUE else toAge, daysPeriod, tumblrName)
@@ -79,7 +82,7 @@ object BirthdayUtils {
             params["id"] = info["postId"]!!
             post = Tumblr.getSharedTumblr(context)
                     .getPublicPosts(tumblrName, params)[0] as TumblrPhotoPost
-            val imageUrl = post.getClosestPhotoByWidth(250)!!.url
+            val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url
 
             sb.append("<a href=\"")
                     .append(post.postUrl)
@@ -93,7 +96,7 @@ object BirthdayUtils {
             sb.append("</a>")
             sb.append("<br/>")
 
-            if (count + 1 > thumbCount) {
+            if (count + 1 > MAX_THUMB_COUNT) {
                 break
             }
         }
@@ -135,19 +138,18 @@ object BirthdayUtils {
 
     @Throws(IOException::class)
     fun createBirthdayPost(context: Context, cakeImage: Bitmap, post: TumblrPhotoPost, blogName: String, saveAsDraft: Boolean) {
-        val imageUrl = post.getClosestPhotoByWidth(400)!!.url
+        val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
         val image = ImageUtils.readImageFromUrl(imageUrl)
 
-        val imageSeparatorHeight = 10
         val canvasWidth = image.width
-        val canvasHeight = cakeImage.height + imageSeparatorHeight + image.height
+        val canvasHeight = cakeImage.height + CAKE_IMAGE_SEPARATOR_HEIGHT + image.height
 
         val config = image.config ?: Bitmap.Config.ARGB_8888
         val destBmp = Bitmap.createBitmap(canvasWidth, canvasHeight, config)
         val canvas = Canvas(destBmp)
 
         canvas.drawBitmap(cakeImage, ((image.width - cakeImage.width) / 2).toFloat(), 0f, null)
-        canvas.drawBitmap(image, 0f, (cakeImage.height + imageSeparatorHeight).toFloat(), null)
+        canvas.drawBitmap(image, 0f, (cakeImage.height + CAKE_IMAGE_SEPARATOR_HEIGHT).toFloat(), null)
         val name = post.tags[0]
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "birth-$name.png")
         ImageUtils.saveImageAsPNG(destBmp, file)

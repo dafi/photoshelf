@@ -30,6 +30,16 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+const val CSV_BIRTHDAY_INDEX_NAME = 1
+const val CSV_BIRTHDAY_INDEX_DATE = 2
+const val CSV_BIRTHDAY_INDEX_BLOG_NAME = 3
+
+const val CSV_POST_INDEX_ID = 0
+const val CSV_POST_INDEX_BLOG_NAME = 1
+const val CSV_POST_INDEX_TAG = 2
+const val CSV_POST_INDEX_TIMESTAMP = 3
+const val CSV_POST_INDEX_SHOW_ORDER = 4
+
 class Importer constructor(private val context: Context, private val dropboxManager: DropboxManager? = null) {
 
     @Throws(IOException::class)
@@ -127,7 +137,7 @@ class Importer constructor(private val context: Context, private val dropboxMana
         return DbImport(DBHelper.getInstance(context).birthdayDAO)
                 .importer(CSVIterator(importPath, object : CSVBuilder<Birthday> {
                     override fun parseCSVFields(fields: Array<String>): Birthday {
-                        return Birthday(fields[1], fields[2], fields[3])
+                        return Birthday(fields[CSV_BIRTHDAY_INDEX_NAME], fields[CSV_BIRTHDAY_INDEX_DATE], fields[CSV_BIRTHDAY_INDEX_BLOG_NAME])
                     }
                 }), true)
     }
@@ -236,11 +246,11 @@ class Importer constructor(private val context: Context, private val dropboxMana
     internal class PostTagCSVBuilder : CSVBuilder<PostTag> {
         override fun parseCSVFields(fields: Array<String>): PostTag {
             return PostTag(
-                    fields[0].toLong(),
-                    fields[1],
-                    fields[2],
-                    fields[3].toLong(),
-                    fields[4].toInt())
+                    fields[CSV_POST_INDEX_ID].toLong(),
+                    fields[CSV_POST_INDEX_BLOG_NAME],
+                    fields[CSV_POST_INDEX_TAG],
+                    fields[CSV_POST_INDEX_TIMESTAMP].toLong(),
+                    fields[CSV_POST_INDEX_SHOW_ORDER].toInt())
         }
     }
 
