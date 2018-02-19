@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.parsers
 
-import java.util.Arrays
 import java.util.Locale
 
 class TitleData(private val config: TitleParserConfig) {
@@ -56,7 +55,7 @@ class TitleData(private val config: TitleParserConfig) {
         }
 
     fun setWhoFromString(string: String) {
-        who = Arrays.asList(*string.trim { it <= ' ' }.split("""(?i)\s*(,|&|\band\b)\s*""".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        who = """(?i)\s*(?:,|&|\band\b)\s*""".toRegex().split(string.trim())
     }
 
     private fun hasLocationPrefix(location: String): Boolean {
