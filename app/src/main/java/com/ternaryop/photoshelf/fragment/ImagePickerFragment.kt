@@ -40,7 +40,6 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private var detailsText: String? = null
     private lateinit var parsableTitle: String
-    private var actionMode: ActionMode? = null
 
     // Search on fragment arguments
     private val textWithUrl: String?

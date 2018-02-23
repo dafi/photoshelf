@@ -11,21 +11,17 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.util.date.dayOfMonth
 import com.ternaryop.photoshelf.util.date.hourOfDay
 import com.ternaryop.photoshelf.util.date.minute
 import com.ternaryop.photoshelf.util.date.month
 import com.ternaryop.photoshelf.util.date.year
-import com.ternaryop.tumblr.Tumblr
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.ternaryop.tumblr.TumblrPost
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class SchedulePostDialog(context: Context, private val blogName: String, private val item: PhotoShelfPost, private val scheduleDateTime: Calendar, private val onPostSchedule: OnPostScheduleListener?) : Dialog(context), View.OnClickListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
+class SchedulePostDialog(context: Context, val item: TumblrPost, val scheduleDateTime: Calendar, private val onPostSchedule: OnPostScheduleListener?) : Dialog(context), View.OnClickListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
     private val chooseDateButton: Button
     private val chooseTimeButton: Button
     private val timeFormat: SimpleDateFormat
@@ -91,15 +87,7 @@ class SchedulePostDialog(context: Context, private val blogName: String, private
 
     private fun schedulePost() {
         findViewById<View>(R.id.schedule_button).isEnabled = false
-        val completable = Completable
-                .fromAction {
-                    Tumblr.getSharedTumblr(context)
-                            .schedulePost(blogName, item, scheduleDateTime.timeInMillis)
-                }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally { dismiss() }
-        onPostSchedule?.onPostScheduled(item.postId, scheduleDateTime, completable)
+        onPostSchedule?.onPostScheduled(this)
     }
 
     override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
@@ -116,7 +104,7 @@ class SchedulePostDialog(context: Context, private val blogName: String, private
     }
 
     interface OnPostScheduleListener {
-        fun onPostScheduled(id: Long, scheduledDateTime: Calendar, completable: Completable)
+        fun onPostScheduled(dialog: SchedulePostDialog)
     }
 
     private fun updateDateButton() {

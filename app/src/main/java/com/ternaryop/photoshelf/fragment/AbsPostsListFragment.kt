@@ -5,13 +5,10 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.annotation.PluralsRes
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
-import android.util.Pair
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
@@ -27,25 +24,23 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.PhotoAdapter
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
-import com.ternaryop.photoshelf.db.DBHelper
-import com.ternaryop.photoshelf.db.TumblrPostCache
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
-import com.ternaryop.photoshelf.view.ColorItemDecoration
+import com.ternaryop.photoshelf.util.post.OnPostActionListener
+import com.ternaryop.photoshelf.util.post.PostActionExecutor
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.PUBLISH
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.SAVE_AS_DRAFT
+import com.ternaryop.photoshelf.util.post.PostActionResult
+import com.ternaryop.photoshelf.util.post.errorList
+import com.ternaryop.photoshelf.util.post.showErrorDialog
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.DialogUtils
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
 
-const val POST_ACTION_PUBLISH = 1
-const val POST_ACTION_DELETE = 2
-const val POST_ACTION_EDIT = 3
-const val POST_ACTION_SAVE_AS_DRAFT = 4
+private const val LOADER_PREFIX_POSTS_THUMB = "postsThumb"
 
-abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoice, SearchView.OnQueryTextListener, ActionMode.Callback {
+abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener,
+    OnPhotoBrowseClickMultiChoice, TumblrPostDialog.PostListener, SearchView.OnQueryTextListener, ActionMode.Callback {
 
     protected lateinit var photoAdapter: PhotoAdapter
     protected var offset: Int = 0
@@ -59,8 +54,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
         intArrayOf(R.id.post_schedule, R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
     }
 
-    private var actionMode: ActionMode? = null
-    protected lateinit var colorItemDecoration: ColorItemDecoration
+    protected lateinit var postActionExecutor: PostActionExecutor
 
     protected open val postListViewResource: Int
         get() = R.layout.fragment_photo_list
@@ -77,8 +71,8 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = photoAdapter
-        colorItemDecoration = ColorItemDecoration()
-        recyclerView.addItemDecoration(colorItemDecoration)
+        postActionExecutor = PostActionExecutor(activity, blogName!!, this)
+        recyclerView.addItemDecoration(postActionExecutor.colorItemDecoration)
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
                 val layoutManager = recyclerView!!.layoutManager
@@ -174,62 +168,27 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
         startActivity(i)
     }
 
-    private fun showConfirmDialog(postAction: Int, mode: ActionMode?, postsList: List<PhotoShelfPost>) {
+    private fun showConfirmDialog(postAction: Int, postsList: List<PhotoShelfPost>) {
         val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
             when (postAction) {
-                POST_ACTION_PUBLISH -> publishPost(mode, postsList)
-                POST_ACTION_DELETE -> deletePost(mode, postsList)
-                POST_ACTION_SAVE_AS_DRAFT -> saveAsDraft(mode, postsList)
+                PUBLISH -> postActionExecutor.publish(postsList)
+                DELETE -> postActionExecutor.delete(postsList)
+                SAVE_AS_DRAFT -> postActionExecutor.saveAsDraft(postsList)
+                else -> throw AssertionError("PostAction $postAction not supported")
             }
+                .doOnSubscribe({ d -> compositeDisposable.add(d) })
+                .subscribe({}, {})
         }
 
-        val message = resources.getQuantityString(getActionConfirmStringId(postAction),
-                postsList.size,
-                postsList.size,
-                postsList[0].firstTag)
+        val message = resources.getQuantityString(PostActionExecutor.getConfirmStringId(postAction),
+            postsList.size,
+            postsList.size,
+            postsList[0].firstTag)
         AlertDialog.Builder(activity)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes, dialogClickListener)
-                .setNegativeButton(android.R.string.no, null)
-                .show()
-    }
-
-    @PluralsRes
-    private fun getActionConfirmStringId(postAction: Int): Int {
-        return when (postAction) {
-            POST_ACTION_PUBLISH -> R.plurals.publish_post_confirm
-            POST_ACTION_DELETE -> R.plurals.delete_post_confirm
-            POST_ACTION_SAVE_AS_DRAFT -> R.plurals.save_to_draft_confirm
-            else -> throw AssertionError("Invalid post action")
-        }
-    }
-
-    private fun saveAsDraft(mode: ActionMode?, postList: List<PhotoShelfPost>) {
-        colorItemDecoration.setColor(ContextCompat.getColor(activity, R.color.photo_item_animation_save_as_draft_bg))
-        executePostAction(mode, postList, Consumer { post ->
-            Tumblr.getSharedTumblr(activity).saveDraft(
-                    blogName!!,
-                    post.postId)
-            DBHelper.getInstance(activity).tumblrPostCacheDAO.insertItem(post, TumblrPostCache.CACHE_TYPE_DRAFT)
-            onPostAction(post, POST_ACTION_SAVE_AS_DRAFT, POST_ACTION_OK)
-        })
-    }
-
-    private fun deletePost(mode: ActionMode?, postList: List<PhotoShelfPost>) {
-        colorItemDecoration.setColor(ContextCompat.getColor(activity, R.color.photo_item_animation_delete_bg))
-        executePostAction(mode, postList, Consumer { post ->
-            Tumblr.getSharedTumblr(activity).deletePost(blogName!!, post.postId)
-            DBHelper.getInstance(activity).postDAO.deleteById(post.postId)
-            onPostAction(post, POST_ACTION_DELETE, POST_ACTION_OK)
-        })
-    }
-
-    private fun publishPost(mode: ActionMode?, postList: List<PhotoShelfPost>) {
-        colorItemDecoration.setColor(ContextCompat.getColor(activity, R.color.photo_item_animation_publish_bg))
-        executePostAction(mode, postList, Consumer { post ->
-            Tumblr.getSharedTumblr(activity).publishPost(blogName!!, post.postId)
-            onPostAction(post, POST_ACTION_PUBLISH, POST_ACTION_OK)
-        })
+            .setMessage(message)
+            .setPositiveButton(android.R.string.yes, dialogClickListener)
+            .setNegativeButton(android.R.string.no, null)
+            .show()
     }
 
     override fun refreshUI() {
@@ -255,55 +214,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
             // so we wait for finished animations before call it
             recyclerView.itemAnimator.isRunning { photoAdapter.notifyDataSetChanged() }
         }
-    }
-
-    private fun updateUIAfterPostAction(mode: ActionMode?, postsWithError: List<Pair<PhotoShelfPost, Throwable?>>) {
-        refreshUI()
-        // all posts have been deleted so call actionMode.finish()
-        if (postsWithError.isEmpty()) {
-            if (mode != null) {
-                // when action mode is on the finish() method could be called while the item animation is running stopping it
-                // so we wait the animation is completed and then call finish()
-                recyclerView.post { recyclerView.itemAnimator.isRunning({ mode.finish() }) }
-            }
-            return
-        }
-        // leave posts not processed checked
-        photoAdapter.selection.clear()
-        for (pair in postsWithError) {
-            val position = photoAdapter.getPosition(pair.first)
-            photoAdapter.selection.setSelected(position, true)
-        }
-        DialogUtils.showSimpleMessageDialog(activity,
-                R.string.generic_error,
-                activity.resources.getQuantityString(
-                        R.plurals.general_posts_error,
-                        postsWithError.size,
-                        postsWithError[postsWithError.size - 1].second?.message,
-                        postsWithError.size))
-    }
-
-    private fun executePostAction(mode: ActionMode?, postList: List<PhotoShelfPost>, consumer: Consumer<PhotoShelfPost>) {
-        compositeDisposable.add(Observable
-                .fromIterable(postList)
-                .flatMap<Pair<PhotoShelfPost, Throwable?>> { post ->
-                    try {
-                        consumer.accept(post)
-                        Observable.just(Pair.create(post, null as Throwable?))
-                    } catch (e: Throwable) {
-                        Observable.just(Pair.create(post, e))
-                    }
-                }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext { pair ->
-                    if (pair.second == null) {
-                        photoAdapter.remove(pair.first)
-                    }
-                }
-                .filter { pair -> pair.second != null }
-                .toList()
-                .subscribe { postsWithError -> updateUIAfterPostAction(mode, postsWithError) })
     }
 
     override fun onTagClick(position: Int, clickedTag: String) {
@@ -364,7 +274,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
     protected open fun handleMenuItem(item: MenuItem, postList: List<PhotoShelfPost>, mode: ActionMode? = null): Boolean {
         when (item.itemId) {
             R.id.post_publish -> {
-                showConfirmDialog(POST_ACTION_PUBLISH, mode, postList)
+                showConfirmDialog(PUBLISH, postList)
                 return true
             }
             R.id.group_menu_image_dimension -> {
@@ -372,7 +282,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
                 return true
             }
             R.id.post_delete -> {
-                showConfirmDialog(POST_ACTION_DELETE, mode, postList)
+                showConfirmDialog(DELETE, postList)
                 return true
             }
             R.id.post_edit -> {
@@ -380,7 +290,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
                 return true
             }
             R.id.post_save_draft -> {
-                showConfirmDialog(POST_ACTION_SAVE_AS_DRAFT, mode, postList)
+                showConfirmDialog(SAVE_AS_DRAFT, postList)
                 return true
             }
             R.id.show_post -> {
@@ -418,27 +328,47 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClic
         readPhotoPosts()
     }
 
-    /**
-     * Overridden (if necessary) by subclasses to be informed about post action result,
-     * the default implementation does nothing
-     * @param post the post processed by action
-     * @param postAction the action executed
-     * @param resultCode on success POST_ACTION_OK
-     */
-    open fun onPostAction(post: TumblrPhotoPost, postAction: Int, resultCode: Int) {}
-
-    override fun onEditDone(dialog: TumblrPostDialog, post: TumblrPhotoPost, completable: Completable) {
-        completable
-                .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({
-                    super@AbsPostsListFragment.onEditDone(dialog, post, completable)
-                    onPostAction(post, POST_ACTION_EDIT, POST_ACTION_OK)
-                }) { t -> DialogUtils.showErrorDialog(activity, t) }
+    override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {
+        refreshUI()
+        val errorList = resultList.errorList()
+        // all posts have been deleted so call actionMode.finish()
+        if (errorList.isEmpty()) {
+            if (actionMode != null) {
+                // when action mode is on the finish() method could be called while the item animation is running stopping it
+                // so we wait the animation is completed and then call finish()
+                recyclerView.post { recyclerView.itemAnimator.isRunning({ actionMode?.finish() }) }
+            }
+            return
+        }
+        selectPosts(errorList)
+        errorList.showErrorDialog(activity)
     }
 
-    companion object {
-        const val POST_ACTION_OK = -1
+    private fun selectPosts(results: List<PostActionResult>) {
+        // select posts only if there is an action mode
+        if (actionMode == null) {
+            return
+        }
+        photoAdapter.selection.clear()
+        for (result in results) {
+            val position = photoAdapter.getPosition(result.post as PhotoShelfPost)
+            photoAdapter.selection.setSelected(position, true)
+        }
+    }
 
-        private const val LOADER_PREFIX_POSTS_THUMB = "postsThumb"
+    override fun onNext(executor: PostActionExecutor, result: PostActionResult) {
+        when (executor.postAction) {
+            SAVE_AS_DRAFT, DELETE, PUBLISH -> {
+                if (!result.hasError() && result.post is PhotoShelfPost) {
+                    photoAdapter.remove(result.post)
+                }
+            }
+        }
+    }
+
+    override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
+        postActionExecutor.edit(post, dialog.postTitle, dialog.postTags, selectedBlogName)
+                .doOnSubscribe { d -> compositeDisposable.add(d) }
+                .subscribe({ }, { t -> DialogUtils.showErrorDialog(activity, t) })
     }
 }

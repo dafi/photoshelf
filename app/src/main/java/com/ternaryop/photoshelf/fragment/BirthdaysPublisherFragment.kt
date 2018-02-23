@@ -37,7 +37,6 @@ class BirthdaysPublisherFragment : AbsPhotoShelfFragment(), SwipeRefreshLayout.O
 
     private lateinit var gridViewPhotoAdapter: GridViewPhotoAdapter
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
-    private var actionMode: ActionMode? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {

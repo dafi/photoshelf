@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.text.format.DateUtils.SECOND_IN_MILLIS
@@ -32,12 +31,17 @@ import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.util.date.millisecond
 import com.ternaryop.photoshelf.util.date.second
-import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.photoshelf.util.post.PostActionExecutor
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.EDIT
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.PUBLISH
+import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.SCHEDULE
+import com.ternaryop.photoshelf.util.post.PostActionResult
+import com.ternaryop.photoshelf.util.post.completedList
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.DialogUtils
 import com.ternaryop.widget.ProgressHighlightViewLayout
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
-import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
@@ -230,28 +234,21 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         return draftCache.read(blogName!!, TumblrPostCache.CACHE_TYPE_DRAFT)
     }
 
-    private fun showScheduleDialog(item: PhotoShelfPost, mode: ActionMode?) {
+    private fun showScheduleDialog(item: PhotoShelfPost) {
         SchedulePostDialog(activity,
-                blogName!!,
                 item,
                 findScheduleTime(),
                 object : SchedulePostDialog.OnPostScheduleListener {
-                    override fun onPostScheduled(id: Long, scheduledDateTime: Calendar, completable: Completable) {
-                    completable
+                    override fun onPostScheduled(dialog: SchedulePostDialog) {
+                        postActionExecutor
+                            .schedule(item, dialog.scheduleDateTime)
+                            .doFinally { dialog.dismiss() }
                             .doOnSubscribe({ d -> compositeDisposable.add(d) })
-                            .subscribe({ onScheduleRefreshUI(item, mode, scheduledDateTime) }, { t -> DialogUtils.showErrorDialog(activity, t) })
+                            .subscribe(
+                                { },
+                                { t -> DialogUtils.showErrorDialog(activity, t) })
                     }
-                })
-                .show()
-    }
-
-    private fun onScheduleRefreshUI(item: PhotoShelfPost, mode: ActionMode?, scheduledDateTime: Calendar) {
-        colorItemDecoration.setColor(ContextCompat.getColor(activity, R.color.photo_item_animation_schedule_bg))
-        lastScheduledDate = scheduledDateTime.clone() as Calendar
-        photoAdapter.removeAndRecalcGroups(item, lastScheduledDate!!)
-        draftCache.deleteItem(item)
-        refreshUI()
-        mode?.finish()
+                }).show()
     }
 
     private fun findScheduleTime(): Calendar {
@@ -284,7 +281,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     override fun handleMenuItem(item: MenuItem, postList: List<PhotoShelfPost>, mode: ActionMode?): Boolean {
         when (item.itemId) {
             R.id.post_schedule -> {
-                showScheduleDialog(postList[0], mode)
+                showScheduleDialog(postList[0])
                 return true
             }
         }
@@ -295,13 +292,25 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         refreshCache()
     }
 
-    override fun onPostAction(post: TumblrPhotoPost, postAction: Int, resultCode: Int) {
-        if (resultCode == AbsPostsListFragment.POST_ACTION_OK) {
-            when (postAction) {
-                POST_ACTION_EDIT -> draftCache.updateItem(post, TumblrPostCache.CACHE_TYPE_DRAFT)
-                POST_ACTION_PUBLISH, POST_ACTION_DELETE -> draftCache.deleteItem(post)
+    override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {
+        val completedList = resultList.completedList()
+
+        if (completedList.isNotEmpty()) {
+            when (executor.postAction) {
+                EDIT -> draftCache.updateItem(completedList[0].post, TumblrPostCache.CACHE_TYPE_DRAFT)
+                PUBLISH, DELETE -> completedList.forEach { draftCache.deleteItem(it.post) }
+                SCHEDULE -> onScheduleRefreshUI(completedList[0].post as PhotoShelfPost, executor.scheduleTimestamp)
             }
         }
+        super.onComplete(executor, resultList)
+    }
+
+    private fun onScheduleRefreshUI(item: PhotoShelfPost, scheduledDateTime: Calendar?) {
+        if (scheduledDateTime != null) {
+            lastScheduledDate = scheduledDateTime.clone() as Calendar
+            photoAdapter.removeAndRecalcGroups(item, scheduledDateTime)
+        }
+        draftCache.deleteItem(item)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

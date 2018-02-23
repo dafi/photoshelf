@@ -40,11 +40,9 @@ import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.util.mru.MRU
 import com.ternaryop.photoshelf.util.text.fromHtml
 import com.ternaryop.photoshelf.util.text.toHtml
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.DialogUtils
-import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -151,7 +149,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
         blogList.onItemSelectedListener = BlogItemSelectedListener()
 
         mruTagsButton = view.findViewById(R.id.mruTags)
-        mruTagsButton.setOnClickListener({ this.openMRUDialog(it) })
+        mruTagsButton.setOnClickListener({ this.openMRUDialog() })
         mruTags = MRU(activity, MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE)
         mruTagsButton.isEnabled = mruTags.list.isNotEmpty()
 
@@ -171,7 +169,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
         }
     }
 
-    private fun openMRUDialog(view: View) {
+    private fun openMRUDialog() {
         MRUDialog.newInstance(mruTags.list)
                 .setOnMRUListener(this)
                 .show(fragmentManager, MRU_FRAGMENT_DIALOG_TAG)
@@ -384,27 +382,8 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
     }
 
     private fun editPost() {
-        val newValues = mutableMapOf(
-                "id" to photoPost!!.postId.toString(),
-                "caption" to postTitle,
-                "tags" to postTags
-        )
-        val selectedBlogName = appSupport.selectedBlogName!!
-
         updateMruList()
-        val completable = Completable
-                .fromAction {
-                    Tumblr.getSharedTumblr(appSupport).editPost(selectedBlogName, newValues)
-                    newValues["tumblrName"] = selectedBlogName
-                    DBHelper.getInstance(appSupport).postDAO.update(appSupport, newValues)
-                }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-        if (targetFragment is PostListener) {
-            (targetFragment as PostListener).onEditDone(this, photoPost!!, completable)
-        } else {
-            completable.subscribe({ }) { }
-        }
+        (targetFragment as? PostListener)?.onEdit(this, photoPost!!, appSupport.selectedBlogName!!)
     }
 
     private fun parseTitle(swapDayMonth: Boolean) {
@@ -467,7 +446,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
     }
 
     interface PostListener {
-        fun onEditDone(dialog: TumblrPostDialog, post: TumblrPhotoPost, completable: Completable)
+        fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String)
     }
 
     companion object {

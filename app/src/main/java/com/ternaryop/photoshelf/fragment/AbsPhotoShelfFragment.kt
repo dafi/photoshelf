@@ -10,16 +10,14 @@ import android.support.v7.app.AppCompatActivity
 import android.view.ActionMode
 import android.view.View
 import android.widget.TextView
-
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.tumblr.TumblrPhotoPost
-import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 
-abstract class AbsPhotoShelfFragment : Fragment(), TumblrPostDialog.PostListener {
+abstract class AbsPhotoShelfFragment : Fragment() {
     protected lateinit var fragmentActivityStatus: FragmentActivityStatus
-    private var actionMode: ActionMode? = null
+    protected var actionMode: ActionMode? = null
 
     protected lateinit var compositeDisposable: CompositeDisposable
 
@@ -58,13 +56,6 @@ abstract class AbsPhotoShelfFragment : Fragment(), TumblrPostDialog.PostListener
     protected fun showEditDialog(item: TumblrPhotoPost, mode: ActionMode?) {
         actionMode = mode
         TumblrPostDialog.newInstance(item, this).show(fragmentManager, "dialog")
-    }
-
-    override fun onEditDone(dialog: TumblrPostDialog, post: TumblrPhotoPost, completable: Completable) {
-        post.tagsFromString(dialog.postTags)
-        post.caption = dialog.postTitle
-        refreshUI()
-        actionMode?.finish()
     }
 
     protected fun showSnackbar(snackbar: Snackbar) {
