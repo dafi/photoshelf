@@ -31,6 +31,13 @@ open class TumblrPost : Serializable {
     val tagsAsString: String
         get() = if (tags.isEmpty()) "" else tags.joinToString(",")
 
+    /**
+     * Protect against IndexOutOfBoundsException returning an empty string
+     * @return the first tag or an empty string
+     */
+    val firstTag: String
+        get() = if (tags.isEmpty()) "" else tags[0]
+
     constructor()
 
     @Throws(JSONException::class)

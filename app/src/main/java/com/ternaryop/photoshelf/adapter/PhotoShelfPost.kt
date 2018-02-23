@@ -25,13 +25,6 @@ class PhotoShelfPost(photoPost: TumblrPhotoPost, var lastPublishedTimestamp: Lon
             return DateTimeUtils.formatPublishDaysAgo(tt, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT)
         }
 
-    /**
-     * Protect against IndexOutOfBoundsException returning an empty string
-     * @return the first tag or an empty string
-     */
-    val firstTag: String
-        get() = if (tags.isEmpty()) "" else tags[0]
-
     enum class ScheduleTime {
         POST_PUBLISH_NEVER,
         POST_PUBLISH_FUTURE,
