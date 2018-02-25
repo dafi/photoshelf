@@ -147,13 +147,13 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
     }
 
     private inner class BlogItemSelectedListener : OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
             val blogName = blogList.selectedItem as String
             appSupport.selectedBlogName = blogName
             refreshCounters(blogName)
         }
 
-        override fun onNothingSelected(parent: AdapterView<*>) {}
+        override fun onNothingSelected(parent: AdapterView<*>?) {}
     }
 
     fun refreshCounters(blogName: String) {

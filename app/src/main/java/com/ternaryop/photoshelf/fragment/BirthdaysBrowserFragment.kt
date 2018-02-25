@@ -331,7 +331,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
         toolbarSpinner.onItemSelectedListener = this
     }
 
-    override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
         birthdayAdapter.month = pos
         birthdayAdapter.refresh(Filter.FilterListener {
             // when month changes scroll to first item unless must be scroll to first birthday item
