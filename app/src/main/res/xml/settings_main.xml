@@ -23,6 +23,14 @@
             android:title="@string/pref_import_screen_title" >
             <CheckBoxPreference android:key="automatic_export"
                                 android:title="@string/automatic_export"/>
+            <PreferenceCategory
+                android:key="pref_key_export_days_period"
+                android:title="@string/pref_export_days_period" >
+                <com.ternaryop.preference.IntegerEditTextPreference
+                    android:defaultValue="@integer/export_days_period_default"
+                    android:key="exportDaysPeriod"
+                    android:maxLength="2" />
+            </PreferenceCategory>
             <Preference
                 android:key="import_title_parser"
                 android:persistent="false"
@@ -55,14 +63,6 @@
                     android:key="export_missing_birthdays"
                     android:persistent="false"
                     android:title="@string/export_missing_birthdays_title" />
-            </PreferenceCategory>
-            <PreferenceCategory
-                android:key="pref_key_export_days_period"
-                android:title="@string/pref_export_days_period" >
-                <com.ternaryop.preference.IntegerEditTextPreference
-                    android:defaultValue="@integer/export_days_period_default"
-                    android:key="exportDaysPeriod"
-                    android:maxLength="2" />
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
