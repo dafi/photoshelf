@@ -1,9 +1,6 @@
 package com.ternaryop.photoshelf.fragment
 
-import android.app.Activity
 import android.content.DialogInterface
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
@@ -15,9 +12,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.PopupMenu
-import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
@@ -33,6 +28,9 @@ import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.SAVE_AS_D
 import com.ternaryop.photoshelf.util.post.PostActionResult
 import com.ternaryop.photoshelf.util.post.errorList
 import com.ternaryop.photoshelf.util.post.showErrorDialog
+import com.ternaryop.photoshelf.util.tumblr.browseTagImageBySize
+import com.ternaryop.photoshelf.util.tumblr.finishActivity
+import com.ternaryop.photoshelf.util.tumblr.viewPost
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.DialogUtils
@@ -66,12 +64,12 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         val rootView = inflater.inflate(postListViewResource, container, false)
 
         photoAdapter = PhotoAdapter(activity, LOADER_PREFIX_POSTS_THUMB)
+        postActionExecutor = PostActionExecutor(activity, blogName!!, this)
 
         recyclerView = rootView.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = photoAdapter
-        postActionExecutor = PostActionExecutor(activity, blogName!!, this)
         recyclerView.addItemDecoration(postActionExecutor.colorItemDecoration)
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
@@ -102,14 +100,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     protected abstract fun readPhotoPosts()
 
-    fun finish(post: TumblrPhotoPost) {
-        val data = Intent()
-        data.putExtra(EXTRA_POST, post)
-        // Activity finished ok, return the data
-        activity.setResult(Activity.RESULT_OK, data)
-        activity.finish()
-    }
-
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
         mode.setTitle(R.string.select_posts)
         mode.subtitle = resources.getQuantityString(R.plurals.selected_items, 1, 1)
@@ -138,34 +128,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         for (itemId in singleSelectionMenuIds) {
             actionMode?.menu?.findItem(itemId)?.isVisible = singleSelection
         }
-    }
-
-    private fun browseImageBySize(post: PhotoShelfPost) {
-        val arrayAdapter = ArrayAdapter(
-                activity,
-                android.R.layout.select_dialog_item,
-                post.firstPhotoAltSize!!)
-
-        // Show the cancel button without setting a listener
-        // because it isn't necessary
-        val builder = AlertDialog.Builder(activity)
-                .setTitle(getString(R.string.menu_header_show_image, post.firstTag))
-                .setNegativeButton(android.R.string.cancel, null)
-
-        builder.setAdapter(arrayAdapter
-        ) { _, which ->
-            val item = arrayAdapter.getItem(which)
-            if (item != null) {
-                ImageViewerActivity.startImageViewer(activity, item.url, post)
-            }
-        }
-        builder.show()
-    }
-
-    private fun showPost(post: PhotoShelfPost) {
-        val i = Intent(Intent.ACTION_VIEW)
-        i.data = Uri.parse(post.postUrl)
-        startActivity(i)
     }
 
     private fun showConfirmDialog(postAction: Int, postsList: List<PhotoShelfPost>) {
@@ -207,8 +169,10 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         }
 
         // use post() to resolve the following error:
-        // Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change theRecyclerView data.
-        // Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
+        // Cannot call this method in a scroll callback.
+        // Scroll callbacks might be run during a measure & layout pass where you cannot change theRecyclerView data.
+        // Any method call that might change the structure of the RecyclerView or the adapter contents
+        // should be postponed to the next frame.
         recyclerView.post {
             // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
             // so we wait for finished animations before call it
@@ -252,7 +216,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         if (activity.callingActivity == null) {
             onThumbnailImageClick(position)
         } else {
-            finish(post)
+            post.finishActivity(activity)
         }
     }
 
@@ -271,14 +235,15 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         }
     }
 
-    protected open fun handleMenuItem(item: MenuItem, postList: List<PhotoShelfPost>, mode: ActionMode? = null): Boolean {
+    protected open fun handleMenuItem(item: MenuItem,
+        postList: List<PhotoShelfPost>, mode: ActionMode? = null): Boolean {
         when (item.itemId) {
             R.id.post_publish -> {
                 showConfirmDialog(PUBLISH, postList)
                 return true
             }
             R.id.group_menu_image_dimension -> {
-                browseImageBySize(postList[0])
+                postList[0].browseTagImageBySize(activity)
                 return true
             }
             R.id.post_delete -> {
@@ -294,7 +259,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 return true
             }
             R.id.show_post -> {
-                showPost(postList[0])
+                postList[0].viewPost(this)
                 return true
             }
             else -> return false
@@ -334,7 +299,8 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         // all posts have been deleted so call actionMode.finish()
         if (errorList.isEmpty()) {
             if (actionMode != null) {
-                // when action mode is on the finish() method could be called while the item animation is running stopping it
+                // when action mode is on the finish() method could be called
+                // while the item animation is running stopping it
                 // so we wait the animation is completed and then call finish()
                 recyclerView.post { recyclerView.itemAnimator.isRunning({ actionMode?.finish() }) }
             }
