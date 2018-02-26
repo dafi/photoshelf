@@ -26,13 +26,14 @@ interface OnPostActionListener {
  * Created by dave on 22/02/18.
  * Group all actions available on posts (ie save as draft, edit, publish and schedule) and interaction with UI
  */
-class PostActionExecutor(private val context: Context, private val blogName: String, private val listener: OnPostActionListener) {
+class PostActionExecutor(private val context: Context,
+    private val blogName: String, private val listener: OnPostActionListener) {
     var scheduleTimestamp: Calendar? = null
         private set
     var postAction = NONE
         set(value) {
             field = value
-            val color = when(value) {
+            val color = when (value) {
                 SAVE_AS_DRAFT -> R.color.photo_item_animation_save_as_draft_bg
                 DELETE -> R.color.photo_item_animation_delete_bg
                 PUBLISH -> R.color.photo_item_animation_publish_bg
@@ -75,7 +76,8 @@ class PostActionExecutor(private val context: Context, private val blogName: Str
         })
     }
 
-    fun edit(post: TumblrPhotoPost, title: String, tags: String, selectedBlogName: String): Single<List<PostActionResult>> {
+    fun edit(post: TumblrPhotoPost,
+        title: String, tags: String, selectedBlogName: String): Single<List<PostActionResult>> {
         postAction = EDIT
         return executePostAction(listOf(post), Consumer {
             val newValues = mutableMapOf(
@@ -91,7 +93,8 @@ class PostActionExecutor(private val context: Context, private val blogName: Str
         })
     }
 
-    private fun executePostAction(postList: List<TumblrPost>, consumer: Consumer<TumblrPost>): Single<List<PostActionResult>> {
+    private fun executePostAction(postList: List<TumblrPost>,
+        consumer: Consumer<TumblrPost>): Single<List<PostActionResult>> {
         return Observable
             .fromIterable(postList)
             .flatMap<PostActionResult> { post ->

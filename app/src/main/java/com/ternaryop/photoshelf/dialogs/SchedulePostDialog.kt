@@ -21,7 +21,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class SchedulePostDialog(context: Context, val item: TumblrPost, val scheduleDateTime: Calendar, private val onPostSchedule: OnPostScheduleListener?) : Dialog(context), View.OnClickListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
+class SchedulePostDialog(context: Context,
+    val item: TumblrPost,
+    val scheduleDateTime: Calendar,
+    private val onPostSchedule: OnPostScheduleListener?) : Dialog(context), View.OnClickListener,
+    TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
     private val chooseDateButton: Button
     private val chooseTimeButton: Button
     private val timeFormat: SimpleDateFormat
@@ -47,21 +51,12 @@ class SchedulePostDialog(context: Context, val item: TumblrPost, val scheduleDat
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.cancelButton -> {
-                dismiss()
-                return
-            }
-            R.id.schedule_button -> {
-                checkAndSchedule()
-                return
-            }
-            R.id.choose_time_button -> {
-                TimePickerDialog(context, this,
+            R.id.cancelButton -> dismiss()
+            R.id.schedule_button -> checkAndSchedule()
+            R.id.choose_time_button -> TimePickerDialog(context, this,
                         scheduleDateTime.hourOfDay,
                         scheduleDateTime.minute, true)
                         .show()
-                return
-            }
             R.id.choose_date_button -> {
                 val dialog = DatePickerDialog(context, this,
                         scheduleDateTime.year,

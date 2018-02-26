@@ -30,4 +30,3 @@ fun List<PostActionResult>.showErrorDialog(context: Context) {
             this[size - 1].error?.message,
             size))
 }
-

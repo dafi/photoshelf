@@ -70,10 +70,10 @@ class PublishIntentService : IntentService("publishIntent") {
                 addBirthdateFromTags(postTags, selectedBlogName)
             }
             when {
-                ACTION_PUBLISH_DRAFT == action -> Tumblr.getSharedTumblr(applicationContext).draftPhotoPost(selectedBlogName,
-                        url, postTitle, postTags)
-                ACTION_PUBLISH_PUBLISH == action -> Tumblr.getSharedTumblr(applicationContext).publishPhotoPost(selectedBlogName,
-                        url, postTitle, postTags)
+                ACTION_PUBLISH_DRAFT == action -> Tumblr.getSharedTumblr(applicationContext)
+                    .draftPhotoPost(selectedBlogName, url, postTitle, postTags)
+                ACTION_PUBLISH_PUBLISH == action -> Tumblr.getSharedTumblr(applicationContext)
+                    .publishPhotoPost(selectedBlogName, url, postTitle, postTags)
                 ACTION_BIRTHDAY_LIST_BY_DATE == action -> broadcastBirthdaysByDate(intent)
                 ACTION_BIRTHDAY_PUBLISH == action -> birthdaysPublish(intent)
                 ACTION_CHANGE_WALLPAPER == action -> changeWallpaper(url)
