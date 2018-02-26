@@ -3,70 +3,69 @@ package com.ternaryop.tumblr
 import android.content.Context
 import com.ternaryop.photoshelf.db.DBHelper
 
+fun Tumblr.queueCount(tumblrName: String): Int {
+    // do not use Tumblr.getQueue() because it creates unused TumblrPost
+    val apiUrl = getApiUrl(tumblrName, "/posts/queue")
+    var count = 0
+    var readCount: Int
+
+    try {
+        val params = HashMap<String, String>(1)
+        do {
+            val arr = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts")
+            readCount = arr.length()
+            count += readCount
+            params["offset"] = count.toString()
+        } while (readCount == Tumblr.MAX_POST_PER_REQUEST)
+    } catch (e: Exception) {
+        throw TumblrException(e)
+    }
+
+    return count
+}
+
+fun Tumblr.draftCount(tumblrName: String): Int {
+    val apiUrl = getApiUrl(tumblrName, "/posts/draft")
+    var count = 0
+
+    try {
+        val json = consumer.jsonFromGet(apiUrl)
+        var arr = json.getJSONObject("response").getJSONArray("posts")
+
+        val params = HashMap<String, String>(1)
+        while (arr.length() > 0) {
+            count += arr.length()
+            params["before_id"] = arr.getJSONObject(arr.length() - 1).getString("id")
+
+            arr = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts")
+        }
+    } catch (e: Exception) {
+        throw TumblrException(e)
+    }
+
+    return count
+}
+
+fun Tumblr.queueAll(tumblrName: String): List<TumblrPost> {
+    val list = mutableListOf<TumblrPost>()
+    var readCount: Int
+
+    try {
+        val params = HashMap<String, String>(1)
+        do {
+            val queue = getQueue(tumblrName, params)
+            readCount = queue.size
+            list.addAll(queue)
+            params["offset"] = list.size.toString()
+        } while (readCount == Tumblr.MAX_POST_PER_REQUEST)
+    } catch (e: Exception) {
+        throw TumblrException(e)
+    }
+
+    return list
+}
+
 object TumblrUtils {
-    fun getQueueCount(tumblr: Tumblr, tumblrName: String): Int {
-        // do not use Tumblr.getQueue() because it creates unused TumblrPost
-        val apiUrl = tumblr.getApiUrl(tumblrName, "/posts/queue")
-        var count = 0
-        var readCount: Int
-
-        try {
-            val params = HashMap<String, String>(1)
-            do {
-                val arr = tumblr.consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts")
-                readCount = arr.length()
-                count += readCount
-                params["offset"] = count.toString()
-            } while (readCount == Tumblr.MAX_POST_PER_REQUEST)
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-
-        return count
-    }
-
-    fun getDraftCount(tumblr: Tumblr, tumblrName: String): Long {
-        val apiUrl = tumblr.getApiUrl(tumblrName, "/posts/draft")
-        var count: Long = 0
-
-        try {
-            val json = tumblr.consumer.jsonFromGet(apiUrl)
-            var arr = json.getJSONObject("response").getJSONArray("posts")
-
-            val params = HashMap<String, String>(1)
-            while (arr.length() > 0) {
-                count += arr.length().toLong()
-                val beforeId = arr.getJSONObject(arr.length() - 1).getLong("id")
-                params["before_id"] = beforeId.toString() + ""
-
-                arr = tumblr.consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts")
-            }
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-
-        return count
-    }
-
-    fun getQueueAll(tumblr: Tumblr, tumblrName: String): List<TumblrPost> {
-        val list = mutableListOf<TumblrPost>()
-        var readCount = 0
-
-        try {
-            val params = HashMap<String, String>(1)
-            do {
-                val queue = tumblr.getQueue(tumblrName, params)
-                readCount = queue.size
-                list.addAll(queue)
-                params["offset"] = list.size.toString()
-            } while (readCount == Tumblr.MAX_POST_PER_REQUEST)
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-
-        return list
-    }
-
     fun renameTag(fromTag: String, toTag: String, context: Context, blogName: String): Int {
         val searchParams = HashMap<String, String>()
         searchParams["type"] = "photo"

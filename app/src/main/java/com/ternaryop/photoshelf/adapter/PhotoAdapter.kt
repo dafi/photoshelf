@@ -320,6 +320,6 @@ class PhotoAdapter(private val context: Context, prefix: String) : RecyclerView.
         if (counterType == CounterEvent.NONE) {
             return
         }
-        EventBus.getDefault().post(CounterEvent(counterType, itemCount.toLong()))
+        EventBus.getDefault().post(CounterEvent(counterType, itemCount))
     }
 }

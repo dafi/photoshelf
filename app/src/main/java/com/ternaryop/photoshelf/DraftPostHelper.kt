@@ -7,7 +7,7 @@ import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
-import com.ternaryop.tumblr.TumblrUtils
+import com.ternaryop.tumblr.queueAll
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -21,7 +21,7 @@ class DraftPostHelper(private val context: Context, private val blogName: String
     private val tumblr = Tumblr.getSharedTumblr(context)
 
     val queuePosts: Single<List<TumblrPost>>
-        get() = Single.fromCallable { TumblrUtils.getQueueAll(tumblr, blogName) }
+        get() = Single.fromCallable { tumblr.queueAll(blogName) }
 
     /**
      * Return the map where the key is the first tag and value contains the posts for that tag

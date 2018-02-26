@@ -5,7 +5,7 @@ package com.ternaryop.photoshelf.event
  * Event posted when a count is available
  */
 
-data class CounterEvent(var type: Int, var count: Long) {
+data class CounterEvent(var type: Int, var count: Int) {
     companion object {
         const val NONE = 0
         const val BIRTHDAY = 1
