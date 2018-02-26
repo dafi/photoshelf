@@ -5,75 +5,27 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Environment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
-import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.dropbox.DropboxManager
+import com.ternaryop.photoshelf.importer.BatchExporter
 import com.ternaryop.photoshelf.util.date.dayOfMonth
 import com.ternaryop.photoshelf.util.date.month
-import com.ternaryop.photoshelf.util.log.Log
-import com.ternaryop.utils.DateTimeUtils
-import java.io.File
 import java.util.Calendar
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {
 
-    private val logPath: File
-        get() = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "export_errors.txt")
-
     override fun onReceive(context: Context, intent: Intent) {
         val appSupport = AppSupport(context)
-        if (BIRTHDAY_ACTION == intent.action) {
-            if (!hasAlreadyNotifiedToday(appSupport)) {
-                BirthdayUtils.notifyBirthday(appSupport)
-            }
-        } else if (EXPORT_ACTION == intent.action) {
-            startExport(appSupport)
+        when (intent.action) {
+            ACTION_BIRTHDAY -> if (!hasAlreadyNotifiedToday(appSupport)) BirthdayUtils.notifyBirthday(appSupport)
+            ACTION_EXPORT -> startExport(appSupport)
         }
     }
 
     private fun startExport(appSupport: AppSupport) {
-        if (!appSupport.isAutomaticExportEnabled) {
-            return
+        if (appSupport.isAutomaticExportEnabled) {
+            Thread({ BatchExporter(appSupport).export() }).start()
         }
-        Thread(object : Runnable {
-            override fun run() {
-                val importer = Importer(appSupport, DropboxManager.getInstance(appSupport))
-                exportPosts(importer)
-                exportBirthdays(importer)
-                exportTotalUsers(importer)
-            }
-
-            private fun exportTotalUsers(importer: Importer) {
-                val exportDaysPeriod = appSupport.exportDaysPeriod.toLong()
-                val lastUpdate = appSupport.lastFollowersUpdateTime
-                if (lastUpdate < 0 || exportDaysPeriod <= DateTimeUtils.daysSinceTimestamp(lastUpdate)) {
-                    try {
-                        importer.syncExportTotalUsersToCSV(Importer.totalUsersPath, appSupport.selectedBlogName!!)
-                        appSupport.lastFollowersUpdateTime = System.currentTimeMillis()
-                    } catch (e: Exception) {
-                        Log.error(e, logPath, "Export total users")
-                    }
-                }
-            }
-
-            private fun exportBirthdays(importer: Importer) {
-                try {
-                    importer.exportBirthdaysToCSV(Importer.birthdaysPath)
-                } catch (e: Exception) {
-                    Log.error(e, logPath, "Export birthdays")
-                }
-            }
-
-            private fun exportPosts(importer: Importer) {
-                try {
-                    importer.exportPostsToCSV(Importer.postsPath)
-                } catch (e: Exception) {
-                    Log.error(e, logPath, "Export posts")
-                }
-            }
-        }).start()
     }
 
     private fun hasAlreadyNotifiedToday(context: Context): Boolean {
@@ -89,36 +41,37 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val BIRTHDAY_ACTION = "birthday"
-        const val EXPORT_ACTION = "export"
-        const val EXPORT_INTERVAL_HOURS = 3
+        const val ACTION_BIRTHDAY = "birthday"
+        const val ACTION_EXPORT = "export"
+        private const val EXPORT_INTERVAL = AlarmManager.INTERVAL_HOUR * 3
 
         fun createBirthdayAlarm(context: Context, triggerAtMillis: Long) {
             val alarmManager = context.applicationContext
                     .getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val serviceIntent = Intent(context.applicationContext, AlarmBroadcastReceiver::class.java)
-            serviceIntent.action = BIRTHDAY_ACTION
+            serviceIntent.action = ACTION_BIRTHDAY
 
             val pendingIntent = PendingIntent.getBroadcast(context.applicationContext,
                     0,
                     serviceIntent,
                     PendingIntent.FLAG_CANCEL_CURRENT)
 
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+                triggerAtMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
         }
 
-        fun createExportAlarm(context: Context, triggerAtMillis: Long) {
+        fun createExportAlarm(context: Context, triggerAtMillis: Long, intervalMillis: Long = EXPORT_INTERVAL) {
             val alarmManager = context.applicationContext
                     .getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val serviceIntent = Intent(context.applicationContext, AlarmBroadcastReceiver::class.java)
-            serviceIntent.action = EXPORT_ACTION
+            serviceIntent.action = ACTION_EXPORT
 
             val pendingIntent = PendingIntent.getBroadcast(context.applicationContext,
                     0,
                     serviceIntent,
                     PendingIntent.FLAG_CANCEL_CURRENT)
 
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_HOUR * EXPORT_INTERVAL_HOURS, pendingIntent)
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, intervalMillis, pendingIntent)
         }
     }
 }
