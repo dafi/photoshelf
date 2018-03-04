@@ -3,9 +3,6 @@ package com.ternaryop.photoshelf.service
 import android.app.IntentService
 import android.content.Context
 import android.content.Intent
-import android.support.annotation.PluralsRes
-import android.support.annotation.StringRes
-import android.support.v4.app.NotificationCompat
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_FILE_PATH
 import com.ternaryop.photoshelf.R
@@ -14,12 +11,12 @@ import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.photoshelf.util.notification.NOTIFICATION_ID_IMPORT_BIRTHDAY
 import com.ternaryop.photoshelf.util.notification.NOTIFICATION_ID_IMPORT_POSTS
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
+import com.ternaryop.photoshelf.util.notification.ProgressNotification
 
 /**
  * An [IntentService] subclass for handling import/export actions
  */
 class ImportIntentService : IntentService("ImportIntentService") {
-
     private lateinit var notificationUtil: NotificationUtil
     private lateinit var importer: Importer
 
@@ -33,12 +30,19 @@ class ImportIntentService : IntentService("ImportIntentService") {
         if (intent != null) {
             val action = intent.action
             when {
-                ACTION_EXPORT_POSTS_CSV == action -> handleExportPostsToCSV(intent.getStringExtra(EXTRA_FILE_PATH))
-                ACTION_EXPORT_BIRTHDAYS_CSV == action -> handleExportBirthdaysToCSV(intent.getStringExtra(EXTRA_FILE_PATH))
-                ACTION_EXPORT_MISSING_BIRTHDAYS_CSV == action -> handleExportMissingBirthdaysToCSV(intent.getStringExtra(EXTRA_FILE_PATH), intent.getStringExtra(EXTRA_BLOG_NAME))
-                ACTION_IMPORT_BIRTHDAYS_FROM_WEB == action -> handleImportBirthdaysFromWeb(intent.getStringExtra(EXTRA_BLOG_NAME))
-                ACTION_IMPORT_BIRTHDAYS_FROM_CSV == action -> handleImportBirthdaysFromCSV(intent.getStringExtra(EXTRA_FILE_PATH))
-                ACTION_IMPORT_POSTS_FROM_CSV == action -> handleImportPostsFromCSV(intent.getStringExtra(EXTRA_FILE_PATH))
+                ACTION_EXPORT_POSTS_CSV == action ->
+                    handleExportPostsToCSV(intent.getStringExtra(EXTRA_FILE_PATH))
+                ACTION_EXPORT_BIRTHDAYS_CSV == action ->
+                    handleExportBirthdaysToCSV(intent.getStringExtra(EXTRA_FILE_PATH))
+                ACTION_EXPORT_MISSING_BIRTHDAYS_CSV == action ->
+                    handleExportMissingBirthdaysToCSV(intent.getStringExtra(EXTRA_FILE_PATH),
+                        intent.getStringExtra(EXTRA_BLOG_NAME))
+                ACTION_IMPORT_BIRTHDAYS_FROM_WEB == action ->
+                    handleImportBirthdaysFromWeb(intent.getStringExtra(EXTRA_BLOG_NAME))
+                ACTION_IMPORT_BIRTHDAYS_FROM_CSV == action ->
+                    handleImportBirthdaysFromCSV(intent.getStringExtra(EXTRA_FILE_PATH))
+                ACTION_IMPORT_POSTS_FROM_CSV == action ->
+                    handleImportPostsFromCSV(intent.getStringExtra(EXTRA_FILE_PATH))
             }
         }
     }
@@ -47,7 +51,8 @@ class ImportIntentService : IntentService("ImportIntentService") {
         try {
             val count = importer.exportPostsToCSV(exportPath)
             val content = resources.getQuantityString(R.plurals.exported_items, count, count)
-            notificationUtil.notifyExport(content, "Postsssss", "Post Export", R.drawable.stat_notify_import_export)
+            notificationUtil.notifyExport(content,
+                "", "Post Export", R.drawable.stat_notify_import_export)
         } catch (e: Exception) {
             notificationUtil.notifyError(e, "Export", null)
         }
@@ -57,7 +62,8 @@ class ImportIntentService : IntentService("ImportIntentService") {
         try {
             val count = importer.exportBirthdaysToCSV(exportPath)
             val content = resources.getQuantityString(R.plurals.exported_items, count, count)
-            notificationUtil.notifyExport(content, "", "Birthdays Export", R.drawable.stat_notify_import_export)
+            notificationUtil.notifyExport(content,
+                "", "Birthdays Export", R.drawable.stat_notify_import_export)
         } catch (e: Exception) {
             notificationUtil.notifyError(e, "Export", null)
         }
@@ -67,76 +73,77 @@ class ImportIntentService : IntentService("ImportIntentService") {
         try {
             val count = importer.exportMissingBirthdaysToCSV(exportPath, blogName)
             val content = resources.getQuantityString(R.plurals.exported_items, count, count)
-            notificationUtil.notifyExport(content, "", "Missing Birthdays Export", R.drawable.stat_notify_import_export)
+            notificationUtil.notifyExport(content,
+                "", "Missing Birthdays Export", R.drawable.stat_notify_import_export)
         } catch (e: Exception) {
             notificationUtil.notifyError(e, "Export", null)
         }
     }
 
     private fun handleImportBirthdaysFromWeb(blogName: String) {
-        val builder = createNotificationBuilder(R.string.import_missing_birthdays_from_web_title)
+        val progressNotification = ProgressNotification(notificationUtil,
+            R.string.import_missing_birthdays_from_web_title,
+            NOTIFICATION_ID_IMPORT_BIRTHDAY)
 
         importer.importMissingBirthdaysFromWeb(blogName)
-                .doOnNext { info -> updateNotification(builder, info.max, info.progress, false, info.items.size, R.plurals.item_found, NOTIFICATION_ID_IMPORT_BIRTHDAY) }
-                .takeLast(1)
-                .subscribe({ info -> updateNotification(builder, 0, 0, false, info.items.size, R.plurals.imported_items, NOTIFICATION_ID_IMPORT_BIRTHDAY) }
-                ) { t -> notificationUtil.notifyError(t, "Import", null) }
+            .doOnNext { info ->
+                progressNotification
+                    .setProgress(info.max, info.progress, false)
+                    .notify(info.items.size, R.plurals.item_found)
+            }
+            .takeLast(1)
+            .subscribe({ info -> progressNotification.notifyFinish(info.items.size, R.plurals.imported_items) }
+            ) { t -> notificationUtil.notifyError(t, "Import", null) }
     }
 
     private fun handleImportBirthdaysFromCSV(importPath: String) {
         try {
             importer.importBirthdays(importPath)
-                    .subscribe({ total ->
-                        val content = resources.getQuantityString(R.plurals.imported_items, total!!, total)
-                        notificationUtil.notifyExport(content, "", "Birthdays Import", R.drawable.stat_notify_import_export)
-                    }
-                    ) { t -> notificationUtil.notifyError(t, "Import", null) }
+                .subscribe({ total ->
+                    val content = resources.getQuantityString(R.plurals.imported_items, total!!, total)
+                    notificationUtil.notifyExport(content,
+                        "", "Birthdays Import", R.drawable.stat_notify_import_export)
+                }
+                ) { t -> notificationUtil.notifyError(t, "Import", null) }
         } catch (e: Exception) {
             notificationUtil.notifyError(e, "Import", null)
         }
     }
 
     private fun handleImportPostsFromCSV(importPath: String) {
-        val builder = createNotificationBuilder(R.string.import_posts_from_csv_title)
+        val progressNotification = ProgressNotification(
+            notificationUtil,
+            R.string.import_posts_from_csv_title,
+            NOTIFICATION_ID_IMPORT_POSTS)
+
         try {
             importer.importPostsFromCSV(importPath)
-                    .doOnNext { progress ->
-                        // update with less frequency otherwise randomly the notification inside subscribe() isn't respected (ie the progress remains visible)
-                        if (progress!! % 1003 == 0) {
-                            updateNotification(builder, 0, 0, true, progress, R.plurals.item_found, NOTIFICATION_ID_IMPORT_POSTS)
-                        }
+                .doOnNext { progress ->
+                    // update with less frequency otherwise randomly the notification inside
+                    // subscribe() isn't respected (ie the progress remains visible)
+                    if (progress!! % TWEAK_NOTIFICATION_UPDATE_FREQUENCY == 0) {
+                        progressNotification
+                            .setProgress(0, 0, true)
+                            .notify(progress, R.plurals.item_found)
                     }
-                    .takeLast(1)
-                    .subscribe({ progress -> updateNotification(builder, 0, 0, false, progress!!, R.plurals.imported_items, NOTIFICATION_ID_IMPORT_POSTS) }
-                    ) { t -> notificationUtil.notifyError(t, "Import", null) }
+                }
+                .takeLast(1)
+                .subscribe({ progress -> progressNotification.notifyFinish(progress, R.plurals.imported_items) }
+                ) { t -> notificationUtil.notifyError(t, "Import", null) }
         } catch (e: Exception) {
             notificationUtil.notifyError(e, "Import", null)
         }
     }
 
-    private fun createNotificationBuilder(@StringRes titleId: Int): NotificationCompat.Builder {
-        return notificationUtil.createNotification(
-                "",
-                "", null,
-                R.drawable.stat_notify_import_export)
-                .setContentTitle(getString(titleId))
-    }
-
-    private fun updateNotification(builder: NotificationCompat.Builder, max: Int, progress: Int, indeterminate: Boolean, foundItems: Int, @PluralsRes pluralId: Int, notificationId: Int) {
-        builder
-                .setProgress(max, progress, indeterminate)
-                .setContentText(resources.getQuantityString(pluralId, foundItems, foundItems))
-        notificationUtil.notificationManager.notify(notificationId, builder.build())
-    }
-
     companion object {
-
         private const val ACTION_EXPORT_POSTS_CSV = "exportPostsCSV"
         private const val ACTION_EXPORT_BIRTHDAYS_CSV = "exportBirthdaysCSV"
         private const val ACTION_EXPORT_MISSING_BIRTHDAYS_CSV = "exportMissingBirthdaysCSV"
         private const val ACTION_IMPORT_BIRTHDAYS_FROM_WEB = "importBirthdaysFromWeb"
         private const val ACTION_IMPORT_BIRTHDAYS_FROM_CSV = "importBirthdaysFromCSV"
         private const val ACTION_IMPORT_POSTS_FROM_CSV = "importPostsFromCSV"
+
+        private const val TWEAK_NOTIFICATION_UPDATE_FREQUENCY = 1003
 
         fun startExportPostsCSV(context: Context, exportPath: String) {
             val intent = Intent(context, ImportIntentService::class.java)
