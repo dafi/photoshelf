@@ -100,7 +100,7 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
     @Throws(IOException::class)
     private fun getSignedPostConnection(url: String, contentType: String, data: String): HttpURLConnection {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.setRequestProperty("Authorization", "OAuth " + accessToken)
+        conn.setRequestProperty("Authorization", "OAuth $accessToken")
         conn.setRequestProperty("Content-Type", contentType)
         conn.doInput = true
         conn.doOutput = true
@@ -116,7 +116,7 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
     @Throws(IOException::class)
     private fun getSignedGetConnection(url: String): HttpURLConnection {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.setRequestProperty("Authorization", "OAuth " + accessToken)
+        conn.setRequestProperty("Authorization", "OAuth $accessToken")
         conn.requestMethod = "GET"
 
         return conn

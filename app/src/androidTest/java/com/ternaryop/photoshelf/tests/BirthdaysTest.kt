@@ -36,7 +36,7 @@ class BirthdaysTest : TestCase() {
                 val name = iterator.next()
                 val birthday = BirthdayUtils.searchBirthday(Activity(), name, "")
                 if (birthday != null) {
-                    Log.d("testFindMissing", "MissingBirthdaysTest.findMissing " + birthday)
+                    Log.d("testFindMissing", "MissingBirthdaysTest.findMissing $birthday")
                 }
             }
         } catch (e: IOException) {

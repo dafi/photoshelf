@@ -157,12 +157,12 @@ object BirthdayUtils {
             Tumblr.getSharedTumblr(context).draftPhotoPost(blogName,
                     Uri.fromFile(file),
                     getBirthdayCaption(context, name, blogName),
-                    "Birthday, " + name)
+                "Birthday, $name")
         } else {
             Tumblr.getSharedTumblr(context).publishPhotoPost(blogName,
                     Uri.fromFile(file),
                     getBirthdayCaption(context, name, blogName),
-                    "Birthday, " + name)
+                "Birthday, $name")
         }
         file.delete()
     }

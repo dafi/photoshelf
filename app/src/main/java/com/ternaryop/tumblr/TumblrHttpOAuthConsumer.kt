@@ -88,7 +88,7 @@ class TumblrHttpOAuthConsumer(context: Context) {
      */
     fun publicJsonFromGet(url: String, params: Map<String, *>): JSONObject {
         try {
-            val sbUrl = StringBuilder(url + "?api_key=" + consumerKey)
+            val sbUrl = StringBuilder("$url?api_key=$consumerKey")
             for ((key, value) in params) {
                 sbUrl.append("&").append(key).append("=").append(value)
             }

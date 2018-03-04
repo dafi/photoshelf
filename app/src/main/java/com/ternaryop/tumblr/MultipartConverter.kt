@@ -24,7 +24,7 @@ constructor(private val originalRequest: OAuthRequest, bodyMap: Map<String, *>) 
         get() {
             val request = OAuthRequest(originalRequest.verb, originalRequest.url)
             request.addHeader("Authorization", originalRequest.headers["Authorization"])
-            request.addHeader("Content-Type", "multipart/form-data, boundary=" + boundary)
+            request.addHeader("Content-Type", "multipart/form-data, boundary=$boundary")
             request.addHeader("Content-length", bodyLength.toString())
             request.addPayload(complexPayload())
             return request

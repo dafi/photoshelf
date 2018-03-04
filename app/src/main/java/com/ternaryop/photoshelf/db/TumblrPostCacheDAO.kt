@@ -62,7 +62,7 @@ class TumblrPostCacheDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsD
     }
 
     fun clearCache(cacheType: Int) {
-        dbHelper.writableDatabase.delete(TABLE_NAME, CACHE_TYPE + "=?", arrayOf(cacheType.toString()))
+        dbHelper.writableDatabase.delete(TABLE_NAME, "$CACHE_TYPE=?", arrayOf(cacheType.toString()))
     }
 
     fun read(blogName: String, cacheType: Int): List<TumblrPost> {

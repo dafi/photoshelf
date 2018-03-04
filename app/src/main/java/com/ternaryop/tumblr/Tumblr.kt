@@ -14,7 +14,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
 
     val blogList: Array<Blog>
         get() {
-            val apiUrl = API_PREFIX + "/user/info"
+            val apiUrl = "$API_PREFIX/user/info"
 
             try {
                 val json = consumer.jsonFromGet(apiUrl)
@@ -262,7 +262,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
         val type = params["type"]
         return if (type == null || type.trim { it <= ' ' }.isEmpty()) {
             ""
-        } else "/" + type
+        } else "/$type"
     }
 
     fun getFollowers(tumblrName: String, params: Map<String, String>?, followers: TumblrFollowers?): TumblrFollowers {
@@ -272,7 +272,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
         if (params != null) {
             modifiedParams.putAll(params)
         }
-        modifiedParams["base-hostname"] = tumblrName + ".tumblr.com"
+        modifiedParams["base-hostname"] = "$tumblrName.tumblr.com"
 
         try {
             val json = consumer.jsonFromGet(apiUrl, modifiedParams)

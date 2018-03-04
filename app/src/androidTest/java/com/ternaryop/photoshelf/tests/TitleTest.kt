@@ -33,12 +33,12 @@ class TitleTest {
                         .append("s:").append(titleData.format("", "", "", "")).append("\n")
                         .append("e:").append(formattedInput)
                         .append("\n\n")
-                println("testTitle " + formattedInput)
+                println("testTitle $formattedInput")
             }
             val s = sb.toString()
             // setting the breakpoint to the println allows to copy to clipboard the whole string
             // this is necessary because the android log cuts the result
-            println("whole string\n" + s)
+            println("whole string\n$s")
         } catch (e: Exception) {
             e.printStackTrace()
         }
