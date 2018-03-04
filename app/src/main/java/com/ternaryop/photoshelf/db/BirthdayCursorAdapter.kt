@@ -26,25 +26,29 @@ import java.util.Locale
  * @author dave
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class BirthdayCursorAdapter(private val context: Context, var blogName: String) : SimpleCursorAdapter(context, R.layout.list_row_2, null, arrayOf(BirthdayDAO.NAME, BirthdayDAO.BIRTH_DATE), intArrayOf(android.R.id.text1, android.R.id.text2), 0), FilterQueryProvider, ViewBinder {
+class BirthdayCursorAdapter(private val context: Context,
+    var blogName: String) : SimpleCursorAdapter(context, R.layout.list_row_2,
+    null,
+    arrayOf(BirthdayDAO.NAME, BirthdayDAO.BIRTH_DATE),
+    intArrayOf(android.R.id.text1, android.R.id.text2), 0), FilterQueryProvider, ViewBinder {
 
     private val birthdayDAO = DBHelper.getInstance(context).birthdayDAO
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("d MMMM, yyyy", Locale.US)
-    private var showFlags = SHOW_BIRTHDAYS_ALL
+    private var showFlags = SHOW_ALL
     private var pattern = ""
     var month: Int = 0
 
     val isShowIgnored: Boolean
-        get() = showFlags and SHOW_BIRTHDAYS_IGNORED != 0
+        get() = showFlags and SHOW_IGNORED != 0
 
     val isShowInSameDay: Boolean
-        get() = showFlags and SHOW_BIRTHDAYS_IN_SAME_DAY != 0
+        get() = showFlags and SHOW_IN_SAME_DAY != 0
 
     val isShowMissing: Boolean
-        get() = showFlags and SHOW_BIRTHDAYS_MISSING != 0
+        get() = showFlags and SHOW_MISSING != 0
 
     val isWithoutPost: Boolean
-        get() = showFlags and SHOW_BIRTHDAYS_WITHOUT_POSTS != 0
+        get() = showFlags and SHOW_WITHOUT_POSTS != 0
 
     init {
         viewBinder = this
@@ -154,21 +158,22 @@ class BirthdayCursorAdapter(private val context: Context, var blogName: String) 
     }
 
     fun setShow(value: Int, show: Boolean) {
-        // SHOW_BIRTHDAYS_ALL is the default value and it can't be hidden
-        when {
-            value and SHOW_BIRTHDAYS_ALL != 0 -> showFlags = SHOW_BIRTHDAYS_ALL
-            value and SHOW_BIRTHDAYS_IGNORED != 0 -> showFlags = if (show) SHOW_BIRTHDAYS_IGNORED else SHOW_BIRTHDAYS_ALL
-            value and SHOW_BIRTHDAYS_IN_SAME_DAY != 0 -> showFlags = if (show) SHOW_BIRTHDAYS_IN_SAME_DAY else SHOW_BIRTHDAYS_ALL
-            value and SHOW_BIRTHDAYS_MISSING != 0 -> showFlags = if (show) SHOW_BIRTHDAYS_MISSING else SHOW_BIRTHDAYS_ALL
-            value and SHOW_BIRTHDAYS_WITHOUT_POSTS != 0 -> showFlags = if (show) SHOW_BIRTHDAYS_WITHOUT_POSTS else SHOW_BIRTHDAYS_ALL
+        // SHOW_ALL is the default value and it can't be hidden
+        showFlags = when {
+            value and SHOW_ALL != 0 -> SHOW_ALL
+            value and SHOW_IGNORED != 0 -> if (show) SHOW_IGNORED else SHOW_ALL
+            value and SHOW_IN_SAME_DAY != 0 -> if (show) SHOW_IN_SAME_DAY else SHOW_ALL
+            value and SHOW_MISSING != 0 -> if (show) SHOW_MISSING else SHOW_ALL
+            value and SHOW_WITHOUT_POSTS != 0 -> if (show) SHOW_WITHOUT_POSTS else SHOW_ALL
+            else -> throw AssertionError("value $value not supported")
         }
     }
 
     companion object {
-        const val SHOW_BIRTHDAYS_ALL = 1
-        const val SHOW_BIRTHDAYS_IGNORED = 1 shl 1
-        const val SHOW_BIRTHDAYS_IN_SAME_DAY = 1 shl 2
-        const val SHOW_BIRTHDAYS_MISSING = 1 shl 3
-        const val SHOW_BIRTHDAYS_WITHOUT_POSTS = 1 shl 4
+        const val SHOW_ALL = 1
+        const val SHOW_IGNORED = 1 shl 1
+        const val SHOW_IN_SAME_DAY = 1 shl 2
+        const val SHOW_MISSING = 1 shl 3
+        const val SHOW_WITHOUT_POSTS = 1 shl 4
     }
 }

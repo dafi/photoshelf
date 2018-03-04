@@ -28,7 +28,8 @@ import com.ternaryop.photoshelf.util.date.year
 import java.text.DateFormatSymbols
 import java.util.Calendar
 
-class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClickListener, AbsListView.MultiChoiceModeListener, AdapterView.OnItemSelectedListener {
+class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClickListener,
+    AbsListView.MultiChoiceModeListener, AdapterView.OnItemSelectedListener {
 
     private lateinit var toolbarSpinner: Spinner
     private lateinit var listView: ListView
@@ -79,7 +80,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
         listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
         listView.setMultiChoiceModeListener(this)
 
-        (rootView.findViewById<View>(R.id.searchView1) as SearchView).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        (rootView.findViewById<View>(R.id.searchView1) as SearchView)
+            .setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextSubmit(query: String): Boolean {
                 return false
@@ -252,28 +254,28 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
         when (item.itemId) {
             R.id.action_show_all -> {
                 setSpinnerVisibility(true)
-                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_ALL
+                showFlag = BirthdayCursorAdapter.SHOW_ALL
                 subTitle = null
             }
             R.id.action_show_ignored -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IGNORED
+                showFlag = BirthdayCursorAdapter.SHOW_IGNORED
             }
             R.id.action_show_birthdays_in_same_day -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_IN_SAME_DAY
+                showFlag = BirthdayCursorAdapter.SHOW_IN_SAME_DAY
             }
             R.id.action_show_birthdays_missing -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_MISSING
+                showFlag = BirthdayCursorAdapter.SHOW_MISSING
             }
             R.id.action_show_birthdays_without_posts -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_BIRTHDAYS_WITHOUT_POSTS
+                showFlag = BirthdayCursorAdapter.SHOW_WITHOUT_POSTS
             }
             else -> return super.onOptionsItemSelected(item)
         }
@@ -301,7 +303,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
             supportActionBar?.setDisplayShowTitleEnabled(true)
         } else {
             // check if view is already added (eg when the overflow menu is opened)
-            if (birthdayAdapter.isShowFlag(BirthdayCursorAdapter.SHOW_BIRTHDAYS_ALL) && fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1) {
+            if (birthdayAdapter.isShowFlag(BirthdayCursorAdapter.SHOW_ALL)
+                && fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1) {
                 fragmentActivityStatus.drawerToolbar.addView(toolbarSpinner)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
             }
