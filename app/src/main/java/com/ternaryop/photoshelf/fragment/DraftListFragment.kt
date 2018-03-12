@@ -18,10 +18,10 @@ import android.view.animation.AnimationUtils
 import android.widget.TextView
 import com.ternaryop.photoshelf.DraftPostHelper
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.PHOTO_ADAPTER_SORT_LAST_PUBLISHED_TAG
-import com.ternaryop.photoshelf.adapter.PHOTO_ADAPTER_SORT_TAG_NAME
-import com.ternaryop.photoshelf.adapter.PHOTO_ADAPTER_SORT_UPLOAD_TIME
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.LAST_PUBLISHED_TAG
+import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.TAG_NAME
+import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.UPLOAD_TIME
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.db.TumblrPostCache
@@ -50,7 +50,6 @@ import java.util.Calendar
 import java.util.Date
 
 class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshListener {
-
     private lateinit var queuedPosts: List<TumblrPost>
     private var lastScheduledDate: Calendar? = null
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
@@ -103,10 +102,10 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
 
-        when (photoAdapter.currentSort) {
-            PHOTO_ADAPTER_SORT_TAG_NAME -> menu.findItem(R.id.sort_tag_name).isChecked = true
-            PHOTO_ADAPTER_SORT_LAST_PUBLISHED_TAG -> menu.findItem(R.id.sort_published_tag).isChecked = true
-            PHOTO_ADAPTER_SORT_UPLOAD_TIME -> menu.findItem(R.id.sort_upload_time).isChecked = true
+        when (photoAdapter.sortSwitcher.sortable.sortId) {
+            TAG_NAME -> menu.findItem(R.id.sort_tag_name).isChecked = true
+            LAST_PUBLISHED_TAG -> menu.findItem(R.id.sort_published_tag).isChecked = true
+            UPLOAD_TIME -> menu.findItem(R.id.sort_upload_time).isChecked = true
         }
     }
 
@@ -125,7 +124,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             }
             R.id.sort_tag_name -> {
                 item.isChecked = isChecked
-                photoAdapter.sortByTagName()
+                photoAdapter.sortBy(TAG_NAME)
                 photoAdapter.notifyDataSetChanged()
                 scrollToPosition(0)
                 saveSettings()
@@ -133,7 +132,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             }
             R.id.sort_published_tag -> {
                 item.isChecked = isChecked
-                photoAdapter.sortByLastPublishedTag()
+                photoAdapter.sortBy(LAST_PUBLISHED_TAG)
                 photoAdapter.notifyDataSetChanged()
                 scrollToPosition(0)
                 saveSettings()
@@ -141,14 +140,15 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             }
             R.id.sort_upload_time -> {
                 item.isChecked = isChecked
-                photoAdapter.sortByUploadTime()
+                photoAdapter.sortBy(UPLOAD_TIME)
                 photoAdapter.notifyDataSetChanged()
                 scrollToPosition(0)
                 saveSettings()
                 return true
             }
             R.id.action_tag_navigator -> {
-                TagNavigatorDialog.newInstance(photoAdapter.photoList, this, TAG_NAVIGATOR_DIALOG).show(fragmentManager, "dialog")
+                TagNavigatorDialog.newInstance(photoAdapter.photoList,
+                    this, TAG_NAVIGATOR_DIALOG).show(fragmentManager, "dialog")
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -163,12 +163,12 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         onRefreshStarted()
 
         compositeDisposable.add(Importer(activity).importFromTumblr(blogName!!, Importer.schedulers(), currentTextView)
-                .doOnComplete({ this.readPhotoPosts() })
-                .subscribe({ posts ->
-                    progressHighlightViewLayout.incrementProgress()
-                    // delete from cache the published posts
-                    draftCache.delete(posts, TumblrPostCache.CACHE_TYPE_DRAFT)
-                }) { t -> DialogUtils.showErrorDialog(activity, t) }
+            .doOnComplete({ this.readPhotoPosts() })
+            .subscribe({ posts ->
+                progressHighlightViewLayout.incrementProgress()
+                // delete from cache the published posts
+                draftCache.delete(posts, TumblrPostCache.CACHE_TYPE_DRAFT)
+            }) { t -> DialogUtils.showErrorDialog(activity, t) }
         )
     }
 
@@ -188,37 +188,38 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     override fun readPhotoPosts() {
         val maxTimestamp = draftCache.findMostRecentTimestamp(blogName!!, TumblrPostCache.CACHE_TYPE_DRAFT)
         compositeDisposable.add(
-                Single
-                        .zip<List<TumblrPost>, List<TumblrPost>, List<TumblrPost>>(
-                                draftPostHelper.getNewerDraftPosts(maxTimestamp).subscribeOn(Schedulers.io()),
-                                draftPostHelper.queuePosts.subscribeOn(Schedulers.io()),
-                                BiFunction<List<TumblrPost>, List<TumblrPost>, List<TumblrPost>> { newerDraftPosts, queuePosts -> this.getCachedPhotoPosts(newerDraftPosts, queuePosts) }
-                        )
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doOnSuccess { progressHighlightViewLayout.incrementProgress() }
-                        .observeOn(Schedulers.newThread())
-                        .flatMap { draftPosts ->
-                            val tagsForDraftPosts = draftPostHelper.groupPostByTag(draftPosts)
-                            val tagsForQueuePosts = draftPostHelper.groupPostByTag(queuedPosts)
-                            draftPostHelper
-                                    .getTagLastPublishedMap(tagsForDraftPosts.keys)
-                                    .flatMap { lastPublished ->
-                                        Single.just(draftPostHelper.getPhotoShelfPosts(
-                                                tagsForDraftPosts,
-                                                tagsForQueuePosts,
-                                                lastPublished))
-                                    }
+            Single
+                .zip<List<TumblrPost>, List<TumblrPost>, List<TumblrPost>>(
+                    draftPostHelper.getNewerDraftPosts(maxTimestamp).subscribeOn(Schedulers.io()),
+                    draftPostHelper.queuePosts.subscribeOn(Schedulers.io()),
+                    BiFunction<List<TumblrPost>, List<TumblrPost>, List<TumblrPost>>
+                    { newerDraftPosts, queuePosts -> this.getCachedPhotoPosts(newerDraftPosts, queuePosts) }
+                )
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess { progressHighlightViewLayout.incrementProgress() }
+                .observeOn(Schedulers.newThread())
+                .flatMap { draftPosts ->
+                    val tagsForDraftPosts = draftPostHelper.groupPostByTag(draftPosts)
+                    val tagsForQueuePosts = draftPostHelper.groupPostByTag(queuedPosts)
+                    draftPostHelper
+                        .getTagLastPublishedMap(tagsForDraftPosts.keys)
+                        .flatMap { lastPublished ->
+                            Single.just(draftPostHelper.getPhotoShelfPosts(
+                                tagsForDraftPosts,
+                                tagsForQueuePosts,
+                                lastPublished))
                         }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
-                        .doFinally {
-                            onRefreshCompleted()
-                            refreshUI()
-                        }
-                        .subscribe({ posts ->
-                            photoAdapter.addAll(posts)
-                            photoAdapter.sort()
-                        }) { t -> DialogUtils.showErrorDialog(activity, t) }
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
+                .doFinally {
+                    onRefreshCompleted()
+                    refreshUI()
+                }
+                .subscribe({ posts ->
+                    photoAdapter.addAll(posts)
+                    photoAdapter.sort()
+                }) { t -> DialogUtils.showErrorDialog(activity, t) }
         )
     }
 
@@ -236,19 +237,19 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
     private fun showScheduleDialog(item: PhotoShelfPost) {
         SchedulePostDialog(activity,
-                item,
-                findScheduleTime(),
-                object : SchedulePostDialog.OnPostScheduleListener {
-                    override fun onPostScheduled(dialog: SchedulePostDialog) {
-                        postActionExecutor
-                            .schedule(item, dialog.scheduleDateTime)
-                            .doFinally { dialog.dismiss() }
-                            .doOnSubscribe({ d -> compositeDisposable.add(d) })
-                            .subscribe(
-                                { },
-                                { t -> DialogUtils.showErrorDialog(activity, t) })
-                    }
-                }).show()
+            item,
+            findScheduleTime(),
+            object : SchedulePostDialog.OnPostScheduleListener {
+                override fun onPostScheduled(dialog: SchedulePostDialog) {
+                    postActionExecutor
+                        .schedule(item, dialog.scheduleDateTime)
+                        .doFinally { dialog.dismiss() }
+                        .doOnSubscribe({ d -> compositeDisposable.add(d) })
+                        .subscribe(
+                            { },
+                            { t -> DialogUtils.showErrorDialog(activity, t) })
+                }
+            }).show()
     }
 
     private fun findScheduleTime(): Calendar {
@@ -328,17 +329,17 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
     private fun loadSettings() {
         val preferences = PreferenceManager.getDefaultSharedPreferences(activity)
-        photoAdapter.sort(
-                preferences.getInt(PREF_DRAFT_SORT_TYPE, PHOTO_ADAPTER_SORT_LAST_PUBLISHED_TAG),
-                preferences.getBoolean(PREF_DRAFT_SORT_ASCENDING, true))
+        photoAdapter.sortSwitcher.setType(
+            preferences.getInt(PREF_DRAFT_SORT_TYPE, LAST_PUBLISHED_TAG),
+            preferences.getBoolean(PREF_DRAFT_SORT_ASCENDING, true))
     }
 
     private fun saveSettings() {
         PreferenceManager.getDefaultSharedPreferences(activity)
-                .edit()
-                .putInt(PREF_DRAFT_SORT_TYPE, photoAdapter.currentSort)
-                .putBoolean(PREF_DRAFT_SORT_ASCENDING, photoAdapter.currentSortable.isAscending)
-                .apply()
+            .edit()
+            .putInt(PREF_DRAFT_SORT_TYPE, photoAdapter.sortSwitcher.sortable.sortId)
+            .putBoolean(PREF_DRAFT_SORT_ASCENDING, photoAdapter.sortSwitcher.sortable.isAscending)
+            .apply()
     }
 
     companion object {

@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.adapter
+package com.ternaryop.photoshelf.adapter.photo
 
 import android.annotation.SuppressLint
 import android.support.v7.widget.RecyclerView
@@ -11,6 +11,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_CAPTION_TEXT_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
+import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.util.text.fromHtml
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.utils.StringUtils

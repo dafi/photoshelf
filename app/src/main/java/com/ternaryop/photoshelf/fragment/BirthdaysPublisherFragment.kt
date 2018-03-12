@@ -17,8 +17,8 @@ import android.widget.Toast
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
-import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
+import com.ternaryop.photoshelf.adapter.photo.GridViewPhotoAdapter
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
@@ -33,7 +33,9 @@ import java.util.Locale
 private const val PICK_IMAGE_REQUEST_CODE = 100
 private const val LOADER_PREFIX = "mediumThumb"
 
-class BirthdaysPublisherFragment : AbsPhotoShelfFragment(), SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
+class BirthdaysPublisherFragment
+    : AbsPhotoShelfFragment(),
+    SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
 
     private lateinit var gridViewPhotoAdapter: GridViewPhotoAdapter
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
@@ -118,7 +120,9 @@ class BirthdaysPublisherFragment : AbsPhotoShelfFragment(), SwipeRefreshLayout.O
         }
 
         PublishIntentService.startPublishBirthdayIntent(activity, posts, blogName!!, publishAsDraft)
-        Toast.makeText(activity, getString(R.string.sending_cake_title, TextUtils.join(", ", names)), Toast.LENGTH_LONG).show()
+        Toast.makeText(activity,
+            getString(R.string.sending_cake_title, TextUtils.join(", ", names)),
+            Toast.LENGTH_LONG).show()
         mode.finish()
     }
 

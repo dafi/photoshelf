@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.GridView
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.GridViewPhotoAdapter
+import com.ternaryop.photoshelf.adapter.photo.GridViewPhotoAdapter
 
 class BestOfFragment : Fragment() {
 

@@ -9,6 +9,7 @@ import org.joda.time.DateTimeComparator
  * 3. In the future (ie scheduled)
  */
 class LastPublishedTimestampComparator : Comparator<PhotoShelfPost> {
+    @Suppress("ComplexMethod")
     override fun compare(lhs: PhotoShelfPost, rhs: PhotoShelfPost): Int {
         val lhsTimestamp = lhs.lastPublishedTimestamp
         val rhsTimestamp = rhs.lastPublishedTimestamp

@@ -59,6 +59,7 @@ object BirthdayUtils {
         return posts
     }
 
+    @Suppress("LongParameterList")
     fun publishedInAgeRange(context: Context, fromAge: Int, toAge: Int, daysPeriod: Int, postTags: String, tumblrName: String) {
         require(fromAge != 0 && toAge != 0) { "fromAge or toAge can't be both set to 0" }
         var message = if (fromAge == 0) {

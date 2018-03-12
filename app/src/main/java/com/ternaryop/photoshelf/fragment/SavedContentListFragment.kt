@@ -26,10 +26,10 @@ import com.ternaryop.feedly.TokenExpiredException
 import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImagePickerActivity
-import com.ternaryop.photoshelf.adapter.feedly.FEEDLY_SORT_LAST_PUBLISH_TIMESTAMP
-import com.ternaryop.photoshelf.adapter.feedly.FEEDLY_SORT_SAVED_TIMESTAMP
-import com.ternaryop.photoshelf.adapter.feedly.FEEDLY_SORT_TITLE_NAME
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter
+import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.LAST_PUBLISH_TIMESTAMP
+import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.SAVED_TIMESTAMP
+import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.TITLE_NAME
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.utils.JSONUtils
@@ -61,7 +61,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
         setHasOptionsMenu(true)
 
-        photoShelfSwipe = PhotoShelfSwipe(rootView, R.id.swipe_container, SwipeRefreshLayout.OnRefreshListener { refresh(true) })
+        photoShelfSwipe = PhotoShelfSwipe(rootView, R.id.swipe_container,
+            SwipeRefreshLayout.OnRefreshListener { refresh(true) })
         return rootView
     }
 
@@ -78,10 +79,11 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         super.onActivityCreated(savedInstanceState)
         preferences = PreferenceManager.getDefaultSharedPreferences(activity)
 
-        adapter.currentSort = preferences.getInt(PREF_SORT_TYPE, FEEDLY_SORT_TITLE_NAME)
+        adapter.sortSwitcher.setType(preferences.getInt(PREF_SORT_TYPE, TITLE_NAME))
         adapter.clickListener = this
 
-        feedlyManager = FeedlyManager(preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN))!!,
+        feedlyManager = FeedlyManager(
+            preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN))!!,
                 getString(R.string.FEEDLY_USER_ID),
                 getString(R.string.FEEDLY_REFRESH_TOKEN))
 
@@ -142,7 +144,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     private fun fakeCall(): List<FeedlyContent> {
         activity.assets.open("sample/feedly.json").use { stream ->
             val items = JSONUtils.jsonFromInputStream(stream).getJSONArray("items")
-            return (0 until items.length()).mapTo(mutableListOf<FeedlyContent>()) { SimpleFeedlyContent(items.getJSONObject(it)) }
+            return (0 until items.length()).mapTo(mutableListOf<FeedlyContent>()) {
+                SimpleFeedlyContent(items.getJSONObject(it)) }
         }
     }
 
@@ -161,10 +164,10 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
 
-        when (adapter.currentSort) {
-            FEEDLY_SORT_TITLE_NAME -> menu.findItem(R.id.sort_title_name).isChecked = true
-            FEEDLY_SORT_SAVED_TIMESTAMP -> menu.findItem(R.id.sort_saved_time).isChecked = true
-            FEEDLY_SORT_LAST_PUBLISH_TIMESTAMP -> menu.findItem(R.id.sort_published_tag).isChecked = true
+        when (adapter.sortSwitcher.currentSortable.sortId) {
+            TITLE_NAME -> menu.findItem(R.id.sort_title_name).isChecked = true
+            SAVED_TIMESTAMP -> menu.findItem(R.id.sort_saved_time).isChecked = true
+            LAST_PUBLISH_TIMESTAMP -> menu.findItem(R.id.sort_published_tag).isChecked = true
         }
     }
 
@@ -190,7 +193,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             }
             R.id.sort_title_name -> {
                 item.isChecked = isChecked
-                adapter.sortByTitleName()
+                adapter.sortBy(TITLE_NAME)
                 adapter.notifyDataSetChanged()
                 scrollToPosition(0)
                 saveSortSettings()
@@ -198,7 +201,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             }
             R.id.sort_saved_time -> {
                 item.isChecked = isChecked
-                adapter.sortBySavedTimestamp()
+                adapter.sortBy(SAVED_TIMESTAMP)
                 adapter.notifyDataSetChanged()
                 scrollToPosition(0)
                 saveSortSettings()
@@ -206,7 +209,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             }
             R.id.sort_published_tag -> {
                 item.isChecked = isChecked
-                adapter.sortByLastPublishTimestamp()
+                adapter.sortBy(LAST_PUBLISH_TIMESTAMP)
                 adapter.notifyDataSetChanged()
                 scrollToPosition(0)
                 saveSortSettings()
@@ -238,8 +241,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     private fun saveSortSettings() {
         preferences
                 .edit()
-                .putInt(PREF_SORT_TYPE, adapter.currentSort)
-                .putBoolean(PREF_SORT_ASCENDING, adapter.currentSortable.isAscending)
+                .putInt(PREF_SORT_TYPE, adapter.sortSwitcher.currentSortable.sortId)
+                .putBoolean(PREF_SORT_ASCENDING, adapter.sortSwitcher.currentSortable.isAscending)
                 .apply()
     }
 

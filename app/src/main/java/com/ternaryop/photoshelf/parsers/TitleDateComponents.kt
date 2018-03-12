@@ -50,6 +50,7 @@ class TitleDateComponents internal constructor(text: String, swapDayMonth: Boole
      * @param text the string to parse
      * @return the date position on success, -1 otherwise
      */
+    @Suppress("ComplexMethod")
     private fun extractComponentsFromTextualDate(text: String): Int {
         val m = Pattern.compile("""\s?(?:[-|,]|\bon\b)?\s+(\d*)(?:st|ns|rd|th)?\s?\(?(jan\w*|feb\w*|mar\w*|apr\w*|may\w*|jun\w*|jul\w*|aug\w*|sep\w*|oct\w*|nov\w*|dec\w*)(?!.*(?=jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))[^0-9]*([0-9]*)[^0-9]*([0-9]*)\)?.*${'$'}""", Pattern.CASE_INSENSITIVE).matcher(text)
         if (m.find() && m.groupCount() > 1) {

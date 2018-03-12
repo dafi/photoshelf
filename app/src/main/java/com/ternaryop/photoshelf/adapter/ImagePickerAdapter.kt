@@ -11,7 +11,8 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.extractor.ImageInfo
 import com.ternaryop.widget.CheckableImageView
 
-class ImagePickerAdapter(private val context: Context) : RecyclerView.Adapter<ImagePickerAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
+class ImagePickerAdapter(private val context: Context)
+    : AbsBaseAdapter<ImagePickerAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
     private val imageLoader: ImageLoader = ImageLoader(context.applicationContext, "picker", R.drawable.stub)
     private var onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice? = null
     private val items: MutableList<ImageInfo> = mutableListOf()
@@ -82,7 +83,9 @@ class ImagePickerAdapter(private val context: Context) : RecyclerView.Adapter<Im
             showImageAction.tag = adapterPosition
         }
 
-        fun setOnClickMultiChoiceListeners(listener: View.OnClickListener?, longClickListener: View.OnLongClickListener) {
+        fun setOnClickMultiChoiceListeners(
+            listener: View.OnClickListener?,
+            longClickListener: View.OnLongClickListener) {
             if (listener != null) {
                 val position = adapterPosition
                 itemView.setOnClickListener(listener)
@@ -99,16 +102,5 @@ class ImagePickerAdapter(private val context: Context) : RecyclerView.Adapter<Im
 
     fun getSelection(): Selection {
         return selection
-    }
-
-    fun setEmptyView(view: View?) {
-        if (view != null) {
-            registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onChanged() {
-                    super.onChanged()
-                    view.visibility = if (itemCount == 0) View.VISIBLE else View.GONE
-                }
-            })
-        }
     }
 }

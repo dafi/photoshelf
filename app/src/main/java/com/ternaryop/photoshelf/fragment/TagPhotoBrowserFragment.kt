@@ -37,12 +37,12 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = super.onCreateView(inflater, container, savedInstanceState)
+        val rootView = super.onCreateView(inflater, container, savedInstanceState) ?: return null
 
         photoAdapter.setOnPhotoBrowseClick(this)
-        photoAdapter.setEmptyView(rootView?.findViewById(android.R.id.empty))
+        photoAdapter.setEmptyView(rootView.findViewById(android.R.id.empty))
 
-        photoShelfSwipe = PhotoShelfSwipe(rootView!!, R.id.swipe_container)
+        photoShelfSwipe = PhotoShelfSwipe(rootView, R.id.swipe_container)
 
         if (blogName != null && postTag != null && postTag!!.trim { it <= ' ' }.isNotEmpty()) {
             onQueryTextSubmit(postTag!!.trim { it <= ' ' })
@@ -79,9 +79,9 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
         searchView!!.setOnSuggestionListener(this)
         val adapter = TagCursorAdapter(
-                supportActionBar!!.themedContext,
-                R.layout.ab_simple_dropdown_item_1line,
-                blogName!!)
+            supportActionBar!!.themedContext,
+            R.layout.ab_simple_dropdown_item_1line,
+            blogName!!)
         searchView!!.suggestionsAdapter = adapter
         return searchView!!
     }
@@ -99,33 +99,33 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         params["offset"] = offset.toString()
 
         Observable
-                .just(params)
-                .doFinally { isScrolling = false }
-                .flatMap<TumblrPhotoPost> { params1 ->
-                    Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(activity)
-                            .getPhotoPosts(blogName!!, params1))
+            .just(params)
+            .doFinally { isScrolling = false }
+            .flatMap<TumblrPhotoPost> { params1 ->
+                Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(activity)
+                    .getPhotoPosts(blogName!!, params1))
+            }
+            .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
+            .toList()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(photoShelfSwipe!!.applySwipe())
+            .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
+                override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
                 }
-                .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
-                .toList()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(photoShelfSwipe!!.applySwipe())
-                .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
-                    override fun onSubscribe(d: Disposable) {
-                        compositeDisposable.add(d)
-                    }
 
-                    override fun onSuccess(photoList: List<PhotoShelfPost>) {
-                        totalPosts += photoList.size
-                        hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
-                        photoAdapter.addAll(photoList)
-                        refreshUI()
-                    }
+                override fun onSuccess(photoList: List<PhotoShelfPost>) {
+                    totalPosts += photoList.size
+                    hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
+                    photoAdapter.addAll(photoList)
+                    refreshUI()
+                }
 
-                    override fun onError(t: Throwable) {
-                        showSnackbar(makeSnake(recyclerView, t))
-                    }
-                })
+                override fun onError(t: Throwable) {
+                    showSnackbar(makeSnake(recyclerView, t))
+                }
+            })
     }
 
     override fun onQueryTextChange(newText: String): Boolean {

@@ -17,8 +17,8 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
-import com.ternaryop.photoshelf.adapter.PhotoAdapter
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.adapter.photo.PhotoAdapter
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.util.post.OnPostActionListener
 import com.ternaryop.photoshelf.util.post.PostActionExecutor

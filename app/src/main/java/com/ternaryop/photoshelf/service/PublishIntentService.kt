@@ -55,6 +55,7 @@ class PublishIntentService : IntentService("publishIntent") {
         notificationUtil = NotificationUtil(this)
     }
 
+    @Suppress("ComplexMethod")
     override fun onHandleIntent(intent: Intent?) {
         if (intent == null) {
             return
@@ -175,6 +176,7 @@ class PublishIntentService : IntentService("publishIntent") {
         private const val ACTION_BIRTHDAY_PUBLISH = "birthdayPublish"
         private const val ACTION_CHANGE_WALLPAPER = "changeWallpaper"
 
+        @Suppress("LongParameterList")
         fun startActionIntent(context: Context,
                               url: Uri,
                               blogName: String,

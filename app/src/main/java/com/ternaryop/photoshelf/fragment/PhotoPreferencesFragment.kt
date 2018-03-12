@@ -192,6 +192,7 @@ class PhotoPreferencesFragment : PreferenceFragment(), OnSharedPreferenceChangeL
         }
     }
 
+    @Suppress("ComplexMethod")
     override fun onPreferenceTreeClick(preferenceScreen: PreferenceScreen, preference: Preference): Boolean {
         when {
             preference === preferenceTumblrLogin -> {

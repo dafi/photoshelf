@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.adapter
+package com.ternaryop.photoshelf.adapter.photo
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
@@ -10,22 +10,28 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
+import com.ternaryop.photoshelf.adapter.Selection
+import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.widget.CheckableImageView
 import java.util.Locale
 
-class GridViewPhotoAdapter(private val context: Context, prefix: String) : RecyclerView.Adapter<GridViewPhotoAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
+typealias BirthdayPhotoPair = Pair<Birthday, TumblrPhotoPost>
+
+class GridViewPhotoAdapter(private val context: Context, prefix: String)
+    : RecyclerView.Adapter<GridViewPhotoAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
     private val imageLoader: ImageLoader = ImageLoader(context.applicationContext, prefix, R.drawable.stub)
     var isShowButtons: Boolean = false
 
     private var onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice? = null
-    private val items: MutableList<Pair<Birthday, TumblrPhotoPost>> = mutableListOf()
+    private val items: MutableList<BirthdayPhotoPair> = mutableListOf()
 
     internal val selection = SelectionArrayViewHolder(this)
 
-    val selectedItems: List<Pair<Birthday, TumblrPhotoPost>>
+    val selectedItems: List<BirthdayPhotoPair>
         get() = getSelection().selectedPositions.map { getItem(it) }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -51,7 +57,7 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String) : Recyc
         return items.size
     }
 
-    fun getItem(position: Int): Pair<Birthday, TumblrPhotoPost> {
+    fun getItem(position: Int): BirthdayPhotoPair {
         return items[position]
     }
 
@@ -63,7 +69,7 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String) : Recyc
         items.clear()
     }
 
-    fun addAll(posts: List<Pair<Birthday, TumblrPhotoPost>>) {
+    fun addAll(posts: List<BirthdayPhotoPair>) {
         items.addAll(posts)
     }
 
@@ -115,13 +121,13 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String) : Recyc
         val bgAction = vi.findViewById<View>(R.id.bg_actions) as ImageView
         val showImageAction = vi.findViewById<View>(R.id.ic_show_image_action) as ImageView
 
-        fun bindModel(item: Pair<Birthday, TumblrPhotoPost>, imageLoader: ImageLoader, showButtons: Boolean) {
+        fun bindModel(item: BirthdayPhotoPair, imageLoader: ImageLoader, showButtons: Boolean) {
             setVisibility(showButtons)
             updateTitles(item)
             displayImage(item.second, imageLoader)
         }
 
-        private fun updateTitles(item: Pair<Birthday, TumblrPhotoPost>) {
+        private fun updateTitles(item: BirthdayPhotoPair) {
             caption.text = String.format(Locale.US, "%s, %d", item.second.tags[0], item.first.age)
         }
 
@@ -139,7 +145,8 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String) : Recyc
             showImageAction.tag = adapterPosition
         }
 
-        fun setOnClickMultiChoiceListeners(listener: View.OnClickListener?, longClickListener: View.OnLongClickListener) {
+        fun setOnClickMultiChoiceListeners(listener: View.OnClickListener?,
+            longClickListener: View.OnLongClickListener) {
             if (listener != null) {
                 val position = adapterPosition
                 itemView.setOnClickListener(listener)
