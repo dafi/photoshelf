@@ -19,7 +19,8 @@ class AutofitGridLayoutManager : GridLayoutManager {
     }
 
     /* Initially set spanCount to 1, will be changed automatically later. */
-    constructor(context: Context, columnWidth: Int, orientation: Int, reverseLayout: Boolean) : super(context, 1, orientation, reverseLayout) {
+    constructor(context: Context, columnWidth: Int, orientation: Int, reverseLayout: Boolean)
+        : super(context, 1, orientation, reverseLayout) {
         setColumnWidth(checkedColumnWidth(context, columnWidth))
     }
 
@@ -28,7 +29,7 @@ class AutofitGridLayoutManager : GridLayoutManager {
             /* Set default columnWidth value (48dp here). It is better to move this constant
             to static constant on top, but we need context to convert it to dp, so can't really
             do so. */
-            pixel2DP(context, 48)
+            pixel2DP(context, defaultColumnPixelWidth)
         } else {
             columnWidth
         }
@@ -56,6 +57,7 @@ class AutofitGridLayoutManager : GridLayoutManager {
     }
 
     companion object {
+        private const val defaultColumnPixelWidth = 48
 
         fun pixel2DP(context: Context, pixel: Int): Int {
             return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel.toFloat(),

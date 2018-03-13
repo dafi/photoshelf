@@ -95,30 +95,38 @@ class BirthdayCursorAdapter(private val context: Context,
 
     override fun setViewValue(view: View, cursor: Cursor, columnIndex: Int): Boolean {
         if (columnIndex == cursor.getColumnIndexOrThrow(BirthdayDAO.NAME)) {
-            if (pattern.isEmpty()) {
-                (view as TextView).text = cursor.getString(columnIndex)
-            } else {
-                (view as TextView).text = StringUtils.htmlHighlightPattern(
-                        pattern, cursor.getString(columnIndex)).fromHtml()
-            }
+            setViewValueName(view, cursor, columnIndex)
         } else if (columnIndex == cursor.getColumnIndexOrThrow(BirthdayDAO.BIRTH_DATE)) {
-            try {
-                val isoDate = cursor.getString(columnIndex)
-                if (isoDate == null) {
-                    view.visibility = View.GONE
-                } else {
-                    val c = Birthday.fromIsoFormat(isoDate)
-                    val age = DateTimeUtils.yearsBetweenDates(c, Calendar.getInstance()).toString()
-                    val dateStr = dateFormat.format(c.time)
-
-                    view.visibility = View.VISIBLE
-                    (view as TextView).text = context.getString(R.string.name_with_age, dateStr, age)
-                }
-            } catch (e: ParseException) {
-                e.printStackTrace()
-            }
+            setViewValueBirthdate(view, cursor, columnIndex)
         }
         return true
+    }
+
+    private fun setViewValueName(view: View, cursor: Cursor, columnIndex: Int) {
+        if (pattern.isEmpty()) {
+            (view as TextView).text = cursor.getString(columnIndex)
+        } else {
+            (view as TextView).text = StringUtils.htmlHighlightPattern(
+                pattern, cursor.getString(columnIndex)).fromHtml()
+        }
+    }
+
+    private fun setViewValueBirthdate(view: View, cursor: Cursor, columnIndex: Int) {
+        try {
+            val isoDate = cursor.getString(columnIndex)
+            if (isoDate == null) {
+                view.visibility = View.GONE
+            } else {
+                val c = Birthday.fromIsoFormat(isoDate)
+                val age = DateTimeUtils.yearsBetweenDates(c, Calendar.getInstance()).toString()
+                val dateStr = dateFormat.format(c.time)
+
+                view.visibility = View.VISIBLE
+                (view as TextView).text = context.getString(R.string.name_with_age, dateStr, age)
+            }
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        }
     }
 
     fun browsePhotos(activity: Activity, position: Int) {
@@ -136,7 +144,7 @@ class BirthdayCursorAdapter(private val context: Context,
     }
 
     fun findDayPosition(day: Int): Int {
-        if (day < 0 || day > 31) {
+        if (day !in dayRange) {
             return -1
         }
         for (i in 0 until count) {
@@ -157,6 +165,7 @@ class BirthdayCursorAdapter(private val context: Context,
         return showFlags and value != 0
     }
 
+    @Suppress("ComplexMethod")
     fun setShow(value: Int, show: Boolean) {
         // SHOW_ALL is the default value and it can't be hidden
         showFlags = when {
@@ -170,6 +179,8 @@ class BirthdayCursorAdapter(private val context: Context,
     }
 
     companion object {
+        private val dayRange = 0..30
+
         const val SHOW_ALL = 1
         const val SHOW_IGNORED = 1 shl 1
         const val SHOW_IN_SAME_DAY = 1 shl 2

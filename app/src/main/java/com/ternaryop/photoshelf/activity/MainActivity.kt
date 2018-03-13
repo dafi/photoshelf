@@ -214,7 +214,7 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
                         }
 
                         override fun onError(e: Throwable) {
-                            DialogUtils.showErrorDialog(this@MainActivity, e)
+                            DialogUtils.showErrorDialog(applicationContext, e)
                         }
                     })
         } else {

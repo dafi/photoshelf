@@ -206,7 +206,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ startShareImage(destFile) }
-                    ) { throwable -> DialogUtils.showErrorDialog(this@ImageViewerActivity, throwable) }
+                    ) { throwable -> DialogUtils.showErrorDialog(this, throwable) }
         } catch (e: Exception) {
             DialogUtils.showErrorDialog(this, e)
         }

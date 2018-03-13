@@ -1,3 +1,4 @@
+@file:Suppress("MaxLineLength")
 package com.ternaryop.photoshelf.db
 
 import android.content.ContentValues

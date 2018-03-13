@@ -1,3 +1,4 @@
+@file:Suppress("MaxLineLength")
 package com.ternaryop.photoshelf.db
 
 import android.content.ContentValues
@@ -65,7 +66,7 @@ class BirthdayDAO internal constructor(dbHelper: SQLiteOpenHelper) : BulkImportA
         return cursorToBirthdayList(db.query(TABLE_NAME,
                 arrayOf(NAME, BIRTH_DATE, TUMBLR_NAME),
                 String.format("strftime('%%m', %1\$s) = ? and %2\$s = ?", BIRTH_DATE, TUMBLR_NAME),
-                arrayOf(if (month < 10) "0" + month else "" + month, tumblrName), null, null,
+                arrayOf(String.format("%02d", month), tumblrName), null, null,
                 String.format("strftime('%%d', %1\$s), %2\$s", BIRTH_DATE, NAME)))
     }
 
@@ -208,7 +209,7 @@ class BirthdayDAO internal constructor(dbHelper: SQLiteOpenHelper) : BulkImportA
             db.query(TABLE_NAME,
                     COLUMNS,
                     String.format("%1\$s like ? and %2\$s = ? and strftime('%%m', %3\$s) = ?", NAME, TUMBLR_NAME, BIRTH_DATE),
-                    arrayOf("%$name%", tumblrName, if (month < 10) "0" + month else "" + month), null, null,
+                    arrayOf("%$name%", tumblrName, String.format("%02d", month)), null, null,
                     String.format("strftime('%%d', %1\$s), %2\$s", BIRTH_DATE, NAME))
         } else {
             db.query(TABLE_NAME,

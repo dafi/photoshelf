@@ -34,8 +34,7 @@ fun TumblrPhotoPost.browseTagImageBySize(activity: Activity, tag: String = first
     AlertDialog.Builder(activity)
         .setTitle(activity.getString(R.string.menu_header_show_image, tag))
         .setAdapter(arrayAdapter) { _, which ->
-            val item = arrayAdapter.getItem(which) ?: return@setAdapter
-            ImageViewerActivity.startImageViewer(activity, item.url, this)
+            arrayAdapter.getItem(which)?.let { ImageViewerActivity.startImageViewer(activity, it.url, this) }
         }
         .show()
     return true

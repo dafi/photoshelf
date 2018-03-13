@@ -316,9 +316,9 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
     private fun setupActionBar() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        val months = arrayOfNulls<String>(13)
+        val months = arrayOfNulls<String>(MONTH_COUNT + 1)
         months[0] = getString(R.string.all)
-        System.arraycopy(DateFormatSymbols().months, 0, months, 1, 12)
+        System.arraycopy(DateFormatSymbols().months, 0, months, 1, MONTH_COUNT)
         val monthAdapter = ArrayAdapter<String>(
                 supportActionBar?.themedContext,
                 android.R.layout.simple_spinner_item,
@@ -353,6 +353,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
     override fun onNothingSelected(parent: AdapterView<*>) {}
 
     companion object {
+        private const val MONTH_COUNT = 12
         private val MISSING_BIRTHDAYS_ITEMS = intArrayOf(R.id.item_edit)
     }
 }

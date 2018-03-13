@@ -23,6 +23,7 @@ import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.db.Birthday
+import com.ternaryop.photoshelf.db.BirthdayDAO
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.util.log.Log
@@ -106,10 +107,7 @@ class PublishIntentService : IntentService("publishIntent") {
             db.beginTransaction()
 
             try {
-                if (birthdayDAO.getBirthdayByName(name, blogName) != null) {
-                    return@Runnable
-                }
-                val birthday = BirthdayUtils.searchBirthday(applicationContext, name, blogName)
+                val birthday = searchMissingBirthday(birthdayDAO, name, blogName)
                 if (birthday != null) {
                     birthdayDAO.insert(birthday)
                     db.setTransactionSuccessful()
@@ -121,6 +119,13 @@ class PublishIntentService : IntentService("publishIntent") {
                 db.endTransaction()
             }
         }).start()
+    }
+
+    private fun searchMissingBirthday(birthdayDAO: BirthdayDAO, name: String, blogName: String): Birthday? {
+        if (birthdayDAO.getBirthdayByName(name, blogName) != null) {
+            return null
+        }
+        return BirthdayUtils.searchBirthday(applicationContext, name, blogName)
     }
 
     private fun logError(intent: Intent, e: Exception) {
