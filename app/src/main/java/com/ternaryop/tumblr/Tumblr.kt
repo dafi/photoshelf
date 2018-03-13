@@ -5,7 +5,6 @@ import android.net.Uri
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -24,76 +23,6 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
                 throw TumblrException(e)
             }
         }
-
-    fun getApiUrl(tumblrName: String, suffix: String): String {
-        return "$API_PREFIX/blog/$tumblrName.tumblr.com$suffix"
-    }
-
-    fun draftPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: String) {
-        try {
-            createPhotoPost(tumblrName, uri, caption, tags, "draft")
-        } catch (e: JSONException) {
-            throw TumblrException(e)
-        }
-    }
-
-    fun publishPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: String) {
-        try {
-            createPhotoPost(tumblrName, uri, caption, tags, "published")
-        } catch (e: JSONException) {
-            throw TumblrException(e)
-        }
-    }
-
-    @Throws(JSONException::class)
-    fun createPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: String, state: String): Long {
-        val apiUrl = getApiUrl(tumblrName, "/post")
-        val params = HashMap<String, Any>()
-
-        if (uri.scheme == "file") {
-            params["data"] = File(uri.path)
-        } else {
-            params["source"] = uri.toString()
-        }
-        params["state"] = state
-        params["type"] = "photo"
-        params["caption"] = caption
-        params["tags"] = tags
-
-        val json = consumer.jsonFromPost(apiUrl, params)
-        return json.getJSONObject("response").getLong("id")
-    }
-
-    fun draftTextPost(tumblrName: String, title: String, body: String, tags: String) {
-        try {
-            createTextPost(tumblrName, title, body, tags, "draft")
-        } catch (e: JSONException) {
-            throw TumblrException(e)
-        }
-    }
-
-    fun publishTextPost(tumblrName: String, title: String, body: String, tags: String) {
-        try {
-            createTextPost(tumblrName, title, body, tags, "published")
-        } catch (e: JSONException) {
-            throw TumblrException(e)
-        }
-    }
-
-    @Throws(JSONException::class)
-    private fun createTextPost(tumblrName: String, title: String, body: String, tags: String, state: String): Long {
-        val apiUrl = getApiUrl(tumblrName, "/post")
-        val params = HashMap<String, Any>()
-
-        params["state"] = state
-        params["type"] = "text"
-        params["title"] = title
-        params["body"] = body
-        params["tags"] = tags
-
-        val json = consumer.jsonFromPost(apiUrl, params)
-        return json.getJSONObject("response").getLong("id")
-    }
 
     fun getDraftPosts(tumblrName: String, maxTimestamp: Long): List<TumblrPost> {
         val apiUrl = getApiUrl(tumblrName, "/posts/draft")
@@ -132,31 +61,6 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
             val json = consumer.jsonFromGet(apiUrl, params)
             val arr = json.getJSONObject("response").getJSONArray("posts")
             addPostsToList(list, arr)
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-
-        return list
-    }
-
-    fun getPhotoPosts(tumblrName: String, params: Map<String, String>): List<TumblrPhotoPost> {
-        val apiUrl = getApiUrl(tumblrName, "/posts/photo")
-        val list = mutableListOf<TumblrPhotoPost>()
-
-        try {
-            val paramsWithKey = HashMap(params)
-            paramsWithKey["api_key"] = consumer.consumerKey
-
-            val json = consumer.jsonFromGet(apiUrl, paramsWithKey)
-            val arr = json.getJSONObject("response").getJSONArray("posts")
-            val totalPosts = json.getJSONObject("response").optLong("total_posts", -1)
-            for (i in 0 until arr.length()) {
-                val post = build(arr.getJSONObject(i)) as TumblrPhotoPost
-                if (totalPosts != -1L) {
-                    post.totalPosts = totalPosts
-                }
-                list.add(post)
-            }
         } catch (e: Exception) {
             throw TumblrException(e)
         }
@@ -265,39 +169,13 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
         } else "/$type"
     }
 
-    fun getFollowers(tumblrName: String, params: Map<String, String>?, followers: TumblrFollowers?): TumblrFollowers {
-        val apiUrl = getApiUrl(tumblrName, "/followers")
-
-        val modifiedParams = HashMap<String, String>()
-        if (params != null) {
-            modifiedParams.putAll(params)
-        }
-        modifiedParams["base-hostname"] = "$tumblrName.tumblr.com"
-
-        try {
-            val json = consumer.jsonFromGet(apiUrl, modifiedParams)
-            val resultFollowers = followers ?: TumblrFollowers()
-            resultFollowers.add(json.getJSONObject("response"))
-
-            return resultFollowers
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-    }
-
-    fun getFollowers(tumblrName: String, offset: Int, limit: Int, followers: TumblrFollowers): TumblrFollowers {
-        val params = HashMap<String, String>()
-        params["offset"] = Integer.toString(offset)
-        params["limit"] = Integer.toString(limit)
-
-        return getFollowers(tumblrName, params, followers)
-    }
-
     companion object {
         const val MAX_POST_PER_REQUEST = 20
         private const val API_PREFIX = "http://api.tumblr.com/v2"
 
         private var instance: Tumblr? = null
+
+        fun getApiUrl(tumblrName: String, suffix: String): String = "$API_PREFIX/blog/$tumblrName.tumblr.com$suffix"
 
         fun getSharedTumblr(context: Context): Tumblr {
             if (instance == null) {
@@ -306,28 +184,20 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
             return instance!!
         }
 
-        fun isLogged(context: Context): Boolean {
-            return TumblrHttpOAuthConsumer.isLogged(context)
-        }
+        fun isLogged(context: Context): Boolean = TumblrHttpOAuthConsumer.isLogged(context)
 
-        fun login(context: Context) {
-            TumblrHttpOAuthConsumer.loginWithActivity(context)
-        }
+        fun login(context: Context) = TumblrHttpOAuthConsumer.loginWithActivity(context)
 
-        fun logout(context: Context) {
-            TumblrHttpOAuthConsumer.logout(context)
-        }
+        fun logout(context: Context) = TumblrHttpOAuthConsumer.logout(context)
 
         fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
             return TumblrHttpOAuthConsumer.handleOpenURI(context, uri, callback)
         }
 
-        @Throws(JSONException::class)
         fun addPostsToList(list: MutableList<TumblrPost>, arr: JSONArray) {
             (0 until arr.length()).mapTo(list) { build(arr.getJSONObject(it)) }
         }
 
-        @Throws(JSONException::class)
         fun build(json: JSONObject): TumblrPost {
             val type = json.getString("type")
 

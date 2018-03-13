@@ -18,6 +18,7 @@ import com.ternaryop.photoshelf.db.TagCursorAdapter
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.tumblr.getPhotoPosts
 import io.reactivex.Observable
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers

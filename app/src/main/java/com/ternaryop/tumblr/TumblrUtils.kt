@@ -2,6 +2,7 @@ package com.ternaryop.tumblr
 
 import android.content.Context
 import com.ternaryop.photoshelf.db.DBHelper
+import com.ternaryop.tumblr.Tumblr.Companion.getApiUrl
 
 fun Tumblr.queueCount(tumblrName: String): Int {
     // do not use Tumblr.getQueue() because it creates unused TumblrPost

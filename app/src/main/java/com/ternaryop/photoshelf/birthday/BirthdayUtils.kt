@@ -16,9 +16,11 @@ import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.tumblr.draftPhotoPost
+import com.ternaryop.tumblr.draftTextPost
+import com.ternaryop.tumblr.publishPhotoPost
 import com.ternaryop.utils.ImageUtils
 import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Collections
@@ -60,7 +62,8 @@ object BirthdayUtils {
     }
 
     @Suppress("LongParameterList")
-    fun publishedInAgeRange(context: Context, fromAge: Int, toAge: Int, daysPeriod: Int, postTags: String, tumblrName: String) {
+    fun publishedInAgeRange(context: Context,
+        fromAge: Int, toAge: Int, daysPeriod: Int, postTags: String, tumblrName: String) {
         require(fromAge != 0 && toAge != 0) { "fromAge or toAge can't be both set to 0" }
         var message = if (fromAge == 0) {
             context.getString(R.string.week_selection_under_age, toAge)
@@ -137,8 +140,8 @@ object BirthdayUtils {
         }
     }
 
-    @Throws(IOException::class)
-    fun createBirthdayPost(context: Context, cakeImage: Bitmap, post: TumblrPhotoPost, blogName: String, saveAsDraft: Boolean) {
+    fun createBirthdayPost(context: Context,
+        cakeImage: Bitmap, post: TumblrPhotoPost, blogName: String, saveAsDraft: Boolean) {
         val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
         val image = ImageUtils.readImageFromUrl(imageUrl)
 
@@ -152,7 +155,8 @@ object BirthdayUtils {
         canvas.drawBitmap(cakeImage, ((image.width - cakeImage.width) / 2).toFloat(), 0f, null)
         canvas.drawBitmap(image, 0f, (cakeImage.height + CAKE_IMAGE_SEPARATOR_HEIGHT).toFloat(), null)
         val name = post.tags[0]
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "birth-$name.png")
+        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            "birth-$name.png")
         ImageUtils.saveImageAsPNG(destBmp, file)
         if (saveAsDraft) {
             Tumblr.getSharedTumblr(context).draftPhotoPost(blogName,

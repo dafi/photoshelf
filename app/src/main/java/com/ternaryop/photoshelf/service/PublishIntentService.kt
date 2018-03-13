@@ -31,6 +31,8 @@ import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.draftPhotoPost
+import com.ternaryop.tumblr.publishPhotoPost
 import com.ternaryop.utils.ImageUtils
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -90,7 +92,8 @@ class PublishIntentService : IntentService("publishIntent") {
         try {
             val wpm = WallpaperManager.getInstance(this)
             val metrics = resources.displayMetrics
-            val bitmap = ImageUtils.getScaledBitmap(ImageUtils.readImageFromUrl(imageUrl.toString()), metrics.widthPixels, metrics.heightPixels, true)
+            val bitmap = ImageUtils.getScaledBitmap(ImageUtils.readImageFromUrl(imageUrl.toString()),
+                metrics.widthPixels, metrics.heightPixels, true)
             wpm.setBitmap(bitmap)
             showToast(R.string.wallpaper_changed_title)
         } catch (e: Exception) {
@@ -133,8 +136,9 @@ class PublishIntentService : IntentService("publishIntent") {
         val postTags = intent.getStringExtra(EXTRA_POST_TAGS)
 
         try {
-            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "publish_errors.txt")
-            Log.error(e, file, " Error on url " + url, " tags " + postTags)
+            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "publish_errors.txt")
+            Log.error(e, file, " Error on url $url", " tags $postTags")
         } catch (ignored: Exception) {
         }
     }

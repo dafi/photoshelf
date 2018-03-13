@@ -84,8 +84,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
         feedlyManager = FeedlyManager(
             preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN))!!,
-                getString(R.string.FEEDLY_USER_ID),
-                getString(R.string.FEEDLY_REFRESH_TOKEN))
+            getString(R.string.FEEDLY_USER_ID),
+            getString(R.string.FEEDLY_REFRESH_TOKEN))
 
         refresh(false)
     }
@@ -96,13 +96,13 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             return
         }
         Single
-                .fromCallable(callableFeedlyReader(deleteItemsIfAllowed))
-                .compose(photoShelfSwipe.applySwipe())
-                .subscribe(object : FeedlyObserver<List<FeedlyContent>>() {
-                    override fun onSuccess(posts: List<FeedlyContent>) {
-                        setItems(posts)
-                    }
-                })
+            .fromCallable(callableFeedlyReader(deleteItemsIfAllowed))
+            .compose(photoShelfSwipe.applySwipe())
+            .subscribe(object : FeedlyObserver<List<FeedlyContent>>() {
+                override fun onSuccess(posts: List<FeedlyContent>) {
+                    setItems(posts)
+                }
+            })
     }
 
     private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Callable<List<FeedlyContent>> {
@@ -126,7 +126,6 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         refreshUI()
     }
 
-    @Throws(Exception::class)
     private fun deleteItems(deleteItemsIfAllowed: Boolean) {
         if (deleteItemsIfAllowed && deleteOnRefresh()) {
             val idList = adapter.uncheckedItems.map { it.id }
@@ -134,26 +133,27 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         }
     }
 
-    @Throws(Exception::class)
     private fun readSavedContents(): List<FeedlyContent> {
         val ms = System.currentTimeMillis() - newerThanHours * ONE_HOUR_MILLIS
         return feedlyManager.getStreamContents(feedlyManager.globalSavedTag, maxFetchItemCount, ms, null)
     }
 
-    @Throws(Exception::class)
     private fun fakeCall(): List<FeedlyContent> {
         activity.assets.open("sample/feedly.json").use { stream ->
             val items = JSONUtils.jsonFromInputStream(stream).getJSONArray("items")
             return (0 until items.length()).mapTo(mutableListOf<FeedlyContent>()) {
-                SimpleFeedlyContent(items.getJSONObject(it)) }
+                SimpleFeedlyContent(items.getJSONObject(it))
+            }
         }
     }
 
     override fun refreshUI() {
-        supportActionBar!!.subtitle = resources.getQuantityString(
+        supportActionBar?.apply {
+            subtitle = resources.getQuantityString(
                 R.plurals.posts_count,
                 adapter.itemCount,
                 adapter.itemCount)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -221,29 +221,29 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun refreshToken() {
         Single
-                .fromCallable {
-                    feedlyManager.refreshAccessToken(
-                            getString(R.string.FEEDLY_CLIENT_ID),
-                            getString(R.string.FEEDLY_CLIENT_SECRET))
+            .fromCallable {
+                feedlyManager.refreshAccessToken(
+                    getString(R.string.FEEDLY_CLIENT_ID),
+                    getString(R.string.FEEDLY_CLIENT_SECRET))
+            }
+            .compose(photoShelfSwipe.applySwipe())
+            .subscribe(object : FeedlyObserver<String>() {
+                override fun onSuccess(accessToken: String) {
+                    preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply()
+                    feedlyManager.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken)
+                    // hide swipe otherwise refresh() exists immediately
+                    photoShelfSwipe.swipe.setRefreshingAndWaintingResult(false)
+                    refresh(true)
                 }
-                .compose(photoShelfSwipe.applySwipe())
-                .subscribe(object : FeedlyObserver<String>() {
-                    override fun onSuccess(accessToken: String) {
-                        preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply()
-                        feedlyManager.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken)
-                        // hide swipe otherwise refresh() exists immediately
-                        photoShelfSwipe.swipe.setRefreshingAndWaintingResult(false)
-                        refresh(true)
-                    }
-                })
+            })
     }
 
     private fun saveSortSettings() {
         preferences
-                .edit()
-                .putInt(PREF_SORT_TYPE, adapter.sortSwitcher.currentSortable.sortId)
-                .putBoolean(PREF_SORT_ASCENDING, adapter.sortSwitcher.currentSortable.isAscending)
-                .apply()
+            .edit()
+            .putInt(PREF_SORT_TYPE, adapter.sortSwitcher.currentSortable.sortId)
+            .putBoolean(PREF_SORT_ASCENDING, adapter.sortSwitcher.currentSortable.isAscending)
+            .apply()
     }
 
     private fun scrollToPosition(position: Int) {
@@ -253,10 +253,10 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun showAPIUsage() {
         AlertDialog.Builder(activity)
-                .setTitle(R.string.api_usage)
-                .setMessage(getString(R.string.feedly_api_calls_count, FeedlyRateLimit.apiCallsCount) + "\n"
-                        + getString(R.string.feedly_api_reset_limit, FeedlyRateLimit.apiResetLimitAsString))
-                .show()
+            .setTitle(R.string.api_usage)
+            .setMessage(getString(R.string.feedly_api_calls_count, FeedlyRateLimit.apiCallsCount) + "\n"
+                + getString(R.string.feedly_api_reset_limit, FeedlyRateLimit.apiResetLimitAsString))
+            .show()
     }
 
     @SuppressLint("InflateParams") // for dialogs passing null for root is valid, ignore the warning
@@ -264,11 +264,11 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         val settingsView = activity.layoutInflater.inflate(R.layout.saved_content_settings, null)
         fillSettingsView(settingsView)
         AlertDialog.Builder(activity)
-                .setTitle(R.string.settings)
-                .setView(settingsView)
-                .setPositiveButton(android.R.string.ok) { _, _ -> updateSettings(settingsView) }
-                .setNegativeButton(R.string.cancel_title) { dialog, _ -> dialog.cancel() }
-                .show()
+            .setTitle(R.string.settings)
+            .setView(settingsView)
+            .setPositiveButton(android.R.string.ok) { _, _ -> updateSettings(settingsView) }
+            .setNegativeButton(R.string.cancel_title) { dialog, _ -> dialog.cancel() }
+            .show()
     }
 
     private fun updateSettings(view: View) {
@@ -276,10 +276,10 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         val newerThanHours = view.findViewById<EditText>(R.id.newer_than_hours)
         val deleteOnRefresh = view.findViewById<CheckBox>(R.id.delete_on_refresh)
         preferences.edit()
-                .putInt(PREF_MAX_FETCH_ITEMS_COUNT, Integer.parseInt(fetch.text.toString()))
-                .putInt(PREF_NEWER_THAN_HOURS, Integer.parseInt(newerThanHours.text.toString()))
-                .putBoolean(PREF_DELETE_ON_REFRESH, deleteOnRefresh.isChecked)
-                .apply()
+            .putInt(PREF_MAX_FETCH_ITEMS_COUNT, Integer.parseInt(fetch.text.toString()))
+            .putInt(PREF_NEWER_THAN_HOURS, Integer.parseInt(newerThanHours.text.toString()))
+            .putBoolean(PREF_DELETE_ON_REFRESH, deleteOnRefresh.isChecked)
+            .apply()
     }
 
     private fun fillSettingsView(view: View) {
@@ -301,12 +301,12 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             return
         }
         Completable
-                .fromAction {
-                    feedlyManager.markSaved(listOf(adapter.getItem(position).id), checked)
-                }
-                .compose(photoShelfSwipe.applyCompletableSwipe<Void>())
-                .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
+            .fromAction {
+                feedlyManager.markSaved(listOf(adapter.getItem(position).id), checked)
+            }
+            .compose(photoShelfSwipe.applyCompletableSwipe<Void>())
+            .doOnSubscribe { d -> compositeDisposable.add(d) }
+            .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
     }
 
     private fun deleteOnRefresh(): Boolean {
@@ -317,8 +317,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (t is TokenExpiredException) {
             val snackbar = Snackbar.make(recyclerView, R.string.token_expired, Snackbar.LENGTH_INDEFINITE)
             snackbar
-                    .setActionTextColor(ContextCompat.getColor(activity, R.color.snack_error_color))
-                    .setAction(resources.getString(R.string.refresh).toLowerCase()) { refreshToken() }
+                .setActionTextColor(ContextCompat.getColor(activity, R.color.snack_error_color))
+                .setAction(resources.getString(R.string.refresh).toLowerCase()) { refreshToken() }
             return snackbar
         }
         return super.makeSnake(view, t)

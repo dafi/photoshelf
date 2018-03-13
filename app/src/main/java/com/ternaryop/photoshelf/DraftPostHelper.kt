@@ -7,6 +7,7 @@ import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.getPhotoPosts
 import com.ternaryop.tumblr.queueAll
 import io.reactivex.Maybe
 import io.reactivex.Observable

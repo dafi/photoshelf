@@ -14,6 +14,7 @@ import com.ternaryop.photoshelf.importer.CSVIterator.CSVBuilder
 import com.ternaryop.photoshelf.importer.PostRetriever
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.getFollowers
 import com.ternaryop.utils.IOUtils
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
@@ -279,9 +280,7 @@ class Importer constructor(private val context: Context, private val dropboxMana
         // do not overwrite the entire file but append to the existing one
         PrintWriter(BufferedWriter(FileWriter(exportPath, true))).use { pw ->
             val time = ISO_8601_DATE.format(Calendar.getInstance().timeInMillis)
-            val totalUsers = Tumblr.getSharedTumblr(context)
-                    .getFollowers(blogName, null, null)
-                    .totalUsers
+            val totalUsers = Tumblr.getSharedTumblr(context).getFollowers(blogName).totalUsers
             pw.println("$time;$blogName;$totalUsers")
             pw.flush()
             copyFileToDropbox(exportPath)
