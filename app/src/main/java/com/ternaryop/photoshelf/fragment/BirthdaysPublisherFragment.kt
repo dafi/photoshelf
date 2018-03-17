@@ -45,7 +45,7 @@ class BirthdaysPublisherFragment
         val rootView = inflater.inflate(R.layout.fragment_birthdays_publisher, container, false)
 
         gridViewPhotoAdapter = GridViewPhotoAdapter(activity, LOADER_PREFIX)
-        gridViewPhotoAdapter.setOnPhotoBrowseClick(this)
+        gridViewPhotoAdapter.onPhotoBrowseClick = this
 
         val layout = AutofitGridLayoutManager(activity, resources.getDimension(R.dimen.grid_layout_thumb_width).toInt())
         val gridView = rootView.findViewById<RecyclerView>(R.id.gridview)
@@ -140,11 +140,11 @@ class BirthdaysPublisherFragment
         if (actionMode == null) {
             actionMode = activity.startActionMode(this)
         }
-        gridViewPhotoAdapter.getSelection().toggle(position)
+        gridViewPhotoAdapter.selection.toggle(position)
     }
 
     private fun updateSelection(position: Int) {
-        val selection = gridViewPhotoAdapter.getSelection()
+        val selection = gridViewPhotoAdapter.selection
         selection.toggle(position)
         if (selection.itemCount == 0) {
             actionMode?.finish()
@@ -154,7 +154,7 @@ class BirthdaysPublisherFragment
     }
 
     private fun updateSubTitle() {
-        val selection = gridViewPhotoAdapter.getSelection()
+        val selection = gridViewPhotoAdapter.selection
         val selectionCount = selection.itemCount
         actionMode?.subtitle = resources.getQuantityString(
                 R.plurals.selected_items_total,
@@ -200,7 +200,7 @@ class BirthdaysPublisherFragment
     override fun onDestroyActionMode(mode: ActionMode) {
         this.actionMode = null
         gridViewPhotoAdapter.isShowButtons = false
-        gridViewPhotoAdapter.getSelection().clear()
+        gridViewPhotoAdapter.selection.clear()
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {

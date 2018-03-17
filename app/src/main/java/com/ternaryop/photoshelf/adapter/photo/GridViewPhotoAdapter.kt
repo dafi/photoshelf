@@ -11,7 +11,6 @@ import android.widget.TextView
 import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
-import com.ternaryop.photoshelf.adapter.Selection
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.tumblr.TumblrAltSize
@@ -24,15 +23,15 @@ typealias BirthdayPhotoPair = Pair<Birthday, TumblrPhotoPost>
 class GridViewPhotoAdapter(private val context: Context, prefix: String)
     : RecyclerView.Adapter<GridViewPhotoAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
     private val imageLoader: ImageLoader = ImageLoader(context.applicationContext, prefix, R.drawable.stub)
-    var isShowButtons: Boolean = false
-
-    private var onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice? = null
     private val items: MutableList<BirthdayPhotoPair> = mutableListOf()
 
-    internal val selection = SelectionArrayViewHolder(this)
+    var isShowButtons: Boolean = false
 
+    var onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice? = null
+
+    val selection = SelectionArrayViewHolder(this)
     val selectedItems: List<BirthdayPhotoPair>
-        get() = getSelection().selectedPositions.map { getItem(it) }
+        get() = selection.selectedPositions.map { getItem(it) }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.gridview_photo_item, parent, false))
@@ -48,30 +47,20 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
             holder.setOnClickListeners(listener)
         }
         holder.setVisibility(isShowButtons)
-        holder.thumbImage.isChecked = selection.isSelected(position)
+        holder.isChecked = selection.isSelected(position)
 
         holder.setOnClickMultiChoiceListeners(listener, this)
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount(): Int = items.size
 
-    fun getItem(position: Int): BirthdayPhotoPair {
-        return items[position]
-    }
+    fun getItem(position: Int): BirthdayPhotoPair = items[position]
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun getItemId(position: Int): Long = position.toLong()
 
-    fun clear() {
-        items.clear()
-    }
+    fun clear() = items.clear()
 
-    fun addAll(posts: List<BirthdayPhotoPair>) {
-        items.addAll(posts)
-    }
+    fun addAll(posts: List<BirthdayPhotoPair>) = items.addAll(posts)
 
     fun updatePostByTag(newPost: TumblrPhotoPost, notifyChange: Boolean) {
         val name = newPost.tags[0]
@@ -102,17 +91,7 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
         return true
     }
 
-    fun setOnPhotoBrowseClick(onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice) {
-        this.onPhotoBrowseClick = onPhotoBrowseClick
-    }
-
-    fun getSelection(): Selection {
-        return selection
-    }
-
-    fun selectAll() {
-        getSelection().setSelectedRange(0, itemCount, true)
-    }
+    fun selectAll() = selection.setSelectedRange(0, itemCount, true)
 
     @Suppress("MemberVisibilityCanBePrivate")
     class ViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
@@ -120,6 +99,7 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
         val thumbImage = vi.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
         val bgAction = vi.findViewById<View>(R.id.bg_actions) as ImageView
         val showImageAction = vi.findViewById<View>(R.id.ic_show_image_action) as ImageView
+        var isChecked = false
 
         fun bindModel(item: BirthdayPhotoPair, imageLoader: ImageLoader, showButtons: Boolean) {
             setVisibility(showButtons)
@@ -137,7 +117,10 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
         }
 
         private fun displayImage(post: TumblrPhotoPost, imageLoader: ImageLoader) {
-            imageLoader.displayImage(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url, thumbImage)
+            imageLoader.displayDrawable(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url, {
+                thumbImage.setImageDrawable(it)
+                thumbImage.isChecked = isChecked
+            }, false)
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {
