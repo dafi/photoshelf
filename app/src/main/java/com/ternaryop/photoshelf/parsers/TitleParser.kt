@@ -4,7 +4,8 @@ import com.ternaryop.utils.StringUtils
 
 class TitleParser private constructor(private val config: TitleParserConfig) {
 
-    fun parseTitle(sourceTitle: String, swapDayMonth: Boolean = false, checkDateInTheFuture: Boolean = true): TitleData {
+    fun parseTitle(sourceTitle: String,
+        swapDayMonth: Boolean = false, checkDateInTheFuture: Boolean = true): TitleData {
         var title = sourceTitle
         val titleData = TitleData(config)
 
@@ -14,7 +15,7 @@ class TitleParser private constructor(private val config: TitleParserConfig) {
 
         title = setWho(title, titleData)
 
-        val dateComponents = TitleDateComponents(title, swapDayMonth, checkDateInTheFuture)
+        val dateComponents = TitleDateComponents.extract(title, swapDayMonth, checkDateInTheFuture)
         setLocationAndCity(titleData, parseLocation(title, dateComponents))
 
         titleData.eventDate = dateComponents.format()
@@ -29,7 +30,8 @@ class TitleParser private constructor(private val config: TitleParserConfig) {
         if (m.find() && m.groupCount() > 1) {
             val who = m.group(1)
             titleData.setWhoFromString(StringUtils.capitalize(who))
-            // remove the 'who' chunk and any not alphabetic character (eg the dash used to separated "who" from location)
+            // remove the 'who' chunk and any not alphabetic character
+            // (eg the dash used to separated "who" from location)
             title = if (Character.isLetter(m.group(2)[0])) {
                 title.substring(who.length)
             } else {
@@ -39,7 +41,7 @@ class TitleParser private constructor(private val config: TitleParserConfig) {
         return title
     }
 
-    private fun parseLocation(title: String, dateComponents: TitleDateComponents): String {
+    private fun parseLocation(title: String, dateComponents: DateComponents): String {
         return if (dateComponents.datePosition < 0) {
             // no date found so use all substring as location
             title
