@@ -5,15 +5,13 @@ import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 import java.net.URLConnection
 
 /**
  * Convert a OAuthRequest POST into a multi-part OAuthRequest
  * @author jc
  */
-class MultipartConverter @Throws(IOException::class)
-constructor(private val originalRequest: OAuthRequest, bodyMap: Map<String, *>) {
+class MultipartConverter constructor(private val originalRequest: OAuthRequest, bodyMap: Map<String, *>) {
 
     private val boundary = java.lang.Long.toHexString(System.nanoTime())
 
@@ -60,7 +58,6 @@ constructor(private val originalRequest: OAuthRequest, bodyMap: Map<String, *>) 
         bodyLength += builder.toString().toByteArray().size
     }
 
-    @Throws(IOException::class)
     private fun computeBody(bodyMap: Map<String, *>) {
         responsePieces = ArrayList()
 
@@ -70,22 +67,13 @@ constructor(private val originalRequest: OAuthRequest, bodyMap: Map<String, *>) 
             val o = bodyMap[key] ?: continue
             if (o is File) {
                 val mime = URLConnection.guessContentTypeFromName(o.name)
-
-                var dis: DataInputStream? = null
-                val result = ByteArray(o.length().toInt())
-
-                try {
-                    dis = DataInputStream(BufferedInputStream(FileInputStream(o)))
-                    dis.readFully(result)
-                } finally {
-                    if (dis != null) try {
-                        dis.close()
-                    } catch (ignored: Exception) {
-                    }
-                }
+                val result = readFile(o)
 
                 message.append("--").append(boundary).append("\r\n")
-                message.append("Content-Disposition: form-data; name=\"").append(key).append("\"; filename=\"").append(o.name).append("\"\r\n")
+                message.append("Content-Disposition: form-data; name=\"")
+                    .append(key)
+                    .append("\"; filename=\"")
+                    .append(o.name).append("\"\r\n")
                 message.append("Content-Type: ").append(mime).append("\r\n\r\n")
                 this.addResponsePiece(message)
                 this.addResponsePiece(result)
@@ -99,5 +87,12 @@ constructor(private val originalRequest: OAuthRequest, bodyMap: Map<String, *>) 
 
         message.append("--").append(boundary).append("--\r\n")
         this.addResponsePiece(message)
+    }
+
+    private fun readFile(o: File): ByteArray {
+        val result = ByteArray(o.length().toInt())
+
+        DataInputStream(BufferedInputStream(FileInputStream(o))).use { it.readFully(result) }
+        return result
     }
 }

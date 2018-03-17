@@ -33,14 +33,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
             var arr = json.getJSONObject("response").getJSONArray("posts")
 
             val params = HashMap<String, String>(1)
-            while (arr.length() > 0) {
-                for (i in 0 until arr.length()) {
-                    val post = build(arr.getJSONObject(i))
-                    if (post.timestamp <= maxTimestamp) {
-                        return list
-                    }
-                    list.add(post)
-                }
+            while (arr.length() > 0 && addNewerPosts(list, arr, maxTimestamp)) {
                 val beforeId = arr.getJSONObject(arr.length() - 1).getLong("id")
                 params["before_id"] = beforeId.toString() + ""
 
@@ -51,6 +44,21 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
         }
 
         return list
+    }
+
+    /**
+     * Add to list the posts with timestamp greater than maxTimestamp (ie newer posts)
+     * @return true if all posts in jsonPosts are newer, false otherwise
+     */
+    private fun addNewerPosts(list: MutableList<TumblrPost>, jsonPosts: JSONArray, maxTimestamp: Long): Boolean {
+        for (i in 0 until jsonPosts.length()) {
+            val post = build(jsonPosts.getJSONObject(i))
+            if (post.timestamp <= maxTimestamp) {
+                return false
+            }
+            list.add(post)
+        }
+        return true
     }
 
     fun getQueue(tumblrName: String, params: Map<String, String>): List<TumblrPost> {
