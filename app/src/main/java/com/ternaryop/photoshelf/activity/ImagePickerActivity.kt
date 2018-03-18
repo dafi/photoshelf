@@ -1,10 +1,9 @@
 package com.ternaryop.photoshelf.activity
 
-import android.app.Fragment
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-
+import android.support.v4.app.Fragment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment
 

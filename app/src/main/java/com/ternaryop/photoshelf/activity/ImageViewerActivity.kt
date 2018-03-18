@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf.activity
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.DownloadManager
-import android.app.Fragment
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -12,6 +11,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.app.Fragment
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View

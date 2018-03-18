@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.fragment
 
 import android.app.Activity
+import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
 import android.support.v7.widget.SearchView
@@ -52,9 +53,9 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         return rootView
     }
 
-    override fun onAttach(activity: Activity) {
-        super.onAttach(activity)
-        val bundle = activity.intent.extras
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        val bundle = (context as Activity?)?.intent?.extras
         if (bundle == null) {
             allowSearch = true
         } else {
@@ -103,7 +104,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
             .just(params)
             .doFinally { isScrolling = false }
             .flatMap<TumblrPhotoPost> { params1 ->
-                Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(activity)
+                Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(context!!)
                     .getPhotoPosts(blogName!!, params1))
             }
             .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }

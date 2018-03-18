@@ -12,7 +12,6 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
 class PublishedPostsListFragment : ScheduledListFragment() {
-
     override val actionModeMenuId: Int
         get() = R.menu.published_context
 
@@ -29,32 +28,25 @@ class PublishedPostsListFragment : ScheduledListFragment() {
         params["notes_info"] = "true"
 
         Observable
-                .just(params)
-                .doFinally { isScrolling = false }
-                .flatMap { params1 ->
-                    Observable.fromIterable(Tumblr.getSharedTumblr(activity)
-                            .getPublicPosts(blogName!!, params1))
+            .just(params)
+            .doFinally { isScrolling = false }
+            .flatMap { Observable.fromIterable(Tumblr.getSharedTumblr(context!!).getPublicPosts(blogName!!, it)) }
+            .map { PhotoShelfPost(it as TumblrPhotoPost, it.timestamp * SECOND_IN_MILLIS) }
+            .toList()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(photoShelfSwipe.applySwipe())
+            .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
+                override fun onSubscribe(d: Disposable) { compositeDisposable.add(d) }
+
+                override fun onSuccess(photoList: List<PhotoShelfPost>) {
+                    totalPosts += photoList.size
+                    hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
+                    photoAdapter.addAll(photoList)
+                    refreshUI()
                 }
-                .map { tumblrPost -> PhotoShelfPost(tumblrPost as TumblrPhotoPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
-                .toList()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(photoShelfSwipe.applySwipe())
-                .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
-                    override fun onSubscribe(d: Disposable) {
-                        compositeDisposable.add(d)
-                    }
 
-                    override fun onSuccess(photoList: List<PhotoShelfPost>) {
-                        totalPosts += photoList.size
-                        hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
-                        photoAdapter.addAll(photoList)
-                        refreshUI()
-                    }
-
-                    override fun onError(t: Throwable) {
-                        showSnackbar(makeSnake(recyclerView, t))
-                    }
-                })
+                override fun onError(t: Throwable) { showSnackbar(makeSnake(recyclerView, t)) }
+            })
     }
 }

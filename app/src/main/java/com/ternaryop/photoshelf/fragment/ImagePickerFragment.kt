@@ -50,7 +50,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
             }
             // Search on activity intent
             // Get intent, action and MIME type
-            val intent = activity.intent
+            val intent = activity!!.intent
             val action = intent.action
             val type = intent.type
             val uri = intent.data
@@ -73,20 +73,21 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_image_picker, container, false)
-        activity.setTitle(R.string.image_picker_activity_title)
+        activity!!.setTitle(R.string.image_picker_activity_title)
 
         progressHighlightViewLayout = rootView.findViewById(android.R.id.empty)
-        progressHighlightViewLayout.animation = AnimationUtils.loadAnimation(activity, R.anim.fade_loop)
+        progressHighlightViewLayout.animation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
 
-        imagePickerAdapter = ImagePickerAdapter(activity)
+        imagePickerAdapter = ImagePickerAdapter(context!!)
         imagePickerAdapter.setOnPhotoBrowseClick(this)
         imagePickerAdapter.setEmptyView(progressHighlightViewLayout)
-        imageUrlRetriever = ImageUrlRetriever(activity, rootView.findViewById(R.id.progressbar))
+        imageUrlRetriever = ImageUrlRetriever(context!!, rootView.findViewById(R.id.progressbar))
 
         gridView = rootView.findViewById(R.id.gridview)
         gridView.adapter = imagePickerAdapter
         gridView.setHasFixedSize(true)
-        gridView.layoutManager = AutofitGridLayoutManager(activity, resources.getDimension(R.dimen.image_picker_grid_width).toInt())
+        gridView.layoutManager = AutofitGridLayoutManager(context!!,
+            resources.getDimension(R.dimen.image_picker_grid_width).toInt())
 
         setHasOptionsMenu(true)
 
@@ -113,7 +114,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         val url = "(https?:.*)".toRegex().find(textWithUrl)?.value
 
         if (url == null) {
-            AlertDialog.Builder(activity)
+            AlertDialog.Builder(context!!)
                 .setTitle(R.string.url_not_found)
                 .setMessage(getString(R.string.url_not_found_description, textWithUrl))
                 .show()
@@ -126,7 +127,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         imageUrlRetriever.readImageGallery(url)
                 .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
                 .subscribe({ this.onGalleryRetrieved(it) }
-                ) { throwable -> DialogUtils.showErrorDialog(activity, throwable) }
+                ) { throwable -> DialogUtils.showErrorDialog(context!!, throwable) }
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -173,12 +174,13 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                 .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
                 .toList()
                 .subscribe({ this.onImagesRetrieved(it) }
-                ) { throwable -> DialogUtils.showSimpleMessageDialog(activity, R.string.url_not_found, throwable.localizedMessage) }
+                ) { throwable ->
+                    DialogUtils.showSimpleMessageDialog(context!!, R.string.url_not_found, throwable.localizedMessage) }
     }
 
     private fun onImagesRetrieved(imageUriList: List<Uri>) {
         try {
-            val titleData = TitleParser.instance(AndroidTitleParserConfig(activity)).parseTitle(parsableTitle)
+            val titleData = TitleParser.instance(AndroidTitleParserConfig(context!!)).parseTitle(parsableTitle)
             val args = Bundle()
 
             args.putParcelableArrayList(TumblrPostDialog.ARG_IMAGE_URLS, ArrayList(imageUriList))
@@ -189,7 +191,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
             TumblrPostDialog.newInstance(args, null).show(fragmentManager, "dialog")
         } catch (e: Exception) {
-            AlertDialog.Builder(activity)
+            AlertDialog.Builder(context!!)
                     .setTitle(R.string.parsing_error)
                     .setMessage(e.localizedMessage)
                     .show()
@@ -202,7 +204,8 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         parsableTitle = buildParsableTitle(imageGallery)
         showDetails(Snackbar.LENGTH_LONG)
         val imageInfoList = imageGallery.imageInfoList
-        supportActionBar?.subtitle = resources.getQuantityString(R.plurals.image_found, imageInfoList.size, imageInfoList.size)
+        supportActionBar?.subtitle = resources.getQuantityString(R.plurals.image_found,
+            imageInfoList.size, imageInfoList.size)
         imagePickerAdapter.addAll(imageInfoList)
     }
 
@@ -219,11 +222,12 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                         // cache retrieved value
                         val url = uri.toString()
                         imageInfo.imageUrl = url
-                        ImageViewerActivity.startImageViewer(activity, url)
+                        ImageViewerActivity.startImageViewer(context!!, url)
                     }
-                    ) { throwable -> DialogUtils.showSimpleMessageDialog(activity, R.string.url_not_found, throwable.localizedMessage) }
+                    ) { throwable -> DialogUtils.showSimpleMessageDialog(context!!,
+                        R.string.url_not_found, throwable.localizedMessage) }
         } else {
-            ImageViewerActivity.startImageViewer(activity, imageUrl)
+            ImageViewerActivity.startImageViewer(context!!, imageUrl)
         }
     }
 
@@ -239,7 +243,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     override fun onItemLongClick(position: Int) {
         if (actionMode == null) {
-            actionMode = activity.startActionMode(this)
+            actionMode = activity!!.startActionMode(this)
         }
         updateSelection(position)
     }
@@ -277,9 +281,9 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private fun showDetails(duration: Int) {
         val snackbar = Snackbar.make(gridView, detailsText!!, duration)
         val sbView = snackbar.view
-        sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_bg))
+        sbView.setBackgroundColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_bg))
         val textView = sbView.findViewById<TextView>(android.support.design.R.id.snackbar_text)
-        textView.setTextColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_text))
+        textView.setTextColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_text))
         textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()
     }

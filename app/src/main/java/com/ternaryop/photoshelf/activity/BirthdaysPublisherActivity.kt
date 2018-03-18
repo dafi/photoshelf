@@ -1,6 +1,6 @@
 package com.ternaryop.photoshelf.activity
 
-import android.app.Fragment
+import android.support.v4.app.Fragment
 
 import com.ternaryop.photoshelf.R
 

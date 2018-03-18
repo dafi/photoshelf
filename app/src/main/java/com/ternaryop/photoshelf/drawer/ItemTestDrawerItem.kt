@@ -1,8 +1,8 @@
 package com.ternaryop.photoshelf.drawer
 
-import android.app.Fragment
 import android.content.Context
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import com.ternaryop.photoshelf.EXTRA_URL
 import com.ternaryop.photoshelf.R
 import com.ternaryop.utils.drawer.adapter.DrawerItem
@@ -12,8 +12,8 @@ import com.ternaryop.utils.drawer.adapter.DrawerItem
  * Contain info about the item to test
  */
 
-class ItemTestDrawerItem(itemId: Int, title: String, fragmentClass: Class<out Fragment>) : DrawerItem(itemId, title, fragmentClass) {
-
+class ItemTestDrawerItem(itemId: Int, title: String, fragmentClass: Class<out Fragment>)
+    : DrawerItem(itemId, title, fragmentClass) {
     override fun instantiateFragment(context: Context): Fragment {
         val fragment = super.instantiateFragment(context)
         val args = Bundle()

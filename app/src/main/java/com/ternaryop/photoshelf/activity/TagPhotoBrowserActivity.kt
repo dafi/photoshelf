@@ -1,9 +1,9 @@
 package com.ternaryop.photoshelf.activity
 
-import android.app.Fragment
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
@@ -22,8 +22,10 @@ class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
             context.startActivity(createIntent(context, blogName, postTag, allowSearch))
         }
 
-        fun startPhotoBrowserActivityForResult(fragment: Fragment, blogName: String, postTag: String, requestCode: Int, allowSearch: Boolean) {
-            fragment.startActivityForResult(createIntent(fragment.activity, blogName, postTag, allowSearch), requestCode)
+        fun startPhotoBrowserActivityForResult(fragment: Fragment,
+            blogName: String, postTag: String, requestCode: Int, allowSearch: Boolean) {
+            fragment.startActivityForResult(createIntent(fragment.activity!!,
+                blogName, postTag, allowSearch), requestCode)
         }
 
         private fun createIntent(context: Context, blogName: String, postTag: String, allowSearch: Boolean): Intent {

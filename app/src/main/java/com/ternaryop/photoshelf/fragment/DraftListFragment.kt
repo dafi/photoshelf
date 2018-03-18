@@ -68,9 +68,9 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                               savedInstanceState: Bundle?): View? {
         val rootView = super.onCreateView(inflater, container, savedInstanceState)
 
-        val view = View.inflate(activity, R.layout.draft_empty_list, rootView as ViewGroup?)
+        val view = View.inflate(context!!, R.layout.draft_empty_list, rootView as ViewGroup?)
         progressHighlightViewLayout = view.findViewById(android.R.id.empty)
-        progressHighlightViewLayout.animation = AnimationUtils.loadAnimation(activity, R.anim.fade_loop)
+        progressHighlightViewLayout.animation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
         photoAdapter.counterType = CounterEvent.DRAFT
 
         if (rootView != null) {
@@ -88,8 +88,8 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         photoAdapter.setOnPhotoBrowseClick(this)
         loadSettings()
 
-        draftPostHelper = DraftPostHelper(activity, blogName!!)
-        draftCache = DBHelper.getInstance(activity).tumblrPostCacheDAO
+        draftPostHelper = DraftPostHelper(context!!, blogName!!)
+        draftCache = DBHelper.getInstance(context!!).tumblrPostCacheDAO
 
         refreshCache()
     }
@@ -162,13 +162,13 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         }
         onRefreshStarted()
 
-        compositeDisposable.add(Importer(activity).importFromTumblr(blogName!!, Importer.schedulers(), currentTextView)
+        compositeDisposable.add(Importer(context!!).importFromTumblr(blogName!!, Importer.schedulers(), currentTextView)
             .doOnComplete({ this.readPhotoPosts() })
             .subscribe({ posts ->
                 progressHighlightViewLayout.incrementProgress()
                 // delete from cache the published posts
                 draftCache.delete(posts, TumblrPostCache.CACHE_TYPE_DRAFT)
-            }) { t -> DialogUtils.showErrorDialog(activity, t) }
+            }) { t -> DialogUtils.showErrorDialog(context!!, t) }
         )
     }
 
@@ -219,7 +219,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                 .subscribe({ posts ->
                     photoAdapter.addAll(posts)
                     photoAdapter.sort()
-                }) { t -> DialogUtils.showErrorDialog(activity, t) }
+                }) { t -> DialogUtils.showErrorDialog(context!!, t) }
         )
     }
 
@@ -236,7 +236,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     }
 
     private fun showScheduleDialog(item: PhotoShelfPost) {
-        SchedulePostDialog(activity,
+        SchedulePostDialog(context!!,
             item,
             findScheduleTime(),
             object : SchedulePostDialog.OnPostScheduleListener {
@@ -247,7 +247,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                         .doOnSubscribe({ d -> compositeDisposable.add(d) })
                         .subscribe(
                             { },
-                            { t -> DialogUtils.showErrorDialog(activity, t) })
+                            { t -> DialogUtils.showErrorDialog(context!!, t) })
                 }
             }).show()
     }
@@ -328,14 +328,14 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     }
 
     private fun loadSettings() {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(activity)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
         photoAdapter.sortSwitcher.setType(
             preferences.getInt(PREF_DRAFT_SORT_TYPE, LAST_PUBLISHED_TAG),
             preferences.getBoolean(PREF_DRAFT_SORT_ASCENDING, true))
     }
 
     private fun saveSettings() {
-        PreferenceManager.getDefaultSharedPreferences(activity)
+        PreferenceManager.getDefaultSharedPreferences(context!!)
             .edit()
             .putInt(PREF_DRAFT_SORT_TYPE, photoAdapter.sortSwitcher.sortable.sortId)
             .putBoolean(PREF_DRAFT_SORT_ASCENDING, photoAdapter.sortSwitcher.sortable.isAscending)

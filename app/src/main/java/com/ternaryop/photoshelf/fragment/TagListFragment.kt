@@ -23,7 +23,7 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
         val rootView = inflater.inflate(R.layout.fragment_list_tags, container, false)
 
         val adapter = TagCursorAdapter(
-                activity,
+                context!!,
                 android.R.layout.simple_list_item_1,
                 blogName!!)
 
@@ -33,23 +33,23 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
         listView.isTextFilterEnabled = true
         // start with list filled
         adapter.filter.filter("")
-        (rootView.findViewById<View>(R.id.searchView1) as SearchView).setOnQueryTextListener(object : OnQueryTextListener {
+        (rootView.findViewById<View>(R.id.searchView1) as SearchView)
+            .setOnQueryTextListener(object : OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    return false
+                }
 
-            override fun onQueryTextSubmit(query: String): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                adapter.filter.filter(newText)
-                return true
-            }
-        })
+                override fun onQueryTextChange(newText: String): Boolean {
+                    adapter.filter.filter(newText)
+                    return true
+                }
+            })
         return rootView
     }
 
     override fun onItemClick(parent: AdapterView<*>, v: View, position: Int, id: Long) {
         val cursor = parent.getItemAtPosition(position) as Cursor
         val tag = cursor.getString(cursor.getColumnIndex(PostTagDAO.TAG))
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(activity, blogName!!, tag, false)
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, tag, false)
     }
 }

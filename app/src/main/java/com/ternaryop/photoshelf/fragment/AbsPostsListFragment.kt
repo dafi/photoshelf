@@ -63,12 +63,12 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(postListViewResource, container, false)
 
-        photoAdapter = PhotoAdapter(activity, LOADER_PREFIX_POSTS_THUMB)
-        postActionExecutor = PostActionExecutor(activity, blogName!!, this)
+        photoAdapter = PhotoAdapter(context!!, LOADER_PREFIX_POSTS_THUMB)
+        postActionExecutor = PostActionExecutor(context!!, blogName!!, this)
 
         recyclerView = rootView.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.layoutManager = LinearLayoutManager(context!!)
         recyclerView.adapter = photoAdapter
         recyclerView.addItemDecoration(postActionExecutor.colorItemDecoration)
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -146,7 +146,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
             postsList.size,
             postsList.size,
             postsList[0].firstTag)
-        AlertDialog.Builder(activity)
+        AlertDialog.Builder(context!!)
             .setMessage(message)
             .setPositiveButton(android.R.string.yes, dialogClickListener)
             .setNegativeButton(android.R.string.no, null)
@@ -181,16 +181,16 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     override fun onTagClick(position: Int, clickedTag: String) {
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(activity, blogName!!, clickedTag, false)
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, clickedTag, false)
     }
 
     override fun onThumbnailImageClick(position: Int) {
         val post = photoAdapter.getItem(position)
-        ImageViewerActivity.startImageViewer(activity, post.firstPhotoAltSize!![0].url, post)
+        ImageViewerActivity.startImageViewer(context!!, post.firstPhotoAltSize!![0].url, post)
     }
 
     override fun onOverflowClick(position: Int, view: View) {
-        val popupMenu = PopupMenu(activity, view)
+        val popupMenu = PopupMenu(context!!, view)
         popupMenu.menuInflater.inflate(actionModeMenuId, popupMenu.menu)
         popupMenu.setOnMenuItemClickListener { handleMenuItem(it, listOf(photoAdapter.getItem(position))) }
         popupMenu.show()
@@ -206,17 +206,17 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     override fun onItemLongClick(position: Int) {
         if (actionMode == null) {
-            actionMode = activity.startActionMode(this)
+            actionMode = activity!!.startActionMode(this)
         }
         updateSelection(position)
     }
 
     private fun handleClickedThumbnail(position: Int) {
         val post = photoAdapter.getItem(position)
-        if (activity.callingActivity == null) {
+        if (activity!!.callingActivity == null) {
             onThumbnailImageClick(position)
         } else {
-            post.finishActivity(activity)
+            post.finishActivity(activity!!)
         }
     }
 
@@ -243,7 +243,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 return true
             }
             R.id.group_menu_image_dimension -> {
-                postList[0].browseTagImageBySize(activity)
+                postList[0].browseTagImageBySize(activity!!)
                 return true
             }
             R.id.post_delete -> {
@@ -307,7 +307,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
             return
         }
         selectPosts(errorList)
-        errorList.showErrorDialog(activity)
+        errorList.showErrorDialog(context!!)
     }
 
     private fun selectPosts(results: List<PostActionResult>) {
@@ -335,6 +335,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
         postActionExecutor.edit(post, dialog.postTitle, dialog.postTags, selectedBlogName)
                 .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({ }, { t -> DialogUtils.showErrorDialog(activity, t) })
+                .subscribe({ }, { t -> DialogUtils.showErrorDialog(context!!, t) })
     }
 }

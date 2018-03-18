@@ -67,17 +67,17 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun initRecyclerView(rootView: View) {
-        adapter = FeedlyContentAdapter(activity, fragmentActivityStatus.appSupport.selectedBlogName!!)
+        adapter = FeedlyContentAdapter(context!!, fragmentActivityStatus.appSupport.selectedBlogName!!)
 
         recyclerView = rootView.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.layoutManager = LinearLayoutManager(context!!)
         recyclerView.adapter = adapter
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        preferences = PreferenceManager.getDefaultSharedPreferences(activity)
+        preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
 
         adapter.sortSwitcher.setType(preferences.getInt(PREF_SORT_TYPE, TITLE_NAME))
         adapter.clickListener = this
@@ -139,7 +139,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun fakeCall(): List<FeedlyContent> {
-        activity.assets.open("sample/feedly.json").use { stream ->
+        context!!.assets.open("sample/feedly.json").use { stream ->
             val items = JSONUtils.jsonFromInputStream(stream).getJSONArray("items")
             return (0 until items.length()).mapTo(mutableListOf<FeedlyContent>()) {
                 SimpleFeedlyContent(items.getJSONObject(it))
@@ -252,7 +252,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun showAPIUsage() {
-        AlertDialog.Builder(activity)
+        AlertDialog.Builder(context!!)
             .setTitle(R.string.api_usage)
             .setMessage(getString(R.string.feedly_api_calls_count, FeedlyRateLimit.apiCallsCount) + "\n"
                 + getString(R.string.feedly_api_reset_limit, FeedlyRateLimit.apiResetLimitAsString))
@@ -261,9 +261,9 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     @SuppressLint("InflateParams") // for dialogs passing null for root is valid, ignore the warning
     private fun settings() {
-        val settingsView = activity.layoutInflater.inflate(R.layout.saved_content_settings, null)
+        val settingsView = activity!!.layoutInflater.inflate(R.layout.saved_content_settings, null)
         fillSettingsView(settingsView)
-        AlertDialog.Builder(activity)
+        AlertDialog.Builder(context!!)
             .setTitle(R.string.settings)
             .setView(settingsView)
             .setPositiveButton(android.R.string.ok) { _, _ -> updateSettings(settingsView) }
@@ -293,7 +293,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     override fun onTitleClick(position: Int) {
-        ImagePickerActivity.startImagePicker(activity, adapter.getItem(position).originId)
+        ImagePickerActivity.startImagePicker(context!!, adapter.getItem(position).originId)
     }
 
     override fun onToggleClick(position: Int, checked: Boolean) {
@@ -317,7 +317,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (t is TokenExpiredException) {
             val snackbar = Snackbar.make(recyclerView, R.string.token_expired, Snackbar.LENGTH_INDEFINITE)
             snackbar
-                .setActionTextColor(ContextCompat.getColor(activity, R.color.snack_error_color))
+                .setActionTextColor(ContextCompat.getColor(context!!, R.color.snack_error_color))
                 .setAction(resources.getString(R.string.refresh).toLowerCase()) { refreshToken() }
             return snackbar
         }

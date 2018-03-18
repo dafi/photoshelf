@@ -4,11 +4,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
-import android.app.DialogFragment
-import android.app.Fragment
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.v4.app.DialogFragment
+import android.support.v4.app.Fragment
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -42,8 +42,8 @@ class TagNavigatorDialog : DialogFragment() {
 
     @SuppressLint("InflateParams")
     private fun setupUI(): View {
-        val view = activity.layoutInflater.inflate(R.layout.dialog_tag_navigator, null)
-        adapter = createAdapter(arguments.getStringArrayList(ARG_TAG_LIST))
+        val view = activity!!.layoutInflater.inflate(R.layout.dialog_tag_navigator, null)
+        adapter = createAdapter(arguments!!.getStringArrayList(ARG_TAG_LIST))
         sortButton = view.findViewById<View>(R.id.sort_tag) as Button
         val tagList = view.findViewById<View>(R.id.tag_list) as ListView
 
@@ -53,7 +53,7 @@ class TagNavigatorDialog : DialogFragment() {
             if (item != null) {
                 val intent = Intent()
                 intent.putExtra(SELECTED_TAG, item.tag)
-                targetFragment.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
+                targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
             }
             dismiss()
         })

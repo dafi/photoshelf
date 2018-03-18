@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.activity
 
-import android.app.Fragment
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.MenuItem
@@ -40,13 +40,14 @@ abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStat
         _blogName = intent.extras?.getString(EXTRA_BLOG_NAME)
         val fragment = createFragment()
         if (fragment != null) {
-            fragmentManager.beginTransaction().add(R.id.content_frame, fragment).commit()
+            supportFragmentManager.beginTransaction().add(R.id.content_frame, fragment).commit()
         }
     }
 
     /**
      * The fragment is added programmatically because in many cases its creation from XML layout can collide with
-     * the supportActionBar creation (eg the fragment needs the actionBar but it can't be created until the xml is full instantiated so it will be null)
+     * the supportActionBar creation (eg the fragment needs the actionBar but it can't be created until
+     * the xml is full instantiated so it will be null)
      * @return the fragment to use or null if no fragment must be added
      */
     abstract fun createFragment(): Fragment?

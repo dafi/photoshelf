@@ -1,9 +1,9 @@
 package com.ternaryop.photoshelf.util.tumblr
 
 import android.app.Activity
-import android.app.Fragment
 import android.content.Intent
 import android.net.Uri
+import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.widget.ArrayAdapter
 import com.ternaryop.photoshelf.EXTRA_POST

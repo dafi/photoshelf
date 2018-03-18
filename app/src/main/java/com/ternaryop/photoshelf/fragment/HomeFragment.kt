@@ -32,23 +32,22 @@ class HomeFragment : AbsPhotoShelfFragment() {
     }
 
     private fun fillStatsUI(statsMap: Map<String, Long>) {
-        if (view == null) {
-            return
-        }
-        val format = DecimalFormat("###,###")
-        val containerView = view.findViewById<View>(R.id.home_container)
-        containerView.visibility = View.VISIBLE
-        for (i in 0 until viewIdColumnMap.size()) {
-            val textView = view.findViewById<View>(viewIdColumnMap.keyAt(i)) as TextView
-            val count = statsMap[viewIdColumnMap.valueAt(i)]
-            textView.text = format.format(count)
-            textView.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.fade))
+        view?.also {
+            val format = DecimalFormat("###,###")
+            val containerView = it.findViewById<View>(R.id.home_container)
+            containerView.visibility = View.VISIBLE
+            for (i in 0 until viewIdColumnMap.size()) {
+                val textView = it.findViewById<View>(viewIdColumnMap.keyAt(i)) as TextView
+                val count = statsMap[viewIdColumnMap.valueAt(i)]
+                textView.text = format.format(count)
+                textView.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.fade))
+            }
         }
     }
 
     private fun refresh() {
         Thread(Runnable {
-            val statsMap = DBHelper.getInstance(activity).postTagDAO.getStatisticCounts(blogName)
+            val statsMap = DBHelper.getInstance(activity!!).postTagDAO.getStatisticCounts(blogName)
             handler.obtainMessage(STATS_DATA_OK, statsMap).sendToTarget()
         }).start()
     }

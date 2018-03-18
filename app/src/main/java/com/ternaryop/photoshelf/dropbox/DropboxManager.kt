@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.dropbox
 
-import android.app.Fragment
 import android.content.Context
+import android.support.v4.app.Fragment
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.DbxSdkVersion
 import com.dropbox.core.android.Auth

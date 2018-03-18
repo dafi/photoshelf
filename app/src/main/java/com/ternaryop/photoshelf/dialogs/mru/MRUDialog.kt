@@ -3,9 +3,9 @@ package com.ternaryop.photoshelf.dialogs.mru
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
-import android.app.DialogFragment
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -35,7 +35,7 @@ class MRUDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AlertDialog.Builder(activity)
+        return AlertDialog.Builder(context!!)
                 .setView(setupUI())
                 .setTitle(resources.getString(R.string.recently_used_tags))
                 .setNegativeButton(resources.getString(R.string.close), null)
@@ -44,27 +44,27 @@ class MRUDialog : DialogFragment() {
 
     @SuppressLint("InflateParams")
     private fun setupUI(): View {
-        val view = activity.layoutInflater.inflate(R.layout.mru_list, null)
+        val view = activity!!.layoutInflater.inflate(R.layout.mru_list, null)
         initRecyclerView(view)
 
         return view
     }
 
     private fun initRecyclerView(rootView: View) {
-        adapter = MRUAdapter(this, arguments.getStringArrayList(ARG_MRU_LIST)!!)
+        adapter = MRUAdapter(this, arguments!!.getStringArrayList(ARG_MRU_LIST)!!)
         adapter.onMRUListener = onMRUListener
 
         val recyclerView = rootView.findViewById<RecyclerView>(R.id.list)
         recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
         addSwipeToDelete(recyclerView)
     }
 
     private fun addSwipeToDelete(recyclerView: RecyclerView) {
-        val swipeHandler = object : SwipeToDeleteCallback(activity,
-                ContextCompat.getDrawable(activity, R.drawable.ic_action_delete)!!,
-                ColorDrawable(ContextCompat.getColor(activity, R.color.animation_delete_bg))) {
+        val swipeHandler = object : SwipeToDeleteCallback(context!!,
+                ContextCompat.getDrawable(context!!, R.drawable.ic_action_delete)!!,
+                ColorDrawable(ContextCompat.getColor(context!!, R.color.animation_delete_bg))) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 adapter.removeAt(viewHolder.adapterPosition)
             }

@@ -32,7 +32,8 @@ open class ScheduledListFragment : AbsPostsListFragment() {
         val rootView = super.onCreateView(inflater, container, savedInstanceState)
 
         photoAdapter.counterType = CounterEvent.SCHEDULE
-        photoShelfSwipe = PhotoShelfSwipe(rootView!!, R.id.swipe_container, SwipeRefreshLayout.OnRefreshListener { resetAndReloadPhotoPosts() })
+        photoShelfSwipe = PhotoShelfSwipe(rootView!!,
+            R.id.swipe_container, SwipeRefreshLayout.OnRefreshListener { resetAndReloadPhotoPosts() })
         return rootView
     }
 
@@ -62,7 +63,7 @@ open class ScheduledListFragment : AbsPostsListFragment() {
                 .just(params)
                 .doFinally { isScrolling = false }
                 .flatMap { params1 ->
-                    Observable.fromIterable(Tumblr.getSharedTumblr(activity)
+                    Observable.fromIterable(Tumblr.getSharedTumblr(context!!)
                             .getQueue(blogName!!, params1))
                 }
                 .map { tumblrPost ->

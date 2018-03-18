@@ -2,8 +2,6 @@ package com.ternaryop.photoshelf.dialogs
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.app.DialogFragment
-import android.app.Fragment
 import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -11,6 +9,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.app.DialogFragment
+import android.support.v4.app.Fragment
 import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.Toolbar
@@ -82,7 +82,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        appSupport = AppSupport(activity)
+        appSupport = AppSupport(context!!)
         decodeArguments()
         setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_PhotoShelf_Dialog)
 
@@ -90,7 +90,8 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
 
         // if the device rotates set again the listener
         if (savedInstanceState != null) {
-            (fragmentManager.findFragmentByTag(MRU_FRAGMENT_DIALOG_TAG) as MRUDialog).setOnMRUListener(this)
+            (activity!!.supportFragmentManager.findFragmentByTag(MRU_FRAGMENT_DIALOG_TAG) as MRUDialog)
+                .setOnMRUListener(this)
         }
     }
 
@@ -101,9 +102,9 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
 
     @SuppressLint("InflateParams") // for dialogs passing null for root is valid, ignore the warning
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view = activity.layoutInflater.inflate(R.layout.dialog_publish_post, null)
+        val view = activity!!.layoutInflater.inflate(R.layout.dialog_publish_post, null)
         setupUI(view)
-        val builder = AlertDialog.Builder(activity)
+        val builder = AlertDialog.Builder(context!!)
                 .setView(view)
                 .setNegativeButton(R.string.cancel_title) { _, _ -> compositeDisposable.clear() }
         if (photoPost == null) {
@@ -153,7 +154,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
             }
         })
 
-        mruTags = MRU(activity, MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE)
+        mruTags = MRU(context!!, MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE)
         mruTagsButton = view.findViewById(R.id.mruTags)
         mruTagsButton.setOnClickListener({ this.openMRUDialog() })
         mruTagsButton.isEnabled = mruTags.list.isNotEmpty()
@@ -167,7 +168,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
             toolbar.setTitle(R.string.edit_post_title)
         } else {
             val size = imageUrls!!.size
-            toolbar.title = activity.resources.getQuantityString(
+            toolbar.title = context!!.resources.getQuantityString(
                     R.plurals.post_image,
                     size,
                     size)
@@ -177,7 +178,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
     private fun openMRUDialog() {
         MRUDialog.newInstance(mruTags.list)
                 .setOnMRUListener(this)
-                .show(fragmentManager, MRU_FRAGMENT_DIALOG_TAG)
+                .show(activity!!.supportFragmentManager, MRU_FRAGMENT_DIALOG_TAG)
     }
 
     private fun fillTags(tags: List<String>) {
@@ -195,7 +196,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
         (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
 
         Single
-            .fromCallable { MisspelledName(activity).getMisspelledInfo(name) }
+            .fromCallable { MisspelledName(context!!).getMisspelledInfo(name) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {
@@ -295,7 +296,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
         private fun createPosts(publish: Boolean,
             selectedBlogName: String, urls: List<Uri>, postTitle: String, postTags: String) {
             for (url in urls) {
-                PublishIntentService.startActionIntent(activity,
+                PublishIntentService.startActionIntent(context!!,
                         url,
                         selectedBlogName,
                         postTitle,
@@ -318,7 +319,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
     }
 
     private fun parseTitle(swapDayMonth: Boolean) {
-        val titleData = TitleParser.instance(AndroidTitleParserConfig(activity))
+        val titleData = TitleParser.instance(AndroidTitleParserConfig(context!!))
             .parseTitle(postTitleView.text.toString(), swapDayMonth)
         // only the edited title is updated, the sourceTitle remains unchanged
         htmlTitle = titleData.toHtml()
@@ -333,7 +334,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, OnMR
     }
 
     private fun decodeArguments() {
-        val args = arguments
+        val args = arguments ?: return
         val photoPost = args.getSerializable(ARG_PHOTO_POST) as TumblrPhotoPost?
         if (photoPost == null) {
             this.imageUrls = args.getParcelableArrayList(ARG_IMAGE_URLS)

@@ -1,9 +1,9 @@
 package com.ternaryop.photoshelf.fragment
 
-import android.app.Activity
-import android.app.Fragment
+import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
@@ -43,11 +43,11 @@ abstract class AbsPhotoShelfFragment : Fragment() {
         super.onDetach()
     }
 
-    override fun onAttach(activity: Activity) {
-        super.onAttach(activity)
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
 
         // all Activities must adhere to FragmentActivityStatus
-        fragmentActivityStatus = activity as FragmentActivityStatus
+        fragmentActivityStatus = context as FragmentActivityStatus
     }
 
     protected open fun refreshUI() {
@@ -60,9 +60,9 @@ abstract class AbsPhotoShelfFragment : Fragment() {
 
     protected fun showSnackbar(snackbar: Snackbar) {
         val sbView = snackbar.view
-        sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_bg))
+        sbView.setBackgroundColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_bg))
         val textView = sbView.findViewById<TextView>(android.support.design.R.id.snackbar_text)
-        textView.setTextColor(ContextCompat.getColor(activity, R.color.image_picker_detail_text_text))
+        textView.setTextColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_text))
         textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()
     }

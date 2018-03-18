@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.fragment
 
-import android.app.Fragment
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +18,7 @@ class BestOfFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_best_of, container, false)
 
-        gridViewPhotoAdapter = GridViewPhotoAdapter(activity, LOADER_PREFIX)
+        gridViewPhotoAdapter = GridViewPhotoAdapter(activity!!, LOADER_PREFIX)
 
 //        gridView = rootView.findViewById<View>(R.id.gridview) as GridView
         //        gridView.setAdapter(gridViewPhotoAdapter);
