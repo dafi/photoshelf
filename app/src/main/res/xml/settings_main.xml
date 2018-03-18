@@ -1,107 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/settings" >
+                  android:key="key_root"
+                  android:title="@string/settings">
 
     <PreferenceCategory
         android:key="pref_key_login_settings"
-        android:title="@string/pref_service_login_title" >
+        android:title="@string/pref_service_login_title">
         <Preference
             android:key="tumblr_login"
             android:persistent="false"
-            android:title="@string/login_title" />
+            android:title="@string/login_title"/>
         <Preference
             android:key="dropbox_login"
             android:persistent="false"
-            android:title="@string/login_title" />
-        </PreferenceCategory>
+            android:title="@string/login_title"/>
+    </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_import_export_key"
-        android:title="@string/pref_import_category_title" >
+        android:title="@string/pref_import_category_title">
         <PreferenceScreen
             android:key="import_category_key"
             android:persistent="false"
-            android:title="@string/pref_import_screen_title" >
-            <CheckBoxPreference android:key="automatic_export"
-                                android:title="@string/automatic_export"/>
+            android:title="@string/pref_import_screen_title">
+            <CheckBoxPreference
+                android:key="automatic_export"
+                android:title="@string/automatic_export"/>
             <PreferenceCategory
                 android:key="pref_key_export_days_period"
-                android:title="@string/pref_export_days_period" >
+                android:title="@string/pref_export_days_period">
                 <com.ternaryop.preference.IntegerEditTextPreference
+                    android:inputType="number"
+                    android:selectAllOnFocus="true"
                     android:defaultValue="@integer/export_days_period_default"
                     android:key="exportDaysPeriod"
-                    android:maxLength="2" />
+                    android:maxLength="2"/>
             </PreferenceCategory>
             <Preference
                 android:key="import_title_parser"
                 android:persistent="false"
-                android:title="@string/import_title_parser_title" />
+                android:title="@string/import_title_parser_title"/>
 
-            <PreferenceCategory android:title="@string/pref_posts_title" >
+            <PreferenceCategory android:title="@string/pref_posts_title">
                 <Preference
                     android:key="import_posts_from_csv"
                     android:persistent="false"
-                    android:title="@string/import_posts_from_csv_title" />
+                    android:title="@string/import_posts_from_csv_title"/>
                 <Preference
                     android:key="export_posts_csv"
                     android:persistent="false"
-                    android:title="@string/export_posts_csv_title" />
+                    android:title="@string/export_posts_csv_title"/>
             </PreferenceCategory>
-            <PreferenceCategory android:title="@string/pref_birthdays_title" >
+            <PreferenceCategory android:title="@string/pref_birthdays_title">
                 <Preference
                     android:key="import_birthdays"
                     android:persistent="false"
-                    android:title="@string/import_birthdays_title" />
+                    android:title="@string/import_birthdays_title"/>
                 <Preference
                     android:key="import_birthdays_from_wikipedia"
                     android:persistent="false"
-                    android:title="@string/import_missing_birthdays_from_web_title" />
+                    android:title="@string/import_missing_birthdays_from_web_title"/>
                 <Preference
                     android:key="export_birthdays"
                     android:persistent="false"
-                    android:title="@string/export_birthdays_title" />
+                    android:title="@string/export_birthdays_title"/>
                 <Preference
                     android:key="export_missing_birthdays"
                     android:persistent="false"
-                    android:title="@string/export_missing_birthdays_title" />
+                    android:title="@string/export_missing_birthdays_title"/>
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_schedule_settings"
-        android:title="@string/pref_schedule_title" >
+        android:title="@string/pref_schedule_title">
         <com.ternaryop.preference.IntegerEditTextPreference
             android:defaultValue="@integer/schedule_minutes_time_span_default"
             android:key="schedule_minutes_time_span"
+            android:inputType="number"
             android:maxLength="6"
-            android:title="@string/schedule_minutes_time_span_default" />
+            android:selectAllOnFocus="true"
+            android:title="@string/schedule_minutes_time_span_default"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_clear_cache"
-        android:title="@string/pref_clear_cache" >
+        android:title="@string/pref_clear_cache">
         <Preference
             android:key="clear_image_cache"
             android:persistent="false"
-            android:title="@string/clear_image_cache_title" />
+            android:title="@string/clear_image_cache_title"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_thumbnail_width"
-        android:title="@string/pref_thumbnail_width" >
+        android:title="@string/pref_thumbnail_width">
         <ListPreference
             android:title="@string/pref_thumbnail_width"
             android:key="thumbnail_width"
             android:defaultValue="@string/thumbnail_width_value_default"
             android:entries="@array/list_thumbnail_width_entries_default"
-            android:entryValues="@array/list_thumbnail_width_values_default" />
+            android:entryValues="@array/list_thumbnail_width_values_default"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_developer"
-        android:title="@string/pref_developer" >
+        android:title="@string/pref_developer">
         <Preference
             android:key="version"
-            android:persistent="false" />
+            android:persistent="false"/>
         <Preference
             android:key="dropbox_version"
-            android:persistent="false" />
+            android:persistent="false"/>
     </PreferenceCategory>
-    
+
 </PreferenceScreen>

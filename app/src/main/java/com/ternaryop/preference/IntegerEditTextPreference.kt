@@ -1,29 +1,18 @@
 package com.ternaryop.preference
 
 import android.content.Context
-import android.preference.EditTextPreference
-import android.text.InputType
 import android.util.AttributeSet
-import android.view.View
-import android.widget.EditText
+import com.takisoft.fix.support.v7.preference.EditTextPreference
 
 class IntegerEditTextPreference : EditTextPreference {
+    constructor(context: Context) : super(context)
 
-    constructor(context: Context) : super(context) {
-        editText.inputType = InputType.TYPE_CLASS_NUMBER
-    }
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        editText.inputType = InputType.TYPE_CLASS_NUMBER
-    }
+    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle)
 
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        editText.inputType = InputType.TYPE_CLASS_NUMBER
-    }
-
-    override fun onAddEditTextToDialogView(dialogView: View, editText: EditText) {
-        super.onAddEditTextToDialogView(dialogView, editText)
-        editText.selectAll()
+    override fun onSetInitialValue(restoreValue: Boolean, defaultValue: Any?) {
+        text = if (restoreValue) getPersistedString(text) else defaultValue.toString()
     }
 
     override fun getPersistedString(defaultReturnValue: String?): String {

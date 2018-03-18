@@ -1,6 +1,8 @@
 package com.ternaryop.photoshelf.activity
 
 import android.os.Bundle
+import android.support.v7.preference.PreferenceFragmentCompat
+import android.support.v7.preference.PreferenceScreen
 import android.support.v7.widget.Toolbar
 import android.view.View
 import android.widget.AdapterView
@@ -19,12 +21,13 @@ import com.ternaryop.photoshelf.fragment.DraftListFragment
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
 import com.ternaryop.photoshelf.fragment.HomeFragment
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment
-import com.ternaryop.photoshelf.fragment.PhotoPreferencesFragment
 import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.fragment.SavedContentListFragment
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment
 import com.ternaryop.photoshelf.fragment.TagListFragment
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment
+import com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment
+import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.service.CounterIntentService
 import com.ternaryop.tumblr.AuthenticationCallback
 import com.ternaryop.tumblr.Tumblr
@@ -38,11 +41,10 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, FragmentActivityStatus {
-
+class MainActivity : DrawerActionBarActivity(),
+    AuthenticationCallback, FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     override lateinit var appSupport: AppSupport
     private lateinit var blogList: Spinner
-
     val blogName: String?
         get() = appSupport.selectedBlogName
 
@@ -54,7 +56,6 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
 
         blogList = findViewById(R.id.blogs_spinner)
         blogList.onItemSelectedListener = BlogItemSelectedListener()
-
         val logged = Tumblr.isLogged(this)
         if (savedInstanceState == null) {
             if (logged) {
@@ -86,12 +87,11 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
     }
 
     private fun handleShortcutAction(): Boolean {
-        val action = intent.action ?: return false
-        when {
-            SHORTCUT_ACTION_DRAFT == action -> selectClickedItem(DRAWER_ITEM_DRAFT)
-            SHORTCUT_ACTION_SCHEDULED == action -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
-            SHORTCUT_ACTION_PUBLISHED == action -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
-            SHORTCUT_ACTION_FEEDLY == action -> selectClickedItem(DRAWER_ITEM_FEEDLY)
+        when (intent.action) {
+            SHORTCUT_ACTION_DRAFT -> selectClickedItem(DRAWER_ITEM_DRAFT)
+            SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
+            SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
+            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY)
             else -> return false
         }
         return true
@@ -109,12 +109,10 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
         adapter.add(DrawerItem(DRAWER_ITEM_DRAFT, getString(R.string.draft_title), DraftListFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_SCHEDULE, getString(R.string.schedule_title), ScheduledListFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_PUBLISHED_POST, getString(R.string.published_post), PublishedPostsListFragment::class.java))
-
         // Tags
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java))
-
         // Extras
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment::class.java))
@@ -122,10 +120,9 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", SavedContentListFragment::class.java))
         adapter.add(ItemTestDrawerItem(DRAWER_ITEM_TEST_PAGE, getString(R.string.test_page_title), ImagePickerFragment::class.java))
-
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
-        adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), PhotoPreferencesFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))
 
         return adapter
     }
@@ -136,7 +133,6 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
         if (!Tumblr.isLogged(this)) {
             // if we are returning from authentication then enable the UI
             val handled = Tumblr.handleOpenURI(this, intent.data, this)
-
             // show the preference only if we aren't in the middle of URI handling and not already logged in
             if (handled) {
                 showHome()
@@ -179,18 +175,18 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
     private fun enableUI(enabled: Boolean) {
         if (enabled) {
             appSupport.fetchBlogNames(this)
-                    .subscribe(object : SingleObserver<List<String>> {
-                        override fun onSubscribe(d: Disposable) {
-                        }
+                .subscribe(object : SingleObserver<List<String>> {
+                    override fun onSubscribe(d: Disposable) {
+                    }
 
-                        override fun onSuccess(blogNames: List<String>) {
-                            fillBlogList(blogNames)
-                        }
+                    override fun onSuccess(blogNames: List<String>) {
+                        fillBlogList(blogNames)
+                    }
 
-                        override fun onError(e: Throwable) {
-                            DialogUtils.showErrorDialog(applicationContext, e)
-                        }
-                    })
+                    override fun onError(e: Throwable) {
+                        DialogUtils.showErrorDialog(applicationContext, e)
+                    }
+                })
         }
         drawerToggle.isDrawerIndicatorEnabled = enabled
         adapter.isSelectionEnabled = enabled
@@ -200,23 +196,23 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
     override fun tumblrAuthenticated(token: String?, tokenSecret: String?, error: Exception?) {
         if (error == null) {
             Toast.makeText(this,
-                    getString(R.string.authentication_success_title),
-                    Toast.LENGTH_LONG)
-                    .show()
+                getString(R.string.authentication_success_title),
+                Toast.LENGTH_LONG)
+                .show()
             // after authentication cache blog names
             appSupport.fetchBlogNames(this)
-                    .subscribe(object : SingleObserver<List<String>> {
-                        override fun onSubscribe(d: Disposable) {
-                        }
+                .subscribe(object : SingleObserver<List<String>> {
+                    override fun onSubscribe(d: Disposable) {
+                    }
 
-                        override fun onSuccess(value: List<String>) {
-                            enableUI(token != null && tokenSecret != null)
-                        }
+                    override fun onSuccess(value: List<String>) {
+                        enableUI(token != null && tokenSecret != null)
+                    }
 
-                        override fun onError(e: Throwable) {
-                            DialogUtils.showErrorDialog(applicationContext, e)
-                        }
-                    })
+                    override fun onError(e: Throwable) {
+                        DialogUtils.showErrorDialog(applicationContext, e)
+                    }
+                })
         } else {
             DialogUtils.showErrorDialog(this, error)
         }
@@ -225,7 +221,7 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
     override fun onDrawerItemSelected(drawerItem: DrawerItem) {
         try {
             val fragment = drawerItem.instantiateFragment(applicationContext)
-            fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
+            supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
         } catch (e: Exception) {
             DialogUtils.showErrorDialog(application, e)
             e.printStackTrace()
@@ -254,6 +250,11 @@ class MainActivity : DrawerActionBarActivity(), AuthenticationCallback, Fragment
 
     override fun getToolbar(): Toolbar {
         return findViewById<View>(R.id.drawer_toolbar) as Toolbar
+    }
+
+    override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat?, pref: PreferenceScreen?): Boolean {
+        PreferenceCategorySelector.openScreen(caller, pref)
+        return true
     }
 
     companion object {

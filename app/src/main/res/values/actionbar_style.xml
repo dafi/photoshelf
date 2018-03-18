@@ -2,6 +2,8 @@
 <resources>
     <style name="Theme.PhotoShelf"
            parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
 

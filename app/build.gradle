@@ -19,8 +19,9 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.0.0'
     implementation 'org.scribe:scribe:1.3.7'
     implementation 'net.danlew:android.joda:2.9.9'
+    implementation 'com.takisoft.fix:preference-v7:27.1.0.0'
 
-    implementation 'com.ternaryop:utils:1.0'
+    implementation 'com.ternaryop:utils:1.2'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation "com.android.support:support-annotations:${rootProject.ext.supportLibVersion}"
