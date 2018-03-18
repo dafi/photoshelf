@@ -44,10 +44,11 @@ class BirthdaysPublisherFragment
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_birthdays_publisher, container, false)
 
-        gridViewPhotoAdapter = GridViewPhotoAdapter(activity, LOADER_PREFIX)
+        gridViewPhotoAdapter = GridViewPhotoAdapter(context!!, LOADER_PREFIX)
         gridViewPhotoAdapter.onPhotoBrowseClick = this
 
-        val layout = AutofitGridLayoutManager(activity, resources.getDimension(R.dimen.grid_layout_thumb_width).toInt())
+        val layout = AutofitGridLayoutManager(context!!,
+            resources.getDimension(R.dimen.grid_layout_thumb_width).toInt())
         val gridView = rootView.findViewById<RecyclerView>(R.id.gridview)
         gridView.adapter = gridViewPhotoAdapter
         gridView.setHasFixedSize(true)
@@ -80,7 +81,7 @@ class BirthdaysPublisherFragment
             return
         }
         val now = Calendar.getInstance(Locale.US)
-        PublishIntentService.startBirthdayListIntent(activity, now)
+        PublishIntentService.startBirthdayListIntent(context!!, now)
         swipeLayout.setRefreshingAndWaintingResult(true)
     }
 
@@ -104,7 +105,7 @@ class BirthdaysPublisherFragment
 
     private fun selectAll() {
         if (actionMode == null) {
-            actionMode = activity.startActionMode(this)
+            actionMode = activity!!.startActionMode(this)
         }
         gridViewPhotoAdapter.selectAll()
         updateSubTitle()
@@ -119,8 +120,8 @@ class BirthdaysPublisherFragment
             posts.add(pair.second)
         }
 
-        PublishIntentService.startPublishBirthdayIntent(activity, posts, blogName!!, publishAsDraft)
-        Toast.makeText(activity,
+        PublishIntentService.startPublishBirthdayIntent(context!!, posts, blogName!!, publishAsDraft)
+        Toast.makeText(context!!,
             getString(R.string.sending_cake_title, TextUtils.join(", ", names)),
             Toast.LENGTH_LONG).show()
         mode.finish()
@@ -138,7 +139,7 @@ class BirthdaysPublisherFragment
 
     override fun onItemLongClick(position: Int) {
         if (actionMode == null) {
-            actionMode = activity.startActionMode(this)
+            actionMode = activity!!.startActionMode(this)
         }
         gridViewPhotoAdapter.selection.toggle(position)
     }

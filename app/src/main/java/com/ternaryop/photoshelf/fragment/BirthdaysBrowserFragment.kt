@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Filter
 import android.widget.ListView
 import android.widget.SearchView
 import android.widget.Spinner
@@ -25,39 +24,20 @@ import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.util.date.dayOfMonth
 import com.ternaryop.photoshelf.util.date.month
 import com.ternaryop.photoshelf.util.date.year
+import com.ternaryop.photoshelf.view.BirthdaysMonthList
 import java.text.DateFormatSymbols
 import java.util.Calendar
 
-class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClickListener,
-    AbsListView.MultiChoiceModeListener, AdapterView.OnItemSelectedListener {
+class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoiceModeListener {
 
     private lateinit var toolbarSpinner: Spinner
-    private lateinit var listView: ListView
-    private lateinit var birthdayAdapter: BirthdayCursorAdapter
 
     private var currentSelectedItemId = R.id.action_show_all
     private val singleSelectionMenuIds = intArrayOf(R.id.item_edit)
-
-    private var alreadyScrolledToFirstBirthday = false
+    private lateinit var monthSelector: BirthdaysMonthList
 
     private val actionModeMenuId: Int
         get() = R.menu.birthdays_context
-
-    private val selectedPosts: List<Birthday>
-        get() {
-            val checkedItemPositions = listView.checkedItemPositions
-            val list = mutableListOf<Birthday>()
-            for (i in 0 until checkedItemPositions.size()) {
-                val key = checkedItemPositions.keyAt(i)
-                if (checkedItemPositions.get(key)) {
-                    val birthday = birthdayAdapter.getBirthdayItem(key)
-                    if (birthday != null) {
-                        list.add(birthday)
-                    }
-                }
-            }
-            return list
-        }
 
     enum class ItemAction {
         MARK_AS_IGNORED,
@@ -69,16 +49,11 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_birthdays_by_name, container, false)
 
-        birthdayAdapter = BirthdayCursorAdapter(
-                activity,
-                fragmentActivityStatus.appSupport.selectedBlogName!!)
-        // listView is filled from onNavigationItemSelected
-        listView = rootView.findViewById<View>(R.id.list) as ListView
-        listView.adapter = birthdayAdapter
-        listView.isTextFilterEnabled = true
-        listView.onItemClickListener = this
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-        listView.setMultiChoiceModeListener(this)
+        monthSelector = BirthdaysMonthList(activity!!,
+            rootView.findViewById<View>(R.id.list) as ListView,
+            fragmentActivityStatus.appSupport.selectedBlogName!!)
+        monthSelector.listView.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE_MODAL
+        monthSelector.listView.setMultiChoiceModeListener(this)
 
         (rootView.findViewById<View>(R.id.searchView1) as SearchView)
             .setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -88,7 +63,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                birthdayAdapter.filter.filter(newText)
+                monthSelector.adapter.filter.filter(newText)
                 return true
             }
         })
@@ -97,10 +72,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
         setHasOptionsMenu(true)
 
         return rootView
-    }
-
-    override fun onItemClick(parent: AdapterView<*>, v: View, position: Int, id: Long) {
-        birthdayAdapter.browsePhotos(activity, position)
     }
 
     override fun setRetainInstance(retain: Boolean) {
@@ -139,25 +110,25 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
     }
 
     private fun showEditBirthdateDialog(mode: ActionMode) {
-        val birthdays = selectedPosts
+        val birthdays = monthSelector.selectedPosts
         if (birthdays.size != 1) {
             return
         }
         val birthday = birthdays[0]
         val c = birthday.birthDate ?: Calendar.getInstance()
 
-        DatePickerDialog(activity, DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDay ->
+        DatePickerDialog(context!!, DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDay ->
             c.year = pickedYear
             c.month = pickedMonth
             c.dayOfMonth = pickedDay
 
             birthday.birthDate = c
             if (birthday.id < 0) {
-                DBHelper.getInstance(activity).birthdayDAO.insert(birthday)
+                DBHelper.getInstance(context!!).birthdayDAO.insert(birthday)
             } else {
-                DBHelper.getInstance(activity).birthdayDAO.update(birthday)
+                DBHelper.getInstance(context!!).birthdayDAO.update(birthday)
             }
-            birthdayAdapter.refresh()
+            monthSelector.adapter.refresh()
             mode.finish()
         }, c.year, c.month, c.dayOfMonth).show()
     }
@@ -166,11 +137,11 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
 
     override fun onItemCheckedStateChanged(mode: ActionMode, position: Int,
                                            id: Long, checked: Boolean) {
-        val selectCount = listView.checkedItemCount
+        val selectCount = monthSelector.listView.checkedItemCount
         val singleSelection = selectCount == 1
 
         val menu = mode.menu
-        if (birthdayAdapter.isShowMissing) {
+        if (monthSelector.adapter.isShowMissing) {
             for (i in 0 until menu.size()) {
                 val itemId = menu.getItem(i).itemId
                 menu.getItem(i).isVisible = MISSING_BIRTHDAYS_ITEMS.contains(itemId)
@@ -191,7 +162,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
     }
 
     private fun showConfirmDialog(postAction: ItemAction, mode: ActionMode) {
-        val birthdays = selectedPosts
+        val birthdays = monthSelector.selectedPosts
         val dialogClickListener = DialogInterface.OnClickListener { _, which ->
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> when (postAction) {
@@ -202,17 +173,17 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
         }
 
         val message = when (postAction) {
-            BirthdaysBrowserFragment.ItemAction.DELETE -> resources.getQuantityString(R.plurals.delete_items_confirm,
+            ItemAction.DELETE -> resources.getQuantityString(R.plurals.delete_items_confirm,
                     birthdays.size,
                     birthdays.size,
                     birthdays[0].name)
-            BirthdaysBrowserFragment.ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(R.plurals.update_items_confirm,
+            ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(R.plurals.update_items_confirm,
                     birthdays.size,
                     birthdays.size,
                     birthdays[0].name)
         }
 
-        AlertDialog.Builder(activity)
+        AlertDialog.Builder(context!!)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes, dialogClickListener)
                 .setNegativeButton(android.R.string.no, dialogClickListener)
@@ -221,17 +192,17 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
 
     private fun markAsIgnored(birthdays: List<Birthday>, mode: ActionMode) {
         for (b in birthdays) {
-            DBHelper.getInstance(activity).birthdayDAO.markAsIgnored(b.id)
+            DBHelper.getInstance(context!!).birthdayDAO.markAsIgnored(b.id)
         }
-        birthdayAdapter.refresh()
+        monthSelector.adapter.refresh()
         mode.finish()
     }
 
     private fun deleteBirthdays(list: List<Birthday>, mode: ActionMode) {
         for (b in list) {
-            DBHelper.getInstance(activity).birthdayDAO.remove(b.id)
+            DBHelper.getInstance(context!!).birthdayDAO.remove(b.id)
         }
-        birthdayAdapter.refresh()
+        monthSelector.adapter.refresh()
         mode.finish()
     }
 
@@ -282,8 +253,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
 
         supportActionBar?.subtitle = subTitle
         item.isChecked = isChecked
-        birthdayAdapter.setShow(showFlag, isChecked)
-        birthdayAdapter.refresh()
+        monthSelector.adapter.setShow(showFlag, isChecked)
+        monthSelector.adapter.refresh()
         return true
     }
 
@@ -303,7 +274,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
             supportActionBar?.setDisplayShowTitleEnabled(true)
         } else {
             // check if view is already added (eg when the overflow menu is opened)
-            if (birthdayAdapter.isShowFlag(BirthdayCursorAdapter.SHOW_ALL)
+            if (monthSelector.adapter.isShowFlag(BirthdayCursorAdapter.SHOW_ALL)
                 && fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1) {
                 fragmentActivityStatus.drawerToolbar.addView(toolbarSpinner)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
@@ -325,32 +296,20 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AdapterView.OnItemClic
                 months)
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        toolbarSpinner = LayoutInflater.from(supportActionBar?.themedContext)
-                .inflate(R.layout.toolbar_spinner,
-                        fragmentActivityStatus.drawerToolbar,
-                        false) as Spinner
+        toolbarSpinner = LayoutInflater
+            .from(supportActionBar?.themedContext)
+            .inflate(R.layout.toolbar_spinner,
+                fragmentActivityStatus.drawerToolbar,
+                false) as Spinner
         toolbarSpinner.adapter = monthAdapter
         toolbarSpinner.setSelection(Calendar.getInstance().month + 1)
-        toolbarSpinner.onItemSelectedListener = this
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-        birthdayAdapter.month = pos
-        birthdayAdapter.refresh(Filter.FilterListener {
-            // when month changes scroll to first item unless must be scroll to first birthday item
-            if (!alreadyScrolledToFirstBirthday) {
-                alreadyScrolledToFirstBirthday = true
-                val dayPos = birthdayAdapter.findDayPosition(Calendar.getInstance().dayOfMonth)
-                if (dayPos >= 0) {
-                    listView.setSelection(dayPos)
-                }
-            } else {
-                listView.setSelection(0)
+        toolbarSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                monthSelector.changeMonth(pos)
             }
-        })
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
     }
-
-    override fun onNothingSelected(parent: AdapterView<*>) {}
 
     companion object {
         private const val MONTH_COUNT = 12

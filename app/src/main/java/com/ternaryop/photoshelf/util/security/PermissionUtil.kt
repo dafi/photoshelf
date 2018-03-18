@@ -20,7 +20,7 @@ object PermissionUtil {
             return
         }
         if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-            val dialogClickListener = DialogInterface.OnClickListener { dialog, which ->
+            val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> ActivityCompat.requestPermissions(activity,
                             arrayOf(permission),
