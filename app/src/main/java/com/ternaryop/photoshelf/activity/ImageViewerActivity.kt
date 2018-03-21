@@ -2,9 +2,6 @@ package com.ternaryop.photoshelf.activity
 
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
-import android.app.DownloadManager
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -21,24 +18,12 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
-import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.service.PublishIntentService
-import com.ternaryop.photoshelf.util.text.fromHtml
+import com.ternaryop.photoshelf.util.viewer.ImageViewerUtil
 import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.utils.DialogUtils
-import com.ternaryop.utils.IOUtils
-import com.ternaryop.utils.ShareUtils
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import java.io.File
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URISyntaxException
-import java.net.URL
 import java.util.Locale
 
 const val DIMENSIONS_POST_DELAY_MILLIS = 3000L
@@ -53,8 +38,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
     override val contentViewLayoutId: Int
         get() = R.layout.activity_webview
 
-    private val imageUrl: String?
-        get() = intent.extras?.getString(IMAGE_URL)
+    private lateinit var imageUrl: String
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +47,8 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
         val progressBar = findViewById<View>(R.id.webview_progressbar) as ProgressBar
         detailsText = findViewById<View>(R.id.details_text) as TextView
 
-        val imageUrl = imageUrl ?: return
+        imageUrl = intent.extras?.getString(IMAGE_URL) ?: return
+
         val data = "<body><img src=\"$imageUrl\"/></body>"
         prepareWebView(progressBar).loadDataWithBaseURL(null, data, "text/html", "UTF-8", null)
         try {
@@ -144,19 +129,20 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_image_viewer_wallpaper -> {
-                changeWallpaper()
+                PublishIntentService.startChangeWallpaperIntent(this, Uri.parse(imageUrl))
                 return true
             }
             R.id.action_image_viewer_share -> {
-                shareImage()
+                ImageViewerUtil.shareImage(this, imageUrl, intent.extras?.getString(IMAGE_TITLE))
                 return true
             }
             R.id.action_image_viewer_download -> {
-                download()
+                ImageViewerUtil.download(this, imageUrl, intent.extras?.getString(IMAGE_TAG))
                 return true
             }
             R.id.action_image_viewer_copy_url -> {
-                copyURL()
+                ImageViewerUtil.copyToClipboard(this, imageUrl,
+                    getString(R.string.image_url_description), R.string.url_copied_to_clipboard_title)
                 return true
             }
             R.id.action_image_viewer_details -> {
@@ -171,94 +157,9 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
         detailsText.visibility = if (detailsText.visibility == View.GONE) View.VISIBLE else View.GONE
     }
 
-    private fun download() {
-        try {
-            val imageUrl = imageUrl ?: return
-
-            val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val fileName = buildFileName(imageUrl, intent.extras?.getString(IMAGE_TAG))
-            val request = DownloadManager.Request(Uri.parse(imageUrl))
-                    .setDestinationUri(Uri.fromFile(File(AppSupport.picturesDirectory, fileName)))
-            downloadManager.enqueue(request)
-        } catch (e: Exception) {
-            DialogUtils.showErrorDialog(this, e)
-        }
-    }
-
-    private fun copyURL() {
-        val imageUrl = imageUrl
-
-        val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboardManager.primaryClip = ClipData.newPlainText(getString(R.string.image_url_description), imageUrl)
-        Toast.makeText(this,
-                R.string.url_copied_to_clipboard_title,
-                Toast.LENGTH_SHORT)
-                .show()
-    }
-
-    private fun shareImage() {
-        try {
-            val imageUrl = imageUrl ?: return
-            val fileName = buildFileName(imageUrl, null)
-            // write to a public location otherwise the called app can't access to file
-            val destFile = File(AppSupport.picturesDirectory, fileName)
-            downloadImageUrl(URL(imageUrl), destFile)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ startShareImage(destFile) }
-                    ) { throwable -> DialogUtils.showErrorDialog(this, throwable) }
-        } catch (e: Exception) {
-            DialogUtils.showErrorDialog(this, e)
-        }
-    }
-
-    private fun startShareImage(destFile: File) {
-        var title: String? = if (intent.extras == null) null else intent.extras!!.getString(IMAGE_TITLE)
-        title = if (title == null) {
-            ""
-        } else {
-            title.fromHtml().toString()
-        }
-
-        ShareUtils.shareImage(this,
-                destFile.absolutePath,
-                "image/jpeg",
-                title,
-                getString(R.string.share_image_title))
-    }
-
-    private fun changeWallpaper() {
-        PublishIntentService.startChangeWallpaperIntent(this, Uri.parse(imageUrl))
-    }
-
-    private fun downloadImageUrl(imageUrl: URL, destFile: File): Completable {
-        return Completable.fromCallable {
-            val connection = imageUrl.openConnection() as HttpURLConnection
-            connection.inputStream.use { stream -> FileOutputStream(destFile).use { os -> IOUtils.copy(stream, os) } }
-            null
-        }
-    }
-
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right)
-    }
-
-    @Throws(URISyntaxException::class)
-    private fun buildFileName(imageUrl: String, fileName: String?): String {
-        if (fileName == null) {
-            var nameFromUrl = URI(imageUrl).path
-            val index = nameFromUrl.lastIndexOf('/')
-            if (index != -1) {
-                nameFromUrl = nameFromUrl.substring(index + 1)
-            }
-            return nameFromUrl
-        }
-        val index = imageUrl.lastIndexOf(".")
-        // append extension with "."
-        return if (index != -1) {
-            fileName + imageUrl.substring(index)
-        } else fileName
     }
 
     companion object {
