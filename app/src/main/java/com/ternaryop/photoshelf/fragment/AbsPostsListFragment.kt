@@ -43,7 +43,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     protected lateinit var photoAdapter: PhotoAdapter
     protected var offset: Int = 0
     protected var hasMorePosts: Boolean = false
-    protected open var isScrolling: Boolean = false
+    protected var isScrolling: Boolean = false
     protected var totalPosts: Long = 0
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
@@ -108,9 +108,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         return true
     }
 
-    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        return true
-    }
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = true
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         return handleMenuItem(item, photoAdapter.selectedPosts, mode)
@@ -154,18 +152,16 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     override fun refreshUI() {
-        if (searchView != null && searchView!!.isIconified) {
-            if (hasMorePosts) {
-                supportActionBar!!.subtitle = getString(R.string.post_count_1_of_x,
-                        photoAdapter.itemCount,
-                        totalPosts)
-            } else {
-                supportActionBar!!.subtitle = resources.getQuantityString(
-                        R.plurals.posts_count,
-                        photoAdapter.itemCount,
-                        photoAdapter.itemCount)
-                photoAdapter.notifyCountChanged()
-            }
+        supportActionBar?.subtitle = if (hasMorePosts) {
+            getString(R.string.post_count_1_of_x,
+                photoAdapter.itemCount,
+                totalPosts)
+        } else {
+            photoAdapter.notifyCountChanged()
+            resources.getQuantityString(
+                R.plurals.posts_count,
+                photoAdapter.itemCount,
+                photoAdapter.itemCount)
         }
 
         // use post() to resolve the following error:
@@ -212,11 +208,10 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     private fun handleClickedThumbnail(position: Int) {
-        val post = photoAdapter.getItem(position)
         if (activity!!.callingActivity == null) {
             onThumbnailImageClick(position)
         } else {
-            post.finishActivity(activity!!)
+            photoAdapter.getItem(position).finishActivity(activity!!)
         }
     }
 
