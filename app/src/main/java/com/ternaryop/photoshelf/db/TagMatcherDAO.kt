@@ -48,7 +48,7 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
     }
 
     fun getMatchingTag(stmt: SQLiteStatement, tag: String): String? {
-        stmt.bindString(1, tag)
+        stmt.bindString(1, cleanTag(tag))
 
         return try {
             stmt.simpleQueryForString()
@@ -60,7 +60,7 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
 
     fun getMatchingTag(tag: String): String? {
         val db = dbHelper.readableDatabase
-        return getMatchingTag(getSelectTagMatcherStatement(db), cleanTag(tag))
+        return getMatchingTag(getSelectTagMatcherStatement(db), tag)
     }
 
     fun insert(stmt: SQLiteStatement, tag: String): Long {
