@@ -25,30 +25,17 @@ import java.util.Locale
  * Used by searchView in actionBar
  * @author dave
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class BirthdayCursorAdapter(private val context: Context,
     var blogName: String) : SimpleCursorAdapter(context, R.layout.list_row_2,
     null,
     arrayOf(BirthdayDAO.NAME, BirthdayDAO.BIRTH_DATE),
     intArrayOf(android.R.id.text1, android.R.id.text2), 0), FilterQueryProvider, ViewBinder {
 
-    private val birthdayDAO = DBHelper.getInstance(context).birthdayDAO
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("d MMMM, yyyy", Locale.US)
-    private var showFlags = SHOW_ALL
     private var pattern = ""
     var month: Int = 0
 
-    val isShowIgnored: Boolean
-        get() = showFlags and SHOW_IGNORED != 0
-
-    val isShowInSameDay: Boolean
-        get() = showFlags and SHOW_IN_SAME_DAY != 0
-
-    val isShowMissing: Boolean
-        get() = showFlags and SHOW_MISSING != 0
-
-    val isWithoutPost: Boolean
-        get() = showFlags and SHOW_WITHOUT_POSTS != 0
+    val showFlags = BirthdayShowFlags(context)
 
     init {
         viewBinder = this
@@ -57,13 +44,7 @@ class BirthdayCursorAdapter(private val context: Context,
 
     override fun runQuery(constraint: CharSequence?): Cursor {
         this.pattern = constraint?.toString()?.trim { it <= ' ' } ?: ""
-        return when {
-            isShowIgnored -> birthdayDAO.getIgnoredBirthdayCursor(pattern, blogName)
-            isShowInSameDay -> birthdayDAO.getBirthdaysInSameDay(pattern, blogName)
-            isShowMissing -> birthdayDAO.getMissingBirthDaysCursor(pattern, blogName)
-            isWithoutPost -> birthdayDAO.getBirthdaysWithoutPostsCursor(blogName)
-            else -> birthdayDAO.getBirthdayCursorByName(pattern, month, blogName)
-        }
+        return showFlags.cursorBy(pattern, month, blogName)
     }
 
     override fun convertToString(cursor: Cursor): String {
@@ -86,7 +67,9 @@ class BirthdayCursorAdapter(private val context: Context,
                 } else {
                     // group by day, not perfect by better than nothing
                     val isEven = date.dayOfMonth and 1 == 0
-                    view.setBackgroundResource(if (isEven) R.drawable.list_selector_post_group_even else R.drawable.list_selector_post_group_odd)
+                    view.setBackgroundResource(
+                        if (isEven) R.drawable.list_selector_post_group_even
+                        else R.drawable.list_selector_post_group_odd)
                 }
             }
         } catch (ignored: ParseException) {
@@ -161,14 +144,33 @@ class BirthdayCursorAdapter(private val context: Context,
         return -1
     }
 
-    fun isShowFlag(value: Int): Boolean {
-        return showFlags and value != 0
+    companion object {
+        private val dayRange = 0..30
     }
+}
+
+class BirthdayShowFlags(context: Context) {
+    private var flags = SHOW_ALL
+    private val birthdayDAO = DBHelper.getInstance(context).birthdayDAO
+
+    val isShowIgnored: Boolean
+        get() = flags and SHOW_IGNORED != 0
+
+    val isShowInSameDay: Boolean
+        get() = flags and SHOW_IN_SAME_DAY != 0
+
+    val isShowMissing: Boolean
+        get() = flags and SHOW_MISSING != 0
+
+    val isWithoutPost: Boolean
+        get() = flags and SHOW_WITHOUT_POSTS != 0
+
+    fun isOn(value: Int): Boolean = flags and value != 0
 
     @Suppress("ComplexMethod")
-    fun setShow(value: Int, show: Boolean) {
-        // SHOW_ALL is the default value and it can't be hidden
-        showFlags = when {
+    fun setFlag(value: Int, show: Boolean) {
+        flags = when {
+            // SHOW_ALL is the default value and it can't be hidden
             value and SHOW_ALL != 0 -> SHOW_ALL
             value and SHOW_IGNORED != 0 -> if (show) SHOW_IGNORED else SHOW_ALL
             value and SHOW_IN_SAME_DAY != 0 -> if (show) SHOW_IN_SAME_DAY else SHOW_ALL
@@ -178,9 +180,15 @@ class BirthdayCursorAdapter(private val context: Context,
         }
     }
 
-    companion object {
-        private val dayRange = 0..30
+    fun cursorBy(pattern: String, month: Int, blogName: String): Cursor = when {
+        isShowIgnored -> birthdayDAO.getIgnoredBirthdayCursor(pattern, blogName)
+        isShowInSameDay -> birthdayDAO.getBirthdaysInSameDay(pattern, blogName)
+        isShowMissing -> birthdayDAO.getMissingBirthDaysCursor(pattern, blogName)
+        isWithoutPost -> birthdayDAO.getBirthdaysWithoutPostsCursor(blogName)
+        else -> birthdayDAO.getBirthdayCursorByName(pattern, month, blogName)
+    }
 
+    companion object {
         const val SHOW_ALL = 1
         const val SHOW_IGNORED = 1 shl 1
         const val SHOW_IN_SAME_DAY = 1 shl 2

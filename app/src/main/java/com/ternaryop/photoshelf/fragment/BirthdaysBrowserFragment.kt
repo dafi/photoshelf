@@ -19,7 +19,7 @@ import android.widget.SearchView
 import android.widget.Spinner
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Birthday
-import com.ternaryop.photoshelf.db.BirthdayCursorAdapter
+import com.ternaryop.photoshelf.db.BirthdayShowFlags
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.util.date.dayOfMonth
 import com.ternaryop.photoshelf.util.date.month
@@ -29,13 +29,10 @@ import java.text.DateFormatSymbols
 import java.util.Calendar
 
 class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoiceModeListener {
-
     private lateinit var toolbarSpinner: Spinner
-
     private var currentSelectedItemId = R.id.action_show_all
     private val singleSelectionMenuIds = intArrayOf(R.id.item_edit)
     private lateinit var monthSelector: BirthdaysMonthList
-
     private val actionModeMenuId: Int
         get() = R.menu.birthdays_context
 
@@ -45,8 +42,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
     }
 
     override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+        container: ViewGroup?,
+        savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_birthdays_by_name, container, false)
 
         monthSelector = BirthdaysMonthList(activity!!,
@@ -57,16 +54,15 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
 
         (rootView.findViewById<View>(R.id.searchView1) as SearchView)
             .setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    return false
+                }
 
-            override fun onQueryTextSubmit(query: String): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                monthSelector.adapter.filter.filter(newText)
-                return true
-            }
-        })
+                override fun onQueryTextChange(newText: String): Boolean {
+                    monthSelector.adapter.filter.filter(newText)
+                    return true
+                }
+            })
 
         setupActionBar()
         setHasOptionsMenu(true)
@@ -136,12 +132,11 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
     override fun onDestroyActionMode(mode: ActionMode) {}
 
     override fun onItemCheckedStateChanged(mode: ActionMode, position: Int,
-                                           id: Long, checked: Boolean) {
+        id: Long, checked: Boolean) {
         val selectCount = monthSelector.listView.checkedItemCount
         val singleSelection = selectCount == 1
-
         val menu = mode.menu
-        if (monthSelector.adapter.isShowMissing) {
+        if (monthSelector.adapter.showFlags.isShowMissing) {
             for (i in 0 until menu.size()) {
                 val itemId = menu.getItem(i).itemId
                 menu.getItem(i).isVisible = MISSING_BIRTHDAYS_ITEMS.contains(itemId)
@@ -156,9 +151,9 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
         }
 
         mode.subtitle = resources.getQuantityString(
-                R.plurals.selected_items,
-                selectCount,
-                selectCount)
+            R.plurals.selected_items,
+            selectCount,
+            selectCount)
     }
 
     private fun showConfirmDialog(postAction: ItemAction, mode: ActionMode) {
@@ -171,23 +166,22 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
                 }
             }
         }
-
         val message = when (postAction) {
             ItemAction.DELETE -> resources.getQuantityString(R.plurals.delete_items_confirm,
-                    birthdays.size,
-                    birthdays.size,
-                    birthdays[0].name)
+                birthdays.size,
+                birthdays.size,
+                birthdays[0].name)
             ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(R.plurals.update_items_confirm,
-                    birthdays.size,
-                    birthdays.size,
-                    birthdays[0].name)
+                birthdays.size,
+                birthdays.size,
+                birthdays[0].name)
         }
 
         AlertDialog.Builder(context!!)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes, dialogClickListener)
-                .setNegativeButton(android.R.string.no, dialogClickListener)
-                .show()
+            .setMessage(message)
+            .setPositiveButton(android.R.string.yes, dialogClickListener)
+            .setNegativeButton(android.R.string.no, dialogClickListener)
+            .show()
     }
 
     private fun markAsIgnored(birthdays: List<Birthday>, mode: ActionMode) {
@@ -220,40 +214,39 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
         val showFlag: Int
 
         currentSelectedItemId = item.itemId
-
         val subTitle: CharSequence?
         when (item.itemId) {
             R.id.action_show_all -> {
                 setSpinnerVisibility(true)
-                showFlag = BirthdayCursorAdapter.SHOW_ALL
+                showFlag = BirthdayShowFlags.SHOW_ALL
                 subTitle = null
             }
             R.id.action_show_ignored -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_IGNORED
+                showFlag = BirthdayShowFlags.SHOW_IGNORED
             }
             R.id.action_show_birthdays_in_same_day -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_IN_SAME_DAY
+                showFlag = BirthdayShowFlags.SHOW_IN_SAME_DAY
             }
             R.id.action_show_birthdays_missing -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_MISSING
+                showFlag = BirthdayShowFlags.SHOW_MISSING
             }
             R.id.action_show_birthdays_without_posts -> {
                 setSpinnerVisibility(false)
                 subTitle = item.title
-                showFlag = BirthdayCursorAdapter.SHOW_WITHOUT_POSTS
+                showFlag = BirthdayShowFlags.SHOW_WITHOUT_POSTS
             }
             else -> return super.onOptionsItemSelected(item)
         }
 
         supportActionBar?.subtitle = subTitle
         item.isChecked = isChecked
-        monthSelector.adapter.setShow(showFlag, isChecked)
+        monthSelector.adapter.showFlags.setFlag(showFlag, isChecked)
         monthSelector.adapter.refresh()
         return true
     }
@@ -274,7 +267,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
             supportActionBar?.setDisplayShowTitleEnabled(true)
         } else {
             // check if view is already added (eg when the overflow menu is opened)
-            if (monthSelector.adapter.isShowFlag(BirthdayCursorAdapter.SHOW_ALL)
+            if (monthSelector.adapter.showFlags.isOn(BirthdayShowFlags.SHOW_ALL)
                 && fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1) {
                 fragmentActivityStatus.drawerToolbar.addView(toolbarSpinner)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
@@ -286,14 +279,13 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
 
     private fun setupActionBar() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
-
         val months = arrayOfNulls<String>(MONTH_COUNT + 1)
         months[0] = getString(R.string.all)
         System.arraycopy(DateFormatSymbols().months, 0, months, 1, MONTH_COUNT)
         val monthAdapter = ArrayAdapter<String>(
-                supportActionBar?.themedContext,
-                android.R.layout.simple_spinner_item,
-                months)
+            supportActionBar?.themedContext,
+            android.R.layout.simple_spinner_item,
+            months)
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         toolbarSpinner = LayoutInflater
@@ -303,10 +295,11 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), AbsListView.MultiChoic
                 false) as Spinner
         toolbarSpinner.adapter = monthAdapter
         toolbarSpinner.setSelection(Calendar.getInstance().month + 1)
-        toolbarSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+        toolbarSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 monthSelector.changeMonth(pos)
             }
+
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
