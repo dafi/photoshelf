@@ -22,6 +22,7 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.adapter.ImagePickerAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
+import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.extractor.ImageGallery
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
@@ -181,15 +182,8 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private fun onImagesRetrieved(imageUriList: List<Uri>) {
         try {
             val titleData = TitleParser.instance(AndroidTitleParserConfig(context!!)).parseTitle(parsableTitle)
-            val args = Bundle()
-
-            args.putParcelableArrayList(TumblrPostDialog.ARG_IMAGE_URLS, ArrayList(imageUriList))
-            args.putString(TumblrPostDialog.ARG_HTML_TITLE, titleData.toHtml())
-            args.putString(TumblrPostDialog.ARG_SOURCE_TITLE, parsableTitle)
-
-            args.putStringArrayList(TumblrPostDialog.ARG_INITIAL_TAG_LIST, ArrayList(titleData.tags))
-
-            TumblrPostDialog.newInstance(args, null).show(fragmentManager, "dialog")
+            TumblrPostDialog.newInstance(PostDialogData(parsableTitle,
+                titleData.toHtml(), titleData.tags, imageUriList), null).show(fragmentManager, "dialog")
         } catch (e: Exception) {
             AlertDialog.Builder(context!!)
                     .setTitle(R.string.parsing_error)

@@ -328,7 +328,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
-        postActionExecutor.edit(post, dialog.postTitle, dialog.postTags, selectedBlogName)
+        postActionExecutor.edit(post, dialog.titleHolder.htmlTitle, dialog.tagsHolder.tags, selectedBlogName)
                 .doOnSubscribe { d -> compositeDisposable.add(d) }
                 .subscribe({ }, { t -> DialogUtils.showErrorDialog(context!!, t) })
     }
