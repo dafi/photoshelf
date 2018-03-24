@@ -11,6 +11,7 @@ import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.app.AlertDialog
+import android.support.v7.view.ContextThemeWrapper
 import android.support.v7.widget.Toolbar
 import android.util.Pair
 import android.view.MenuItem
@@ -283,8 +284,12 @@ class TagsHolder(private val fragment: Fragment, rootView: View, blogName: Strin
 
     private val mru = MRU(fragment.context!!, MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE)
 
+    // the ContextThemeWrapper is necessary otherwise the autocomplete drop down items
+    // and the toolbar overflow menu items are styled incorrectly
+    // since the switch to the AlertDialog the toolbar isn't styled from code
+    // so to fix it the theme is declared directly into xml
     private val tagAdapter = TagCursorAdapter(
-        fragment.activity!!,
+        ContextThemeWrapper(fragment.activity!!, R.style.Theme_PhotoShelf_Dialog),
         android.R.layout.simple_dropdown_item_1line,
         blogName)
 
