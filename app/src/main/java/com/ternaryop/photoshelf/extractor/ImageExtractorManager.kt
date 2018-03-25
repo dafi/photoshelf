@@ -30,8 +30,8 @@ class ImageExtractorManager(private val accessToken: String) {
             handleError(conn)
             ImageGallery(toJson(conn.inputStream).getJSONObject("gallery"))
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }
@@ -47,8 +47,8 @@ class ImageExtractorManager(private val accessToken: String) {
             handleError(conn)
             toJson(conn.inputStream).getString("imageUrl")
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }

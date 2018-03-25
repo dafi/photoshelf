@@ -42,8 +42,8 @@ class GoogleCustomSearchClient(private val apiKey: String, private val cx: Strin
             conn.requestMethod = "GET"
             toJson(conn.inputStream)
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }

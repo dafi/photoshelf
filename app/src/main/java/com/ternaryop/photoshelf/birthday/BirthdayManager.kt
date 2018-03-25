@@ -29,8 +29,8 @@ class BirthdayManager(private val accessToken: String) {
             val birthdayInfo = toJson(conn.inputStream).getJSONArray("birthdays")
             BirthdayInfo(birthdayInfo.getJSONObject(0))
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }

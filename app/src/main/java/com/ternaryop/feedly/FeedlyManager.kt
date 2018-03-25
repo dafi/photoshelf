@@ -43,8 +43,8 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
             val items = toJson(conn.inputStream).getJSONArray("items")
             Array(items.length(), { SimpleFeedlyContent(items.getJSONObject(it)) as FeedlyContent }).toList()
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }
@@ -68,8 +68,8 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
             FeedlyRateLimit.update(conn)
             handleError(conn)
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }
@@ -90,8 +90,8 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
             handleError(conn)
             return toJson(conn.inputStream).getString("access_token")
         } finally {
-            if (conn != null) try {
-                conn.disconnect()
+            try {
+                conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }
