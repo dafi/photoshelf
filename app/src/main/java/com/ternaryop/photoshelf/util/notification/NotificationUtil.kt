@@ -47,7 +47,7 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         createChannel()
     }
 
-    fun notifyError(t: Throwable, title: String, ticker: String?, offsetId: Int = 0) {
+    fun notifyError(t: Throwable, title: String, ticker: String? = null, offsetId: Int = 0) {
         val notification = createNotification(title, ticker, t.localizedMessage, R.drawable.stat_notify_error).build()
         // add offsetId to ensure every notification is shown
         notificationManager.notify(ERROR_TAG, NOTIFICATION_ID + offsetId, notification)
@@ -111,7 +111,8 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun createNotification(contentText: String, stringTicker: String?, subText: String?, iconId: Int): NotificationCompat.Builder {
+    fun createNotification(contentText: String,
+        stringTicker: String?, subText: String?, iconId: Int): NotificationCompat.Builder {
         val builder = NotificationCompat.Builder(this, BIRTHDAY_CHANNEL_ID)
                 .setContentText(contentText)
                 .setTicker(stringTicker)
@@ -125,7 +126,8 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         return builder
     }
 
-    private fun createBirthdayNotification(contentText: String, stringTicker: String, subText: String?, iconId: Int, deleteIntent: PendingIntent): Notification {
+    private fun createBirthdayNotification(contentText: String,
+        stringTicker: String, subText: String?, iconId: Int, deleteIntent: PendingIntent): Notification {
         val builder = createNotification(contentText, stringTicker, subText, iconId)
 
         birthdaysContentLines.add(contentText)

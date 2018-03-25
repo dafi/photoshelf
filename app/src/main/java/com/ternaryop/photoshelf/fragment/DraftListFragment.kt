@@ -29,6 +29,7 @@ import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
+import com.ternaryop.photoshelf.importer.importFromTumblr
 import com.ternaryop.photoshelf.util.date.millisecond
 import com.ternaryop.photoshelf.util.date.second
 import com.ternaryop.photoshelf.util.post.PostActionExecutor

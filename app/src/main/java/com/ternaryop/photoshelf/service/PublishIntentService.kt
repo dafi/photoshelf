@@ -97,7 +97,7 @@ class PublishIntentService : IntentService("publishIntent") {
             wpm.setBitmap(bitmap)
             showToast(R.string.wallpaper_changed_title)
         } catch (e: Exception) {
-            notificationUtil.notifyError(e, "", null)
+            notificationUtil.notifyError(e, "")
         }
     }
 

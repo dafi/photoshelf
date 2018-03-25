@@ -7,6 +7,9 @@ import android.support.v7.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Importer
+import com.ternaryop.photoshelf.importer.birthdaysPath
+import com.ternaryop.photoshelf.importer.missingBirthdaysPath
+import com.ternaryop.photoshelf.importer.postsPath
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.service.ImportIntentService
 import com.ternaryop.utils.DateTimeUtils

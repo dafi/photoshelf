@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf.importer
 import android.os.Environment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.utils.DateTimeUtils
 import java.io.File
@@ -17,7 +16,7 @@ class BatchExporter(val appSupport: AppSupport) {
         get() = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "export_errors.txt")
 
     fun export() {
-        val importer = Importer(appSupport, DropboxManager.getInstance(appSupport))
+        val importer = Importer(appSupport)
         exportPosts(importer)
         exportBirthdays(importer)
         exportTotalUsers(importer)
