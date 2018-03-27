@@ -257,14 +257,8 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         val cal: Calendar
 
         if (lastScheduledDate == null) {
-            var maxScheduledTime = System.currentTimeMillis()
-
-            for (post in queuedPosts) {
-                val scheduledTime = post.scheduledPublishTime * SECOND_IN_MILLIS
-                if (scheduledTime > maxScheduledTime) {
-                    maxScheduledTime = scheduledTime
-                }
-            }
+            val maxScheduledTime = queuedPosts.maxBy { it.scheduledPublishTime }
+                ?.run { scheduledPublishTime * SECOND_IN_MILLIS } ?: System.currentTimeMillis()
 
             // Calendar.MINUTE isn't reset otherwise the calc may be inaccurate
             cal = Calendar.getInstance()

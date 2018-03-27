@@ -25,8 +25,8 @@ import java.util.Locale
  * Used by searchView in actionBar
  * @author dave
  */
-class BirthdayCursorAdapter(private val context: Context,
-    var blogName: String) : SimpleCursorAdapter(context, R.layout.list_row_2,
+class BirthdayCursorAdapter(private val context: Context, var blogName: String)
+    : SimpleCursorAdapter(context, R.layout.list_row_2,
     null,
     arrayOf(BirthdayDAO.NAME, BirthdayDAO.BIRTH_DATE),
     intArrayOf(android.R.id.text1, android.R.id.text2), 0), FilterQueryProvider, ViewBinder {
@@ -54,25 +54,30 @@ class BirthdayCursorAdapter(private val context: Context,
 
     override fun bindView(view: View, context: Context, cursor: Cursor) {
         super.bindView(view, context, cursor)
-        val now = Calendar.getInstance()
 
         try {
             val isoDate = cursor.getString(cursor.getColumnIndex(BirthdayDAO.BIRTH_DATE))
             if (isoDate == null) {
                 view.setBackgroundResource(R.drawable.list_selector_post_group_even)
             } else {
-                val date = Birthday.fromIsoFormat(isoDate)
-                if (date.dayOfMonth == now.dayOfMonth && date.month == now.month) {
-                    view.setBackgroundResource(R.drawable.list_selector_post_never)
-                } else {
-                    // group by day, not perfect by better than nothing
-                    val isEven = date.dayOfMonth and 1 == 0
-                    view.setBackgroundResource(
-                        if (isEven) R.drawable.list_selector_post_group_even
-                        else R.drawable.list_selector_post_group_odd)
-                }
+                bindBirthdateView(view, isoDate)
             }
         } catch (ignored: ParseException) {
+        }
+    }
+
+    private fun bindBirthdateView(view: View, isoDate: String) {
+        val now = Calendar.getInstance()
+        val date = Birthday.fromIsoFormat(isoDate)
+
+        if (date.dayOfMonth == now.dayOfMonth && date.month == now.month) {
+            view.setBackgroundResource(R.drawable.list_selector_post_never)
+        } else {
+            // group by day, not perfect by better than nothing
+            val isEven = date.dayOfMonth and 1 == 0
+            view.setBackgroundResource(
+                if (isEven) R.drawable.list_selector_post_group_even
+                else R.drawable.list_selector_post_group_odd)
         }
     }
 

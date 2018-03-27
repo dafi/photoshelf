@@ -64,18 +64,15 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
 
     fun updatePostByTag(newPost: TumblrPhotoPost, notifyChange: Boolean) {
         val name = newPost.tags[0]
+        val index = items.indexOfFirst { it.second.tags[0].equals(name, ignoreCase = true) }
 
-        for (i in 0 until itemCount) {
-            val item = getItem(i)
-            val post = item.second
-            if (post.tags[0].equals(name, ignoreCase = true)) {
-                items[i] = Pair.create(item.first, newPost)
+        if (index == -1) {
+            return
+        }
+        items[index] = Pair.create(items[index].first, newPost)
 
-                if (notifyChange) {
-                    notifyDataSetChanged()
-                }
-                break
-            }
+        if (notifyChange) {
+            notifyDataSetChanged()
         }
     }
 

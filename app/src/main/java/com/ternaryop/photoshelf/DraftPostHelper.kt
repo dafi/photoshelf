@@ -30,35 +30,23 @@ class DraftPostHelper(private val context: Context, private val blogName: String
      * @return the (tag, posts) map
      */
     fun groupPostByTag(posts: List<TumblrPost>): Map<String, List<TumblrPost>> {
-        val map = HashMap<String, MutableList<TumblrPost>>()
-
-        for (post in posts) {
-            if (post.type == "photo" && post.tags.size > 0) {
-                val tag = post.tags[0].toLowerCase(Locale.US)
-                var list: MutableList<TumblrPost>? = map[tag]
-                if (list == null) {
-                    list = mutableListOf()
-                    map[tag] = list
-                }
-                list.add(post)
-            }
-        }
-
-        return map
+        return posts
+            .filter { it.tags.isNotEmpty() && it.type == "photo" }
+            .groupBy { it.tags[0].toLowerCase(Locale.US) }
     }
 
     private fun findLastPublishedPost(tag: String): Maybe<TumblrPhotoPost> {
         return Single
-                .fromCallable {
-                    val params = HashMap<String, String>()
-                    params["type"] = "photo"
-                    params["limit"] = "1"
-                    params["tag"] = tag
+            .fromCallable {
+                val params = HashMap<String, String>()
+                params["type"] = "photo"
+                params["limit"] = "1"
+                params["tag"] = tag
 
-                    tumblr.getPhotoPosts(blogName, params)
-                }
-                .filter { posts -> !posts.isEmpty() }
-                .map { posts -> posts[0] }
+                tumblr.getPhotoPosts(blogName, params)
+            }
+            .filter { posts -> !posts.isEmpty() }
+            .map { posts -> posts[0] }
     }
 
     fun getTagLastPublishedMap(tags: Set<String>): Single<Map<String, Long>> {
@@ -67,26 +55,26 @@ class DraftPostHelper(private val context: Context, private val blogName: String
         val executorService = Executors.newFixedThreadPool(MAX_TAG_LAST_PUBLISHED_THREAD_POOL)
 
         return Observable
-                .fromIterable(tags)
-                .flatMap { tag ->
-                    val lastPublishedTime = postByTags[tag]
-                    if (lastPublishedTime == null) {
-                        findLastPublishedPost(tag)
-                                .subscribeOn(Schedulers.from(executorService)).toObservable()
-                    } else {
-                        val post = TumblrPhotoPost()
-                        post.tagsFromString(tag)
-                        post.timestamp = lastPublishedTime
-                        Observable.just(post)
-                    }
+            .fromIterable(tags)
+            .flatMap { tag ->
+                val lastPublishedTime = postByTags[tag]
+                if (lastPublishedTime == null) {
+                    findLastPublishedPost(tag)
+                        .subscribeOn(Schedulers.from(executorService)).toObservable()
+                } else {
+                    val post = TumblrPhotoPost()
+                    post.tagsFromString(tag)
+                    post.timestamp = lastPublishedTime
+                    Observable.just(post)
                 }
-                .toMap({ post -> post.tags[0].toLowerCase(Locale.US) }, { it.timestamp })
+            }
+            .toMap({ post -> post.tags[0].toLowerCase(Locale.US) }, { it.timestamp })
     }
 
     fun getPhotoShelfPosts(
-            draftPosts: Map<String, List<TumblrPost>>,
-            queuedPosts: Map<String, List<TumblrPost>>,
-            lastPublished: Map<String, Long>): List<PhotoShelfPost> {
+        draftPosts: Map<String, List<TumblrPost>>,
+        queuedPosts: Map<String, List<TumblrPost>>,
+        lastPublished: Map<String, Long>): List<PhotoShelfPost> {
         val list = mutableListOf<PhotoShelfPost>()
 
         for ((tag, posts) in draftPosts) {
