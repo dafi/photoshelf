@@ -49,34 +49,18 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        with(preferenceScreen) {
-            findPreference(KEY_TUMBLR_LOGIN).apply {
-                title = if (Tumblr.isLogged(context!!)) {
-                    getString(R.string.logout_title, TUMBLR_SERVICE_NAME)
-                } else {
-                    getString(R.string.login_title, TUMBLR_SERVICE_NAME)
-                }
-            }
+        toggleTumblrLoginTitle()
+        toggleDropboxLoginTitle()
+        PermissionUtil.askPermission(activity!!, Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_FILE_PERMISSION)
 
-            findPreference(KEY_DROPBOX_LOGIN).apply {
-                title = if (dropboxManager.isLinked) {
-                    getString(R.string.logout_title, DROPBOX_SERVICE_NAME)
-                } else {
-                    getString(R.string.login_title, DROPBOX_SERVICE_NAME)
-                }
-            }
-            PermissionUtil.askPermission(activity!!,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_FILE_PERMISSION)
+        findPreference(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
+        onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
 
-            findPreference(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
-            onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
+        onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_THUMBNAIL_WIDTH)
 
-            onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_THUMBNAIL_WIDTH)
+        onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_EXPORT_DAYS_PERIOD)
 
-            onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_EXPORT_DAYS_PERIOD)
-
-            setupVersionInfo(preferenceScreen)
-        }
+        setupVersionInfo(preferenceScreen)
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -144,10 +128,9 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     }
 
     private fun logout() {
-        val dialogClickListener = DialogInterface.OnClickListener { _, which ->
-            when (which) {
-                DialogInterface.BUTTON_POSITIVE -> Tumblr.logout(context!!)
-            }
+        val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
+            Tumblr.logout(context!!)
+            toggleTumblrLoginTitle()
         }
 
         AlertDialog.Builder(context!!)
@@ -185,5 +168,25 @@ class MainPreferenceFragment : AppPreferenceFragment() {
         preferenceVersion = preferenceScreen.findPreference(KEY_DROPBOX_VERSION)
         preferenceVersion.title = getString(R.string.version_title, "Dropbox")
         preferenceVersion.summary = DropboxManager.Version
+    }
+
+    private fun toggleTumblrLoginTitle() {
+        findPreference(KEY_TUMBLR_LOGIN).apply {
+            title = if (Tumblr.isLogged(context!!)) {
+                getString(R.string.logout_title, TUMBLR_SERVICE_NAME)
+            } else {
+                getString(R.string.login_title, TUMBLR_SERVICE_NAME)
+            }
+        }
+    }
+
+    private fun toggleDropboxLoginTitle() {
+        findPreference(KEY_DROPBOX_LOGIN).apply {
+            title = if (dropboxManager.isLinked) {
+                getString(R.string.logout_title, DROPBOX_SERVICE_NAME)
+            } else {
+                getString(R.string.login_title, DROPBOX_SERVICE_NAME)
+            }
+        }
     }
 }
