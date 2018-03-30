@@ -18,6 +18,7 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.photoshelf.util.security.PermissionUtil
 import com.ternaryop.tumblr.Tumblr
+import com.ternaryop.utils.DialogUtils
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
 private const val DROPBOX_SERVICE_NAME = "Dropbox"
@@ -118,7 +119,9 @@ class MainPreferenceFragment : AppPreferenceFragment() {
                 if (Tumblr.isLogged(context!!)) {
                     logout()
                 } else {
-                    Tumblr.login(context!!)
+                    Tumblr
+                        .login(context!!)
+                        .subscribe({}, { DialogUtils.showErrorDialog(context!!, it) })
                 }
                 return true
             }

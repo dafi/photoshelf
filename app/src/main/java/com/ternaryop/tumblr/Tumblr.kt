@@ -2,6 +2,7 @@ package com.ternaryop.tumblr
 
 import android.content.Context
 import android.net.Uri
+import io.reactivex.Completable
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -194,7 +195,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
 
         fun isLogged(context: Context): Boolean = TumblrHttpOAuthConsumer.isLogged(context)
 
-        fun login(context: Context) = TumblrHttpOAuthConsumer.loginWithActivity(context)
+        fun login(context: Context): Completable = TumblrHttpOAuthConsumer.loginWithActivity(context)
 
         fun logout(context: Context) = TumblrHttpOAuthConsumer.logout(context)
 

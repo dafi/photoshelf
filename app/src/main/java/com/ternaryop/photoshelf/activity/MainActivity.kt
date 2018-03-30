@@ -193,30 +193,21 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.notifyDataSetChanged()
     }
 
-    override fun tumblrAuthenticated(token: String?, tokenSecret: String?, error: Exception?) {
-        if (error == null) {
-            Toast.makeText(this,
-                getString(R.string.authentication_success_title),
-                Toast.LENGTH_LONG)
-                .show()
-            // after authentication cache blog names
-            appSupport.fetchBlogNames(this)
-                .subscribe(object : SingleObserver<List<String>> {
-                    override fun onSubscribe(d: Disposable) {
-                    }
-
-                    override fun onSuccess(value: List<String>) {
-                        enableUI(token != null && tokenSecret != null)
-                    }
-
-                    override fun onError(e: Throwable) {
-                        DialogUtils.showErrorDialog(applicationContext, e)
-                    }
-                })
-        } else {
-            DialogUtils.showErrorDialog(this, error)
-        }
+    override fun tumblrAuthenticated(token: String, tokenSecret: String) {
+        Toast.makeText(this,
+            getString(R.string.authentication_success_title),
+            Toast.LENGTH_LONG)
+            .show()
+        // after authentication cache blog names
+        appSupport.fetchBlogNames(this)
+            .subscribe(object : SingleObserver<List<String>> {
+                override fun onSubscribe(d: Disposable) {}
+                override fun onSuccess(value: List<String>) = enableUI(true)
+                override fun onError(e: Throwable) = DialogUtils.showErrorDialog(applicationContext, e)
+            })
     }
+
+    override fun tumblrAuthenticationError(error: Throwable) = DialogUtils.showErrorDialog(this, error)
 
     override fun onDrawerItemSelected(drawerItem: DrawerItem) {
         try {

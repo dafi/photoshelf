@@ -4,10 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.AsyncTask
 import android.preference.PreferenceManager
 import com.ternaryop.photoshelf.R
 import com.ternaryop.utils.JSONUtils
+import io.reactivex.Completable
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
 import org.scribe.builder.ServiceBuilder
@@ -132,56 +135,11 @@ class TumblrHttpOAuthConsumer(context: Context) {
         return null
     }
 
-    private class AccessAsyncTask(private val uri: Uri, private val callback: AuthenticationCallback?, private val prefs: TokenPreference) : AsyncTask<Void, Void, Token>() {
-        private var error: Exception? = null
-
-        override fun doInBackground(vararg params: Void): Token? {
-            val context = prefs.context
-            try {
-                val oAuthService = ServiceBuilder()
-                    .provider(TumblrApiFix::class.java)
-                    .apiKey(context.getString(R.string.CONSUMER_KEY))
-                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                    .callback(context.getString(R.string.CALLBACK_URL))
-                    .build()
-                return oAuthService.getAccessToken(prefs.requestToken,
-                    Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)))
-            } catch (e: Exception) {
-                error = e
-            }
-
-            return null
-        }
-
-        override fun onPostExecute(token: Token?) {
-            if (token != null && error == null) {
-                prefs.storeAccessToken(token)
-            }
-            if (callback != null) {
-                if (token == null) {
-                    callback.tumblrAuthenticated(null, null, error)
-                } else {
-                    callback.tumblrAuthenticated(token.token, token.secret, error)
-                }
-            }
-        }
-    }
-
-    private class LoginAsyncTask : AsyncTask<Context, Void, Void>() {
-        override fun doInBackground(vararg params: Context): Void? {
-            TumblrHttpOAuthConsumer.authorize(params[0])
-            return null
-        }
-    }
-
     private class TokenPreference(val context: Context) {
-
         val requestToken: Token
             get() = getToken(context.getSharedPreferences(PREFS_NAME, 0))
-
         val accessToken: Token
             get() = getToken(PreferenceManager.getDefaultSharedPreferences(context))
-
         val isAccessTokenValid: Boolean
             get() {
                 val preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -215,22 +173,21 @@ class TumblrHttpOAuthConsumer(context: Context) {
 
             private fun getToken(sharedPreferences: SharedPreferences): Token {
                 return Token(
-                        sharedPreferences.getString(PREF_OAUTH_TOKEN, null),
-                        sharedPreferences.getString(PREF_OAUTH_SECRET, null))
+                    sharedPreferences.getString(PREF_OAUTH_TOKEN, null),
+                    sharedPreferences.getString(PREF_OAUTH_SECRET, null))
             }
 
             private fun storeToken(sharedPreferences: SharedPreferences, token: Token) {
                 sharedPreferences
-                        .edit()
-                        .putString(PREF_OAUTH_TOKEN, token.token)
-                        .putString(PREF_OAUTH_SECRET, token.secret)
-                        .apply()
+                    .edit()
+                    .putString(PREF_OAUTH_TOKEN, token.token)
+                    .putString(PREF_OAUTH_SECRET, token.secret)
+                    .apply()
             }
         }
     }
 
     companion object {
-
         fun isLogged(context: Context): Boolean {
             return TokenPreference.from(context).isAccessTokenValid
         }
@@ -256,11 +213,30 @@ class TumblrHttpOAuthConsumer(context: Context) {
         }
 
         private fun access(context: Context, uri: Uri, callback: AuthenticationCallback) {
-            AccessAsyncTask(uri, callback, TokenPreference.from(context)).execute()
+            val prefs = TokenPreference.from(context)
+            Single
+                .fromCallable {
+                ServiceBuilder()
+                    .provider(TumblrApiFix::class.java)
+                    .apiKey(context.getString(R.string.CONSUMER_KEY))
+                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
+                    .callback(context.getString(R.string.CALLBACK_URL))
+                    .build()
+                    .getAccessToken(prefs.requestToken, Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)))
+                    ?: throw TumblrException("Invalid token")
+                }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ token ->
+                    prefs.storeAccessToken(token)
+                    callback.tumblrAuthenticated(token.token, token.secret)
+                }, { callback.tumblrAuthenticationError(it) })
         }
 
-        fun loginWithActivity(context: Context) {
-            LoginAsyncTask().execute(context)
+        fun loginWithActivity(context: Context): Completable {
+            return Completable.fromAction { TumblrHttpOAuthConsumer.authorize(context) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
         }
 
         /**
@@ -276,9 +252,9 @@ class TumblrHttpOAuthConsumer(context: Context) {
 
             return if (uri != null && callbackUrl.startsWith(uri.scheme)) {
                 TumblrHttpOAuthConsumer.access(
-                        context,
-                        uri,
-                        callback)
+                    context,
+                    uri,
+                    callback)
                 true
             } else false
         }
