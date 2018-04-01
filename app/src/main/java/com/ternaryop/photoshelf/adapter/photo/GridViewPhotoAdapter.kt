@@ -2,7 +2,6 @@ package com.ternaryop.photoshelf.adapter.photo
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
-import android.util.Pair
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -69,7 +68,7 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
         if (index == -1) {
             return
         }
-        items[index] = Pair.create(items[index].first, newPost)
+        items[index] = Pair(items[index].first, newPost)
 
         if (notifyChange) {
             notifyDataSetChanged()

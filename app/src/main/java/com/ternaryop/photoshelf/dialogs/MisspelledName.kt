@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.dialogs
 
 import android.content.Context
-import android.util.Pair
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.photoshelf.db.DBHelper
@@ -19,17 +18,17 @@ class MisspelledName(val context: Context) {
         pair = getMisspelledName(name)
         return if (pair != null) {
             pair
-        } else Pair.create(NAME_NOT_FOUND, name)
+        } else Pair(NAME_NOT_FOUND, name)
     }
 
     private fun getMatchingName(name: String): Pair<Int, String>? {
         val correctedName = DBHelper.getInstance(context).tagMatcherDAO.getMatchingTag(name)
         if (name.equals(correctedName, ignoreCase = true)) {
-            return Pair.create(NAME_ALREADY_EXISTS, correctedName)
+            return Pair(NAME_ALREADY_EXISTS, name)
         }
         return if (correctedName == null) {
             null
-        } else Pair.create(NAME_MISSPELLED, correctedName)
+        } else Pair(NAME_MISSPELLED, correctedName)
     }
 
     private fun getMisspelledName(name: String): Pair<Int, String>? {
@@ -37,7 +36,7 @@ class MisspelledName(val context: Context) {
             context.getString(R.string.GOOGLE_CSE_APIKEY),
             context.getString(R.string.GOOGLE_CSE_CX))
             .getCorrectedQuery(name) ?: return null
-        return Pair.create(NAME_MISSPELLED, correctedName)
+        return Pair(NAME_MISSPELLED, correctedName)
     }
 
     companion object {

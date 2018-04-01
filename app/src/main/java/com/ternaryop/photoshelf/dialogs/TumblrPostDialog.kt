@@ -13,7 +13,6 @@ import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.view.ContextThemeWrapper
 import android.support.v7.widget.Toolbar
-import android.util.Pair
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup

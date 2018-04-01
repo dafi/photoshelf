@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.net.Uri
 import android.os.Environment
-import android.util.Pair
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.DBHelper
@@ -55,7 +54,7 @@ object BirthdayUtils {
             if (postTag != null) {
                 params["id"] = postTag.id.toString()
                 val post = Tumblr.getSharedTumblr(context).getPublicPosts(b.tumblrName, params)[0] as TumblrPhotoPost
-                posts.add(Pair.create(b, post))
+                posts.add(Pair(b, post))
             }
         }
         return posts

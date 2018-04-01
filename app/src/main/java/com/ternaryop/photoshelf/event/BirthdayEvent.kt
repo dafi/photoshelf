@@ -1,7 +1,5 @@
 package com.ternaryop.photoshelf.event
 
-import android.util.Pair
-
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.tumblr.TumblrPhotoPost
 
