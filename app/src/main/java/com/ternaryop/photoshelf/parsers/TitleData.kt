@@ -16,7 +16,7 @@ class TitleData(private val config: TitleParserConfig) {
                 field = null
                 return
             }
-            var location = value.replace("""[^\p{Alnum}|"|']*${'$'}""".toRegex(), "").trim { it <= ' ' }
+            var location = value.replace("""[^\p{Alnum}"']*${'$'}""".toRegex(), "").trim()
 
             if (location.isEmpty()) {
                 field = null
@@ -30,10 +30,8 @@ class TitleData(private val config: TitleParserConfig) {
             field = location
         }
     var city: String? = null
-        set(value) = if (value == null) {
-            field = null
-        } else {
-            field = expandAbbreviation(value.trim { it <= ' ' })
+        set(value) {
+            field = value?.let { expandAbbreviation(it.trim()) }
         }
     var tags = emptyList<String>()
         set(value) {
@@ -41,8 +39,8 @@ class TitleData(private val config: TitleParserConfig) {
             for (tag1 in value) {
                 val tag = tag1
                         .replaceFirst("[0-9]*(st|nd|rd|th)?".toRegex(), "")
-                        .replace(""""|'""".toRegex(), "")
-                        .trim { it <= ' ' }
+                        .replace("""["']""".toRegex(), "")
+                        .trim()
                 if (tag.isNotEmpty()) {
                     list.add(tag)
                 }
@@ -51,7 +49,7 @@ class TitleData(private val config: TitleParserConfig) {
         }
     var eventDate: String? = null
         set(value) {
-            field = value?.trim { it <= ' ' }
+            field = value?.trim()
         }
 
     fun setWhoFromString(string: String) {
