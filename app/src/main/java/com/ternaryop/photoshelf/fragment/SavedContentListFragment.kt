@@ -26,11 +26,14 @@ import com.ternaryop.feedly.TokenExpiredException
 import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImagePickerActivity
+import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter
+import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.LAST_PUBLISH_TIMESTAMP
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.SAVED_TIMESTAMP
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.TITLE_NAME
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
+import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.utils.JSONUtils
 import io.reactivex.Completable
@@ -67,7 +70,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun initRecyclerView(rootView: View) {
-        adapter = FeedlyContentAdapter(context!!, fragmentActivityStatus.appSupport.selectedBlogName!!)
+        adapter = FeedlyContentAdapter(context!!)
 
         recyclerView = rootView.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
@@ -98,25 +101,25 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         Single
             .fromCallable(callableFeedlyReader(deleteItemsIfAllowed))
             .compose(photoShelfSwipe.applySwipe())
-            .subscribe(object : FeedlyObserver<List<FeedlyContent>>() {
-                override fun onSuccess(posts: List<FeedlyContent>) {
+            .subscribe(object : FeedlyObserver<List<FeedlyContentDelegate>>() {
+                override fun onSuccess(posts: List<FeedlyContentDelegate>) {
                     setItems(posts)
                 }
             })
     }
 
-    private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Callable<List<FeedlyContent>> {
+    private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Callable<List<FeedlyContentDelegate>> {
         return Callable {
             if (BuildConfig.DEBUG) {
                 fakeCall()
             } else {
                 deleteItems(deleteItemsIfAllowed)
                 readSavedContents()
-            }
+            }.toContentDelegate(context!!, blogName!!)
         }
     }
 
-    private fun setItems(items: List<FeedlyContent>) {
+    private fun setItems(items: List<FeedlyContentDelegate>) {
         adapter.clear()
         adapter.addAll(items)
         adapter.sort()
@@ -296,14 +299,17 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         ImagePickerActivity.startImagePicker(context!!, adapter.getItem(position).originId)
     }
 
+    override fun onTagClick(position: Int) {
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!,
+            blogName!!, adapter.getItem(position).tag!!, false)
+    }
+
     override fun onToggleClick(position: Int, checked: Boolean) {
         if (deleteOnRefresh()) {
             return
         }
         Completable
-            .fromAction {
-                feedlyManager.markSaved(listOf(adapter.getItem(position).id), checked)
-            }
+            .fromAction { feedlyManager.markSaved(listOf(adapter.getItem(position).id), checked) }
             .compose(photoShelfSwipe.applyCompletableSwipe<Void>())
             .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }

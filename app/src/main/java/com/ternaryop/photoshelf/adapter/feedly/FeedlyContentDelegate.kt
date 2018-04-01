@@ -5,18 +5,45 @@ import android.text.format.DateUtils
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.feedly.FeedlyContent
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.utils.DateTimeUtils
 import java.net.URI
 import java.net.URISyntaxException
+
+/**
+ * Convert Collection<FeedlyContent> to List<FeedlyContentDelegate> updating the lastPublishTimestamp and tag fields
+ */
+fun Collection<FeedlyContent>.toContentDelegate(context: Context, blogName: String): List<FeedlyContentDelegate> {
+    val items = map { FeedlyContentDelegate(it) }
+
+    val titles = HashSet<String>(items.size)
+    for (fc in items) {
+        // replace any no no-break space with whitespace
+        // see http://www.regular-expressions.info/unicode.html for \p{Zs}
+        titles.add(fc.title.replace("""\p{Zs}""".toRegex(), " "))
+    }
+    val list = DBHelper.getInstance(context).postTagDAO.getListPairLastPublishedTimestampTag(titles, blogName)
+    for (fc in items) {
+        val title = fc.title
+        for ((time, tag) in list) {
+            if (tag.regionMatches(0, title, 0, tag.length, ignoreCase = true)) {
+                fc.lastPublishTimestamp = time
+                fc.tag = tag
+            }
+        }
+    }
+    return items
+}
 
 /**
  * Contains fields related to UI state
  */
 class FeedlyContentDelegate(private val delegated: FeedlyContent) : FeedlyContent by delegated {
     var isChecked = true
-    var lastPublishTimestamp: Long = 0
+    var lastPublishTimestamp = Long.MIN_VALUE
     var domain: String? = null
         private set
+    var tag: String? = null
 
     init {
         try {
@@ -28,7 +55,8 @@ class FeedlyContentDelegate(private val delegated: FeedlyContent) : FeedlyConten
     fun getLastPublishTimestampAsString(context: Context): String {
         return if (lastPublishTimestamp <= 0) {
             context.getString(R.string.never_published)
-        } else DateTimeUtils.formatPublishDaysAgo(lastPublishTimestamp * SECOND_IN_MILLIS, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT)
+        } else DateTimeUtils.formatPublishDaysAgo(
+            lastPublishTimestamp * SECOND_IN_MILLIS, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT)
     }
 
     fun getActionTimestampAsString(context: Context): String {

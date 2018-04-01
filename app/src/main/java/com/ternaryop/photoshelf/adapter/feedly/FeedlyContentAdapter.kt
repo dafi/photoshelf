@@ -12,11 +12,11 @@ import com.ternaryop.photoshelf.R
 
 private const val PREFIX_FAVICON = "favicon"
 
-class FeedlyContentAdapter(private val context: Context, tumblrName: String) :
+class FeedlyContentAdapter(private val context: Context) :
     RecyclerView.Adapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     private val allContents = mutableListOf<FeedlyContentDelegate>()
     private val imageLoader = ImageLoader(context.applicationContext, PREFIX_FAVICON, R.drawable.stub)
-    val sortSwitcher = FeedlyContentSortSwitcher(context, tumblrName)
+    val sortSwitcher = FeedlyContentSortSwitcher(context)
 
     var clickListener: OnFeedlyContentClick? = null
 
@@ -29,25 +29,23 @@ class FeedlyContentAdapter(private val context: Context, tumblrName: String) :
 
     override fun onBindViewHolder(holder: FeedlyContentViewHolder, position: Int) {
         holder.bindModel(allContents[position], imageLoader)
-        setClickListeners(holder, position)
+        setClickListeners(holder)
     }
 
-    private fun setClickListeners(holder: FeedlyContentViewHolder, position: Int) {
+    private fun setClickListeners(holder: FeedlyContentViewHolder) {
         if (clickListener == null) {
-            holder.setOnClickListeners(allContents[position], null)
-            holder.setOnCheckedChangeListener(allContents[position], null)
+            holder.setOnClickListeners(null)
+            holder.setOnCheckedChangeListener(null)
         } else {
-            holder.setOnClickListeners(allContents[position], this)
-            holder.setOnCheckedChangeListener(allContents[position], this)
+            holder.setOnClickListeners(this)
+            holder.setOnCheckedChangeListener(this)
         }
     }
 
-    override fun getItemCount(): Int {
-        return allContents.size
-    }
+    override fun getItemCount(): Int = allContents.size
 
-    fun addAll(collection: Collection<FeedlyContent>) {
-        collection.mapTo(allContents) { FeedlyContentDelegate(it) }
+    fun addAll(collection: Collection<FeedlyContentDelegate>) {
+        allContents.addAll(collection)
         notifyDataSetChanged()
     }
 
@@ -56,16 +54,12 @@ class FeedlyContentAdapter(private val context: Context, tumblrName: String) :
         notifyDataSetChanged()
     }
 
-    fun getItem(position: Int): FeedlyContent {
-        return allContents[position]
-    }
+    fun getItem(position: Int): FeedlyContentDelegate = allContents[position]
 
     /**
      * Sort the list using the last used sort method
      */
-    fun sort() {
-        sortSwitcher.sort(allContents)
-    }
+    fun sort() = sortSwitcher.sort(allContents)
 
     fun sortBy(sortType: Int) {
         sortSwitcher.setType(sortType)
@@ -76,6 +70,7 @@ class FeedlyContentAdapter(private val context: Context, tumblrName: String) :
         val position = v.tag as Int
         when (v.id) {
             R.id.list_row2 -> clickListener!!.onTitleClick(position)
+            R.id.tag -> clickListener!!.onTagClick(position)
         }
     }
 
@@ -83,7 +78,7 @@ class FeedlyContentAdapter(private val context: Context, tumblrName: String) :
         val position = v.tag as Int
         when (v.id) {
             android.R.id.checkbox -> {
-                (getItem(position) as FeedlyContentDelegate).isChecked = checked
+                getItem(position).isChecked = checked
                 clickListener!!.onToggleClick(position, checked)
             }
         }

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.ternaryop.widget.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                               android:id="@+id/list_row2"
                                               android:layout_width="fill_parent"
                                               android:layout_height="wrap_content"
                                               android:orientation="vertical"
-                                              android:padding="5dip" >
+                                              android:padding="5dip">
+
     <LinearLayout
         android:id="@+id/sidebar"
         android:layout_marginEnd="5dip"
@@ -13,10 +15,12 @@
         android:gravity="center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
+
         <CheckBox
             android:id="@android:id/checkbox"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"/>
+
         <ImageView
             android:id="@+id/thumbnail_image"
             android:contentDescription="@string/content_image"
@@ -31,7 +35,7 @@
         android:layout_height="wrap_content"
         android:textColor="#de000000"
         android:layout_marginTop="1dip"
-        android:textAppearance="?android:attr/textAppearanceListItem" />
+        android:textAppearance="?android:attr/textAppearanceListItem"/>
 
     <TextView
         android:id="@android:id/text2"
@@ -41,5 +45,17 @@
         android:layout_below="@android:id/text1"
         android:textColor="#8a000000"
         android:paddingTop="4dp"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+    <com.ternaryop.widget.ClickableTextView
+        android:id="@+id/tag"
+        android:layout_toEndOf="@+id/sidebar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@android:id/text2"
+        android:textColor="#de000000"
+        android:textSize="14sp"
+        app:clickedColor="@android:color/white"
+        app:clickedBackground="@android:color/holo_green_dark"
+        android:paddingTop="4dp"/>
 </com.ternaryop.widget.CheckableRelativeLayout>
