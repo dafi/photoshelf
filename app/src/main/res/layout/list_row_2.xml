@@ -55,6 +55,7 @@
         android:layout_below="@android:id/text2"
         android:textColor="#de000000"
         android:textSize="14sp"
+        android:visibility="gone"
         app:clickedColor="@android:color/white"
         app:clickedBackground="@android:color/holo_green_dark"
         android:paddingTop="4dp"/>
