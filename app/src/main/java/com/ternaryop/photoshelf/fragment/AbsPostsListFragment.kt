@@ -21,6 +21,7 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoAdapter
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.util.post.OnPostActionListener
+import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.PUBLISH
@@ -31,22 +32,19 @@ import com.ternaryop.photoshelf.util.post.showErrorDialog
 import com.ternaryop.photoshelf.util.tumblr.browseTagImageBySize
 import com.ternaryop.photoshelf.util.tumblr.finishActivity
 import com.ternaryop.photoshelf.util.tumblr.viewPost
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.DialogUtils
 
 private const val LOADER_PREFIX_POSTS_THUMB = "postsThumb"
 
-abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener,
+abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener, OnScrollPostFetcher.PostFetcher,
     OnPhotoBrowseClickMultiChoice, TumblrPostDialog.PostListener, SearchView.OnQueryTextListener, ActionMode.Callback {
 
     protected lateinit var photoAdapter: PhotoAdapter
-    protected var offset: Int = 0
-    protected var hasMorePosts: Boolean = false
-    protected var isScrolling: Boolean = false
-    protected var totalPosts: Long = 0
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
+
+    protected val postFetcher = OnScrollPostFetcher(this)
 
     open val singleSelectionMenuIds: IntArray by lazy {
         intArrayOf(R.id.post_schedule, R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
@@ -71,21 +69,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         recyclerView.layoutManager = LinearLayoutManager(context!!)
         recyclerView.adapter = photoAdapter
         recyclerView.addItemDecoration(postActionExecutor.colorItemDecoration)
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                val layoutManager = recyclerView!!.layoutManager
-                val visibleItemCount = layoutManager.childCount
-                val totalItemCount = layoutManager.itemCount
-                val firstVisibleItem = (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-
-                val loadMore = totalItemCount > 0 && firstVisibleItem + visibleItemCount >= totalItemCount
-
-                if (loadMore && hasMorePosts && !isScrolling) {
-                    offset += Tumblr.MAX_POST_PER_REQUEST
-                    readPhotoPosts()
-                }
-            }
-        })
+        recyclerView.addOnScrollListener(postFetcher)
 
         setHasOptionsMenu(true)
         return rootView
@@ -97,8 +81,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         setupSearchView(menu)
         super.onPrepareOptionsMenu(menu)
     }
-
-    protected abstract fun readPhotoPosts()
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
         mode.setTitle(R.string.select_posts)
@@ -152,10 +134,10 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     override fun refreshUI() {
-        supportActionBar?.subtitle = if (hasMorePosts) {
+        supportActionBar?.subtitle = if (postFetcher.hasMorePosts) {
             getString(R.string.post_count_1_of_x,
                 photoAdapter.itemCount,
-                totalPosts)
+                postFetcher.totalPosts)
         } else {
             photoAdapter.notifyCountChanged()
             resources.getQuantityString(
@@ -281,11 +263,9 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     protected fun resetAndReloadPhotoPosts() {
-        offset = 0
-        totalPosts = 0
-        hasMorePosts = true
+        postFetcher.reset()
         photoAdapter.clear()
-        readPhotoPosts()
+        fetchPosts()
     }
 
     override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {

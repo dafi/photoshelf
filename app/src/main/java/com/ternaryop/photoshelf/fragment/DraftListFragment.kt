@@ -164,7 +164,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         onRefreshStarted()
 
         compositeDisposable.add(Importer(context!!).importFromTumblr(blogName!!, Importer.schedulers(), currentTextView)
-            .doOnComplete({ this.readPhotoPosts() })
+            .doOnComplete({ fetchPosts() })
             .subscribe({ posts ->
                 progressHighlightViewLayout.incrementProgress()
                 // delete from cache the published posts
@@ -186,7 +186,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         progressHighlightViewLayout.visibility = View.GONE
     }
 
-    override fun readPhotoPosts() {
+    override fun fetchPosts() {
         val maxTimestamp = draftCache.findMostRecentTimestamp(blogName!!, TumblrPostCache.CACHE_TYPE_DRAFT)
         compositeDisposable.add(
             Single

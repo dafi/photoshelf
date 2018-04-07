@@ -88,21 +88,17 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         return searchView!!
     }
 
-    override fun readPhotoPosts() {
-        if (isScrolling) {
-            return
-        }
+    override fun fetchPosts() {
         refreshUI()
-        isScrolling = true
 
         val params = HashMap<String, String>()
         params["tag"] = postTag!!
         params["notes_info"] = "true"
-        params["offset"] = offset.toString()
+        params["offset"] = postFetcher.offset.toString()
 
         Observable
             .just(params)
-            .doFinally { isScrolling = false }
+            .doFinally { postFetcher.isScrolling = false }
             .flatMap<TumblrPhotoPost> { params1 ->
                 Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(context!!)
                     .getPhotoPosts(blogName!!, params1))
@@ -118,8 +114,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
                 }
 
                 override fun onSuccess(photoList: List<PhotoShelfPost>) {
-                    totalPosts += photoList.size
-                    hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
+                    postFetcher.incrementReadPostCount(photoList.size)
                     photoAdapter.addAll(photoList)
                     refreshUI()
                 }
@@ -136,11 +131,10 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
     override fun onQueryTextSubmit(query: String): Boolean {
         postTag = query
-        offset = 0
-        hasMorePosts = true
+        postFetcher.reset()
         photoAdapter.clear()
         photoAdapter.notifyDataSetChanged()
-        readPhotoPosts()
+        fetchPosts()
         return false
     }
 

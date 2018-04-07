@@ -15,21 +15,17 @@ class PublishedPostsListFragment : ScheduledListFragment() {
     override val actionModeMenuId: Int
         get() = R.menu.published_context
 
-    override fun readPhotoPosts() {
-        if (isScrolling) {
-            return
-        }
+    override fun fetchPosts() {
         refreshUI()
-        isScrolling = true
 
         val params = HashMap<String, String>()
-        params["offset"] = offset.toString()
+        params["offset"] = postFetcher.offset.toString()
         params["type"] = "photo"
         params["notes_info"] = "true"
 
         Observable
             .just(params)
-            .doFinally { isScrolling = false }
+            .doFinally { postFetcher.isScrolling = false }
             .flatMap { Observable.fromIterable(Tumblr.getSharedTumblr(context!!).getPublicPosts(blogName!!, it)) }
             .map { PhotoShelfPost(it as TumblrPhotoPost, it.timestamp * SECOND_IN_MILLIS) }
             .toList()
@@ -40,8 +36,7 @@ class PublishedPostsListFragment : ScheduledListFragment() {
                 override fun onSubscribe(d: Disposable) { compositeDisposable.add(d) }
 
                 override fun onSuccess(photoList: List<PhotoShelfPost>) {
-                    totalPosts += photoList.size
-                    hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
+                    postFetcher.incrementReadPostCount(photoList.size)
                     photoAdapter.addAll(photoList)
                     refreshUI()
                 }

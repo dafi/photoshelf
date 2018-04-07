@@ -28,7 +28,7 @@ open class ScheduledListFragment : AbsPostsListFragment() {
         get() = R.menu.scheduled_context
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+        savedInstanceState: Bundle?): View? {
         val rootView = super.onCreateView(inflater, container, savedInstanceState)
 
         photoAdapter.counterType = CounterEvent.SCHEDULE
@@ -47,49 +47,43 @@ open class ScheduledListFragment : AbsPostsListFragment() {
         }
     }
 
-    override fun readPhotoPosts() {
-        if (isScrolling) {
-            return
-        }
+    override fun fetchPosts() {
         refreshUI()
-        isScrolling = true
-
         val params = HashMap<String, String>()
-        params["offset"] = offset.toString()
+        params["offset"] = postFetcher.offset.toString()
 
         // we assume all returned items are photos, (we handle only photos)
         // if other posts type are returned, the getQueue() list size may be greater than photo list size
         Observable
-                .just(params)
-                .doFinally { isScrolling = false }
-                .flatMap { params1 ->
-                    Observable.fromIterable(Tumblr.getSharedTumblr(context!!)
-                            .getQueue(blogName!!, params1))
+            .just(params)
+            .doFinally { postFetcher.isScrolling = false }
+            .flatMap { params1 ->
+                Observable.fromIterable(Tumblr.getSharedTumblr(context!!)
+                    .getQueue(blogName!!, params1))
+            }
+            .map { tumblrPost ->
+                PhotoShelfPost(tumblrPost as TumblrPhotoPost,
+                    tumblrPost.scheduledPublishTime * SECOND_IN_MILLIS)
+            }
+            .toList()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(photoShelfSwipe.applySwipe())
+            .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
+                override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
                 }
-                .map { tumblrPost ->
-                    PhotoShelfPost(tumblrPost as TumblrPhotoPost,
-                            tumblrPost.scheduledPublishTime * SECOND_IN_MILLIS)
+
+                override fun onSuccess(photoList: List<PhotoShelfPost>) {
+                    postFetcher.incrementReadPostCount(photoList.size)
+                    photoAdapter.addAll(photoList)
+                    refreshUI()
                 }
-                .toList()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(photoShelfSwipe.applySwipe())
-                .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
-                    override fun onSubscribe(d: Disposable) {
-                        compositeDisposable.add(d)
-                    }
 
-                    override fun onSuccess(photoList: List<PhotoShelfPost>) {
-                        totalPosts += photoList.size
-                        hasMorePosts = photoList.size == Tumblr.MAX_POST_PER_REQUEST
-                        photoAdapter.addAll(photoList)
-                        refreshUI()
-                    }
-
-                    override fun onError(t: Throwable) {
-                        showSnackbar(makeSnake(recyclerView, t))
-                    }
-                })
+                override fun onError(t: Throwable) {
+                    showSnackbar(makeSnake(recyclerView, t))
+                }
+            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
