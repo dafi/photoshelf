@@ -33,7 +33,7 @@ import com.ternaryop.photoshelf.util.tumblr.browseTagImageBySize
 import com.ternaryop.photoshelf.util.tumblr.finishActivity
 import com.ternaryop.photoshelf.util.tumblr.viewPost
 import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.utils.DialogUtils
+import com.ternaryop.utils.dialog.showErrorDialog
 
 private const val LOADER_PREFIX_POSTS_THUMB = "postsThumb"
 
@@ -44,7 +44,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
 
-    protected val postFetcher = OnScrollPostFetcher(this)
+    protected lateinit var postFetcher: OnScrollPostFetcher
 
     open val singleSelectionMenuIds: IntArray by lazy {
         intArrayOf(R.id.post_schedule, R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
@@ -63,6 +63,8 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
         photoAdapter = PhotoAdapter(context!!, LOADER_PREFIX_POSTS_THUMB)
         postActionExecutor = PostActionExecutor(context!!, blogName!!, this)
+
+        postFetcher = OnScrollPostFetcher(this)
 
         recyclerView = rootView.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
@@ -310,6 +312,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
         postActionExecutor.edit(post, dialog.titleHolder.htmlTitle, dialog.tagsHolder.tags, selectedBlogName)
                 .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({ }, { t -> DialogUtils.showErrorDialog(context!!, t) })
+                .subscribe({ }, { t -> t.showErrorDialog(context!!) })
     }
 }

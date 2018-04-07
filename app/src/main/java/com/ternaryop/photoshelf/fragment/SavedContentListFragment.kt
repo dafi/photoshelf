@@ -35,7 +35,7 @@ import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Compani
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
-import com.ternaryop.utils.JSONUtils
+import com.ternaryop.utils.json.readJson
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleObserver
@@ -143,7 +143,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun fakeCall(): List<FeedlyContent> {
         context!!.assets.open("sample/feedly.json").use { stream ->
-            val items = JSONUtils.jsonFromInputStream(stream).getJSONArray("items")
+            val items = stream.readJson().getJSONArray("items")
             return (0 until items.length()).mapTo(mutableListOf<FeedlyContent>()) {
                 SimpleFeedlyContent(items.getJSONObject(it))
             }

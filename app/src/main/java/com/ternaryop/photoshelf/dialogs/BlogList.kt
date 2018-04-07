@@ -5,7 +5,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import com.ternaryop.photoshelf.AppSupport
-import com.ternaryop.utils.DialogUtils
+import com.ternaryop.utils.dialog.showErrorDialog
 import io.reactivex.SingleObserver
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
@@ -55,9 +55,9 @@ class BlogList(val appSupport: AppSupport,
                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
                 }
 
-                override fun onError(e: Throwable) {
+                override fun onError(t: Throwable) {
                     dialog.dismiss()
-                    DialogUtils.showErrorDialog(appSupport, e)
+                    t.showErrorDialog(appSupport)
                 }
             })
     }

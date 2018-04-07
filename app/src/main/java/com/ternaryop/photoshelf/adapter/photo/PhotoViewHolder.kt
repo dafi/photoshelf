@@ -17,9 +17,9 @@ import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
-import com.ternaryop.photoshelf.util.text.fromHtml
 import com.ternaryop.tumblr.TumblrAltSize
-import com.ternaryop.utils.StringUtils
+import com.ternaryop.utils.text.fromHtml
+import com.ternaryop.utils.text.stripHtmlTags
 import org.joda.time.format.DateTimeFormat
 
 /**
@@ -96,14 +96,14 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private fun setImageDimension(altSize: TumblrAltSize, thumbnailWidth: Int) {
         val minThumbnailWidth = Math.max(thumbnailWidth, altSize.width)
         // convert from pixel to DIP
-        with (thumbImage.layoutParams) {
-            width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, minThumbnailWidth.toFloat(), itemView.context.resources.displayMetrics).toInt()
-            height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, altSize.height.toFloat(), itemView.context.resources.displayMetrics).toInt()
-        }
+        thumbImage.layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+            minThumbnailWidth.toFloat(), itemView.context.resources.displayMetrics).toInt()
+        thumbImage.layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+            altSize.height.toFloat(), itemView.context.resources.displayMetrics).toInt()
     }
 
     private fun updateTitles(showUploadTime: Boolean) {
-        caption.text = StringUtils.stripHtmlTags("a|img|p|br", post.caption).fromHtml()
+        caption.text = post.caption.stripHtmlTags("a|img|p|br").fromHtml()
         timeDesc.text = post.lastPublishedTimestampAsString
         // use noteCountText for both uploadTime and notes
         if (showUploadTime) {
@@ -115,7 +115,8 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun showUploadTime() {
         noteCountText.visibility = View.VISIBLE
-        noteCountText.text = itemView.resources.getString(R.string.uploaded_at_time, DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").print(post.timestamp * SECOND_IN_MILLIS))
+        noteCountText.text = itemView.resources.getString(R.string.uploaded_at_time,
+            DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").print(post.timestamp * SECOND_IN_MILLIS))
     }
 
     private fun updateNote() {

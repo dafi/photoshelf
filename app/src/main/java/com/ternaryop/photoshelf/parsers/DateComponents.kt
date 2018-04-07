@@ -1,8 +1,8 @@
 package com.ternaryop.photoshelf.parsers
 
-import com.ternaryop.photoshelf.util.date.dayOfMonth
-import com.ternaryop.photoshelf.util.date.month
-import com.ternaryop.photoshelf.util.date.year
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.month
+import com.ternaryop.utils.date.year
 import java.util.Calendar
 import java.util.Locale
 import java.util.regex.Matcher

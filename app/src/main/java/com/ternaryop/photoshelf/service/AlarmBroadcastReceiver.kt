@@ -8,8 +8,8 @@ import android.content.Intent
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.importer.BatchExporter
-import com.ternaryop.photoshelf.util.date.dayOfMonth
-import com.ternaryop.photoshelf.util.date.month
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.month
 import java.util.Calendar
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {

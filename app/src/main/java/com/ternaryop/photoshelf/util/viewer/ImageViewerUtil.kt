@@ -9,10 +9,9 @@ import android.support.annotation.StringRes
 import android.widget.Toast
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.util.text.fromHtml
-import com.ternaryop.utils.DialogUtils
-import com.ternaryop.utils.IOUtils
-import com.ternaryop.utils.ShareUtils
+import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.intent.ShareUtils
+import com.ternaryop.utils.text.fromHtml
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -35,7 +34,7 @@ object ImageViewerUtil {
                 .setDestinationUri(Uri.fromFile(File(AppSupport.picturesDirectory, fileName)))
             (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
         } catch (e: Exception) {
-            DialogUtils.showErrorDialog(context, e)
+            e.showErrorDialog(context)
         }
     }
 
@@ -60,16 +59,16 @@ object ImageViewerUtil {
                         suggestedTitle?.fromHtml()?.toString() ?: "",
                         context.getString(R.string.share_image_title))
                 }
-                ) { throwable -> DialogUtils.showErrorDialog(context, throwable) }
+                ) { throwable -> throwable.showErrorDialog(context) }
         } catch (e: Exception) {
-            DialogUtils.showErrorDialog(context, e)
+            e.showErrorDialog(context)
         }
     }
 
     private fun downloadImageUrl(imageUrl: URL, destFile: File): Completable {
         return Completable.fromCallable {
             val connection = imageUrl.openConnection() as HttpURLConnection
-            connection.inputStream.use { stream -> FileOutputStream(destFile).use { os -> IOUtils.copy(stream, os) } }
+            connection.inputStream.use { stream -> FileOutputStream(destFile).use { os -> stream.copyTo(os) } }
             null
         }
     }

@@ -11,11 +11,11 @@ import android.widget.SimpleCursorAdapter.ViewBinder
 import android.widget.TextView
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
-import com.ternaryop.photoshelf.util.date.dayOfMonth
-import com.ternaryop.photoshelf.util.date.month
-import com.ternaryop.photoshelf.util.text.fromHtml
-import com.ternaryop.utils.DateTimeUtils
-import com.ternaryop.utils.StringUtils
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.month
+import com.ternaryop.utils.date.yearsBetweenDates
+import com.ternaryop.utils.text.fromHtml
+import com.ternaryop.utils.text.htmlHighlightPattern
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -94,8 +94,7 @@ class BirthdayCursorAdapter(private val context: Context, var blogName: String)
         if (pattern.isEmpty()) {
             (view as TextView).text = cursor.getString(columnIndex)
         } else {
-            (view as TextView).text = StringUtils.htmlHighlightPattern(
-                pattern, cursor.getString(columnIndex)).fromHtml()
+            (view as TextView).text = cursor.getString(columnIndex).htmlHighlightPattern(pattern).fromHtml()
         }
     }
 
@@ -106,7 +105,7 @@ class BirthdayCursorAdapter(private val context: Context, var blogName: String)
                 view.visibility = View.GONE
             } else {
                 val c = Birthday.fromIsoFormat(isoDate)
-                val age = DateTimeUtils.yearsBetweenDates(c, Calendar.getInstance()).toString()
+                val age = c.yearsBetweenDates(Calendar.getInstance()).toString()
                 val dateStr = dateFormat.format(c.time)
 
                 view.visibility = View.VISIBLE

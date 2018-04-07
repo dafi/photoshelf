@@ -1,3 +1,4 @@
+@file:Suppress("MaxLineLength")
 package com.ternaryop.photoshelf.activity
 
 import android.os.Bundle
@@ -31,7 +32,7 @@ import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.service.CounterIntentService
 import com.ternaryop.tumblr.AuthenticationCallback
 import com.ternaryop.tumblr.Tumblr
-import com.ternaryop.utils.DialogUtils
+import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
@@ -79,7 +80,8 @@ class MainActivity : DrawerActionBarActivity(),
         super.onStop()
     }
 
-    override fun getActivityLayoutResId() = R.layout.activity_main
+    override val activityLayoutResId: Int
+        get() = R.layout.activity_main
 
     private fun showHome() {
         selectClickedItem(0)
@@ -163,9 +165,9 @@ class MainActivity : DrawerActionBarActivity(),
         val value = if (event.count > 0) event.count.toString() else null
 
         when (event.type) {
-            CounterEvent.BIRTHDAY -> adapter.getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY).badge = value
-            CounterEvent.DRAFT -> adapter.getItemById(DRAWER_ITEM_DRAFT).badge = value
-            CounterEvent.SCHEDULE -> adapter.getItemById(DRAWER_ITEM_SCHEDULE).badge = value
+            CounterEvent.BIRTHDAY -> adapter.getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY)?.badge = value
+            CounterEvent.DRAFT -> adapter.getItemById(DRAWER_ITEM_DRAFT)?.badge = value
+            CounterEvent.SCHEDULE -> adapter.getItemById(DRAWER_ITEM_SCHEDULE)?.badge = value
             CounterEvent.NONE -> {
             }
         }
@@ -176,16 +178,9 @@ class MainActivity : DrawerActionBarActivity(),
         if (enabled) {
             appSupport.fetchBlogNames(this)
                 .subscribe(object : SingleObserver<List<String>> {
-                    override fun onSubscribe(d: Disposable) {
-                    }
-
-                    override fun onSuccess(blogNames: List<String>) {
-                        fillBlogList(blogNames)
-                    }
-
-                    override fun onError(e: Throwable) {
-                        DialogUtils.showErrorDialog(applicationContext, e)
-                    }
+                    override fun onSubscribe(d: Disposable) {}
+                    override fun onSuccess(blogNames: List<String>) = fillBlogList(blogNames)
+                    override fun onError(e: Throwable) = e.showErrorDialog(applicationContext)
                 })
         }
         drawerToggle.isDrawerIndicatorEnabled = enabled
@@ -203,18 +198,18 @@ class MainActivity : DrawerActionBarActivity(),
             .subscribe(object : SingleObserver<List<String>> {
                 override fun onSubscribe(d: Disposable) {}
                 override fun onSuccess(value: List<String>) = enableUI(true)
-                override fun onError(e: Throwable) = DialogUtils.showErrorDialog(applicationContext, e)
+                override fun onError(e: Throwable) = e.showErrorDialog(applicationContext)
             })
     }
 
-    override fun tumblrAuthenticationError(error: Throwable) = DialogUtils.showErrorDialog(this, error)
+    override fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)
 
     override fun onDrawerItemSelected(drawerItem: DrawerItem) {
         try {
             val fragment = drawerItem.instantiateFragment(applicationContext)
             supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
         } catch (e: Exception) {
-            DialogUtils.showErrorDialog(application, e)
+            e.showErrorDialog(application)
             e.printStackTrace()
         }
     }
@@ -239,9 +234,8 @@ class MainActivity : DrawerActionBarActivity(),
     override val drawerToolbar: Toolbar
         get() = toolbar
 
-    override fun getToolbar(): Toolbar {
-        return findViewById<View>(R.id.drawer_toolbar) as Toolbar
-    }
+    override val toolbar: Toolbar
+        get() = findViewById<View>(R.id.drawer_toolbar) as Toolbar
 
     override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat?, pref: PreferenceScreen?): Boolean {
         PreferenceCategorySelector.openScreen(caller, pref)

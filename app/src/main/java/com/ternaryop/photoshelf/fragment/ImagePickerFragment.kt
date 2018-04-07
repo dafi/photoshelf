@@ -28,7 +28,8 @@ import com.ternaryop.photoshelf.extractor.ImageGallery
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.parsers.TitleParser
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
-import com.ternaryop.utils.DialogUtils
+import com.ternaryop.utils.dialog.DialogUtils
+import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.widget.ProgressHighlightViewLayout
 
 const val MAX_DETAIL_LINES = 3
@@ -77,7 +78,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         activity!!.setTitle(R.string.image_picker_activity_title)
 
         progressHighlightViewLayout = rootView.findViewById(android.R.id.empty)
-        progressHighlightViewLayout.animation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
+        progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
 
         imagePickerAdapter = ImagePickerAdapter(context!!)
         imagePickerAdapter.setOnPhotoBrowseClick(this)
@@ -128,7 +129,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         imageUrlRetriever.readImageGallery(url)
                 .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
                 .subscribe({ this.onGalleryRetrieved(it) }
-                ) { throwable -> DialogUtils.showErrorDialog(context!!, throwable) }
+                ) { throwable -> throwable.showErrorDialog(context!!) }
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {

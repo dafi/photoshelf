@@ -3,7 +3,7 @@ package com.ternaryop.photoshelf.util.post
 import android.content.Context
 import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.TumblrPost
-import com.ternaryop.utils.DialogUtils
+import com.ternaryop.utils.dialog.DialogUtils
 
 /**
  * Created by dave on 22/02/18.

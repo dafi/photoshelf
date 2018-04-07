@@ -1,10 +1,9 @@
 package com.ternaryop.photoshelf.parsers
 
-import com.ternaryop.utils.JSONUtils
+import com.ternaryop.utils.json.readJson
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.FileInputStream
-import java.io.InputStream
 import java.util.regex.Pattern
 
 /**
@@ -29,12 +28,7 @@ class JSONTitleParserConfig : TitleParserConfig {
 
     @Throws(Exception::class)
     private fun readConfig(jsonPath: String) {
-        FileInputStream(jsonPath).use { stream -> readConfig(stream) }
-    }
-
-    @Throws(Exception::class)
-    private fun readConfig(stream: InputStream) {
-        readConfig(JSONUtils.jsonFromInputStream(stream))
+        FileInputStream(jsonPath).use { stream -> readConfig(stream.readJson()) }
     }
 
     @Throws(Exception::class)
@@ -72,7 +66,8 @@ class JSONTitleParserConfig : TitleParserConfig {
     companion object {
 
         @Throws(Exception::class)
-        fun createList(jsonAssets: JSONObject, rootName: String, replacers: String): MutableList<TitleParserConfig.TitleParserRegExp> {
+        fun createList(jsonAssets: JSONObject, rootName: String, replacers: String):
+            MutableList<TitleParserConfig.TitleParserRegExp> {
             val list = mutableListOf<TitleParserConfig.TitleParserRegExp>()
             val array = jsonAssets.getJSONObject(rootName).getJSONArray(replacers)
             for (i in 0 until array.length()) {

@@ -1,9 +1,7 @@
 package com.ternaryop.photoshelf.customsearch
 
-import com.ternaryop.utils.JSONUtils
+import com.ternaryop.utils.json.readJson
 import org.json.JSONObject
-import java.io.BufferedInputStream
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -40,17 +38,12 @@ class GoogleCustomSearchClient(private val apiKey: String, private val cx: Strin
         return try {
             conn = URL(apiUrl).openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
-            toJson(conn.inputStream)
+            conn.inputStream.readJson()
         } finally {
             try {
                 conn?.disconnect()
             } catch (ignored: Exception) {
             }
         }
-    }
-
-    @Throws(Exception::class)
-    private fun toJson(stream: InputStream): JSONObject {
-        BufferedInputStream(stream).use { bis -> return JSONUtils.jsonFromInputStream(bis) }
     }
 }

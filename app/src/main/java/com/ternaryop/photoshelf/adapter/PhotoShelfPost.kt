@@ -2,7 +2,8 @@ package com.ternaryop.photoshelf.adapter
 
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.utils.DateTimeUtils
+import com.ternaryop.utils.date.APPEND_DATE_FOR_PAST_AND_PRESENT
+import com.ternaryop.utils.date.formatPublishDaysAgo
 
 /**
  * The last published time can be in the future if the post is scheduled
@@ -22,7 +23,7 @@ class PhotoShelfPost(photoPost: TumblrPhotoPost, var lastPublishedTimestamp: Lon
     val lastPublishedTimestampAsString: String
         get() {
             val tt = if (scheduledPublishTime > 0) scheduledPublishTime * SECOND_IN_MILLIS else lastPublishedTimestamp
-            return DateTimeUtils.formatPublishDaysAgo(tt, DateTimeUtils.APPEND_DATE_FOR_PAST_AND_PRESENT)
+            return tt.formatPublishDaysAgo(APPEND_DATE_FOR_PAST_AND_PRESENT)
         }
 
     enum class ScheduleTime {

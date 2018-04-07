@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:hint="@string/post_title_hint"
+        android:inputType="textMultiLine"
         android:maxLines="4"/>
 
     <LinearLayout

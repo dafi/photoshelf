@@ -6,7 +6,7 @@ import com.ternaryop.photoshelf.parsers.DateComponents.Companion.YEAR_2000
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.containsDateMatch
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.indexOfMonthFromShort
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.isMonthName
-import com.ternaryop.photoshelf.util.date.year
+import com.ternaryop.utils.date.year
 import java.util.Calendar
 import java.util.Locale
 import java.util.regex.Matcher

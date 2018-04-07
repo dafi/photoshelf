@@ -30,8 +30,6 @@ import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.importer.importFromTumblr
-import com.ternaryop.photoshelf.util.date.millisecond
-import com.ternaryop.photoshelf.util.date.second
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.EDIT
@@ -40,7 +38,9 @@ import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.SCHEDULE
 import com.ternaryop.photoshelf.util.post.PostActionResult
 import com.ternaryop.photoshelf.util.post.completedList
 import com.ternaryop.tumblr.TumblrPost
-import com.ternaryop.utils.DialogUtils
+import com.ternaryop.utils.date.millisecond
+import com.ternaryop.utils.date.second
+import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.widget.ProgressHighlightViewLayout
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
 import io.reactivex.Single
@@ -71,7 +71,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         val view = View.inflate(context!!, R.layout.draft_empty_list, rootView as ViewGroup?)
         progressHighlightViewLayout = view.findViewById(android.R.id.empty)
-        progressHighlightViewLayout.animation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
+        progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
         photoAdapter.counterType = CounterEvent.DRAFT
 
         if (rootView != null) {
@@ -169,7 +169,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                 progressHighlightViewLayout.incrementProgress()
                 // delete from cache the published posts
                 draftCache.delete(posts, TumblrPostCache.CACHE_TYPE_DRAFT)
-            }) { t -> DialogUtils.showErrorDialog(context!!, t) }
+            }) { t -> t.showErrorDialog(context!!) }
         )
     }
 
@@ -220,7 +220,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                 .subscribe({ posts ->
                     photoAdapter.addAll(posts)
                     photoAdapter.sort()
-                }) { t -> DialogUtils.showErrorDialog(context!!, t) }
+                }) { t -> t.showErrorDialog(context!!) }
         )
     }
 
@@ -248,7 +248,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                         .doOnSubscribe({ d -> compositeDisposable.add(d) })
                         .subscribe(
                             { },
-                            { t -> DialogUtils.showErrorDialog(context!!, t) })
+                            { t -> t.showErrorDialog(context!!) })
                 }
             }).show()
     }

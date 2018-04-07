@@ -21,10 +21,10 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.BirthdayShowFlags
 import com.ternaryop.photoshelf.db.DBHelper
-import com.ternaryop.photoshelf.util.date.dayOfMonth
-import com.ternaryop.photoshelf.util.date.month
-import com.ternaryop.photoshelf.util.date.year
 import com.ternaryop.photoshelf.view.BirthdaysMonthList
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.month
+import com.ternaryop.utils.date.year
 import java.text.DateFormatSymbols
 import java.util.Calendar
 

@@ -1,6 +1,8 @@
 package com.ternaryop.photoshelf.parsers
 
-import com.ternaryop.utils.StringUtils
+import com.ternaryop.utils.text.capitalizeAll
+import com.ternaryop.utils.text.replaceUnicodeWithClosestAscii
+import com.ternaryop.utils.text.stripAccents
 
 class TitleParser private constructor(private val config: TitleParserConfig) {
 
@@ -9,9 +11,10 @@ class TitleParser private constructor(private val config: TitleParserConfig) {
         var title = sourceTitle
         val titleData = TitleData(config)
 
-        title = config.applyList(config.titleCleanerList, title).trim { it <= ' ' }
-        title = StringUtils.replaceUnicodeWithClosestAscii(title)
-        title = StringUtils.stripAccents(title)
+        title = config.applyList(config.titleCleanerList, title)
+            .trim()
+            .replaceUnicodeWithClosestAscii()
+            .stripAccents()
 
         title = setWho(title, titleData)
 
@@ -29,7 +32,7 @@ class TitleParser private constructor(private val config: TitleParserConfig) {
         val m = config.titleParserPattern.matcher(title)
         if (m.find() && m.groupCount() > 1) {
             val who = m.group(1)
-            titleData.setWhoFromString(StringUtils.capitalize(who))
+            titleData.setWhoFromString(who.capitalizeAll())
             // remove the 'who' chunk and any not alphabetic character
             // (eg the dash used to separated "who" from location)
             title = if (Character.isLetter(m.group(2)[0])) {

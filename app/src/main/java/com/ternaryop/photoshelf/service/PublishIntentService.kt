@@ -32,10 +32,12 @@ import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.publishPhotoPost
-import com.ternaryop.utils.ImageUtils
+import com.ternaryop.utils.bitmap.readBitmap
+import com.ternaryop.utils.bitmap.scale
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
+import java.net.URL
 import java.util.Calendar
 import java.util.Locale
 
@@ -89,11 +91,10 @@ class PublishIntentService : IntentService("publishIntent") {
 
     private fun changeWallpaper(imageUrl: Uri) {
         try {
-            val wpm = WallpaperManager.getInstance(this)
             val metrics = resources.displayMetrics
-            val bitmap = ImageUtils.getScaledBitmap(ImageUtils.readImageFromUrl(imageUrl.toString()),
-                metrics.widthPixels, metrics.heightPixels, true)
-            wpm.setBitmap(bitmap)
+            val bitmap = URL(imageUrl.toString())
+                .readBitmap().scale(metrics.widthPixels, metrics.heightPixels, true)
+            WallpaperManager.getInstance(this).setBitmap(bitmap)
             showToast(R.string.wallpaper_changed_title)
         } catch (e: Exception) {
             notificationUtil.notifyError(e, "")

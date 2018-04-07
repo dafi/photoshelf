@@ -1,10 +1,7 @@
 package com.ternaryop.photoshelf.extractor
 
-import com.ternaryop.utils.JSONUtils
-import org.json.JSONObject
-import java.io.BufferedInputStream
+import com.ternaryop.utils.json.readJson
 import java.io.IOException
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -28,7 +25,7 @@ class ImageExtractorManager(private val accessToken: String) {
         return try {
             conn = getSignedGetConnection(apiUrl)
             handleError(conn)
-            ImageGallery(toJson(conn.inputStream).getJSONObject("gallery"))
+            ImageGallery(conn.inputStream.readJson().getJSONObject("gallery"))
         } finally {
             try {
                 conn?.disconnect()
@@ -45,7 +42,7 @@ class ImageExtractorManager(private val accessToken: String) {
         return try {
             conn = getSignedGetConnection(apiUrl)
             handleError(conn)
-            toJson(conn.inputStream).getString("imageUrl")
+            conn.inputStream.readJson().getString("imageUrl")
         } finally {
             try {
                 conn?.disconnect()
@@ -62,16 +59,11 @@ class ImageExtractorManager(private val accessToken: String) {
         return conn
     }
 
-    @Throws(Exception::class)
-    private fun toJson(stream: InputStream): JSONObject {
-        BufferedInputStream(stream).use { bis -> return JSONUtils.jsonFromInputStream(bis) }
-    }
-
     @Throws(Exception::class) private fun handleError(conn: HttpURLConnection) {
         if (conn.responseCode == HttpURLConnection.HTTP_OK) {
             return
         }
-        val error = toJson(conn.errorStream)
+        val error = conn.errorStream.readJson()
         throw RuntimeException("Error ${conn.responseCode} : ${error.getString("errorMessage")}")
     }
 }

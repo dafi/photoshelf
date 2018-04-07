@@ -6,8 +6,9 @@ import android.widget.ProgressBar
 import com.ternaryop.photoshelf.extractor.ImageExtractorManager
 import com.ternaryop.photoshelf.extractor.ImageGallery
 import com.ternaryop.photoshelf.extractor.ImageInfo
-import com.ternaryop.utils.URLUtils
-import com.ternaryop.utils.UriUtils
+import com.ternaryop.utils.network.UriUtils
+import com.ternaryop.utils.network.resolveShorten
+import com.ternaryop.utils.network.saveURL
 import com.ternaryop.utils.reactivex.ProgressIndicatorObservable
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
@@ -16,11 +17,11 @@ import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-
-private const val RESOLVE_URL_RETRY_COUNT = 20
+import java.net.URL
 
 class ImageUrlRetriever(private val context: Context, private val progressBar: ProgressBar) {
-    private val imageExtractorManager = ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
+    private val imageExtractorManager
+        = ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
 
     fun readImageGallery(url: String): Observable<ImageGallery> {
         return readImageGalleryObservable(url)
@@ -38,7 +39,7 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
     }
 
     private fun readImageGalleryObservable(url: String): Observable<ImageGallery> {
-        return Observable.fromCallable { imageExtractorManager.getGallery(URLUtils.resolveShortenURL(url)) }
+        return Observable.fromCallable { imageExtractorManager.getGallery(URL(url).resolveShorten().toString()) }
     }
 
     @Throws(Exception::class)
@@ -58,10 +59,12 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
 
     @Throws(Exception::class)
     private fun resolveRelativeURL(baseURL: String?, link: String): String {
-        val uri = UriUtils.encodeIllegalChar(link, "UTF-8", RESOLVE_URL_RETRY_COUNT)
-        return if (uri.isAbsolute) {
-            uri.toString()
-        } else UriUtils.encodeIllegalChar(baseURL, "UTF-8", RESOLVE_URL_RETRY_COUNT).resolve(uri).toString()
+        val uri = UriUtils.encodeIllegalChar(link, "UTF-8")
+        return when {
+            uri.isAbsolute -> uri.toString()
+            baseURL != null -> UriUtils.encodeIllegalChar(baseURL, "UTF-8").resolve(uri).toString()
+            else -> throw IllegalArgumentException("baseUrl is null")
+        }
     }
 
     @Throws(Exception::class)
@@ -83,7 +86,7 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
         if (useFile) {
             val file = File(context.cacheDir, url.hashCode().toString())
             FileOutputStream(file).use { fos ->
-                URLUtils.saveURL(url, fos)
+                URL(url).saveURL(fos)
                 return Uri.fromFile(file)
             }
         } else {

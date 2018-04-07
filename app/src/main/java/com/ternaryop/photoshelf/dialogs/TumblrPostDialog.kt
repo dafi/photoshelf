@@ -33,11 +33,11 @@ import com.ternaryop.photoshelf.parsers.TitleData
 import com.ternaryop.photoshelf.parsers.TitleParser
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.util.mru.MRU
-import com.ternaryop.photoshelf.util.text.anyMatches
-import com.ternaryop.photoshelf.util.text.fromHtml
-import com.ternaryop.photoshelf.util.text.toHtml
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.utils.text.anyMatches
+import com.ternaryop.utils.text.fromHtml
+import com.ternaryop.utils.text.toHtml
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers

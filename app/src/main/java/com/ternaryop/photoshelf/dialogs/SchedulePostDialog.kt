@@ -11,12 +11,12 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.util.date.dayOfMonth
-import com.ternaryop.photoshelf.util.date.hourOfDay
-import com.ternaryop.photoshelf.util.date.minute
-import com.ternaryop.photoshelf.util.date.month
-import com.ternaryop.photoshelf.util.date.year
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.hourOfDay
+import com.ternaryop.utils.date.minute
+import com.ternaryop.utils.date.month
+import com.ternaryop.utils.date.year
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.adapter.photo
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -113,10 +114,13 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
         }
 
         private fun displayImage(post: TumblrPhotoPost, imageLoader: ImageLoader) {
-            imageLoader.displayDrawable(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url, {
-                thumbImage.setImageDrawable(it)
-                thumbImage.isChecked = isChecked
-            }, false)
+            imageLoader.displayDrawable(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url, false,
+                object: ImageLoader.ImageLoaderCallback {
+                    override fun display(drawable: Drawable) {
+                        thumbImage.setImageDrawable(drawable)
+                        thumbImage.isChecked = isChecked
+                    }
+            })
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

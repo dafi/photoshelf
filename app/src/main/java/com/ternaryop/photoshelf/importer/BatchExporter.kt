@@ -4,8 +4,10 @@ import android.os.Environment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.util.log.Log
-import com.ternaryop.utils.DateTimeUtils
+import com.ternaryop.utils.date.daysSinceNow
 import java.io.File
+
+private const val ERROR_FILE_NAME = "export_errors.txt"
 
 /**
  * Created by dave on 19/02/18.
@@ -13,7 +15,7 @@ import java.io.File
  */
 class BatchExporter(val appSupport: AppSupport) {
     private val logPath: File
-        get() = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "export_errors.txt")
+        get() = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), ERROR_FILE_NAME)
 
     fun export() {
         val importer = Importer(appSupport)
@@ -24,7 +26,7 @@ class BatchExporter(val appSupport: AppSupport) {
 
     private fun exportTotalUsers(importer: Importer) {
         val lastUpdate = appSupport.lastFollowersUpdateTime
-        if (lastUpdate < 0 || appSupport.exportDaysPeriod <= DateTimeUtils.daysSinceTimestamp(lastUpdate)) {
+        if (lastUpdate < 0 || appSupport.exportDaysPeriod <= lastUpdate.daysSinceNow()) {
             try {
                 importer.syncExportTotalUsersToCSV(Importer.totalUsersPath, appSupport.selectedBlogName!!)
                 appSupport.lastFollowersUpdateTime = System.currentTimeMillis()

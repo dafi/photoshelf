@@ -1,10 +1,8 @@
 package com.ternaryop.feedly
 
-import com.ternaryop.utils.JSONUtils
-import org.json.JSONObject
-import java.io.BufferedInputStream
+import com.ternaryop.utils.json.readJson
+import com.ternaryop.utils.json.toJSON
 import java.io.IOException
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -40,7 +38,7 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
             handleError(conn)
             FeedlyRateLimit.update(conn)
 
-            val items = toJson(conn.inputStream).getJSONArray("items")
+            val items = conn.inputStream.readJson().getJSONArray("items")
             Array(items.length(), { SimpleFeedlyContent(items.getJSONObject(it)) as FeedlyContent }).toList()
         } finally {
             try {
@@ -60,7 +58,7 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
                 "action" to if (saved) "markAsSaved" else "markAsUnsaved",
                 "entryIds" to ids
         )
-        val data = JSONUtils.toJSON(map).toString()
+        val data = map.toJSON().toString()
 
         var conn: HttpURLConnection? = null
         try {
@@ -88,7 +86,7 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
             FeedlyRateLimit.update(conn)
 
             handleError(conn)
-            return toJson(conn.inputStream).getString("access_token")
+            return conn.inputStream.readJson().getString("access_token")
         } finally {
             try {
                 conn?.disconnect()
@@ -123,17 +121,12 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
     }
 
     @Throws(Exception::class)
-    private fun toJson(stream: InputStream): JSONObject {
-        BufferedInputStream(stream).use { bis -> return JSONUtils.jsonFromInputStream(bis) }
-    }
-
-    @Throws(Exception::class)
     private fun handleError(conn: HttpURLConnection) {
         val responseCode = conn.responseCode
         if (responseCode == HttpURLConnection.HTTP_OK) {
             return
         }
-        val error = toJson(conn.errorStream)
+        val error = conn.errorStream.use { it.readJson() }
         val errorMessage = error.getString("errorMessage")
         if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
             if (errorMessage != null && errorMessage.startsWith("token expired")) {

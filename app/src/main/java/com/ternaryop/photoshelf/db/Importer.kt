@@ -9,7 +9,7 @@ import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.getFollowers
-import com.ternaryop.utils.IOUtils
+import com.ternaryop.utils.io.generateUniqueFileName
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -104,9 +104,10 @@ class Importer constructor(val context: Context) {
          * @return the original passed parameter if exportPath doesn't exist or a new unique path
          */
         fun getExportPath(exportPath: String): String {
-            val newPath = IOUtils.generateUniqueFileName(exportPath)
-            if (newPath != exportPath) {
-                File(exportPath).renameTo(File(newPath))
+            val exportFile = File(exportPath)
+            val newFile = exportFile.generateUniqueFileName()
+            if (newFile != exportFile) {
+                exportFile.renameTo(newFile)
             }
             return exportPath
         }

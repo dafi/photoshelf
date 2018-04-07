@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.parsers
 
 import android.content.Context
-import com.ternaryop.utils.JSONUtils
+import com.ternaryop.utils.json.readJson
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.FileNotFoundException
@@ -33,15 +33,15 @@ abstract class AssetsJsonConfig {
 
     @Throws(IOException::class, JSONException::class)
     private fun jsonFromAssets(context: Context, fileName: String): JSONObject {
-        context.assets.open(fileName).use { stream -> return JSONUtils.jsonFromInputStream(stream) }
+        return context.assets.open(fileName).use { stream -> stream.readJson() }
     }
 
     @Throws(IOException::class, JSONException::class)
     private fun jsonFromPrivateFile(context: Context, fileName: String): JSONObject? {
-        try {
-            context.openFileInput(fileName).use { stream -> return JSONUtils.jsonFromInputStream(stream) }
+        return try {
+            context.openFileInput(fileName).use { stream -> stream.readJson() }
         } catch (ex: FileNotFoundException) {
-            return null
+            null
         }
     }
 

@@ -1,10 +1,7 @@
 package com.ternaryop.photoshelf.birthday
 
-import com.ternaryop.utils.JSONUtils
-import org.json.JSONObject
-import java.io.BufferedInputStream
+import com.ternaryop.utils.json.readJson
 import java.io.IOException
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -26,7 +23,7 @@ class BirthdayManager(private val accessToken: String) {
         return try {
             conn = getSignedGetConnection(sb)
             handleError(conn)
-            val birthdayInfo = toJson(conn.inputStream).getJSONArray("birthdays")
+            val birthdayInfo = conn.inputStream.readJson().getJSONArray("birthdays")
             BirthdayInfo(birthdayInfo.getJSONObject(0))
         } finally {
             try {
@@ -44,16 +41,11 @@ class BirthdayManager(private val accessToken: String) {
         return conn
     }
 
-    @Throws(Exception::class)
-    private fun toJson(stream: InputStream): JSONObject {
-        BufferedInputStream(stream).use { bis -> return JSONUtils.jsonFromInputStream(bis) }
-    }
-
     @Throws(Exception::class) private fun handleError(conn: HttpURLConnection) {
         if (conn.responseCode == HttpURLConnection.HTTP_OK) {
             return
         }
-        val error = toJson(conn.errorStream)
+        val error = conn.errorStream.readJson()
         throw RuntimeException("Error ${conn.responseCode} : ${error.getString("errorMessage")}")
     }
 }

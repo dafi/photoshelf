@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.preference.PreferenceManager
 import com.ternaryop.photoshelf.R
-import com.ternaryop.utils.JSONUtils
+import com.ternaryop.utils.json.readJson
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -23,6 +23,7 @@ import org.scribe.model.Verifier
 import org.scribe.oauth.OAuthService
 import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.URL
 
 class TumblrHttpOAuthConsumer(context: Context) {
     private val oAuthService: OAuthService
@@ -69,7 +70,7 @@ class TumblrHttpOAuthConsumer(context: Context) {
 
     fun jsonFromGet(url: String, params: Map<String, *>? = null): JSONObject {
         try {
-            return checkResult(JSONUtils.jsonFromInputStream(getSignedGetResponse(url, params).stream))
+            return checkResult(getSignedGetResponse(url, params).stream.readJson())
         } catch (e: Exception) {
             throw TumblrException(e)
         }
@@ -77,7 +78,7 @@ class TumblrHttpOAuthConsumer(context: Context) {
 
     fun jsonFromPost(url: String, params: Map<String, *>): JSONObject {
         try {
-            return checkResult(JSONUtils.jsonFromInputStream(getSignedPostResponse(url, params).stream))
+            return checkResult(getSignedPostResponse(url, params).stream.readJson())
         } catch (e: Exception) {
             throw TumblrException(e)
         }
@@ -95,7 +96,7 @@ class TumblrHttpOAuthConsumer(context: Context) {
             for ((key, value) in params) {
                 sbUrl.append("&").append(key).append("=").append(value)
             }
-            return checkResult(JSONUtils.jsonFromUrl(sbUrl.toString()))
+            return checkResult(URL(sbUrl.toString()).readJson())
         } catch (e: Exception) {
             throw TumblrException(e)
         }

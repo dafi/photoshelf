@@ -7,7 +7,7 @@ import android.widget.Filter
 import android.widget.ListView
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.BirthdayCursorAdapter
-import com.ternaryop.photoshelf.util.date.dayOfMonth
+import com.ternaryop.utils.date.dayOfMonth
 import java.util.Calendar
 
 /**

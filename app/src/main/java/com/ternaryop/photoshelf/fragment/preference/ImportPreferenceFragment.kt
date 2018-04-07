@@ -12,7 +12,7 @@ import com.ternaryop.photoshelf.importer.missingBirthdaysPath
 import com.ternaryop.photoshelf.importer.postsPath
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.service.ImportIntentService
-import com.ternaryop.utils.DateTimeUtils
+import com.ternaryop.utils.date.daysSinceNow
 import java.io.File
 
 private const val KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv"
@@ -118,7 +118,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         remainingMessage = if (lastFollowersUpdateTime < 0) {
             resources.getString(R.string.never_run)
         } else {
-            val remainingDays = (days - DateTimeUtils.daysSinceTimestamp(lastFollowersUpdateTime)).toInt()
+            val remainingDays = (days - lastFollowersUpdateTime.daysSinceNow()).toInt()
             resources.getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays)
         }
         findPreference(AppSupport.PREF_EXPORT_DAYS_PERIOD).summary =

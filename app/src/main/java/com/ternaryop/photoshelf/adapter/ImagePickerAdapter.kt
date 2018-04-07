@@ -75,7 +75,7 @@ class ImagePickerAdapter(private val context: Context)
         }
 
         private fun displayImage(imageInfo: ImageInfo, imageLoader: ImageLoader) {
-            imageLoader.displayImage(imageInfo.thumbnailUrl, thumbImage)
+            imageLoader.displayImage(imageInfo.thumbnailUrl!!, thumbImage)
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

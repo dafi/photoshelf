@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.db
 
 import android.provider.BaseColumns
-import com.ternaryop.photoshelf.util.date.year
+import com.ternaryop.utils.date.year
 import java.io.Serializable
 import java.text.ParseException
 import java.text.SimpleDateFormat
