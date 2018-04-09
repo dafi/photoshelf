@@ -16,6 +16,7 @@ import android.text.TextUtils
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity
 import com.ternaryop.photoshelf.db.Birthday
+import com.ternaryop.utils.dialog.getExceptionMessageChain
 import org.joda.time.LocalDate
 import org.joda.time.Years
 import java.text.DateFormat
@@ -29,6 +30,17 @@ import java.util.Calendar
 private const val NOTIFICATION_ID = 1
 const val NOTIFICATION_ID_IMPORT_BIRTHDAY = 2
 const val NOTIFICATION_ID_IMPORT_POSTS = 3
+
+fun NotificationCompat.Builder.setupMultiLineNotification(
+    bigTitle: String, lines: List<String>, deleteIntent: PendingIntent? = null) {
+    val inboxStyle = NotificationCompat.InboxStyle()
+    inboxStyle.setBigContentTitle(bigTitle)
+    for (line in lines) {
+        inboxStyle.addLine(line)
+    }
+    setStyle(inboxStyle)
+    setDeleteIntent(deleteIntent)
+}
 
 class NotificationUtil(context: Context) : ContextWrapper(context) {
 
@@ -48,9 +60,10 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
     }
 
     fun notifyError(t: Throwable, title: String, ticker: String? = null, offsetId: Int = 0) {
-        val notification = createNotification(title, ticker, t.localizedMessage, R.drawable.stat_notify_error).build()
+        val builder = createNotification(title, ticker, null, R.drawable.stat_notify_error)
+        builder.setupMultiLineNotification("Error", t.getExceptionMessageChain())
         // add offsetId to ensure every notification is shown
-        notificationManager.notify(ERROR_TAG, NOTIFICATION_ID + offsetId, notification)
+        notificationManager.notify(ERROR_TAG, NOTIFICATION_ID + offsetId, builder.build())
     }
 
     fun clearBirthdaysNotification() {
@@ -131,20 +144,10 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         val builder = createNotification(contentText, stringTicker, subText, iconId)
 
         birthdaysContentLines.add(contentText)
-        setupBirthdayNotification(builder, deleteIntent)
+        builder.setupMultiLineNotification(getString(R.string.birthdays_found), birthdaysContentLines, deleteIntent)
+        builder.setNumber(birthdaysContentLines.size)
 
         return builder.build()
-    }
-
-    private fun setupBirthdayNotification(builder: NotificationCompat.Builder, deleteIntent: PendingIntent) {
-        val inboxStyle = NotificationCompat.InboxStyle()
-        inboxStyle.setBigContentTitle(getString(R.string.birthdays_found))
-        for (line in birthdaysContentLines) {
-            inboxStyle.addLine(line)
-        }
-        builder.setStyle(inboxStyle)
-        builder.setDeleteIntent(deleteIntent)
-        builder.setNumber(birthdaysContentLines.size)
     }
 
     private fun getBirthdayNames(list: List<Birthday>): List<String> = list.map { it.name }
