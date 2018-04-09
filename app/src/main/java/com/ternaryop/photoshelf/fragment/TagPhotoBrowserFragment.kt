@@ -17,8 +17,8 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.db.TagCursorAdapter
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getPhotoPosts
 import io.reactivex.Observable
 import io.reactivex.SingleObserver
@@ -46,8 +46,8 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
         photoShelfSwipe = PhotoShelfSwipe(rootView, R.id.swipe_container)
 
-        if (blogName != null && postTag != null && postTag!!.trim { it <= ' ' }.isNotEmpty()) {
-            onQueryTextSubmit(postTag!!.trim { it <= ' ' })
+        if (blogName != null) {
+            postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) onQueryTextSubmit(tag) }
         }
 
         return rootView
@@ -100,7 +100,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
             .just(params)
             .doFinally { postFetcher.isScrolling = false }
             .flatMap<TumblrPhotoPost> { params1 ->
-                Observable.fromIterable<TumblrPhotoPost>(Tumblr.getSharedTumblr(context!!)
+                Observable.fromIterable<TumblrPhotoPost>(TumblrManager.getInstance(context!!)
                     .getPhotoPosts(blogName!!, params1))
             }
             .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
@@ -139,8 +139,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
     }
 
     override fun onSuggestionClick(position: Int): Boolean {
-        val query = (searchView!!.suggestionsAdapter.getItem(position) as Cursor).getString(1)
-        searchView!!.setQuery(query, true)
+        searchView?.apply { setQuery((suggestionsAdapter.getItem(position) as Cursor).getString(1), true) }
         return true
     }
 

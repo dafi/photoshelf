@@ -1,16 +1,10 @@
 package com.ternaryop.tumblr
 
-import android.content.Context
-import android.net.Uri
-import io.reactivex.Completable
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
+class Tumblr constructor(val consumer: TumblrHttpOAuthConsumer) {
 
     val blogList: Array<Blog>
         get() {
@@ -24,58 +18,6 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
                 throw TumblrException(e)
             }
         }
-
-    fun getDraftPosts(tumblrName: String, maxTimestamp: Long): List<TumblrPost> {
-        val apiUrl = getApiUrl(tumblrName, "/posts/draft")
-        val list = mutableListOf<TumblrPost>()
-
-        try {
-            val json = consumer.jsonFromGet(apiUrl)
-            var arr = json.getJSONObject("response").getJSONArray("posts")
-
-            val params = HashMap<String, String>(1)
-            while (arr.length() > 0 && addNewerPosts(list, arr, maxTimestamp)) {
-                val beforeId = arr.getJSONObject(arr.length() - 1).getLong("id")
-                params["before_id"] = beforeId.toString() + ""
-
-                arr = consumer.jsonFromGet(apiUrl, params).getJSONObject("response").getJSONArray("posts")
-            }
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-
-        return list
-    }
-
-    /**
-     * Add to list the posts with timestamp greater than maxTimestamp (ie newer posts)
-     * @return true if all posts in jsonPosts are newer, false otherwise
-     */
-    private fun addNewerPosts(list: MutableList<TumblrPost>, jsonPosts: JSONArray, maxTimestamp: Long): Boolean {
-        for (i in 0 until jsonPosts.length()) {
-            val post = build(jsonPosts.getJSONObject(i))
-            if (post.timestamp <= maxTimestamp) {
-                return false
-            }
-            list.add(post)
-        }
-        return true
-    }
-
-    fun getQueue(tumblrName: String, params: Map<String, String>): List<TumblrPost> {
-        val apiUrl = getApiUrl(tumblrName, "/posts/queue")
-        val list = mutableListOf<TumblrPost>()
-
-        try {
-            val json = consumer.jsonFromGet(apiUrl, params)
-            val arr = json.getJSONObject("response").getJSONArray("posts")
-            addPostsToList(list, arr)
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-
-        return list
-    }
 
     fun publishPost(tumblrName: String, id: Long): Long {
         val apiUrl = getApiUrl(tumblrName, "/post/edit")
@@ -101,42 +43,6 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
 
         try {
             consumer.jsonFromPost(apiUrl, params)
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-    }
-
-    fun saveDraft(tumblrName: String, id: Long) {
-        val apiUrl = getApiUrl(tumblrName, "/post/edit")
-
-        val params = HashMap<String, String>()
-        params["id"] = id.toString()
-        params["state"] = "draft"
-
-        try {
-            consumer.jsonFromPost(apiUrl, params)
-        } catch (e: Exception) {
-            throw TumblrException(e)
-        }
-    }
-
-    fun schedulePost(tumblrName: String, post: TumblrPost, timestamp: Long): Long {
-        try {
-            val apiUrl = getApiUrl(tumblrName, "/post/edit")
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US)
-            val gmtDate = dateFormat.format(Date(timestamp))
-
-            val params = HashMap<String, String>()
-            params["id"] = post.postId.toString() + ""
-            params["state"] = "queue"
-            params["publish_on"] = gmtDate
-
-            if (post is TumblrPhotoPost) {
-                params["caption"] = post.caption
-            }
-            params["tags"] = post.tagsAsString
-
-            return consumer.jsonFromPost(apiUrl, params).getJSONObject("response").getLong("id")
         } catch (e: Exception) {
             throw TumblrException(e)
         }
@@ -182,26 +88,7 @@ class Tumblr private constructor(val consumer: TumblrHttpOAuthConsumer) {
         const val MAX_POST_PER_REQUEST = 20
         private const val API_PREFIX = "http://api.tumblr.com/v2"
 
-        private var instance: Tumblr? = null
-
         fun getApiUrl(tumblrName: String, suffix: String): String = "$API_PREFIX/blog/$tumblrName.tumblr.com$suffix"
-
-        fun getSharedTumblr(context: Context): Tumblr {
-            if (instance == null) {
-                instance = Tumblr(TumblrHttpOAuthConsumer(context))
-            }
-            return instance!!
-        }
-
-        fun isLogged(context: Context): Boolean = TumblrHttpOAuthConsumer.isLogged(context)
-
-        fun login(context: Context): Completable = TumblrHttpOAuthConsumer.loginWithActivity(context)
-
-        fun logout(context: Context) = TumblrHttpOAuthConsumer.logout(context)
-
-        fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
-            return TumblrHttpOAuthConsumer.handleOpenURI(context, uri, callback)
-        }
 
         fun addPostsToList(list: MutableList<TumblrPost>, arr: JSONArray) {
             (0 until arr.length()).mapTo(list) { build(arr.getJSONObject(it)) }

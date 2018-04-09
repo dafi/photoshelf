@@ -4,9 +4,10 @@ import android.content.Context
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.db.DBHelper
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.android.TumblrManager
+import com.ternaryop.tumblr.getDraftPosts
 import com.ternaryop.tumblr.getPhotoPosts
 import com.ternaryop.tumblr.queueAll
 import io.reactivex.Maybe
@@ -19,7 +20,7 @@ import java.util.concurrent.Executors
 const val MAX_TAG_LAST_PUBLISHED_THREAD_POOL = 5
 
 class DraftPostHelper(private val context: Context, private val blogName: String) {
-    private val tumblr = Tumblr.getSharedTumblr(context)
+    private val tumblr = TumblrManager.getInstance(context)
 
     val queuePosts: Single<List<TumblrPost>>
         get() = Single.fromCallable { tumblr.queueAll(blogName) }

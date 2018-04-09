@@ -5,7 +5,7 @@ import android.content.ContextWrapper
 import android.os.Environment
 import android.preference.PreferenceManager
 import com.ternaryop.tumblr.Blog
-import com.ternaryop.tumblr.Tumblr
+import com.ternaryop.tumblr.android.TumblrManager
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -27,7 +27,8 @@ class AppSupport(context: Context) : ContextWrapper(context) {
         }
 
     val defaultScheduleMinutesTimeSpan: Int
-        get() = preferences.getInt(PREF_SCHEDULE_MINUTES_TIME_SPAN, resources.getInteger(R.integer.schedule_minutes_time_span_default))
+        get() = preferences.getInt(PREF_SCHEDULE_MINUTES_TIME_SPAN,
+            resources.getInteger(R.integer.schedule_minutes_time_span_default))
 
     var lastBirthdayShowTime: Long
         get() = preferences.getLong(LAST_BIRTHDAY_SHOW_TIME, 0)
@@ -56,7 +57,7 @@ class AppSupport(context: Context) : ContextWrapper(context) {
         return if (blogList != null) {
             Single.fromCallable { blogList }
         } else Single
-                .fromCallable { setupBlogs(Tumblr.getSharedTumblr(context).blogList) }
+                .fromCallable { setupBlogs(TumblrManager.getInstance(context).blogList) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
     }

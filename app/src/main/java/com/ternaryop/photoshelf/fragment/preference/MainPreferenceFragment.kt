@@ -17,7 +17,7 @@ import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.photoshelf.util.security.PermissionUtil
-import com.ternaryop.tumblr.Tumblr
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
@@ -100,10 +100,10 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
         when (preference?.key) {
             KEY_TUMBLR_LOGIN -> {
-                if (Tumblr.isLogged(context!!)) {
+                if (TumblrManager.isLogged(context!!)) {
                     logout()
                 } else {
-                    Tumblr
+                    TumblrManager
                         .login(context!!)
                         .subscribe({}, { it.showErrorDialog(context!!) })
                 }
@@ -129,7 +129,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
     private fun logout() {
         val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
-            Tumblr.logout(context!!)
+            TumblrManager.logout(context!!)
             toggleTumblrLoginTitle()
         }
 
@@ -172,7 +172,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
     private fun toggleTumblrLoginTitle() {
         findPreference(KEY_TUMBLR_LOGIN).apply {
-            title = if (Tumblr.isLogged(context!!)) {
+            title = if (TumblrManager.isLogged(context!!)) {
                 getString(R.string.logout_title, TUMBLR_SERVICE_NAME)
             } else {
                 getString(R.string.login_title, TUMBLR_SERVICE_NAME)

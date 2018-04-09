@@ -27,9 +27,9 @@ import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.publishPhotoPost
 import com.ternaryop.utils.bitmap.readBitmap
@@ -37,6 +37,7 @@ import com.ternaryop.utils.bitmap.scale
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.net.URL
 import java.util.Calendar
 import java.util.Locale
@@ -75,10 +76,10 @@ class PublishIntentService : IntentService("publishIntent") {
                 addBirthdateFromTags(postTags, selectedBlogName)
             }
             when {
-                ACTION_PUBLISH_DRAFT == action -> Tumblr.getSharedTumblr(applicationContext)
-                    .draftPhotoPost(selectedBlogName, url, postTitle, postTags)
-                ACTION_PUBLISH_PUBLISH == action -> Tumblr.getSharedTumblr(applicationContext)
-                    .publishPhotoPost(selectedBlogName, url, postTitle, postTags)
+                ACTION_PUBLISH_DRAFT == action -> TumblrManager.getInstance(applicationContext)
+                    .draftPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
+                ACTION_PUBLISH_PUBLISH == action -> TumblrManager.getInstance(applicationContext)
+                    .publishPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
                 ACTION_BIRTHDAY_LIST_BY_DATE == action -> broadcastBirthdaysByDate(intent)
                 ACTION_BIRTHDAY_PUBLISH == action -> birthdaysPublish(intent)
                 ACTION_CHANGE_WALLPAPER == action -> changeWallpaper(url)

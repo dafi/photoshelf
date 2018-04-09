@@ -1,15 +1,15 @@
 package com.ternaryop.tumblr
 
-import android.net.Uri
 import com.ternaryop.tumblr.Tumblr.Companion.getApiUrl
 import org.json.JSONException
 import java.io.File
+import java.net.URI
 
 /**
  * Created by dave on 12/03/18.
  * Tumblr photo API
  */
-fun Tumblr.draftPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: String) {
+fun Tumblr.draftPhotoPost(tumblrName: String, uri: URI, caption: String, tags: String) {
     try {
         createPhotoPost(tumblrName, uri, caption, tags, "draft")
     } catch (e: JSONException) {
@@ -17,7 +17,7 @@ fun Tumblr.draftPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: S
     }
 }
 
-fun Tumblr.publishPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: String) {
+fun Tumblr.publishPhotoPost(tumblrName: String, uri: URI, caption: String, tags: String) {
     try {
         createPhotoPost(tumblrName, uri, caption, tags, "published")
     } catch (e: JSONException) {
@@ -25,7 +25,7 @@ fun Tumblr.publishPhotoPost(tumblrName: String, uri: Uri, caption: String, tags:
     }
 }
 
-private fun Tumblr.createPhotoPost(tumblrName: String, uri: Uri, caption: String, tags: String, state: String): Long {
+private fun Tumblr.createPhotoPost(tumblrName: String, uri: URI, caption: String, tags: String, state: String): Long {
     val apiUrl = getApiUrl(tumblrName, "/post")
     val params = HashMap<String, Any>()
 

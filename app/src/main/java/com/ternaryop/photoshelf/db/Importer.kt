@@ -6,8 +6,8 @@ import android.widget.Toast
 import com.dropbox.core.v2.files.WriteMode
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.dropbox.DropboxManager
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getFollowers
 import com.ternaryop.utils.io.generateUniqueFileName
 import io.reactivex.ObservableTransformer
@@ -63,7 +63,7 @@ class Importer constructor(val context: Context) {
         // do not overwrite the entire file but append to the existing one
         PrintWriter(BufferedWriter(FileWriter(exportPath, true))).use { pw ->
             val time = ISO_8601_DATE.format(Calendar.getInstance().timeInMillis)
-            val totalUsers = Tumblr.getSharedTumblr(context).getFollowers(blogName).totalUsers
+            val totalUsers = TumblrManager.getInstance(context).getFollowers(blogName).totalUsers
             pw.println("$time;$blogName;$totalUsers")
             pw.flush()
             copyFileToDropbox(exportPath)

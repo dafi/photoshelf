@@ -1,45 +1,22 @@
 package com.ternaryop.tumblr
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.net.Uri
-import android.preference.PreferenceManager
-import com.ternaryop.photoshelf.R
+import com.github.scribejava.core.builder.ServiceBuilder
+import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig
+import com.github.scribejava.core.model.OAuth1AccessToken
+import com.github.scribejava.core.model.OAuthRequest
+import com.github.scribejava.core.model.Response
+import com.github.scribejava.core.model.Verb
+import com.github.scribejava.core.oauth.OAuth10aService
 import com.ternaryop.utils.json.readJson
-import io.reactivex.Completable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
-import org.scribe.builder.ServiceBuilder
-import org.scribe.model.OAuthConstants
-import org.scribe.model.OAuthRequest
-import org.scribe.model.Response
-import org.scribe.model.Token
-import org.scribe.model.Verb
-import org.scribe.model.Verifier
-import org.scribe.oauth.OAuthService
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
-class TumblrHttpOAuthConsumer(context: Context) {
-    private val oAuthService: OAuthService
-    private val accessToken: Token
-    val consumerKey = context.getString(R.string.CONSUMER_KEY)!!
-
-    init {
-        oAuthService = ServiceBuilder()
-            .provider(TumblrApiFix::class.java)
-            .apiKey(consumerKey)
-            .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-            .callback(context.getString(R.string.CALLBACK_URL))
-            .build()
-
-        accessToken = TokenPreference.from(context).accessToken
-    }
+class TumblrHttpOAuthConsumer(val consumerKey: String,
+    apiKey: String, callbackUrl: String, private val accessToken: OAuth1AccessToken) {
+    private val oAuthService = createAuthService(consumerKey, apiKey, callbackUrl)
 
     @Throws(IOException::class)
     private fun getSignedPostResponse(url: String, params: Map<String, *>): Response {
@@ -52,7 +29,7 @@ class TumblrHttpOAuthConsumer(context: Context) {
             }
         }
         oAuthService.signRequest(accessToken, oAuthReq)
-        return MultipartConverter(oAuthReq, params).request.send()
+        return oAuthService.execute(MultipartConverter(oAuthReq, params).request)
     }
 
     private fun getSignedGetResponse(url: String, params: Map<String, *>?): Response {
@@ -65,7 +42,7 @@ class TumblrHttpOAuthConsumer(context: Context) {
             }
         }
         oAuthService.signRequest(accessToken, oAuthReq)
-        return oAuthReq.send()
+        return oAuthService.execute(oAuthReq)
     }
 
     fun jsonFromGet(url: String, params: Map<String, *>? = null): JSONObject {
@@ -136,128 +113,15 @@ class TumblrHttpOAuthConsumer(context: Context) {
         return null
     }
 
-    private class TokenPreference(val context: Context) {
-        val requestToken: Token
-            get() = getToken(context.getSharedPreferences(PREFS_NAME, 0))
-        val accessToken: Token
-            get() = getToken(PreferenceManager.getDefaultSharedPreferences(context))
-        val isAccessTokenValid: Boolean
-            get() {
-                val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-                return preferences.contains(PREF_OAUTH_TOKEN) && preferences.contains(PREF_OAUTH_SECRET)
-            }
-
-        fun storeRequestToken(requestToken: Token) {
-            storeToken(context.getSharedPreferences(PREFS_NAME, 0), requestToken)
-        }
-
-        fun storeAccessToken(accessToken: Token) {
-            storeToken(PreferenceManager.getDefaultSharedPreferences(context), accessToken)
-        }
-
-        fun clearAccessToken() {
-            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-            val edit = preferences.edit()
-            edit.remove(PREF_OAUTH_TOKEN)
-            edit.remove(PREF_OAUTH_SECRET)
-            edit.apply()
-        }
-
-        companion object {
-            private const val PREFS_NAME = "tumblr"
-            private const val PREF_OAUTH_SECRET = "oAuthSecret"
-            private const val PREF_OAUTH_TOKEN = "oAuthToken"
-
-            fun from(context: Context): TokenPreference {
-                return TokenPreference(context)
-            }
-
-            private fun getToken(sharedPreferences: SharedPreferences): Token {
-                return Token(
-                    sharedPreferences.getString(PREF_OAUTH_TOKEN, null),
-                    sharedPreferences.getString(PREF_OAUTH_SECRET, null))
-            }
-
-            private fun storeToken(sharedPreferences: SharedPreferences, token: Token) {
-                sharedPreferences
-                    .edit()
-                    .putString(PREF_OAUTH_TOKEN, token.token)
-                    .putString(PREF_OAUTH_SECRET, token.secret)
-                    .apply()
-            }
-        }
-    }
-
     companion object {
-        fun isLogged(context: Context): Boolean {
-            return TokenPreference.from(context).isAccessTokenValid
-        }
-
-        fun logout(context: Context) {
-            TokenPreference.from(context).clearAccessToken()
-        }
-
-        private fun authorize(context: Context) {
-            // Callback url scheme is defined into manifest
-            val oAuthService = ServiceBuilder()
-                .provider(TumblrApiFix::class.java)
-                .apiKey(context.getString(R.string.CONSUMER_KEY))
-                .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                .callback(context.getString(R.string.CALLBACK_URL))
-                .build()
-            val requestToken = oAuthService.requestToken
-            TokenPreference.from(context).storeRequestToken(requestToken)
-            val authorizationUrl = oAuthService.getAuthorizationUrl(requestToken)
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authorizationUrl))
-            intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            context.startActivity(intent)
-        }
-
-        private fun access(context: Context, uri: Uri, callback: AuthenticationCallback) {
-            val prefs = TokenPreference.from(context)
-            Single
-                .fromCallable {
-                ServiceBuilder()
-                    .provider(TumblrApiFix::class.java)
-                    .apiKey(context.getString(R.string.CONSUMER_KEY))
-                    .apiSecret(context.getString(R.string.CONSUMER_SECRET))
-                    .callback(context.getString(R.string.CALLBACK_URL))
-                    .build()
-                    .getAccessToken(prefs.requestToken, Verifier(uri.getQueryParameter(OAuthConstants.VERIFIER)))
-                    ?: throw TumblrException("Invalid token")
-                }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ token ->
-                    prefs.storeAccessToken(token)
-                    callback.tumblrAuthenticated(token.token, token.secret)
-                }, { callback.tumblrAuthenticationError(it) })
-        }
-
-        fun loginWithActivity(context: Context): Completable {
-            return Completable.fromAction { TumblrHttpOAuthConsumer.authorize(context) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-        }
-
-        /**
-         * Return true if the uri scheme can be handled, false otherwise
-         * The returned value indicated only the scheme can be handled, the method complete the access asynchronously
-         * @param context the context
-         * @param uri the uri to check
-         * @param callback can be null
-         * @return true if uri can be handled, false otherwise
-         */
-        fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
-            val callbackUrl = context.getString(R.string.CALLBACK_URL)
-
-            return if (uri != null && callbackUrl.startsWith(uri.scheme)) {
-                TumblrHttpOAuthConsumer.access(
-                    context,
-                    uri,
-                    callback)
-                true
-            } else false
+        private const val CONNECTION_TIMEOUT_MILLIS = 3000
+        fun createAuthService(consumerKey: String, apiSecret: String, callbackUrl: String): OAuth10aService {
+            return ServiceBuilder(consumerKey)
+                .apiSecret(apiSecret)
+                .callback(callbackUrl)
+                .httpClientConfig(
+                    JDKHttpClientConfig.defaultConfig().apply { connectTimeout = CONNECTION_TIMEOUT_MILLIS })
+                .build(TumblrApiFix.instance)
         }
     }
 }

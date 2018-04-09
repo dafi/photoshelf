@@ -1,6 +1,6 @@
 package com.ternaryop.tumblr
 
-import org.scribe.model.OAuthRequest
+import com.github.scribejava.core.model.OAuthRequest
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -24,7 +24,7 @@ class MultipartConverter constructor(private val originalRequest: OAuthRequest, 
             request.addHeader("Authorization", originalRequest.headers["Authorization"])
             request.addHeader("Content-Type", "multipart/form-data, boundary=$boundary")
             request.addHeader("Content-length", bodyLength.toString())
-            request.addPayload(complexPayload())
+            request.setPayload(complexPayload())
             return request
         }
 

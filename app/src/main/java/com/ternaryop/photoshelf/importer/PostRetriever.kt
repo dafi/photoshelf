@@ -1,17 +1,18 @@
 package com.ternaryop.photoshelf.importer
 
 import android.content.Context
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.android.TumblrManager
 import io.reactivex.Observable
 
 class PostRetriever(context: Context) {
-    private val sharedTumblr = Tumblr.getSharedTumblr(context)
+    private val sharedTumblr = TumblrManager.getInstance(context)
     private var offset: Int = 0
     var total: Int = 0
         private set
 
-    fun readPhotoPosts(tumblrName: String, lastPublishTimestamp: Long, tag: String? = null): Observable<List<TumblrPost>> {
+    fun readPhotoPosts(tumblrName: String,
+        lastPublishTimestamp: Long, tag: String? = null): Observable<List<TumblrPost>> {
         val params = buildParams(tag)
 
         offset = 0

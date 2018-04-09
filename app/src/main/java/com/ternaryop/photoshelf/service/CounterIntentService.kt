@@ -8,7 +8,7 @@ import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_TYPE
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.tumblr.Tumblr
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftCount
 import com.ternaryop.tumblr.queueCount
 import org.greenrobot.eventbus.EventBus
@@ -48,8 +48,8 @@ class CounterIntentService : IntentService("counterIntent") {
                         .getInstance(applicationContext)
                         .birthdayDAO
                         .getBirthdaysCountInDate(Calendar.getInstance().time, blogName).toInt()
-                CounterEvent.DRAFT -> Tumblr.getSharedTumblr(applicationContext).draftCount(blogName)
-                CounterEvent.SCHEDULE -> Tumblr.getSharedTumblr(applicationContext).queueCount(blogName)
+                CounterEvent.DRAFT -> TumblrManager.getInstance(applicationContext).draftCount(blogName)
+                CounterEvent.SCHEDULE -> TumblrManager.getInstance(applicationContext).queueCount(blogName)
                 CounterEvent.NONE -> 0
                 else -> -1
             }

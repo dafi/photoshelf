@@ -7,9 +7,11 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
 import com.ternaryop.photoshelf.view.ColorItemDecoration
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
+import com.ternaryop.tumblr.android.TumblrManager
+import com.ternaryop.tumblr.saveDraft
+import com.ternaryop.tumblr.schedulePost
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -48,7 +50,7 @@ class PostActionExecutor(private val context: Context,
     fun saveAsDraft(postList: List<TumblrPost>): Single<List<PostActionResult>> {
         postAction = SAVE_AS_DRAFT
         return executePostAction(postList, Consumer {
-            Tumblr.getSharedTumblr(context).saveDraft(blogName, it.postId)
+            TumblrManager.getInstance(context).saveDraft(blogName, it.postId)
             DBHelper.getInstance(context).tumblrPostCacheDAO.insertItem(it, TumblrPostCache.CACHE_TYPE_DRAFT)
         })
     }
@@ -56,7 +58,7 @@ class PostActionExecutor(private val context: Context,
     fun delete(postList: List<TumblrPost>): Single<List<PostActionResult>> {
         postAction = DELETE
         return executePostAction(postList, Consumer {
-            Tumblr.getSharedTumblr(context).deletePost(blogName, it.postId)
+            TumblrManager.getInstance(context).deletePost(blogName, it.postId)
             DBHelper.getInstance(context).postDAO.deleteById(it.postId)
         })
     }
@@ -64,7 +66,7 @@ class PostActionExecutor(private val context: Context,
     fun publish(postList: List<TumblrPost>): Single<List<PostActionResult>> {
         postAction = PUBLISH
         return executePostAction(postList, Consumer {
-            Tumblr.getSharedTumblr(context).publishPost(blogName, it.postId)
+            TumblrManager.getInstance(context).publishPost(blogName, it.postId)
         })
     }
 
@@ -72,7 +74,7 @@ class PostActionExecutor(private val context: Context,
         postAction = SCHEDULE
         this.scheduleTimestamp = scheduleTimestamp
         return executePostAction(listOf(post), Consumer {
-            Tumblr.getSharedTumblr(context).schedulePost(blogName, it, scheduleTimestamp.timeInMillis)
+            TumblrManager.getInstance(context).schedulePost(blogName, it, scheduleTimestamp.timeInMillis)
         })
     }
 
@@ -85,7 +87,7 @@ class PostActionExecutor(private val context: Context,
                 "caption" to title,
                 "tags" to tags
             )
-            Tumblr.getSharedTumblr(context).editPost(selectedBlogName, newValues)
+            TumblrManager.getInstance(context).editPost(selectedBlogName, newValues)
             newValues["tumblrName"] = selectedBlogName
             DBHelper.getInstance(context).postDAO.update(context, newValues)
             post.tagsFromString(tags)

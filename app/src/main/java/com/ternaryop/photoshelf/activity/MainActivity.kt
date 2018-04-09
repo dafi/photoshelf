@@ -31,7 +31,7 @@ import com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment
 import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.service.CounterIntentService
 import com.ternaryop.tumblr.AuthenticationCallback
-import com.ternaryop.tumblr.Tumblr
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
@@ -57,7 +57,7 @@ class MainActivity : DrawerActionBarActivity(),
 
         blogList = findViewById(R.id.blogs_spinner)
         blogList.onItemSelectedListener = BlogItemSelectedListener()
-        val logged = Tumblr.isLogged(this)
+        val logged = TumblrManager.isLogged(this)
         if (savedInstanceState == null) {
             if (logged) {
                 if (!handleShortcutAction()) {
@@ -132,9 +132,9 @@ class MainActivity : DrawerActionBarActivity(),
     override fun onResume() {
         super.onResume()
 
-        if (!Tumblr.isLogged(this)) {
+        if (!TumblrManager.isLogged(this)) {
             // if we are returning from authentication then enable the UI
-            val handled = Tumblr.handleOpenURI(this, intent.data, this)
+            val handled = TumblrManager.handleOpenURI(this, intent.data, this)
             // show the preference only if we aren't in the middle of URI handling and not already logged in
             if (handled) {
                 showHome()

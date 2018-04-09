@@ -3,15 +3,14 @@ package com.ternaryop.photoshelf.birthday
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.net.Uri
 import android.os.Environment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.draftTextPost
 import com.ternaryop.tumblr.publishPhotoPost
@@ -52,12 +51,10 @@ object BirthdayUtils {
         val params = HashMap<String, String>(2)
         params["type"] = "photo"
         for (b in birthDays) {
-            val postTag = postTagDAO.getRandomPostByTag(b.name, b.tumblrName)
-            if (postTag != null) {
-                params["id"] = postTag.id.toString()
-                val post = Tumblr.getSharedTumblr(context).getPublicPosts(b.tumblrName, params)[0] as TumblrPhotoPost
-                posts.add(Pair(b, post))
-            }
+            val postTag = postTagDAO.getRandomPostByTag(b.name, b.tumblrName) ?: continue
+            params["id"] = postTag.id.toString()
+            val post = TumblrManager.getInstance(context).getPublicPosts(b.tumblrName, params)[0] as TumblrPhotoPost
+            posts.add(Pair(b, post))
         }
         return posts
     }
@@ -85,7 +82,7 @@ object BirthdayUtils {
 
         for ((count, info) in birthdays.withIndex()) {
             params["id"] = info["postId"]!!
-            post = Tumblr.getSharedTumblr(context)
+            post = TumblrManager.getInstance(context)
                     .getPublicPosts(tumblrName, params)[0] as TumblrPhotoPost
             val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url
 
@@ -108,7 +105,7 @@ object BirthdayUtils {
         if (post != null) {
             message = message + " (" + formatPeriodDate(-daysPeriod) + ")"
 
-            Tumblr.getSharedTumblr(context)
+            TumblrManager.getInstance(context)
                     .draftTextPost(tumblrName,
                             message,
                             sb.toString(),
@@ -142,35 +139,37 @@ object BirthdayUtils {
     }
 
     fun createBirthdayPost(context: Context,
-        cakeImage: Bitmap, post: TumblrPhotoPost, blogName: String, saveAsDraft: Boolean) {
-        val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
-        val image = URL(imageUrl).readBitmap()
-
-        val canvasWidth = image.width
-        val canvasHeight = cakeImage.height + CAKE_IMAGE_SEPARATOR_HEIGHT + image.height
-
-        val config = image.config ?: Bitmap.Config.ARGB_8888
-        val destBmp = Bitmap.createBitmap(canvasWidth, canvasHeight, config)
-        val canvas = Canvas(destBmp)
-
-        canvas.drawBitmap(cakeImage, ((image.width - cakeImage.width) / 2).toFloat(), 0f, null)
-        canvas.drawBitmap(image, 0f, (cakeImage.height + CAKE_IMAGE_SEPARATOR_HEIGHT).toFloat(), null)
+        cakeImage: Bitmap, post: TumblrPhotoPost, blogName: String, publishAsDraft: Boolean) {
         val name = post.tags[0]
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
             "birth-$name.png")
-        file.savePng(destBmp)
-        if (saveAsDraft) {
-            Tumblr.getSharedTumblr(context).draftPhotoPost(blogName,
-                    Uri.fromFile(file),
-                    getBirthdayCaption(context, name, blogName),
-                "Birthday, $name")
-        } else {
-            Tumblr.getSharedTumblr(context).publishPhotoPost(blogName,
-                    Uri.fromFile(file),
-                    getBirthdayCaption(context, name, blogName),
-                "Birthday, $name")
+        val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
+        file.savePng(createBirthdayBitmap(cakeImage, URL(imageUrl).readBitmap()))
+        try {
+            if (publishAsDraft) {
+                TumblrManager.getInstance(context).draftPhotoPost(blogName,
+                    file.toURI(), getBirthdayCaption(context, name, blogName), "Birthday, $name")
+            } else {
+                TumblrManager.getInstance(context).publishPhotoPost(blogName,
+                    file.toURI(), getBirthdayCaption(context, name, blogName), "Birthday, $name")
+            }
+        } finally {
+            file.delete()
         }
-        file.delete()
+    }
+
+    private fun createBirthdayBitmap(cake: Bitmap, celebrity: Bitmap): Bitmap {
+        val canvasWidth = celebrity.width
+        val canvasHeight = cake.height + CAKE_IMAGE_SEPARATOR_HEIGHT + celebrity.height
+
+        val config = celebrity.config ?: Bitmap.Config.ARGB_8888
+        val destBmp = Bitmap.createBitmap(canvasWidth, canvasHeight, config)
+        val canvas = Canvas(destBmp)
+
+        canvas.drawBitmap(cake, ((celebrity.width - cake.width) / 2).toFloat(), 0f, null)
+        canvas.drawBitmap(celebrity, 0f, (cake.height + CAKE_IMAGE_SEPARATOR_HEIGHT).toFloat(), null)
+
+        return destBmp
     }
 
     private fun getBirthdayCaption(context: Context, name: String, blogName: String): String {

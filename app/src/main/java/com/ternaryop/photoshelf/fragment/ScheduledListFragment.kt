@@ -13,8 +13,9 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.tumblr.android.TumblrManager
+import com.ternaryop.tumblr.getQueue
 import io.reactivex.Observable
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -58,7 +59,7 @@ open class ScheduledListFragment : AbsPostsListFragment() {
             .just(params)
             .doFinally { postFetcher.isScrolling = false }
             .flatMap { params1 ->
-                Observable.fromIterable(Tumblr.getSharedTumblr(context!!)
+                Observable.fromIterable(TumblrManager.getInstance(context!!)
                     .getQueue(blogName!!, params1))
             }
             .map { tumblrPost ->
