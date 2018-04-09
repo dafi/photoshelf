@@ -18,10 +18,12 @@ local.properties
 # IntelliJ IDEA
 # Exclude whole .idea directory
 # Read more at https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
-.idea/
 *.iml
 *.ipr
 *.iws
+!.idea/
+.idea/*
+!.idea/codeStyleSettings.xml
 
 # gradle files
 .gradle/
