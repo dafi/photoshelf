@@ -62,6 +62,8 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
 
     fun addAll(posts: List<BirthdayPhotoPair>) = items.addAll(posts)
 
+    fun sort() = items.sortWith(Comparator { lhr, rhs -> lhr.first.name.compareTo(rhs.first.name) })
+
     fun updatePostByTag(newPost: TumblrPhotoPost, notifyChange: Boolean) {
         val name = newPost.tags[0]
         val index = items.indexOfFirst { it.second.tags[0].equals(name, ignoreCase = true) }

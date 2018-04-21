@@ -34,11 +34,13 @@ import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.publishPhotoPost
 import com.ternaryop.utils.bitmap.readBitmap
 import com.ternaryop.utils.bitmap.scale
+import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.net.URL
+import java.util.ArrayList
 import java.util.Calendar
 import java.util.Locale
 
@@ -146,15 +148,12 @@ class PublishIntentService : IntentService("publishIntent") {
 
     private fun broadcastBirthdaysByDate(intent: Intent) {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
-        val list: List<Pair<Birthday, TumblrPhotoPost>> = try {
-            BirthdayUtils.getPhotoPosts(applicationContext, birthday)
-        } catch (ex: Exception) {
-            emptyList()
-        }
 
-        if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java)) {
-            EventBus.getDefault().post(BirthdayEvent(list))
-        }
+        BirthdayUtils
+            .getPhotoPosts(applicationContext, birthday)
+            .subscribeOn(Schedulers.io())
+            .doFinally { EventBus.getDefault().post(BirthdayEvent(emptyList())) }
+            .subscribe({ EventBus.getDefault().post(BirthdayEvent(listOf(it))) })
     }
 
     private fun birthdaysPublish(intent: Intent) {

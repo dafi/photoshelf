@@ -80,6 +80,7 @@ class BirthdaysPublisherFragment
         if (swipeLayout.isWaitingResult) {
             return
         }
+        gridViewPhotoAdapter.clear()
         val now = Calendar.getInstance(Locale.US)
         PublishIntentService.startBirthdayListIntent(context!!, now)
         swipeLayout.setRefreshingAndWaintingResult(true)
@@ -224,9 +225,12 @@ class BirthdaysPublisherFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBirthdayEvent(event: BirthdayEvent) {
-        swipeLayout.setRefreshingAndWaintingResult(false)
-        gridViewPhotoAdapter.clear()
-        gridViewPhotoAdapter.addAll(event.birthdayList)
-        gridViewPhotoAdapter.notifyDataSetChanged()
+        if (event.birthdayList.isEmpty()) {
+            swipeLayout.setRefreshingAndWaintingResult(false)
+        } else {
+            gridViewPhotoAdapter.addAll(event.birthdayList)
+            gridViewPhotoAdapter.sort()
+            gridViewPhotoAdapter.notifyDataSetChanged()
+        }
     }
 }

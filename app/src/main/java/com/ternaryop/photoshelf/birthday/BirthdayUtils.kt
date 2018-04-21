@@ -19,15 +19,18 @@ import com.ternaryop.utils.bitmap.savePng
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Collections
 import java.util.Locale
+import java.util.concurrent.Executors
 
-const val MAX_THUMB_COUNT = 9
-const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
+private const val MAX_THUMB_COUNT = 9
+private const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
+private const val MAX_BIRTHDAY_THREAD_POOL_SIZE = 20
 
 object BirthdayUtils {
     fun notifyBirthday(context: Context): Boolean {
@@ -42,21 +45,29 @@ object BirthdayUtils {
         return true
     }
 
-    fun getPhotoPosts(context: Context, birthDate: Calendar): List<Pair<Birthday, TumblrPhotoPost>> {
+    fun getPhotoPosts(context: Context, birthDate: Calendar): Observable<Pair<Birthday, TumblrPhotoPost>> {
+        val executorService = Executors.newFixedThreadPool(MAX_BIRTHDAY_THREAD_POOL_SIZE)
         val dbHelper = DBHelper.getInstance(context.applicationContext)
-        val birthDays = dbHelper.birthdayDAO.getBirthdayByDate(birthDate.time)
-        val posts = mutableListOf<Pair<Birthday, TumblrPhotoPost>>()
-
         val postTagDAO = dbHelper.postTagDAO
-        val params = HashMap<String, String>(2)
-        params["type"] = "photo"
-        for (b in birthDays) {
-            val postTag = postTagDAO.getRandomPostByTag(b.name, b.tumblrName) ?: continue
-            params["id"] = postTag.id.toString()
-            val post = TumblrManager.getInstance(context).getPublicPosts(b.tumblrName, params)[0] as TumblrPhotoPost
-            posts.add(Pair(b, post))
-        }
-        return posts
+        val nullValue = Pair(Birthday("", null as Calendar?, ""), TumblrPhotoPost())
+        val tumblr = TumblrManager.getInstance(context)
+
+        return Observable
+            .fromIterable(dbHelper.birthdayDAO.getBirthdayByDate(birthDate.time))
+            .flatMap { b ->
+                val postTag = postTagDAO.getRandomPostByTag(b.name, b.tumblrName)
+                if (postTag == null) {
+                    Observable.just(nullValue)
+                } else {
+                    val params = mapOf(
+                        "type" to "photo",
+                        "id" to postTag.id.toString())
+                    Observable
+                        .fromCallable { Pair(b, tumblr.getPublicPosts(b.tumblrName, params)[0] as TumblrPhotoPost) }
+                        .subscribeOn(Schedulers.from(executorService))
+                }
+            }
+            .filter { it.first.birthDate != null }
     }
 
     @Suppress("LongParameterList")
@@ -72,7 +83,7 @@ object BirthdayUtils {
         val dbHelper = DBHelper.getInstance(context)
         val birthdays = dbHelper.birthdayDAO
                 .getBirthdayByAgeRange(fromAge, if (toAge == 0) Integer.MAX_VALUE else toAge, daysPeriod, tumblrName)
-        Collections.shuffle(birthdays)
+                .shuffled()
 
         val sb = StringBuilder()
 
