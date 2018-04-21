@@ -29,15 +29,13 @@ object TumblrManager {
 
     fun isLogged(context: Context): Boolean = TokenPreference.from(context).isAccessTokenValid
 
-    fun login(context: Context): Completable = loginWithActivity(context)
-
-    fun logout(context: Context) = TokenPreference.from(context).clearAccessToken()
-
-    fun loginWithActivity(context: Context): Completable {
+    fun login(context: Context): Completable {
         return Completable.fromAction { authorize(context) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
+
+    fun logout(context: Context) = TokenPreference.from(context).clearAccessToken()
 
     private fun authorize(context: Context) {
         // Callback url scheme is defined into manifest
