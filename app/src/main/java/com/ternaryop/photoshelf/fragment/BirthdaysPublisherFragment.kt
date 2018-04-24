@@ -55,7 +55,6 @@ class BirthdaysPublisherFragment
         gridView.layoutManager = layout
 
         swipeLayout = rootView.findViewById(R.id.swipe_container)
-        swipeLayout.setColorScheme(R.array.progress_swipe_colors)
         swipeLayout.setOnRefreshListener(this)
         swipeLayout.isRefreshing = true
         refresh()
@@ -80,10 +79,12 @@ class BirthdaysPublisherFragment
         if (swipeLayout.isWaitingResult) {
             return
         }
+        val count = gridViewPhotoAdapter.itemCount
         gridViewPhotoAdapter.clear()
+        gridViewPhotoAdapter.notifyItemRangeRemoved(0, count)
         val now = Calendar.getInstance(Locale.US)
         PublishIntentService.startBirthdayListIntent(context!!, now)
-        swipeLayout.setRefreshingAndWaintingResult(true)
+        swipeLayout.setRefreshingAndWaitingResult(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -226,11 +227,13 @@ class BirthdaysPublisherFragment
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBirthdayEvent(event: BirthdayEvent) {
         if (event.birthdayList.isEmpty()) {
-            swipeLayout.setRefreshingAndWaintingResult(false)
-        } else {
-            gridViewPhotoAdapter.addAll(event.birthdayList)
+            swipeLayout.setRefreshingAndWaitingResult(false)
             gridViewPhotoAdapter.sort()
             gridViewPhotoAdapter.notifyDataSetChanged()
+        } else {
+            val position = gridViewPhotoAdapter.itemCount
+            gridViewPhotoAdapter.addAll(event.birthdayList)
+            gridViewPhotoAdapter.notifyItemRangeInserted(position, event.birthdayList.size)
         }
     }
 }
