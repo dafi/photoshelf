@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
-import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -64,8 +63,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
         setHasOptionsMenu(true)
 
-        photoShelfSwipe = PhotoShelfSwipe(rootView, R.id.swipe_container,
-            SwipeRefreshLayout.OnRefreshListener { refresh(true) })
+        photoShelfSwipe = rootView!!.findViewById(R.id.swipe_container)
+        photoShelfSwipe.setOnRefreshListener { refresh(true) }
         return rootView
     }
 
@@ -95,7 +94,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun refresh(deleteItemsIfAllowed: Boolean) {
         // do not start another refresh if the current one is running
-        if (photoShelfSwipe.swipe.isWaitingResult) {
+        if (photoShelfSwipe.isWaitingResult) {
             return
         }
         Single
@@ -235,7 +234,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                     preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply()
                     feedlyManager.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken)
                     // hide swipe otherwise refresh() exists immediately
-                    photoShelfSwipe.swipe.setRefreshingAndWaintingResult(false)
+                    photoShelfSwipe.setRefreshingAndWaitingResult(false)
                     refresh(true)
                 }
             })

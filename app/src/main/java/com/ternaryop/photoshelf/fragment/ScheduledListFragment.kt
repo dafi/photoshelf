@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.fragment
 
 import android.os.Bundle
-import android.support.v4.widget.SwipeRefreshLayout
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.LayoutInflater
 import android.view.Menu
@@ -33,8 +32,8 @@ open class ScheduledListFragment : AbsPostsListFragment() {
         val rootView = super.onCreateView(inflater, container, savedInstanceState)
 
         photoAdapter.counterType = CounterEvent.SCHEDULE
-        photoShelfSwipe = PhotoShelfSwipe(rootView!!,
-            R.id.swipe_container, SwipeRefreshLayout.OnRefreshListener { resetAndReloadPhotoPosts() })
+        photoShelfSwipe = rootView!!.findViewById(R.id.swipe_container)
+        photoShelfSwipe.setOnRefreshListener { resetAndReloadPhotoPosts() }
         return rootView
     }
 

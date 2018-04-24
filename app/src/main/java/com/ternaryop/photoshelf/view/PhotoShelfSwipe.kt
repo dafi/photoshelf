@@ -1,9 +1,7 @@
 package com.ternaryop.photoshelf.view
 
-import android.support.annotation.IdRes
-import android.support.v4.widget.SwipeRefreshLayout
-import android.view.View
-import com.ternaryop.photoshelf.R
+import android.content.Context
+import android.util.AttributeSet
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
 import io.reactivex.CompletableTransformer
 import io.reactivex.SingleTransformer
@@ -16,16 +14,17 @@ import io.reactivex.schedulers.Schedulers
  * Hold the WaitingResultSwipeRefreshLayout used in many classes
  */
 
-class PhotoShelfSwipe constructor(rootView: View, @IdRes id: Int, listener: SwipeRefreshLayout.OnRefreshListener? = null) {
-    val swipe = rootView.findViewById<View>(id) as WaitingResultSwipeRefreshLayout
+class PhotoShelfSwipe : WaitingResultSwipeRefreshLayout {
 
-    init {
-        swipe.setColorScheme(R.array.progress_swipe_colors)
+    constructor(context: Context) : super(context)
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+
+    override fun setOnRefreshListener(listener: OnRefreshListener?) {
         if (listener == null) {
-            swipe.isEnabled = false
-        } else {
-            swipe.setOnRefreshListener(listener)
+            isEnabled = false
         }
+        super.setOnRefreshListener(listener)
     }
 
     /**
@@ -38,8 +37,8 @@ class PhotoShelfSwipe constructor(rootView: View, @IdRes id: Int, listener: Swip
             upstream
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe { swipe.setRefreshingAndWaintingResult(true) }
-                    .doFinally { swipe.setRefreshingAndWaintingResult(false) }
+                    .doOnSubscribe { setRefreshingAndWaitingResult(true) }
+                    .doFinally { setRefreshingAndWaitingResult(false) }
         }
     }
 
@@ -48,8 +47,8 @@ class PhotoShelfSwipe constructor(rootView: View, @IdRes id: Int, listener: Swip
             upstream
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe { swipe.setRefreshingAndWaintingResult(true) }
-                    .doFinally { swipe.setRefreshingAndWaintingResult(false) }
+                    .doOnSubscribe { setRefreshingAndWaitingResult(true) }
+                    .doFinally { setRefreshingAndWaitingResult(false) }
         }
     }
 }

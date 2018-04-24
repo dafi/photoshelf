@@ -177,11 +177,11 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         photoAdapter.clear()
         progressHighlightViewLayout.visibility = View.VISIBLE
         progressHighlightViewLayout.startProgress()
-        swipeLayout.setRefreshingAndWaintingResult(true)
+        swipeLayout.setRefreshingAndWaitingResult(true)
     }
 
     private fun onRefreshCompleted() {
-        swipeLayout.setRefreshingAndWaintingResult(false)
+        swipeLayout.setRefreshingAndWaitingResult(false)
         progressHighlightViewLayout.stopProgress()
         progressHighlightViewLayout.visibility = View.GONE
     }

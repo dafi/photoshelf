@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:orientation="vertical">
 
-    <com.ternaryop.widget.WaitingResultSwipeRefreshLayout
+    <com.ternaryop.photoshelf.view.PhotoShelfSwipe
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:colorScheme="@array/progress_swipe_colors">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
 
-    </com.ternaryop.widget.WaitingResultSwipeRefreshLayout>
+    </com.ternaryop.photoshelf.view.PhotoShelfSwipe>
     <ImageView
         android:id="@android:id/empty"
         android:layout_width="90dp"

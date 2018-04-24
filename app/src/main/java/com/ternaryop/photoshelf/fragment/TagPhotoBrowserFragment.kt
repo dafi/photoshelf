@@ -29,7 +29,7 @@ import io.reactivex.schedulers.Schedulers
 class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionListener {
     private var postTag: String? = null
     private var allowSearch: Boolean = false
-    private var photoShelfSwipe: PhotoShelfSwipe? = null
+    private lateinit var photoShelfSwipe: PhotoShelfSwipe
 
     override val postListViewResource: Int
         get() = R.layout.fragment_tag_browse_photo_list
@@ -44,7 +44,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         photoAdapter.setOnPhotoBrowseClick(this)
         photoAdapter.setEmptyView(rootView.findViewById(android.R.id.empty))
 
-        photoShelfSwipe = PhotoShelfSwipe(rootView, R.id.swipe_container)
+        photoShelfSwipe = rootView.findViewById(R.id.swipe_container)
 
         if (blogName != null) {
             postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) onQueryTextSubmit(tag) }
@@ -107,7 +107,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
             .toList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .compose(photoShelfSwipe!!.applySwipe())
+            .compose(photoShelfSwipe.applySwipe())
             .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
                 override fun onSubscribe(d: Disposable) {
                     compositeDisposable.add(d)
