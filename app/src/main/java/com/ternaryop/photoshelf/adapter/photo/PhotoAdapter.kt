@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
-import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick
@@ -19,10 +18,9 @@ import com.ternaryop.photoshelf.event.CounterEvent
 import org.greenrobot.eventbus.EventBus
 import java.util.Calendar
 
-class PhotoAdapter(private val context: Context, prefix: String)
+class PhotoAdapter(private val context: Context)
     : AbsBaseAdapter<PhotoViewHolder>(), View.OnClickListener, View.OnLongClickListener {
 
-    private val imageLoader = ImageLoader(context.applicationContext, prefix, R.drawable.stub)
     private val allPosts = mutableListOf<PhotoShelfPost>()
     private var visiblePosts = allPosts
     private var onPhotoBrowseClick: OnPhotoBrowseClick? = null
@@ -84,7 +82,7 @@ class PhotoAdapter(private val context: Context, prefix: String)
         val listener = if (onPhotoBrowseClick == null) null else this
         val showUploadTime = sortSwitcher.sortable.sortId == UPLOAD_TIME
         val post = visiblePosts[position]
-        holder.bindModel(post, imageLoader, thumbnailWidth, showUploadTime)
+        holder.bindModel(post, thumbnailWidth, showUploadTime)
         holder.setOnClickListeners(listener)
         if (onPhotoBrowseClick is OnPhotoBrowseClickMultiChoice) {
             holder.setOnClickMultiChoiceListeners(listener, this)

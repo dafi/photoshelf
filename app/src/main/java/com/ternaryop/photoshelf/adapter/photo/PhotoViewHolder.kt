@@ -9,7 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.ternaryop.lazyimageloader.ImageLoader
+import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_CAPTION_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
@@ -35,10 +35,10 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val tagsContainer: ViewGroup = itemView.findViewById(R.id.tags_container)
     private lateinit var post: PhotoShelfPost
 
-    fun bindModel(post: PhotoShelfPost, imageLoader: ImageLoader, thumbnailWidth: Int, showUploadTime: Boolean) {
+    fun bindModel(post: PhotoShelfPost, thumbnailWidth: Int, showUploadTime: Boolean) {
         this.post = post
         updateTitles(showUploadTime)
-        displayImage(imageLoader, thumbnailWidth)
+        displayImage(thumbnailWidth)
         setupTags()
         updateItemColors()
     }
@@ -86,11 +86,16 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         array.recycle()
     }
 
-    private fun displayImage(imageLoader: ImageLoader, thumbnailWidth: Int) {
+    private fun displayImage(thumbnailWidth: Int) {
         val altSize = post.getClosestPhotoByWidth(thumbnailWidth) ?: return
         setImageDimension(altSize, thumbnailWidth)
 
-        imageLoader.displayImage(altSize.url, thumbImage)
+        Picasso
+            .get()
+            .load(altSize.url)
+            .noFade()
+            .placeholder(R.drawable.stub)
+            .into(thumbImage)
     }
 
     private fun setImageDimension(altSize: TumblrAltSize, thumbnailWidth: Int) {

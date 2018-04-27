@@ -10,7 +10,7 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.TextView
-import com.ternaryop.lazyimageloader.ImageLoader
+import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_STYLE
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
@@ -31,7 +31,7 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     val sidebar: View = itemView.findViewById(R.id.sidebar)
     val tag: TextView = itemView.findViewById(R.id.tag)
 
-    fun bindModel(content: FeedlyContentDelegate, imageLoader: ImageLoader) {
+    fun bindModel(content: FeedlyContentDelegate) {
         // setting listener to null resolved the lost of unchecked state
         // http://stackoverflow.com/a/32428115/195893
         checkbox.setOnCheckedChangeListener(null)
@@ -39,14 +39,19 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         updateTitles(content)
         updateItemColors(content)
         updateTag(content)
-        displayImage(content, imageLoader, FAVICON_SIZE)
+        displayImage(content, FAVICON_SIZE)
     }
 
-    private fun displayImage(content: FeedlyContentDelegate, imageLoader: ImageLoader, size: Int) {
+    private fun displayImage(content: FeedlyContentDelegate, size: Int) {
         setImageDimension(size)
 
-        if (content.domain != null) {
-            imageLoader.displayImage("https://www.google.com/s2/favicons?domain_url=${content.domain}", faviconImage)
+        content.domain?.let { domain ->
+            Picasso
+                .get()
+                .load("https://www.google.com/s2/favicons?domain_url=$domain")
+                .noFade()
+                .placeholder(R.drawable.stub)
+                .into(faviconImage)
         }
     }
 

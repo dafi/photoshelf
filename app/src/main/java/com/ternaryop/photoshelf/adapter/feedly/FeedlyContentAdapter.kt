@@ -7,15 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import com.ternaryop.feedly.FeedlyContent
-import com.ternaryop.lazyimageloader.ImageLoader
 import com.ternaryop.photoshelf.R
-
-private const val PREFIX_FAVICON = "favicon"
 
 class FeedlyContentAdapter(private val context: Context) :
     RecyclerView.Adapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     private val allContents = mutableListOf<FeedlyContentDelegate>()
-    private val imageLoader = ImageLoader(context.applicationContext, PREFIX_FAVICON, R.drawable.stub)
     val sortSwitcher = FeedlyContentSortSwitcher(context)
 
     var clickListener: OnFeedlyContentClick? = null
@@ -28,7 +24,7 @@ class FeedlyContentAdapter(private val context: Context) :
     }
 
     override fun onBindViewHolder(holder: FeedlyContentViewHolder, position: Int) {
-        holder.bindModel(allContents[position], imageLoader)
+        holder.bindModel(allContents[position])
         setClickListeners(holder)
     }
 

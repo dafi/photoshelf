@@ -35,8 +35,6 @@ import com.ternaryop.photoshelf.util.tumblr.viewPost
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.dialog.showErrorDialog
 
-private const val LOADER_PREFIX_POSTS_THUMB = "postsThumb"
-
 abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener, OnScrollPostFetcher.PostFetcher,
     OnPhotoBrowseClickMultiChoice, TumblrPostDialog.PostListener, SearchView.OnQueryTextListener, ActionMode.Callback {
 
@@ -61,7 +59,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(postListViewResource, container, false)
 
-        photoAdapter = PhotoAdapter(context!!, LOADER_PREFIX_POSTS_THUMB)
+        photoAdapter = PhotoAdapter(context!!)
         postActionExecutor = PostActionExecutor(context!!, blogName!!, this)
 
         postFetcher = OnScrollPostFetcher(this)

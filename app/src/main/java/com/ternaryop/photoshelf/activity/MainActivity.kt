@@ -215,7 +215,7 @@ class MainActivity : DrawerActionBarActivity(),
     }
 
     private fun fillBlogList(blogNames: List<String>) {
-        val adapter = BlogSpinnerAdapter(this, LOADER_PREFIX_AVATAR, blogNames)
+        val adapter = BlogSpinnerAdapter(this, blogNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         blogList.adapter = adapter
 
@@ -243,8 +243,6 @@ class MainActivity : DrawerActionBarActivity(),
     }
 
     companion object {
-        private const val LOADER_PREFIX_AVATAR = "avatar"
-
         private const val DRAWER_ITEM_HOME = 0
         private const val DRAWER_ITEM_DRAFT = 1
         private const val DRAWER_ITEM_SCHEDULE = 2

@@ -1,14 +1,14 @@
 package com.ternaryop.photoshelf.adapter.photo
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.ternaryop.lazyimageloader.ImageLoader
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
@@ -16,13 +16,13 @@ import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.widget.CheckableImageView
+import java.lang.Exception
 import java.util.Locale
 
 typealias BirthdayPhotoPair = Pair<Birthday, TumblrPhotoPost>
 
-class GridViewPhotoAdapter(private val context: Context, prefix: String)
+class GridViewPhotoAdapter(private val context: Context)
     : RecyclerView.Adapter<GridViewPhotoAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
-    private val imageLoader: ImageLoader = ImageLoader(context.applicationContext, prefix, R.drawable.stub)
     private val items: MutableList<BirthdayPhotoPair> = mutableListOf()
 
     var isShowButtons: Boolean = false
@@ -40,14 +40,12 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
 
-        holder.bindModel(item, imageLoader, isShowButtons)
+        holder.bindModel(item, isShowButtons, selection.isSelected(position))
 
         val listener = if (onPhotoBrowseClick == null) null else this
         if (isShowButtons && listener != null) {
             holder.setOnClickListeners(listener)
         }
-        holder.setVisibility(isShowButtons)
-        holder.isChecked = selection.isSelected(position)
 
         holder.setOnClickMultiChoiceListeners(listener, this)
     }
@@ -98,31 +96,35 @@ class GridViewPhotoAdapter(private val context: Context, prefix: String)
         val thumbImage = vi.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
         val bgAction = vi.findViewById<View>(R.id.bg_actions) as ImageView
         val showImageAction = vi.findViewById<View>(R.id.ic_show_image_action) as ImageView
-        var isChecked = false
 
-        fun bindModel(item: BirthdayPhotoPair, imageLoader: ImageLoader, showButtons: Boolean) {
+        fun bindModel(item: BirthdayPhotoPair, showButtons: Boolean, checked: Boolean) {
             setVisibility(showButtons)
             updateTitles(item)
-            displayImage(item.second, imageLoader)
+            displayImage(item.second, checked)
         }
 
         private fun updateTitles(item: BirthdayPhotoPair) {
             caption.text = String.format(Locale.US, "%s, %d", item.second.tags[0], item.first.age)
         }
 
-        fun setVisibility(showButtons: Boolean) {
+        private fun setVisibility(showButtons: Boolean) {
             showImageAction.visibility = if (showButtons) View.VISIBLE else View.INVISIBLE
             bgAction.visibility = if (showButtons) View.VISIBLE else View.INVISIBLE
         }
 
-        private fun displayImage(post: TumblrPhotoPost, imageLoader: ImageLoader) {
-            imageLoader.displayDrawable(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url, false,
-                object: ImageLoader.ImageLoaderCallback {
-                    override fun display(drawable: Drawable) {
-                        thumbImage.setImageDrawable(drawable)
-                        thumbImage.isChecked = isChecked
+        private fun displayImage(post: TumblrPhotoPost, checked: Boolean) {
+            Picasso
+                .get()
+                .load(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url)
+                .placeholder(R.drawable.stub)
+                .noFade()
+                .into(thumbImage, object: Callback {
+                    override fun onSuccess() {
+                        thumbImage.isChecked = checked
                     }
-            })
+
+                    override fun onError(e: Exception?) {}
+                })
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

@@ -22,6 +22,7 @@ dependencies {
     implementation "com.github.scribejava:scribejava-core:${rootProject.ext.scribejavaCoreLibVersion}"
     implementation "net.danlew:android.joda:${rootProject.ext.jodaLibVersion}"
     implementation "com.takisoft.fix:preference-v7:${rootProject.ext.supportLibVersion}.0"
+    implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
 
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryUtilLibVersion}"
 

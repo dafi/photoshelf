@@ -6,14 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import com.ternaryop.lazyimageloader.ImageLoader
+import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.extractor.ImageInfo
 import com.ternaryop.widget.CheckableImageView
 
 class ImagePickerAdapter(private val context: Context)
     : AbsBaseAdapter<ImagePickerAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
-    private val imageLoader: ImageLoader = ImageLoader(context.applicationContext, "picker", R.drawable.stub)
     private var onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice? = null
     private val items: MutableList<ImageInfo> = mutableListOf()
     var showButtons: Boolean = false
@@ -29,7 +28,7 @@ class ImagePickerAdapter(private val context: Context)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val listener: View.OnClickListener? = if (onPhotoBrowseClick == null) null else this
-        holder.bindModel(items[position], imageLoader, showButtons)
+        holder.bindModel(items[position], showButtons)
         if (showButtons && listener != null) {
             holder.setOnClickListeners(listener)
         }
@@ -64,9 +63,9 @@ class ImagePickerAdapter(private val context: Context)
         internal val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
         internal val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
 
-        fun bindModel(imageInfo: ImageInfo, imageLoader: ImageLoader, showButtons: Boolean) {
+        fun bindModel(imageInfo: ImageInfo, showButtons: Boolean) {
             setVisibility(showButtons)
-            displayImage(imageInfo, imageLoader)
+            displayImage(imageInfo)
         }
 
         private fun setVisibility(showButtons: Boolean) {
@@ -74,8 +73,13 @@ class ImagePickerAdapter(private val context: Context)
             bgAction.visibility = if (showButtons) View.VISIBLE else View.INVISIBLE
         }
 
-        private fun displayImage(imageInfo: ImageInfo, imageLoader: ImageLoader) {
-            imageLoader.displayImage(imageInfo.thumbnailUrl!!, thumbImage)
+        private fun displayImage(imageInfo: ImageInfo) {
+            Picasso
+                .get()
+                .load(imageInfo.thumbnailUrl!!)
+                .placeholder(R.drawable.stub)
+                .noFade()
+                .into(thumbImage)
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

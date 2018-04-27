@@ -8,15 +8,13 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.SpinnerAdapter
 import android.widget.TextView
-
-import com.ternaryop.lazyimageloader.ImageLoader
+import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.TumblrAltSize
 
-class BlogSpinnerAdapter(context: Context, prefix: String, blogNames: List<String>) : ArrayAdapter<String>(context, 0, blogNames), SpinnerAdapter {
-    private val imageLoader = ImageLoader(context.applicationContext, prefix, R.drawable.stub)
-
+class BlogSpinnerAdapter(context: Context, blogNames: List<String>)
+    : ArrayAdapter<String>(context, 0, blogNames), SpinnerAdapter {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val holder: ViewHolder
         val inflatedView: View
@@ -33,13 +31,18 @@ class BlogSpinnerAdapter(context: Context, prefix: String, blogNames: List<Strin
         val blogName = getItem(position)
         holder.title.text = blogName
 
-        val imageUrl = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
-        imageLoader.displayImage(imageUrl, holder.image, true)
+        Picasso
+            .get()
+            .load(Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH))
+            .placeholder(R.drawable.stub)
+            .noFade()
+            .into(holder.image)
 
         return inflatedView
     }
 
-    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup) = getView(position, convertView, parent)
+    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup)
+        = getView(position, convertView, parent)
 
     private inner class ViewHolder(vi: View) {
         internal val title = vi.findViewById<View>(R.id.title1) as TextView

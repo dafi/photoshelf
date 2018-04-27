@@ -31,7 +31,6 @@ import java.util.Calendar
 import java.util.Locale
 
 private const val PICK_IMAGE_REQUEST_CODE = 100
-private const val LOADER_PREFIX = "mediumThumb"
 
 class BirthdaysPublisherFragment
     : AbsPhotoShelfFragment(),
@@ -44,7 +43,7 @@ class BirthdaysPublisherFragment
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_birthdays_publisher, container, false)
 
-        gridViewPhotoAdapter = GridViewPhotoAdapter(context!!, LOADER_PREFIX)
+        gridViewPhotoAdapter = GridViewPhotoAdapter(context!!)
         gridViewPhotoAdapter.onPhotoBrowseClick = this
 
         val layout = AutofitGridLayoutManager(context!!,
