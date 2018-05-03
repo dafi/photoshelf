@@ -152,8 +152,10 @@ class PublishIntentService : IntentService("publishIntent") {
         BirthdayUtils
             .getPhotoPosts(applicationContext, birthday)
             .subscribeOn(Schedulers.io())
-            .doFinally { EventBus.getDefault().post(BirthdayEvent(emptyList())) }
-            .subscribe({ EventBus.getDefault().post(BirthdayEvent(listOf(it))) })
+            .doFinally { if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
+                EventBus.getDefault().post(BirthdayEvent(emptyList())) }
+            .subscribe({ if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
+                EventBus.getDefault().post(BirthdayEvent(listOf(it))) })
     }
 
     private fun birthdaysPublish(intent: Intent) {
