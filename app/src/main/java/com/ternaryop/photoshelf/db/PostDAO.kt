@@ -129,6 +129,14 @@ class PostDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsDAO<Post>(db
         return dbHelper.writableDatabase.delete(TABLE_NAME, BaseColumns._ID + "=?", arrayOf(id.toString()))
     }
 
+    fun updateTags(context: Context, id: Long, tags: String, blogName: String) {
+        val newValues = mapOf(
+            "id" to id.toString(),
+            "tags" to tags,
+            "tumblrName" to blogName)
+        update(context, newValues)
+    }
+
     companion object {
         const val TABLE_NAME = "post"
 
