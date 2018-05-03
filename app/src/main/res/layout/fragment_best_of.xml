@@ -3,24 +3,26 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <EditText
+        android:id="@+id/tags"
+        android:hint="@string/tag_name"
+        android:inputType="text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <Button
         android:id="@+id/create_post"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Create 'Best of' post"/>
-    <GridView
-        android:id="@+id/gridview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center"
-        android:choiceMode="multipleChoiceModal"
-        android:columnWidth="250dp"
-        android:horizontalSpacing="4dp"
-        android:numColumns="auto_fit"
-        android:paddingTop="4dp"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
-        android:stretchMode="none"
-        android:verticalSpacing="4dp" />
+        android:text="Add tags"/>
+
+    <EditText
+        android:id="@+id/results"
+        android:inputType="none"
+        android:hint="@string/title_name"
+        android:textIsSelectable="true"
+        android:gravity="top"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </LinearLayout>
