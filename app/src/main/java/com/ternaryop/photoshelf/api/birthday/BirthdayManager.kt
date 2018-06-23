@@ -15,11 +15,11 @@ import java.util.Calendar
  */
 
 // some images don't have the exact (==) width so we get closest width (<=)
-fun BirthdayManager.BirthdayInfo.getClosestPhotoByWidth(width: Int):
-    BirthdayManager.ImageSizeInfo? = images?.firstOrNull { it.width <= width }
+fun BirthdayManager.Birthday.getClosestPhotoByWidth(width: Int):
+    BirthdayManager.ImageSize? = images?.firstOrNull { it.width <= width }
 
 class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessToken) {
-    fun getByName(name: String, searchIfNew: Boolean): BirthdayInfo {
+    fun getByName(name: String, searchIfNew: Boolean): Birthday {
         val sb = "$API_PREFIX/v1/birthday/name/find?name=${URLEncoder.encode(name, "UTF-8")}&searchIfNew=$searchIfNew"
 
         var conn: HttpURLConnection? = null
@@ -27,7 +27,7 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
             conn = getSignedGetConnection(sb)
             handleError(conn)
             val json = conn.inputStream.readJson().getJSONArray("birthdays").getJSONObject(0)
-            BirthdayInfo(json.getString("name"),
+            Birthday(json.getString("name"),
                 Calendar.getInstance().fromIsoFormat(json.getString("birthdate")),
                 null,
                 json.optString("source"))
@@ -80,23 +80,23 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         }
     }
 
-    private fun getImages(images: JSONArray?): List<ImageSizeInfo>? {
+    private fun getImages(images: JSONArray?): List<ImageSize>? {
         images ?: return null
-        val list = mutableListOf<ImageSizeInfo>()
+        val list = mutableListOf<ImageSize>()
 
         for (i in 0 until  images.length()) {
             val image = images.getJSONObject(i)
-            list.add(ImageSizeInfo(image.getInt("width"), image.getInt("height"), image.getString("url")))
+            list.add(ImageSize(image.getInt("width"), image.getInt("height"), image.getString("url")))
         }
         return list
     }
 
-    private fun getBirthdays(birthdays: JSONArray?): List<BirthdayInfo>? {
+    private fun getBirthdays(birthdays: JSONArray?): List<Birthday>? {
         birthdays ?: return null
-        val list = mutableListOf<BirthdayInfo>()
+        val list = mutableListOf<Birthday>()
         for (i in 0 until birthdays.length()) {
             val bdate = birthdays.getJSONObject(i)
-            list.add(BirthdayInfo(bdate.getString("name"),
+            list.add(Birthday(bdate.getString("name"),
                 Calendar.getInstance().fromIsoFormat(bdate.getString("birthdate")),
                 getImages(bdate.optJSONArray("images"))))
         }
@@ -138,10 +138,10 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
             return sb.toString()
         }
     }
-    data class BirthdayResult(val total: Long, val birthdates: List<BirthdayInfo>?) : Serializable
-    data class BirthdayInfo(val name: String, val birthdate: Calendar,
-        val images: List<ImageSizeInfo>?, val source: String? = null) : Serializable
-    data class ImageSizeInfo(val width: Int, val height: Int, val url: String) : Serializable
+    data class BirthdayResult(val total: Long, val birthdates: List<Birthday>?) : Serializable
+    data class Birthday(val name: String, val birthdate: Calendar,
+        val images: List<ImageSize>?, val source: String? = null) : Serializable
+    data class ImageSize(val width: Int, val height: Int, val url: String) : Serializable
 
     companion object {
         const val MAX_BIRTHDAY_COUNT = 200
