@@ -12,25 +12,29 @@ import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
-import com.ternaryop.photoshelf.db.Birthday
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Birthday
+import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.utils.date.yearsBetweenDates
 import com.ternaryop.widget.CheckableImageView
 import java.lang.Exception
 import java.util.Locale
 
-typealias BirthdayPhotoPair = Pair<Birthday, TumblrPhotoPost>
+fun TumblrAltSize.toImageSize() = BirthdayManager.ImageSize(width, height, url)
+fun List<TumblrAltSize>.toImageSize() = map { it.toImageSize() }
 
 class GridViewPhotoAdapter(private val context: Context)
     : RecyclerView.Adapter<GridViewPhotoAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
-    private val items: MutableList<BirthdayPhotoPair> = mutableListOf()
+    private val items: MutableList<Birthday> = mutableListOf()
 
     var isShowButtons: Boolean = false
 
     var onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice? = null
 
     val selection = SelectionArrayViewHolder(this)
-    val selectedItems: List<BirthdayPhotoPair>
+    val selectedItems: List<Birthday>
         get() = selection.selectedPositions.map { getItem(it) }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -52,24 +56,28 @@ class GridViewPhotoAdapter(private val context: Context)
 
     override fun getItemCount(): Int = items.size
 
-    fun getItem(position: Int): BirthdayPhotoPair = items[position]
+    fun getItem(position: Int): Birthday = items[position]
 
     override fun getItemId(position: Int): Long = position.toLong()
 
     fun clear() = items.clear()
 
-    fun addAll(posts: List<BirthdayPhotoPair>) = items.addAll(posts)
+    fun addAll(posts: List<Birthday>) = items.addAll(posts)
 
-    fun sort() = items.sortWith(Comparator { lhr, rhs -> lhr.first.name.compareTo(rhs.first.name) })
+    fun sort() = items.sortWith(Comparator { lhr, rhs -> lhr.name.compareTo(rhs.name) })
 
     fun updatePostByTag(newPost: TumblrPhotoPost, notifyChange: Boolean) {
         val name = newPost.tags[0]
-        val index = items.indexOfFirst { it.second.tags[0].equals(name, ignoreCase = true) }
+        val index = items.indexOfFirst { it.name.equals(name, ignoreCase = true) }
 
         if (index == -1) {
             return
         }
-        items[index] = Pair(items[index].first, newPost)
+        val birthdayInfo = items[index]
+        items[index] = Birthday(
+            birthdayInfo.name,
+            birthdayInfo.birthdate,
+            newPost.firstPhotoAltSize!!.toImageSize())
 
         if (notifyChange) {
             notifyDataSetChanged()
@@ -97,14 +105,14 @@ class GridViewPhotoAdapter(private val context: Context)
         val bgAction = vi.findViewById<View>(R.id.bg_actions) as ImageView
         val showImageAction = vi.findViewById<View>(R.id.ic_show_image_action) as ImageView
 
-        fun bindModel(item: BirthdayPhotoPair, showButtons: Boolean, checked: Boolean) {
+        fun bindModel(item: Birthday, showButtons: Boolean, checked: Boolean) {
             setVisibility(showButtons)
             updateTitles(item)
-            displayImage(item.second, checked)
+            displayImage(item, checked)
         }
 
-        private fun updateTitles(item: BirthdayPhotoPair) {
-            caption.text = String.format(Locale.US, "%s, %d", item.second.tags[0], item.first.age)
+        private fun updateTitles(item: Birthday) {
+            caption.text = String.format(Locale.US, "%s, %d", item.name, item.birthdate.yearsBetweenDates())
         }
 
         private fun setVisibility(showButtons: Boolean) {
@@ -112,10 +120,10 @@ class GridViewPhotoAdapter(private val context: Context)
             bgAction.visibility = if (showButtons) View.VISIBLE else View.INVISIBLE
         }
 
-        private fun displayImage(post: TumblrPhotoPost, checked: Boolean) {
+        private fun displayImage(item: Birthday, checked: Boolean) {
             Picasso
                 .get()
-                .load(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url)
+                .load(item.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)!!.url)
                 .placeholder(R.drawable.stub)
                 .noFade()
                 .into(thumbImage, object: Callback {

@@ -15,7 +15,9 @@ import android.support.v4.app.NotificationCompat
 import android.text.TextUtils
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity
-import com.ternaryop.photoshelf.db.Birthday
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.utils.date.year
+import com.ternaryop.utils.date.yearsBetweenDates
 import com.ternaryop.utils.dialog.getExceptionMessageChain
 import org.joda.time.LocalDate
 import org.joda.time.Years
@@ -84,7 +86,7 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         notificationManager.notify(BIRTHDAY_ADDED_TAG, NOTIFICATION_ID, notification)
     }
 
-    fun notifyTodayBirthdays(list: List<Birthday>, currYear: Int) {
+    fun notifyTodayBirthdays(list: List<BirthdayManager.Birthday>, currYear: Int) {
         if (list.isEmpty()) {
             return
         }
@@ -95,7 +97,8 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         if (list.size == 1) {
             val birthday = list[0]
             builder.setContentTitle(resources.getQuantityString(R.plurals.birthday_title, list.size))
-            builder.setContentText(getString(R.string.birthday_years_old, birthday.name, birthday.age))
+            builder.setContentText(
+                getString(R.string.birthday_years_old, birthday.name, birthday.birthdate.yearsBetweenDates()))
         } else {
             builder.setStyle(buildBirthdayStyle(list, currYear))
             // The text is shown when there isn't enough space for inboxStyle
@@ -150,14 +153,14 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         return builder.build()
     }
 
-    private fun getBirthdayNames(list: List<Birthday>): List<String> = list.map { it.name }
+    private fun getBirthdayNames(list: List<BirthdayManager.Birthday>): List<String> = list.map { it.name }
 
-    private fun buildBirthdayStyle(list: List<Birthday>, currYear: Int): NotificationCompat.Style {
+    private fun buildBirthdayStyle(list: List<BirthdayManager.Birthday>, currYear: Int): NotificationCompat.Style {
         val inboxStyle = NotificationCompat.InboxStyle()
 
         inboxStyle.setBigContentTitle(getString(R.string.birthday_notification_title))
         for (birthday in list) {
-            val years = currYear - birthday.birthYear
+            val years = currYear - birthday.birthdate.year
             inboxStyle.addLine(getString(R.string.birthday_years_old, birthday.name, years))
         }
         return inboxStyle

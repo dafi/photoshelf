@@ -19,6 +19,7 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.photo.GridViewPhotoAdapter
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
@@ -82,7 +83,7 @@ class BirthdaysPublisherFragment
         gridViewPhotoAdapter.clear()
         gridViewPhotoAdapter.notifyItemRangeRemoved(0, count)
         val now = Calendar.getInstance(Locale.US)
-        PublishIntentService.startBirthdayListIntent(context!!, now)
+        PublishIntentService.startBirthdayListIntent(context!!, now, blogName!!)
         swipeLayout.setRefreshingAndWaitingResult(true)
     }
 
@@ -113,15 +114,15 @@ class BirthdaysPublisherFragment
     }
 
     private fun publish(mode: ActionMode, publishAsDraft: Boolean) {
-        val posts = ArrayList<TumblrPhotoPost>()
+        val selectedBirthdays = ArrayList<BirthdayManager.Birthday>()
         val names = ArrayList<String>()
 
         for (pair in gridViewPhotoAdapter.selectedItems) {
-            names.add(pair.second.tags[0])
-            posts.add(pair.second)
+            names.add(pair.name)
+            selectedBirthdays.add(pair)
         }
 
-        PublishIntentService.startPublishBirthdayIntent(context!!, posts, blogName!!, publishAsDraft)
+        PublishIntentService.startPublishBirthdayIntent(context!!, selectedBirthdays, blogName!!, publishAsDraft)
         Toast.makeText(context!!,
             getString(R.string.sending_cake_title, TextUtils.join(", ", names)),
             Toast.LENGTH_LONG).show()
@@ -166,9 +167,9 @@ class BirthdaysPublisherFragment
     }
 
     override fun onThumbnailImageClick(position: Int) {
-        val post = gridViewPhotoAdapter.getItem(position).second
+        val birthdate = gridViewPhotoAdapter.getItem(position)
         TagPhotoBrowserActivity.startPhotoBrowserActivityForResult(this, blogName!!,
-                post.tags[0],
+                birthdate.name,
                 PICK_IMAGE_REQUEST_CODE,
                 false)
     }
@@ -225,14 +226,16 @@ class BirthdaysPublisherFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBirthdayEvent(event: BirthdayEvent) {
-        if (event.birthdayList.isEmpty()) {
+        if (event.birthdayResult == null) {
             swipeLayout.setRefreshingAndWaitingResult(false)
             gridViewPhotoAdapter.sort()
             gridViewPhotoAdapter.notifyDataSetChanged()
         } else {
             val position = gridViewPhotoAdapter.itemCount
-            gridViewPhotoAdapter.addAll(event.birthdayList)
-            gridViewPhotoAdapter.notifyItemRangeInserted(position, event.birthdayList.size)
+            event.birthdayResult.birthdates?.let { list ->
+                gridViewPhotoAdapter.addAll(list)
+                gridViewPhotoAdapter.notifyItemRangeInserted(position, list.size)
+            }
         }
     }
 }

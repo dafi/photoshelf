@@ -20,6 +20,7 @@ import com.ternaryop.photoshelf.EXTRA_POST_TAGS
 import com.ternaryop.photoshelf.EXTRA_POST_TITLE
 import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.BirthdayDAO
@@ -148,14 +149,15 @@ class PublishIntentService : IntentService("publishIntent") {
 
     private fun broadcastBirthdaysByDate(intent: Intent) {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
+        val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
 
         BirthdayUtils
-            .getPhotoPosts(applicationContext, birthday)
+            .getPhotoPosts(applicationContext, birthday, blogName)
             .subscribeOn(Schedulers.io())
             .doFinally { if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
-                EventBus.getDefault().post(BirthdayEvent(emptyList())) }
-            .subscribe({ if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
-                EventBus.getDefault().post(BirthdayEvent(listOf(it))) })
+                EventBus.getDefault().post(BirthdayEvent()) }
+            .subscribe { if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
+                EventBus.getDefault().post(BirthdayEvent(it)) }
     }
 
     private fun birthdaysPublish(intent: Intent) {
@@ -205,16 +207,18 @@ class PublishIntentService : IntentService("publishIntent") {
         }
 
         fun startBirthdayListIntent(context: Context,
-                                    date: Calendar) {
+                                    date: Calendar,
+                                    blogName: String) {
             val intent = Intent(context, PublishIntentService::class.java)
             intent.putExtra(EXTRA_BIRTHDAY_DATE, date)
+            intent.putExtra(EXTRA_BLOG_NAME, blogName)
             intent.putExtra(EXTRA_ACTION, ACTION_BIRTHDAY_LIST_BY_DATE)
 
             context.startService(intent)
         }
 
         fun startPublishBirthdayIntent(context: Context,
-                                       list: ArrayList<TumblrPhotoPost>,
+                                       list: ArrayList<BirthdayManager.Birthday>,
                                        blogName: String,
                                        publishAsDraft: Boolean) {
             if (list.isEmpty()) {
