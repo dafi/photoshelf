@@ -176,7 +176,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     override fun onItemClick(position: Int) {
         if (actionMode == null) {
-//            handleClickedThumbnail(position)
+            handleClickedThumbnail(position)
         } else {
             updateSelection(position)
         }
@@ -191,7 +191,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     private fun handleClickedThumbnail(position: Int) {
         if (activity!!.callingActivity == null) {
-            onThumbnailImageClick(position)
+//            onThumbnailImageClick(position)
         } else {
             photoAdapter.getItem(position).finishActivity(activity!!)
         }
