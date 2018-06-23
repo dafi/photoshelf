@@ -3,9 +3,9 @@ package com.ternaryop.photoshelf
 import android.content.Context
 import android.net.Uri
 import android.widget.ProgressBar
-import com.ternaryop.photoshelf.extractor.ImageExtractorManager
-import com.ternaryop.photoshelf.extractor.ImageGallery
-import com.ternaryop.photoshelf.extractor.ImageInfo
+import com.ternaryop.photoshelf.api.extractor.ImageGallery
+import com.ternaryop.photoshelf.api.extractor.ImageInfo
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.utils.network.UriUtils
 import com.ternaryop.utils.network.resolveShorten
 import com.ternaryop.utils.network.saveURL
@@ -20,9 +20,6 @@ import java.io.IOException
 import java.net.URL
 
 class ImageUrlRetriever(private val context: Context, private val progressBar: ProgressBar) {
-    private val imageExtractorManager
-        = ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
-
     fun readImageGallery(url: String): Observable<ImageGallery> {
         return readImageGalleryObservable(url)
                 .subscribeOn(Schedulers.io())
@@ -39,7 +36,7 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
     }
 
     private fun readImageGalleryObservable(url: String): Observable<ImageGallery> {
-        return Observable.fromCallable { imageExtractorManager.getGallery(URL(url).resolveShorten().toString()) }
+        return Observable.fromCallable { ApiManager.imageExtractorManager(context).getGallery(URL(url).resolveShorten().toString()) }
     }
 
     @Throws(Exception::class)
@@ -75,7 +72,7 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
             return link
         }
         val url = imageInfo.documentUrl
-        return imageExtractorManager.getImageUrl(url!!)
+        return ApiManager.imageExtractorManager(context).getImageUrl(url!!)
     }
 
     @Throws(IOException::class)

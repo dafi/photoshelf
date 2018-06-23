@@ -22,9 +22,9 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.adapter.ImagePickerAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
+import com.ternaryop.photoshelf.api.extractor.ImageGallery
 import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
-import com.ternaryop.photoshelf.extractor.ImageGallery
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.parsers.TitleParser
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager

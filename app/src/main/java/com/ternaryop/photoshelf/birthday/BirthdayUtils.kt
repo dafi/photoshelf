@@ -7,6 +7,7 @@ import android.os.Environment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.DBHelper
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
@@ -142,7 +143,7 @@ object BirthdayUtils {
 
     fun searchBirthday(context: Context, name: String, blogName: String): Birthday? {
         return try {
-            val info = BirthdayManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN)).search(name)
+            val info = ApiManager.birthdayManager(context).getByName(name, true)
             Birthday(info.name, info.birthdate, blogName)
         } catch (ignored: Exception) {
             null

@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.extractor.ImageInfo
+import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.widget.CheckableImageView
 
 class ImagePickerAdapter(private val context: Context)

@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.extractor
+package com.ternaryop.photoshelf.api.extractor
 
 import org.json.JSONException
 import org.json.JSONObject

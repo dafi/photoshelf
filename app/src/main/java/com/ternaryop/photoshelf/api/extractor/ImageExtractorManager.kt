@@ -1,9 +1,8 @@
-package com.ternaryop.photoshelf.extractor
+package com.ternaryop.photoshelf.api.extractor
 
+import com.ternaryop.photoshelf.api.PhotoShelfApi
 import com.ternaryop.utils.json.readJson
-import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.URL
 import java.net.URLEncoder
 
 /**
@@ -11,11 +10,7 @@ import java.net.URLEncoder
  * Image Extractor Manager
  */
 
-// private val API_PREFIX = "http://10.0.3.2/image";
-// private val API_PREFIX = "http://192.168.0.2/image";
-private const val API_PREFIX = "http://visualdiffer.com/image"
-
-class ImageExtractorManager(private val accessToken: String) {
+class ImageExtractorManager(override val accessToken: String) : PhotoShelfApi(accessToken) {
 
     @Throws(Exception::class)
     fun getGallery(url: String): ImageGallery {
@@ -49,21 +44,5 @@ class ImageExtractorManager(private val accessToken: String) {
             } catch (ignored: Exception) {
             }
         }
-    }
-
-    @Throws(IOException::class) private fun getSignedGetConnection(url: String): HttpURLConnection {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        conn.setRequestProperty("PhotoShelf-Subscription-Key", accessToken)
-        conn.requestMethod = "GET"
-
-        return conn
-    }
-
-    @Throws(Exception::class) private fun handleError(conn: HttpURLConnection) {
-        if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-            return
-        }
-        val error = conn.errorStream.readJson()
-        throw RuntimeException("Error ${conn.responseCode} : ${error.getString("errorMessage")}")
     }
 }
