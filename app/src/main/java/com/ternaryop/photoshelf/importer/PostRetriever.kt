@@ -1,12 +1,14 @@
 package com.ternaryop.photoshelf.importer
 
 import android.content.Context
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import io.reactivex.Observable
 
 class PostRetriever(context: Context) {
     private val sharedTumblr = TumblrManager.getInstance(context)
+    private val postManager = ApiManager.postManager(context)
     private var offset: Int = 0
     var total: Int = 0
         private set
@@ -18,6 +20,10 @@ class PostRetriever(context: Context) {
         offset = 0
         total = 0
         return Observable.generate { emitter ->
+            if (offset == 0) {
+                // TODO: Use PostManager API to update data on server, this will replace readPhotoPosts when migration from sqlite will be completed
+                postManager.getLastPublishedTimestamp(tumblrName, lastPublishTimestamp)
+            }
             params["offset"] = offset.toString()
             val postsList = sharedTumblr.getPublicPosts(tumblrName, params)
             var loadNext = postsList.isNotEmpty()
