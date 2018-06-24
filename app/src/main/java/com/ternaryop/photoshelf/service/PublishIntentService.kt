@@ -28,7 +28,6 @@ import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
-import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftPhotoPost
@@ -160,17 +159,19 @@ class PublishIntentService : IntentService("publishIntent") {
                 EventBus.getDefault().post(BirthdayEvent(it)) }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun birthdaysPublish(intent: Intent) {
-        val posts = intent.getSerializableExtra(EXTRA_LIST1) as List<TumblrPhotoPost>
+        val list = intent.getSerializableExtra(EXTRA_LIST1) as List<BirthdayManager.Birthday>
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
         val publishAsDraft = intent.getBooleanExtra(EXTRA_BOOLEAN1, true)
         var name = ""
 
         try {
             val cakeImage = birthdayBitmap
-            for (post in posts) {
-                name = post.tags[0]
-                BirthdayUtils.createBirthdayPost(applicationContext, cakeImage, post, blogName, publishAsDraft)
+            val tumblr = TumblrManager.getInstance(applicationContext)
+            for (bday in list) {
+                name = bday.name
+                BirthdayUtils.createBirthdayPost(tumblr, cakeImage, bday, blogName, publishAsDraft)
             }
         } catch (e: Exception) {
             logError(intent, e)

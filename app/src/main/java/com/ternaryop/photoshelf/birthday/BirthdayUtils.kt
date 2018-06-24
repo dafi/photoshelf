@@ -5,13 +5,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Environment
 import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
 import com.ternaryop.photoshelf.db.Birthday
-import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
+import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrAltSize
-import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.publishPhotoPost
 import com.ternaryop.utils.bitmap.readBitmap
@@ -19,6 +18,7 @@ import com.ternaryop.utils.bitmap.savePng
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
+import com.ternaryop.utils.date.yearsBetweenDates
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -67,20 +67,20 @@ object BirthdayUtils {
         }
     }
 
-    fun createBirthdayPost(context: Context,
-        cakeImage: Bitmap, post: TumblrPhotoPost, blogName: String, publishAsDraft: Boolean) {
-        val name = post.tags[0]
+    fun createBirthdayPost(tumblr: Tumblr,
+        cakeImage: Bitmap, birthday: BirthdayManager.Birthday, blogName: String, publishAsDraft: Boolean) {
+        val name = birthday.name
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
             "birth-$name.png")
-        val imageUrl = post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
+        val imageUrl = birthday.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
         file.savePng(createBirthdayBitmap(cakeImage, URL(imageUrl).readBitmap()))
         try {
             if (publishAsDraft) {
-                TumblrManager.getInstance(context).draftPhotoPost(blogName,
-                    file.toURI(), getBirthdayCaption(context, name, blogName), "Birthday, $name")
+                tumblr.draftPhotoPost(blogName,
+                    file.toURI(), getBirthdayCaption(birthday), "Birthday, $name")
             } else {
-                TumblrManager.getInstance(context).publishPhotoPost(blogName,
-                    file.toURI(), getBirthdayCaption(context, name, blogName), "Birthday, $name")
+                tumblr.publishPhotoPost(blogName,
+                    file.toURI(), getBirthdayCaption(birthday), "Birthday, $name")
             }
         } finally {
             file.delete()
@@ -101,11 +101,9 @@ object BirthdayUtils {
         return destBmp
     }
 
-    private fun getBirthdayCaption(context: Context, name: String, blogName: String): String {
-        val dbHelper = DBHelper.getInstance(context.applicationContext)
-        val birthDay = dbHelper.birthdayDAO.getBirthdayByName(name, blogName)
-        val age = Calendar.getInstance().year - birthDay!!.birthYear
+    private fun getBirthdayCaption(birthday: BirthdayManager.Birthday): String {
+        val age = birthday.birthdate.yearsBetweenDates()
         // caption must not be localized
-        return "Happy ${age}th Birthday, $name!!"
+        return "Happy ${age}th Birthday, ${birthday.name}!!"
     }
 }

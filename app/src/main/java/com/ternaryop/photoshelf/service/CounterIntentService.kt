@@ -6,11 +6,14 @@ import android.content.Intent
 import com.ternaryop.photoshelf.EXTRA_ACTION
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_TYPE
-import com.ternaryop.photoshelf.db.DBHelper
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.event.CounterEvent
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftCount
 import com.ternaryop.tumblr.queueCount
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.month
 import org.greenrobot.eventbus.EventBus
 import java.util.Calendar
 
@@ -44,10 +47,7 @@ class CounterIntentService : IntentService("counterIntent") {
     private fun getCount(type: Int, blogName: String): Int {
         try {
             return when (type) {
-                CounterEvent.BIRTHDAY -> DBHelper
-                        .getInstance(applicationContext)
-                        .birthdayDAO
-                        .getBirthdaysCountInDate(Calendar.getInstance().time, blogName).toInt()
+                CounterEvent.BIRTHDAY -> birthdayCount()
                 CounterEvent.DRAFT -> TumblrManager.getInstance(applicationContext).draftCount(blogName)
                 CounterEvent.SCHEDULE -> TumblrManager.getInstance(applicationContext).queueCount(blogName)
                 CounterEvent.NONE -> 0
@@ -57,6 +57,13 @@ class CounterIntentService : IntentService("counterIntent") {
         }
 
         return 0
+    }
+
+    private fun birthdayCount(): Int {
+        val now = Calendar.getInstance()
+        return ApiManager.birthdayManager(applicationContext).findByDate(
+            BirthdayManager.FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth))
+            .total.toInt()
     }
 
     companion object {
