@@ -22,9 +22,6 @@ import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
-import com.ternaryop.photoshelf.db.Birthday
-import com.ternaryop.photoshelf.db.BirthdayDAO
-import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
@@ -74,9 +71,7 @@ class PublishIntentService : IntentService("publishIntent") {
         val action = intent.getStringExtra(EXTRA_ACTION)
 
         try {
-            if (postTags != null) {
-                addBirthdateFromTags(postTags, selectedBlogName)
-            }
+            postTags?.let { addBirthdateFromTags(it) }
             when {
                 ACTION_PUBLISH_DRAFT == action -> TumblrManager.getInstance(applicationContext)
                     .draftPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
@@ -104,34 +99,18 @@ class PublishIntentService : IntentService("publishIntent") {
         }
     }
 
-    private fun addBirthdateFromTags(postTags: String, blogName: String) {
+    private fun addBirthdateFromTags(postTags: String) {
         val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return
 
         Thread(Runnable {
-            val birthdayDAO = DBHelper.getInstance(applicationContext).birthdayDAO
-            val db = birthdayDAO.dbHelper.writableDatabase
-            db.beginTransaction()
-
             try {
-                val birthday = searchMissingBirthday(birthdayDAO, name, blogName)
-                if (birthday != null) {
-                    birthdayDAO.insert(birthday)
-                    db.setTransactionSuccessful()
-                    notificationUtil.notifyBirthdayAdded(name, birthday.birthDate!!)
+                BirthdayUtils.searchBirthday(applicationContext, name)?.also { birthday ->
+                    notificationUtil.notifyBirthdayAdded(name, birthday.birthdate)
                 }
             } catch (e: Exception) {
                 notificationUtil.notifyError(e, name, getString(R.string.birthday_add_error_ticker))
-            } finally {
-                db.endTransaction()
             }
         }).start()
-    }
-
-    private fun searchMissingBirthday(birthdayDAO: BirthdayDAO, name: String, blogName: String): Birthday? {
-        if (birthdayDAO.getBirthdayByName(name, blogName) != null) {
-            return null
-        }
-        return BirthdayUtils.searchBirthday(applicationContext, name, blogName)
     }
 
     private fun logError(intent: Intent, e: Exception) {

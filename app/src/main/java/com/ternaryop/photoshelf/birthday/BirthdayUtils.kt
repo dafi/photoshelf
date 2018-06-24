@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.os.Environment
 import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
-import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.Tumblr
@@ -58,10 +57,9 @@ object BirthdayUtils {
             }
     }
 
-    fun searchBirthday(context: Context, name: String, blogName: String): Birthday? {
+    fun searchBirthday(context: Context, name: String): BirthdayManager.Birthday? {
         return try {
-            val info = ApiManager.birthdayManager(context).getByName(name, true)
-            Birthday(info.name, info.birthdate, blogName)
+            ApiManager.birthdayManager(context).getByName(name, true)
         } catch (ignored: Exception) {
             null
         }

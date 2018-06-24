@@ -76,7 +76,7 @@ class Importer constructor(val context: Context) {
         val items: MutableList<T>
     }
 
-    inner class SimpleImportProgressInfo<T>(override val max: Int) : ImportProgressInfo<T> {
+    class SimpleImportProgressInfo<T>(override val max: Int, val list: List<T> = emptyList()) : ImportProgressInfo<T> {
         override var progress: Int = 0
             internal set
         override val items: MutableList<T> = mutableListOf()

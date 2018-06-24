@@ -20,7 +20,7 @@ fun BirthdayManager.Birthday.getClosestPhotoByWidth(width: Int):
 
 class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessToken) {
     fun getByName(name: String, searchIfNew: Boolean): Birthday {
-        val sb = "$API_PREFIX/v1/birthday/name/find?name=${URLEncoder.encode(name, "UTF-8")}&searchIfNew=$searchIfNew"
+        val sb = "$API_PREFIX/v1/birthday/name/get?name=${URLEncoder.encode(name, "UTF-8")}&searchIfNew=$searchIfNew"
 
         var conn: HttpURLConnection? = null
         return try {
@@ -59,8 +59,25 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         return readBirthdayResult("$API_PREFIX/v1/birthday/date/orphans?offset=$offset&limit=$limit&name=$name")
     }
 
-    fun findMissing(offset: Int, limit: Int): BirthdayResult {
-        return readBirthdayResult("$API_PREFIX/v1/birthday/date/missing?offset=$offset&limit=$limit")
+    fun findMissingNames(offset: Int, limit: Int): List<String> {
+        val url = "$API_PREFIX/v1/birthday/name/missing?offset=$offset&limit=$limit"
+        var conn: HttpURLConnection? = null
+        return try {
+            conn = getSignedGetConnection(url)
+            handleError(conn)
+            val data = conn.inputStream.readJson().getJSONObject("response")
+            val names = mutableListOf<String>()
+            val arr = data.getJSONArray("names")
+            for (i in 0 until arr.length()) {
+                names.add(arr.getString(i))
+            }
+            names
+        } finally {
+            try {
+                conn?.disconnect()
+            } catch (ignored: Exception) {
+            }
+        }
     }
 
     private fun readBirthdayResult(url: String): BirthdayResult {
@@ -68,7 +85,7 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         return try {
             conn = getSignedGetConnection(url)
             handleError(conn)
-            val data = conn.inputStream.readJson().getJSONObject("result")
+            val data = conn.inputStream.readJson().getJSONObject("response")
             BirthdayResult(
                 data.optLong("total", 0),
                 getBirthdays(data.optJSONArray("birthdays")))
@@ -84,7 +101,7 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         images ?: return null
         val list = mutableListOf<ImageSize>()
 
-        for (i in 0 until  images.length()) {
+        for (i in 0 until images.length()) {
             val image = images.getJSONObject(i)
             list.add(ImageSize(image.getInt("width"), image.getInt("height"), image.getString("url")))
         }

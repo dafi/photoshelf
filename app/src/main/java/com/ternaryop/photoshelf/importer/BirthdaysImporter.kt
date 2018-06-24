@@ -1,17 +1,20 @@
 package com.ternaryop.photoshelf.importer
 
 import android.os.Environment
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.db.Birthday
 import com.ternaryop.photoshelf.db.BirthdayDAO
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.DbImport
 import com.ternaryop.photoshelf.db.Importer
+import com.ternaryop.photoshelf.util.network.ApiManager
+import io.reactivex.Emitter
 import io.reactivex.Observable
+import io.reactivex.functions.BiConsumer
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Callable
 
 /**
  * Created by dave on 24/03/18.
@@ -60,64 +63,26 @@ fun Importer.exportBirthdaysToCSV(exportPath: String): Int {
     }
 }
 
-fun Importer.importMissingBirthdaysFromWeb(blogName: String): Observable<Importer.ImportProgressInfo<Birthday>> {
-    val birthdayDAO = DBHelper.getInstance(context).birthdayDAO
-    val names = birthdayDAO.getNameWithoutBirthDays(blogName)
-    val info = SimpleImportProgressInfo<Birthday>(names.size)
-    val nameIterator = names.iterator()
+typealias StringProgressInfo = Importer.SimpleImportProgressInfo<String>
 
-    return Observable.generate { emitter ->
-        if (nameIterator.hasNext()) {
-            ++info.progress
-            val name = nameIterator.next()
-            try {
-                val birthday = BirthdayUtils.searchBirthday(context, name, blogName)
-                if (birthday != null) {
-                    info.items.add(birthday)
-                }
-            } catch (e: Exception) {
-                // simply skip
+fun Importer.importMissingBirthdaysFromWeb(blogName: String): Observable<StringProgressInfo> {
+    return Observable.generate<StringProgressInfo, StringProgressInfo>(Callable {
+        val names = ApiManager.birthdayManager(context).findMissingNames(0, MAX_BIRTHDAY_COUNT)
+        Importer.SimpleImportProgressInfo(names.size, names)
+        },
+        BiConsumer { iterator: StringProgressInfo, emitter: Emitter<StringProgressInfo> ->
+            if (iterator.progress < iterator.max) {
+                val name = iterator.list[iterator.progress]
+
+                BirthdayUtils.searchBirthday(context, name)?.also { iterator.items.add(name) }
+
+                ++iterator.progress
+                emitter.onNext(iterator)
+            } else {
+                emitter.onNext(iterator)
+                emitter.onComplete()
             }
-
-            emitter.onNext(info)
-        } else {
-            saveBirthdaysToDatabase(info.items)
-            saveBirthdaysToFile(info.items)
-            emitter.onNext(info)
-            emitter.onComplete()
-        }
-    }
-}
-
-private fun Importer.saveBirthdaysToDatabase(birthdays: List<Birthday>) {
-    val birthdayDAO = DBHelper.getInstance(context).birthdayDAO
-    val db = birthdayDAO.dbHelper.writableDatabase
-    try {
-        db.beginTransaction()
-        for (birthday in birthdays) {
-            birthdayDAO.insert(birthday)
-        }
-        db.setTransactionSuccessful()
-    } finally {
-        db.endTransaction()
-    }
-}
-
-private fun saveBirthdaysToFile(birthdays: List<Birthday>) {
-    val fileName = "birthdays-" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) + ".csv"
-    val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        .toString() + File.separator + fileName
-
-    Importer.fastPrintWriter(path).use { pw ->
-        for (birthday in birthdays) {
-            pw.println(String.format(Locale.US, "%1\$d;%2\$s;%3\$s;%4\$s",
-                1L,
-                birthday.name,
-                Birthday.toIsoFormat(birthday.birthDate!!),
-                birthday.tumblrName))
-        }
-        pw.flush()
-    }
+    })
 }
 
 fun Importer.exportMissingBirthdaysToCSV(exportPath: String, tumblrName: String): Int {
@@ -132,7 +97,6 @@ fun Importer.exportMissingBirthdaysToCSV(exportPath: String, tumblrName: String)
         return list.size
     }
 }
-
 
 val Importer.Companion.missingBirthdaysPath: String
     get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
