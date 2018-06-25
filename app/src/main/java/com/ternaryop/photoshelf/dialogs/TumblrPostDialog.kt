@@ -22,7 +22,7 @@ import android.widget.ImageButton
 import android.widget.MultiAutoCompleteTextView
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.db.TagCursorAdapter
+import com.ternaryop.photoshelf.adapter.TagAdapter
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
@@ -287,13 +287,13 @@ class TagsHolder(private val fragment: Fragment, rootView: View, blogName: Strin
     // and the toolbar overflow menu items are styled incorrectly
     // since the switch to the AlertDialog the toolbar isn't styled from code
     // so to fix it the theme is declared directly into xml
-    private val tagAdapter = TagCursorAdapter(
+    private val tagAdapter = TagAdapter(
         ContextThemeWrapper(fragment.activity!!, R.style.Theme_PhotoShelf_Dialog),
         android.R.layout.simple_dropdown_item_1line,
         blogName)
 
     init {
-        textView.setAdapter<TagCursorAdapter>(tagAdapter)
+        textView.setAdapter<TagAdapter>(tagAdapter)
         textView.setTokenizer(MultiAutoCompleteTextView.CommaTokenizer())
 
         mruButton.setOnClickListener { openMRUDialog() }

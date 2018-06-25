@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.fragment
 
-import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +9,10 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
 import android.widget.SearchView
 import android.widget.SearchView.OnQueryTextListener
-
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
-import com.ternaryop.photoshelf.db.PostTagDAO
-import com.ternaryop.photoshelf.db.TagCursorAdapter
+import com.ternaryop.photoshelf.adapter.TagAdapter
+import com.ternaryop.photoshelf.api.post.TagInfo
 
 class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
 
@@ -22,7 +20,7 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_list_tags, container, false)
 
-        val adapter = TagCursorAdapter(
+        val adapter = TagAdapter(
                 context!!,
                 android.R.layout.simple_list_item_1,
                 blogName!!)
@@ -48,8 +46,7 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
     }
 
     override fun onItemClick(parent: AdapterView<*>, v: View, position: Int, id: Long) {
-        val cursor = parent.getItemAtPosition(position) as Cursor
-        val tag = cursor.getString(cursor.getColumnIndex(PostTagDAO.TAG))
+        val tag = (parent.getItemAtPosition(position) as TagInfo).tag
         TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, tag, false)
     }
 }

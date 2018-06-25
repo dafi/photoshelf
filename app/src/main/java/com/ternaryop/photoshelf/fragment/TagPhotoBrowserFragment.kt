@@ -15,7 +15,8 @@ import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
 import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
-import com.ternaryop.photoshelf.db.TagCursorAdapter
+import com.ternaryop.photoshelf.adapter.TagCursorAdapter
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.tumblr.TumblrPhotoPost
@@ -127,7 +128,21 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
-        return false
+        val pattern = newText.trim()
+
+        if (pattern.isEmpty()) {
+            return true
+        }
+        Observable
+            .fromCallable { ApiManager.postManager(context!!).findTags(pattern, blogName!!) }
+            .subscribeOn(Schedulers.io())
+            .doOnSubscribe { compositeDisposable.add(it) }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { tagInfoList ->
+                val adapter = searchView!!.suggestionsAdapter as TagCursorAdapter
+                adapter.swapCursor(adapter.createCursor(pattern, tagInfoList))
+        }
+        return true
     }
 
     override fun onQueryTextSubmit(query: String): Boolean {

@@ -1,12 +1,15 @@
-package com.ternaryop.photoshelf.db
+package com.ternaryop.photoshelf.adapter
 
+import android.app.SearchManager
 import android.content.Context
 import android.database.Cursor
+import android.database.MatrixCursor
+import android.provider.BaseColumns
 import android.support.v4.widget.SimpleCursorAdapter
 import android.view.View
-import android.widget.FilterQueryProvider
 import android.widget.TextView
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.htmlHighlightPattern
 
@@ -15,28 +18,22 @@ import com.ternaryop.utils.text.htmlHighlightPattern
  * @author dave
  */
 class TagCursorAdapter(private val context: Context, resId: Int, var blogName: String)
-    : SimpleCursorAdapter(context, resId, null, arrayOf(PostTagDAO.TAG),
-    intArrayOf(android.R.id.text1), 0), FilterQueryProvider, SimpleCursorAdapter.ViewBinder {
-    private val postTagDAO = DBHelper.getInstance(context).postTagDAO
+    : SimpleCursorAdapter(context, resId, null, arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1),
+    intArrayOf(android.R.id.text1), 0), SimpleCursorAdapter.ViewBinder {
+
     private var pattern = ""
 
     init {
         viewBinder = this
-        filterQueryProvider = this
-    }
-
-    override fun runQuery(constraint: CharSequence?): Cursor {
-        this.pattern = constraint?.toString()?.trim() ?: ""
-        return postTagDAO.getCursorByTag(pattern, blogName)
     }
 
     override fun convertToString(cursor: Cursor?): String {
-        val columnIndex = cursor!!.getColumnIndexOrThrow(PostTagDAO.TAG)
+        val columnIndex = cursor!!.getColumnIndexOrThrow(SearchManager.SUGGEST_COLUMN_TEXT_1)
         return cursor.getString(columnIndex)
     }
 
     override fun setViewValue(view: View, cursor: Cursor, columnIndex: Int): Boolean {
-        val countColumnIndex = cursor.getColumnIndexOrThrow("post_count")
+        val countColumnIndex = cursor.getColumnIndexOrThrow(SearchManager.SUGGEST_COLUMN_INTENT_DATA)
         val postCount = cursor.getInt(countColumnIndex)
         (view as TextView).text = when {
             pattern.isEmpty() ->  context.getString(R.string.tag_with_post_count,
@@ -47,5 +44,22 @@ class TagCursorAdapter(private val context: Context, resId: Int, var blogName: S
             }
         }
         return true
+    }
+
+    fun createCursor(pattern: String, tagInfoList: List<TagInfo>): Cursor {
+        this.pattern = pattern
+        val cursor = MatrixCursor(COLUMNS)
+
+        for ((i, data) in tagInfoList.withIndex()) {
+            cursor.addRow(arrayOf(i, data.tag, data.postCount))
+        }
+        return cursor
+    }
+
+    companion object {
+        private val COLUMNS = arrayOf(
+            BaseColumns._ID,
+            SearchManager.SUGGEST_COLUMN_TEXT_1,
+            SearchManager.SUGGEST_COLUMN_INTENT_DATA)
     }
 }
