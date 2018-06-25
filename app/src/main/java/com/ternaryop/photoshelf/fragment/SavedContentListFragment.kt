@@ -32,7 +32,10 @@ import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Compani
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.SAVED_TIMESTAMP
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.TITLE_NAME
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
+import com.ternaryop.photoshelf.adapter.feedly.titles
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
+import com.ternaryop.photoshelf.adapter.feedly.update
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.utils.json.readJson
 import io.reactivex.Completable
@@ -109,12 +112,14 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Callable<List<FeedlyContentDelegate>> {
         return Callable {
-            if (BuildConfig.DEBUG) {
+            val list = if (BuildConfig.DEBUG) {
                 fakeCall()
             } else {
                 deleteItems(deleteItemsIfAllowed)
                 readSavedContents()
-            }.toContentDelegate(context!!, blogName!!)
+            }.toContentDelegate()
+            list.update(ApiManager.postManager(context!!).getMapLastPublishedTimestampTag(list.titles(), blogName!!))
+            list
         }
     }
 

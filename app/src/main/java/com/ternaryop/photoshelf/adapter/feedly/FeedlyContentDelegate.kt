@@ -5,35 +5,39 @@ import android.text.format.DateUtils
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.feedly.FeedlyContent
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.utils.date.APPEND_DATE_FOR_PAST_AND_PRESENT
 import com.ternaryop.utils.date.formatPublishDaysAgo
 import java.net.URI
 import java.net.URISyntaxException
 
 /**
- * Convert Collection<FeedlyContent> to List<FeedlyContentDelegate> updating the lastPublishTimestamp and tag fields
+ * Convert Collection<FeedlyContent> to List<FeedlyContentDelegate>
  */
-fun Collection<FeedlyContent>.toContentDelegate(context: Context, blogName: String): List<FeedlyContentDelegate> {
-    val items = map { FeedlyContentDelegate(it) }
+fun Collection<FeedlyContent>.toContentDelegate() = map { FeedlyContentDelegate(it) }
 
-    val titles = HashSet<String>(items.size)
-    for (fc in items) {
+fun Collection<FeedlyContentDelegate>.titles(): Collection<String> {
+    val titles = HashSet<String>(size)
+    for (fc in this) {
         // replace any no no-break space with whitespace
         // see http://www.regular-expressions.info/unicode.html for \p{Zs}
         titles.add(fc.title.replace("""\p{Zs}""".toRegex(), " "))
     }
-    val list = DBHelper.getInstance(context).postTagDAO.getListPairLastPublishedTimestampTag(titles, blogName)
-    for (fc in items) {
+    return titles
+}
+/**
+ * update lastPublishTimestamp and the tag fields
+ */
+fun Collection<FeedlyContentDelegate>.update(tagPairList: Map<String, Long>): Collection<FeedlyContentDelegate> {
+    for (fc in this) {
         val title = fc.title
-        for ((time, tag) in list) {
+        for ((tag, time) in tagPairList) {
             if (tag.regionMatches(0, title, 0, tag.length, ignoreCase = true)) {
                 fc.lastPublishTimestamp = time
                 fc.tag = tag
             }
         }
     }
-    return items
+    return this
 }
 
 /**
