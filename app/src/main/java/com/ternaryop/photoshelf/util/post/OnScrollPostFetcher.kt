@@ -2,12 +2,11 @@ package com.ternaryop.photoshelf.util.post
 
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import com.ternaryop.tumblr.Tumblr
 
 /**
- * Hold position information about posts read while scrolling view
+ * Hold position information about items read while scrolling view
  */
-class OnScrollPostFetcher(private val fetcher: PostFetcher) : RecyclerView.OnScrollListener() {
+class OnScrollPostFetcher(private val fetcher: PostFetcher, val limitCount: Int) : RecyclerView.OnScrollListener() {
     var offset = 0
         private set
     var hasMorePosts = false
@@ -22,13 +21,18 @@ class OnScrollPostFetcher(private val fetcher: PostFetcher) : RecyclerView.OnScr
         val totalItemCount = layoutManager.itemCount
         val firstVisibleItem = (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
 
+        // ignore any change after a layout calculation
+        // see onScrolled documentation
+        if (dx == 0 && dy == 0) {
+            return
+        }
         val loadMore = totalItemCount > 0 && firstVisibleItem + visibleItemCount >= totalItemCount
 
         if (loadMore && hasMorePosts && !isScrolling) {
-            offset += Tumblr.MAX_POST_PER_REQUEST
+            offset += limitCount
             if (!isScrolling) {
                 isScrolling = true
-                fetcher.fetchPosts()
+                fetcher.fetchPosts(this)
             }
         }
     }
@@ -41,11 +45,13 @@ class OnScrollPostFetcher(private val fetcher: PostFetcher) : RecyclerView.OnScr
     }
 
     fun incrementReadPostCount(count: Int) {
-        totalPosts += count
-        hasMorePosts = count == Tumblr.MAX_POST_PER_REQUEST
+        if (hasMorePosts) {
+            totalPosts += count
+            hasMorePosts = count == limitCount
+        }
     }
 
     interface PostFetcher {
-        fun fetchPosts()
+        fun fetchPosts(listener: OnScrollPostFetcher)
     }
 }

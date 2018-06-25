@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.fragment
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.android.TumblrManager
 import io.reactivex.Observable
@@ -15,7 +16,7 @@ class PublishedPostsListFragment : ScheduledListFragment() {
     override val actionModeMenuId: Int
         get() = R.menu.published_context
 
-    override fun fetchPosts() {
+    override fun fetchPosts(listener: OnScrollPostFetcher) {
         refreshUI()
 
         val params = HashMap<String, String>()

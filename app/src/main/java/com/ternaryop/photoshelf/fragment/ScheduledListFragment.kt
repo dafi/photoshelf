@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.event.CounterEvent
+import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.android.TumblrManager
@@ -47,7 +48,7 @@ open class ScheduledListFragment : AbsPostsListFragment() {
         }
     }
 
-    override fun fetchPosts() {
+    override fun fetchPosts(listener: OnScrollPostFetcher) {
         refreshUI()
         val params = HashMap<String, String>()
         params["offset"] = postFetcher.offset.toString()

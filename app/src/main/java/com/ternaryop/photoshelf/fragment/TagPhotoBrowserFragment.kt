@@ -16,6 +16,7 @@ import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.db.TagCursorAdapter
+import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.android.TumblrManager
@@ -88,7 +89,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         return searchView!!
     }
 
-    override fun fetchPosts() {
+    override fun fetchPosts(listener: OnScrollPostFetcher) {
         refreshUI()
 
         val params = HashMap<String, String>()
@@ -134,7 +135,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         postFetcher.reset()
         photoAdapter.clear()
         photoAdapter.notifyDataSetChanged()
-        fetchPosts()
+        fetchPosts(postFetcher)
         return false
     }
 

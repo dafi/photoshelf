@@ -40,7 +40,7 @@ class TumblrPostCacheDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsD
             v.put(BLOG_NAME, pojo.blogName)
             v.put(CACHE_TYPE, pojo.cacheType)
             v.put(TIMESTAMP, pojo.timestamp)
-            v.put(POST, AbsDAO.Companion.toBlob(pojo.post!!))
+            v.put(POST, AbsDAO.toBlob(pojo.post!!))
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -97,8 +97,13 @@ class TumblrPostCacheDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsD
         if (posts.isEmpty()) {
             return
         }
-        val postIds = getIds(posts)
+        delete(getIds(posts), cacheType, posts[0].blogName)
+    }
 
+    fun delete(postIds: Collection<String>, cacheType: Int, blogName: String) {
+        if (postIds.isEmpty()) {
+            return
+        }
         val whereClause = BaseColumns._ID + " in (" + inClauseParameters(postIds.size) + ") and " + BLOG_NAME + "=? and " + CACHE_TYPE + "=?"
         val args = arrayOfNulls<String>(postIds.size + 2)
 
@@ -106,7 +111,7 @@ class TumblrPostCacheDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsD
         for (id in postIds) {
             args[i++] = id
         }
-        args[args.size - 2] = posts[0].blogName
+        args[args.size - 2] = blogName
         args[args.size - 1] = cacheType.toString()
 
         dbHelper.writableDatabase.delete(TABLE_NAME, whereClause, args)

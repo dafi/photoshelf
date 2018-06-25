@@ -32,6 +32,7 @@ import com.ternaryop.photoshelf.util.post.showErrorDialog
 import com.ternaryop.photoshelf.util.tumblr.browseTagImageBySize
 import com.ternaryop.photoshelf.util.tumblr.finishActivity
 import com.ternaryop.photoshelf.util.tumblr.viewPost
+import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.dialog.showErrorDialog
 
@@ -62,7 +63,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         photoAdapter = PhotoAdapter(context!!)
         postActionExecutor = PostActionExecutor(context!!, blogName!!, this)
 
-        postFetcher = OnScrollPostFetcher(this)
+        postFetcher = OnScrollPostFetcher(this, Tumblr.MAX_POST_PER_REQUEST)
 
         recyclerView = rootView.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
@@ -265,7 +266,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     protected fun resetAndReloadPhotoPosts() {
         postFetcher.reset()
         photoAdapter.clear()
-        fetchPosts()
+        fetchPosts(postFetcher)
     }
 
     override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {

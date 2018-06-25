@@ -23,13 +23,13 @@ import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.LAST_P
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.TAG_NAME
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.UPLOAD_TIME
 import com.ternaryop.photoshelf.db.DBHelper
-import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.db.TumblrPostCache
 import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.photoshelf.importer.importFromTumblr
+import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.EDIT
@@ -163,13 +163,30 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         }
         onRefreshStarted()
 
-        compositeDisposable.add(Importer(context!!).importFromTumblr(blogName!!, Importer.schedulers(), currentTextView)
-            .doOnComplete({ fetchPosts() })
-            .subscribe({ posts ->
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
+        currentTextView.text = context!!.resources.getString(R.string.start_import_title)
+        compositeDisposable.add(Single.fromCallable {
+            val lastTimestamp = preferences.getLong(PREF_DRAFT_LAST_TIMESTAMP, -1)
+
+            ApiManager.postManager(context!!).getLastPublishedTimestamp(blogName!!, lastTimestamp)
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ last ->
+                currentTextView.text = context!!.resources.getQuantityString(
+                    R.plurals.posts_read_count,
+                    last.importCount,
+                    last.importCount)
                 progressHighlightViewLayout.incrementProgress()
+                preferences.edit().putLong(PREF_DRAFT_LAST_TIMESTAMP, last.lastPublishTimestamp).apply()
                 // delete from cache the published posts
-                draftCache.delete(posts, TumblrPostCache.CACHE_TYPE_DRAFT)
-            }) { t -> t.showErrorDialog(context!!) }
+                last.publishedIdList?.let { draftCache.delete(it, TumblrPostCache.CACHE_TYPE_DRAFT, blogName!!) }
+                fetchPosts(postFetcher)
+            })
+            { t ->
+                onRefreshCompleted()
+                t.showErrorDialog(context!!)
+            }
         )
     }
 
@@ -186,7 +203,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         progressHighlightViewLayout.visibility = View.GONE
     }
 
-    override fun fetchPosts() {
+    override fun fetchPosts(listener: OnScrollPostFetcher) {
         val maxTimestamp = draftCache.findMostRecentTimestamp(blogName!!, TumblrPostCache.CACHE_TYPE_DRAFT)
         compositeDisposable.add(
             Single
@@ -245,7 +262,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                     postActionExecutor
                         .schedule(item, dialog.scheduleDateTime)
                         .doFinally { dialog.dismiss() }
-                        .doOnSubscribe({ d -> compositeDisposable.add(d) })
+                        .doOnSubscribe { d -> compositeDisposable.add(d) }
                         .subscribe(
                             { },
                             { t -> t.showErrorDialog(context!!) })
@@ -341,5 +358,6 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         private const val TAG_NAVIGATOR_DIALOG = 1
         const val PREF_DRAFT_SORT_TYPE = "draft_sort_type"
         const val PREF_DRAFT_SORT_ASCENDING = "draft_sort_ascending"
+        const val PREF_DRAFT_LAST_TIMESTAMP = "draft_last_timeStamp"
     }
 }
