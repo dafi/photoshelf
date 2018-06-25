@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.os.Environment
 import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
+import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.Tumblr
@@ -42,7 +43,11 @@ object BirthdayUtils {
                         NotificationUtil(context).notifyTodayBirthdays(list, now.year)
                     }
                 }
-            }, { t -> NotificationUtil(context).notifyError(t, "Error") })
+            }, { t ->
+                val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "publish_errors.txt")
+                Log.error(t, file)
+                NotificationUtil(context).notifyError(t, "Error") })
     }
 
     fun getPhotoPosts(context: Context, birthDate: Calendar, blogName: String): Observable<BirthdayManager.BirthdayResult> {
