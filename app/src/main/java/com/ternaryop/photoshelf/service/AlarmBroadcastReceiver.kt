@@ -24,7 +24,7 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
 
     private fun startExport(appSupport: AppSupport) {
         if (appSupport.isAutomaticExportEnabled) {
-            Thread({ BatchExporter(appSupport).export() }).start()
+            Thread { BatchExporter(appSupport).export() }.start()
         }
     }
 
