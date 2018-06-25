@@ -6,6 +6,7 @@ import android.support.v4.content.ContextCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.view.ColorItemDecoration
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
@@ -59,7 +60,7 @@ class PostActionExecutor(private val context: Context,
         postAction = DELETE
         return executePostAction(postList, Consumer {
             TumblrManager.getInstance(context).deletePost(blogName, it.postId)
-            DBHelper.getInstance(context).postDAO.deleteById(it.postId)
+            ApiManager.postManager(context).deletePost(it.postId)
         })
     }
 
@@ -88,8 +89,7 @@ class PostActionExecutor(private val context: Context,
                 "tags" to tags
             )
             TumblrManager.getInstance(context).editPost(selectedBlogName, newValues)
-            newValues["tumblrName"] = selectedBlogName
-            DBHelper.getInstance(context).postDAO.update(context, newValues)
+            ApiManager.postManager(context).editTags(post.postId, TumblrPost.tagsFromString(tags))
             post.tagsFromString(tags)
             post.caption = title
         })

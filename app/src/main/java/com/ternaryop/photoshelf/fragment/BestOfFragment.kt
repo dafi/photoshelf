@@ -10,7 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.db.DBHelper
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.android.editTags
@@ -90,7 +90,7 @@ class BestOfFragment : Fragment() {
     private fun addTags(postId: Long, newTags: List<String>, blogName: String): Long {
         context?.let { context ->
             val tags = TumblrManager.getInstance(context).editTags(postId, blogName, newTags) ?: return postId
-            DBHelper.getInstance(context).postDAO.updateTags(context, postId, tags.joinToString(","), blogName)
+            ApiManager.postManager(context).editTags(postId, tags)
         }
         return postId
     }
