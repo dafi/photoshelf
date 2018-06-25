@@ -4,6 +4,7 @@ import android.content.Context
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.photoshelf.db.DBHelper
+import com.ternaryop.photoshelf.util.network.ApiManager
 
 /**
  * Created by dave on 24/02/18.
@@ -23,6 +24,9 @@ class MisspelledName(val context: Context) {
 
     private fun getMatchingName(name: String): Pair<Int, String>? {
         val correctedName = DBHelper.getInstance(context).tagMatcherDAO.getMatchingTag(name)
+            ?: ApiManager.postManager(context).getCorrectMisspelledName(name)?.also {
+                DBHelper.getInstance(context).tagMatcherDAO.insert(it)
+            }
         if (name.equals(correctedName, ignoreCase = true)) {
             return Pair(NAME_ALREADY_EXISTS, name)
         }

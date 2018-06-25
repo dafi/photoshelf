@@ -13,7 +13,7 @@ import java.util.Locale
  */
 
 @Suppress("TooManyFunctions")
-class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
+class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Long>(dbHelper) {
 
     override val tableName: String
         get() = TABLE_NAME
@@ -26,24 +26,10 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
                 STRIPPED_TAG))
     }
 
-    @Suppress("MagicNumber")
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 3) {
-            onNewVersion3(db)
-        }
     }
 
-    private fun onNewVersion3(db: SQLiteDatabase) {
-        onCreate(db)
-        val sql = "INSERT INTO %1\$s (%2\$s, %3\$s) SELECT name, lower(replace(replace(replace(replace(name, '-', ''), '''', ''), ' ', ''), '.', '')) FROM tag"
-        // populate the table with existing value into table Tag
-        db.execSQL(String.format(sql,
-                TABLE_NAME,
-                MATCH_TAG,
-                STRIPPED_TAG))
-    }
-
-    override fun getContentValues(pojo: Tag): ContentValues {
+    override fun getContentValues(pojo: Long): ContentValues {
         throw IllegalArgumentException("Invalid for this object")
     }
 
@@ -61,6 +47,11 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Tag>(dbHelper) {
     fun getMatchingTag(tag: String): String? {
         val db = dbHelper.readableDatabase
         return getMatchingTag(getSelectTagMatcherStatement(db), tag)
+    }
+
+    fun insert(name: String) {
+        val db = dbHelper.writableDatabase
+        insert(getInsertTagMatcherStatement(db), name)
     }
 
     fun insert(stmt: SQLiteStatement, tag: String): Long {
