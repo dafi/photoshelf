@@ -62,7 +62,7 @@ object BirthdayUtils {
             }
     }
 
-    fun searchBirthday(context: Context, name: String): BirthdayManager.Birthday? {
+    fun searchBirthday(context: Context, name: String): BirthdayManager.NameResult? {
         return try {
             ApiManager.birthdayManager(context).getByName(name, true)
         } catch (ignored: Exception) {

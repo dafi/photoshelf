@@ -104,8 +104,10 @@ class PublishIntentService : IntentService("publishIntent") {
 
         Thread(Runnable {
             try {
-                BirthdayUtils.searchBirthday(applicationContext, name)?.also { birthday ->
-                    notificationUtil.notifyBirthdayAdded(name, birthday.birthdate)
+                BirthdayUtils.searchBirthday(applicationContext, name)?.also { nameResult ->
+                    if (nameResult.isNew) {
+                        notificationUtil.notifyBirthdayAdded(name, nameResult.birthday.birthdate)
+                    }
                 }
             } catch (e: Exception) {
                 notificationUtil.notifyError(e, name, getString(R.string.birthday_add_error_ticker))

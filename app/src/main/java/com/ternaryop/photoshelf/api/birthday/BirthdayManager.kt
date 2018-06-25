@@ -19,18 +19,18 @@ fun BirthdayManager.Birthday.getClosestPhotoByWidth(width: Int):
     BirthdayManager.ImageSize? = images?.firstOrNull { it.width <= width }
 
 class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessToken) {
-    fun getByName(name: String, searchIfNew: Boolean): Birthday {
+    fun getByName(name: String, searchIfNew: Boolean): NameResult {
         val sb = "$API_PREFIX/v1/birthday/name/get?name=${URLEncoder.encode(name, "UTF-8")}&searchIfNew=$searchIfNew"
 
         var conn: HttpURLConnection? = null
         return try {
             conn = getSignedGetConnection(sb)
             handleError(conn)
-            val json = conn.inputStream.readJson().getJSONArray("birthdays").getJSONObject(0)
-            Birthday(json.getString("name"),
-                Calendar.getInstance().fromIsoFormat(json.getString("birthdate")),
-                null,
-                json.optString("source"))
+            val json = conn.inputStream.readJson().getJSONObject("response")
+            val jsonBirthday = json.getJSONObject("birthday")
+            NameResult(Birthday(jsonBirthday.getString("name"),
+                Calendar.getInstance().fromIsoFormat(jsonBirthday.getString("birthdate"))),
+                json.getBoolean("isNew"))
         } finally {
             try {
                 conn?.disconnect()
@@ -155,9 +155,11 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
             return sb.toString()
         }
     }
+
+    data class NameResult(val birthday: Birthday, val isNew: Boolean)
     data class BirthdayResult(val total: Long, val birthdates: List<Birthday>?) : Serializable
     data class Birthday(val name: String, val birthdate: Calendar,
-        val images: List<ImageSize>?, val source: String? = null) : Serializable
+        val images: List<ImageSize>? = null, val source: String? = null) : Serializable
     data class ImageSize(val width: Int, val height: Int, val url: String) : Serializable
 
     companion object {
