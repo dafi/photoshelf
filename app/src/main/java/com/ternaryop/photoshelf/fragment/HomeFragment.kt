@@ -48,16 +48,16 @@ class HomeFragment : AbsPhotoShelfFragment() {
 
     private fun refresh() {
         val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
-        val lastRefresh = preferences.getLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis())
+        val lastRefresh = preferences.getLong(PREF_LAST_STATS_REFRESH, 0)
         if (System.currentTimeMillis() - lastRefresh < STATS_REFRESH_RATE_MILLIS) {
             handler.obtainMessage(STATS_DATA_OK, loadStats(preferences)).sendToTarget()
             return
         }
-        preferences.edit().putLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis()).apply()
         Thread(Runnable {
             try {
                 val statsMap = ApiManager.postManager(activity!!).getStats(blogName!!)
                 saveStats(preferences, statsMap)
+                preferences.edit().putLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis()).apply()
                 handler.obtainMessage(STATS_DATA_OK, statsMap).sendToTarget()
             } catch (e: Exception) {
                 e.printStackTrace()
