@@ -140,8 +140,6 @@ class PostManager(override val accessToken: String) : PhotoShelfApi(accessToken)
         try {
             conn = getSignedConnection(apiUrl, "DELETE")
             handleError(conn)
-        } catch (e: Exception) {
-            e.printStackTrace()
         } finally {
             try {
                 conn?.disconnect()

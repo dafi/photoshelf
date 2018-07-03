@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.api.birthday
 
 import com.ternaryop.photoshelf.api.PhotoShelfApi
 import com.ternaryop.utils.date.fromIsoFormat
+import com.ternaryop.utils.date.toIsoFormat
 import com.ternaryop.utils.json.readJson
 import org.json.JSONArray
 import java.io.Serializable
@@ -51,8 +52,8 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         return readBirthdayResult("$API_PREFIX/v1/birthday/date/sameday?offset=$offset&limit=$limit&name=$name")
     }
 
-    fun findIgnored(name: String, offset: Int, limit: Int): BirthdayResult {
-        return readBirthdayResult("$API_PREFIX/v1/birthday/date/ignored?offset=$offset&limit=$limit&name=$name")
+    fun findIgnored(name: String, offset: Int, limit: Int): List<String> {
+        return readStringList("$API_PREFIX/v1/birthday/date/ignored?offset=$offset&limit=$limit&name=$name")
     }
 
     fun findOrphans(name: String, offset: Int, limit: Int): BirthdayResult {
@@ -60,7 +61,10 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
     }
 
     fun findMissingNames(offset: Int, limit: Int): List<String> {
-        val url = "$API_PREFIX/v1/birthday/name/missing?offset=$offset&limit=$limit"
+        return readStringList("$API_PREFIX/v1/birthday/name/missing?offset=$offset&limit=$limit")
+    }
+
+    private fun readStringList(url: String): List<String> {
         var conn: HttpURLConnection? = null
         return try {
             conn = getSignedGetConnection(url)
@@ -142,7 +146,7 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
                 .append("&onlyTotal=$onlyTotal")
 
             name?.let { sb.append("&name=$it") }
-            if (month > 0){
+            if (month > 0) {
                 sb.append("&month=$month")
             }
             if (dayOfMonth > 0) {
@@ -156,9 +160,54 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         }
     }
 
+    fun deleteByName(name: String) {
+        val apiUrl = "$API_PREFIX/v1/birthday/name?name=${URLEncoder.encode(name, "UTF-8")}"
+
+        var conn: HttpURLConnection? = null
+        try {
+            conn = getSignedConnection(apiUrl, "DELETE")
+            handleError(conn)
+        } finally {
+            try {
+                conn?.disconnect()
+            } catch (ignored: Exception) {
+            }
+        }
+    }
+
+    fun updateByName(birthday: Birthday) {
+        val apiUrl = "$API_PREFIX/v1/birthday/date/edit?name=${URLEncoder.encode(birthday.name, "UTF-8")}&birthdate=${birthday.birthdate.toIsoFormat()}"
+
+        var conn: HttpURLConnection? = null
+        try {
+            conn = getSignedConnection(apiUrl, "PUT")
+            handleError(conn)
+        } finally {
+            try {
+                conn?.disconnect()
+            } catch (ignored: Exception) {
+            }
+        }
+    }
+
+    fun markAsIgnored(name: String) {
+        val apiUrl = "$API_PREFIX/v1/birthday/name/ignore?name=${URLEncoder.encode(name, "UTF-8")}"
+
+        var conn: HttpURLConnection? = null
+        try {
+            conn = getSignedConnection(apiUrl, "PUT")
+            handleError(conn)
+        } finally {
+            try {
+                conn?.disconnect()
+            } catch (ignored: Exception) {
+            }
+        }
+    }
+
     data class NameResult(val birthday: Birthday, val isNew: Boolean)
     data class BirthdayResult(val total: Long, val birthdates: List<Birthday>?) : Serializable
-    data class Birthday(val name: String, val birthdate: Calendar,
+    data class Birthday(val name: String, var birthdate: Calendar,
         val images: List<ImageSize>? = null, val source: String? = null) : Serializable
     data class ImageSize(val width: Int, val height: Int, val url: String) : Serializable
 
