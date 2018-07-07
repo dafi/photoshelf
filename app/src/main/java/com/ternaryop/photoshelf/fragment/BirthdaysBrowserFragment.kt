@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
+import android.os.Environment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.ActionMode
@@ -20,11 +21,12 @@ import android.widget.Spinner
 import android.widget.Toast
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayAdapter
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Companion.MAX_BIRTHDAY_COUNT
+import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.utils.date.dayOfMonth
@@ -32,12 +34,17 @@ import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.dialog.showErrorDialog
 import io.reactivex.Observable
+import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.io.File
 import java.text.DateFormatSymbols
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
-class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), SearchView.OnQueryTextListener, ActionMode.Callback,
+const val DEBOUNCE_TIMEOUT_MILLIS = 600L
+
+class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     View.OnClickListener, View.OnLongClickListener {
     private lateinit var toolbarSpinner: Spinner
     private var currentSelectedItemId = R.id.action_show_all
@@ -52,7 +59,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), SearchView.OnQueryText
 
     private lateinit var onScrollPostFetcher: OnScrollPostFetcher
     private lateinit var adapter: BirthdayAdapter
-    private lateinit var searchView: SearchView
     private lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -69,23 +75,44 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), SearchView.OnQueryText
         recyclerView.adapter = adapter
 
         onScrollPostFetcher = OnScrollPostFetcher(object : OnScrollPostFetcher.PostFetcher {
-            override fun fetchPosts(listener: OnScrollPostFetcher) {
-                adapter.find(listener.offset, MAX_BIRTHDAY_COUNT)
-                    .doFinally { listener.isScrolling = false }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe { d -> compositeDisposable.add(d) }
-                    .subscribe {
-                        adapter.addAll(it.birthdates!!)
-                        listener.incrementReadPostCount(it.birthdates.size)
-                    }
-            }
+            override fun fetchPosts(listener: OnScrollPostFetcher) = resubmitQuery()
         }, MAX_BIRTHDAY_COUNT)
 
         recyclerView.addOnScrollListener(onScrollPostFetcher)
 
-        searchView = rootView.findViewById<View>(R.id.searchView1) as SearchView
-        searchView.setOnQueryTextListener(this)
+        val searchView = rootView.findViewById<View>(R.id.searchView1) as SearchView
+
+        // Set up the query listener that executes the search
+        Observable.create(ObservableOnSubscribe<String> { subscriber ->
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextChange(query: String): Boolean {
+                    subscriber.onNext(query)
+                    return false
+                }
+
+                override fun onQueryTextSubmit(query: String): Boolean = false
+            })
+        })
+            .debounce(DEBOUNCE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+            .flatMap { pattern ->
+                adapter.pattern = pattern
+                adapter.find(0, MAX_BIRTHDAY_COUNT)
+            }
+            .doFinally { onScrollPostFetcher.isScrolling = false }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { d -> compositeDisposable.add(d) }
+            .subscribe({
+                resetSearch()
+                onScrollPostFetcher.incrementReadPostCount(it.birthdates!!.size)
+                adapter.addAll(it.birthdates)
+                scrollToFirstTodayBirthday()
+            }, { t ->
+                val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "birthday_browser_errors.txt")
+                Log.error(t, file)
+                t.showErrorDialog(context!!)
+            })
 
         setupActionBar()
         setHasOptionsMenu(true)
@@ -346,44 +373,22 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), SearchView.OnQueryText
         }
     }
 
-    override fun onQueryTextSubmit(query: String): Boolean {
-        if (query.equals(adapter.pattern, ignoreCase = true)) {
-            return true
-        }
-        resetSearch()
-
-        adapter.pattern = query
-        adapter.find(0, MAX_BIRTHDAY_COUNT)
-            .doFinally { onScrollPostFetcher.isScrolling = false }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { d -> compositeDisposable.add(d) }
-            .subscribe({
-                onScrollPostFetcher.incrementReadPostCount(it.birthdates!!.size)
-                adapter.addAll(it.birthdates)
-                scrollToFirstTodayBirthday()
-            }, { it.showErrorDialog(context!!) })
-        return true
-    }
-
-    override fun onQueryTextChange(newText: String): Boolean {
-        if (searchView.query.trim().isEmpty()) {
-            resubmitQuery()
-        }
-        return false
-    }
-
     private fun resetSearch() {
-        // prevent to call twice onQueryTextSubmit()
-        searchView.clearFocus()
         adapter.clear()
         onScrollPostFetcher.reset()
     }
 
     private fun resubmitQuery() {
-        // invalidate pattern to be sure to update items
-        adapter.pattern = "!${adapter.pattern}"
-        onQueryTextSubmit(searchView.query.toString())
+        adapter.find(onScrollPostFetcher.offset, MAX_BIRTHDAY_COUNT)
+            .doFinally { onScrollPostFetcher.isScrolling = false }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { d -> compositeDisposable.add(d) }
+            .subscribe {
+                adapter.addAll(it.birthdates!!)
+                onScrollPostFetcher.incrementReadPostCount(it.birthdates.size)
+                scrollToFirstTodayBirthday()
+            }
     }
 
     private fun scrollToPosition(position: Int) {
@@ -398,6 +403,9 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), SearchView.OnQueryText
     }
 
     private fun scrollToFirstTodayBirthday() {
+        if (!adapter.showFlags.isOn(BirthdayShowFlags.SHOW_ALL)) {
+            return
+        }
         val dayPos = adapter.findDayPosition(Calendar.getInstance().dayOfMonth)
         if (dayPos >= 0) {
             scrollToPosition(dayPos)

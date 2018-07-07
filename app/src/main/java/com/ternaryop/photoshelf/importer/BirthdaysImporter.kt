@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.importer
 
 import android.os.Environment
+import com.ternaryop.photoshelf.api.birthday.BirthdayManager
 import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.db.Birthday
@@ -67,7 +68,8 @@ typealias StringProgressInfo = Importer.SimpleImportProgressInfo<String>
 
 fun Importer.importMissingBirthdaysFromWeb(blogName: String): Observable<StringProgressInfo> {
     return Observable.generate<StringProgressInfo, StringProgressInfo>(Callable {
-        val names = ApiManager.birthdayManager(context).findMissingNames(0, MAX_BIRTHDAY_COUNT)
+        val params = BirthdayManager.FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT)
+        val names = ApiManager.birthdayManager(context).findMissingNames(params)
         Importer.SimpleImportProgressInfo(names.size, names)
         },
         BiConsumer { iterator: StringProgressInfo, emitter: Emitter<StringProgressInfo> ->

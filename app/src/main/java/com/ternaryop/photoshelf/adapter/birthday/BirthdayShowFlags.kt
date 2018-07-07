@@ -37,14 +37,14 @@ class BirthdayShowFlags(context: Context) {
     }
 
     fun find(pattern: String, month: Int, offset: Int, limit: Int): Observable<BirthdayManager.BirthdayResult> {
+        val params = BirthdayManager.FindParams(name = pattern, month = month + 1, offset = offset, limit = limit)
         return Observable.fromCallable {
             when {
-                isShowIgnored -> wrapBirthdayResult(birthdayManager.findIgnored(pattern, offset, limit))
-                isShowInSameDay -> birthdayManager.findSameDay(pattern, offset, limit)
-                isShowMissing -> wrapBirthdayResult(birthdayManager.findMissingNames(offset, limit))
-                isWithoutPost -> birthdayManager.findOrphans(pattern, offset, limit)
-                else -> birthdayManager.findByDate(BirthdayManager.FindParams(
-                    name = pattern, month = month + 1, offset = offset, limit = limit))
+                isShowIgnored -> wrapBirthdayResult(birthdayManager.findIgnored(params))
+                isShowInSameDay -> birthdayManager.findSameDay(params)
+                isShowMissing -> wrapBirthdayResult(birthdayManager.findMissingNames(params))
+                isWithoutPost -> birthdayManager.findOrphans(params)
+                else -> birthdayManager.findByDate(params)
             }
         }
     }

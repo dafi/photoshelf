@@ -48,20 +48,20 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         return readBirthdayResult("$API_PREFIX/v1/birthday/name/matching?offset=$offset&limit=$limit&name=$name")
     }
 
-    fun findSameDay(name: String, offset: Int, limit: Int): BirthdayResult {
-        return readBirthdayResult("$API_PREFIX/v1/birthday/date/sameday?offset=$offset&limit=$limit&name=$name")
+    fun findSameDay(findParams: FindParams): BirthdayResult {
+        return readBirthdayResult("$API_PREFIX/v1/birthday/date/sameday?${findParams.toQueryString()}")
     }
 
-    fun findIgnored(name: String, offset: Int, limit: Int): List<String> {
-        return readStringList("$API_PREFIX/v1/birthday/date/ignored?offset=$offset&limit=$limit&name=$name")
+    fun findIgnored(findParams: FindParams): List<String> {
+        return readStringList("$API_PREFIX/v1/birthday/date/ignored?${findParams.toQueryString()}")
     }
 
-    fun findOrphans(name: String, offset: Int, limit: Int): BirthdayResult {
-        return readBirthdayResult("$API_PREFIX/v1/birthday/date/orphans?offset=$offset&limit=$limit&name=$name")
+    fun findOrphans(findParams: FindParams): BirthdayResult {
+        return readBirthdayResult("$API_PREFIX/v1/birthday/date/orphans?${findParams.toQueryString()}")
     }
 
-    fun findMissingNames(offset: Int, limit: Int): List<String> {
-        return readStringList("$API_PREFIX/v1/birthday/name/missing?offset=$offset&limit=$limit")
+    fun findMissingNames(findParams: FindParams): List<String> {
+        return readStringList("$API_PREFIX/v1/birthday/name/missing?${findParams.toQueryString()}")
     }
 
     private fun readStringList(url: String): List<String> {
@@ -145,7 +145,7 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
                 .append("&limit=$limit")
                 .append("&onlyTotal=$onlyTotal")
 
-            name?.let { sb.append("&name=$it") }
+            name?.let { sb.append("&name=${URLEncoder.encode(it, "UTF-8")}") }
             if (month > 0) {
                 sb.append("&month=$month")
             }
