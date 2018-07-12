@@ -147,7 +147,5 @@ class TumblrPostCacheDAO internal constructor(dbHelper: SQLiteOpenHelper) : AbsD
         const val CACHE_TYPE = "cache_type"
         const val TIMESTAMP = "post_timestamp"
         const val POST = "post_object"
-
-        val COLUMNS = arrayOf(BaseColumns._ID, BLOG_NAME, CACHE_TYPE, TIMESTAMP, POST)
     }
 }

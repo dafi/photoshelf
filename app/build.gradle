@@ -125,3 +125,5 @@ def versionCodeByTask() {
     }
     return versionCode
 }
+
+apply from: 'appconfig.gradle'

@@ -42,7 +42,7 @@ class PhotoShelfSwipe : WaitingResultSwipeRefreshLayout {
         }
     }
 
-    fun <T> applyCompletableSwipe(): CompletableTransformer {
+    fun applyCompletableSwipe(): CompletableTransformer {
         return CompletableTransformer { upstream ->
             upstream
                     .subscribeOn(Schedulers.io())

@@ -11,43 +11,6 @@ import com.ternaryop.photoshelf.util.notification.ProgressNotification
  * Import/Export functions notifying the status to user
  */
 
-fun Importer.notifyImportBirthdays(importPath: String, notificationUtil: NotificationUtil) {
-    try {
-        importBirthdays(importPath)
-            .subscribe({ total ->
-                val content = notificationUtil.resources.getQuantityString(R.plurals.imported_items, total!!, total)
-                notificationUtil.notifyExport(content,
-                    "", "Birthdays Import", R.drawable.stat_notify_import_export)
-            }
-            ) { t -> notificationUtil.notifyError(t, "Import") }
-    } catch (e: Exception) {
-        notificationUtil.notifyError(e, "Import")
-    }
-}
-
-fun Importer.notifyExportBirthdaysToCSV(exportPath: String, notificationUtil: NotificationUtil) {
-    try {
-        val count = exportBirthdaysToCSV(exportPath)
-        val content = notificationUtil.resources.getQuantityString(R.plurals.exported_items, count, count)
-        notificationUtil.notifyExport(content,
-            "", "Birthdays Export", R.drawable.stat_notify_import_export)
-    } catch (e: Exception) {
-        notificationUtil.notifyError(e, "Export")
-    }
-}
-
-fun Importer.notifyExportMissingBirthdaysToCSV(exportPath: String,
-    blogName: String, notificationUtil: NotificationUtil) {
-    try {
-        val count = exportMissingBirthdaysToCSV(exportPath, blogName)
-        val content = notificationUtil.resources.getQuantityString(R.plurals.exported_items, count, count)
-        notificationUtil.notifyExport(content,
-            "", "Missing Birthdays Export", R.drawable.stat_notify_import_export)
-    } catch (e: Exception) {
-        notificationUtil.notifyError(e, "Export")
-    }
-}
-
 fun Importer.notifyImportBirthdaysFromWeb(blogName: String, notificationUtil: NotificationUtil) {
     val progressNotification = ProgressNotification(notificationUtil,
         R.string.import_missing_birthdays_from_web_title,

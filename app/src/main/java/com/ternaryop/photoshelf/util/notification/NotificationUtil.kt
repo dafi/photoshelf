@@ -31,7 +31,6 @@ import java.util.Calendar
 
 private const val NOTIFICATION_ID = 1
 const val NOTIFICATION_ID_IMPORT_BIRTHDAY = 2
-const val NOTIFICATION_ID_IMPORT_POSTS = 3
 
 fun NotificationCompat.Builder.setupMultiLineNotification(
     bigTitle: String, lines: List<String>, deleteIntent: PendingIntent? = null) {
@@ -174,15 +173,10 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         }
     }
 
-    fun notifyExport(contentText: String, ticker: String, subText: String, iconId: Int) {
-        notificationManager.notify(EXPORT_TAG, 0, createNotification(contentText, ticker, subText, iconId).build())
-    }
-
     companion object {
         const val BIRTHDAY_CHANNEL_ID = "birthdayId"
         private const val BIRTHDAY_ADDED_TAG = "com.ternaryop.photoshelf.birthday.added"
         private const val BIRTHDAY_TODAY_TAG = "com.ternaryop.photoshelf.birthday.today"
-        private const val EXPORT_TAG = "com.ternaryop.photoshelf.export"
 
         private const val BIRTHDAY_CLEAR_ACTION = "com.ternaryop.photoshelf.birthday.clear"
 

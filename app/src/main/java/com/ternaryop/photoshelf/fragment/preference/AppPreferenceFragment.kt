@@ -9,7 +9,7 @@ import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat
 /**
  * Created by dave on 17/03/18.
  * Base class for preference fragments
- * @see https://github.com/madlymad/PreferenceApp
+ * See {@link https://github.com/madlymad/PreferenceApp}
  */
 abstract class AppPreferenceFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

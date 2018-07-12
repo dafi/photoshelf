@@ -24,20 +24,25 @@ fun Collection<FeedlyContentDelegate>.titles(): Collection<String> {
     }
     return titles
 }
+
 /**
  * update lastPublishTimestamp and the tag fields
  */
 fun Collection<FeedlyContentDelegate>.update(tagPairList: Map<String, Long>): Collection<FeedlyContentDelegate> {
     for (fc in this) {
-        val title = fc.title
-        for ((tag, time) in tagPairList) {
-            if (tag.regionMatches(0, title, 0, tag.length, ignoreCase = true)) {
-                fc.lastPublishTimestamp = time
-                fc.tag = tag
-            }
-        }
+        updateLastPublishTimestamp(fc, tagPairList)
     }
     return this
+}
+
+private fun updateLastPublishTimestamp(fc: FeedlyContentDelegate, tagPairList: Map<String, Long>) {
+    val title = fc.title
+    for ((tag, time) in tagPairList) {
+        if (tag.regionMatches(0, title, 0, tag.length, ignoreCase = true)) {
+            fc.lastPublishTimestamp = time
+            fc.tag = tag
+        }
+    }
 }
 
 /**

@@ -9,7 +9,6 @@ import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getFollowers
-import com.ternaryop.utils.io.generateUniqueFileName
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -98,20 +97,6 @@ class Importer constructor(val context: Context) {
             }
         }
 
-        /**
-         * If necessary rename exportPath
-         * @param exportPath the export path to use as prefix
-         * @return the original passed parameter if exportPath doesn't exist or a new unique path
-         */
-        fun getExportPath(exportPath: String): String {
-            val exportFile = File(exportPath)
-            val newFile = exportFile.generateUniqueFileName()
-            if (newFile != exportFile) {
-                exportFile.renameTo(newFile)
-            }
-            return exportPath
-        }
-
         val titleParserPath: String
             get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 .toString() + File.separator + TITLE_PARSER_FILE_NAME
@@ -119,14 +104,5 @@ class Importer constructor(val context: Context) {
         val totalUsersPath: String
             get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 .toString() + File.separator + TOTAL_USERS_FILE_NAME
-
-        /**
-         * Create a PrintWriter disabling the flush to speedup writing
-         * @param path the destination path
-         * @return the created PrintWriter
-         */
-        fun fastPrintWriter(path: String): PrintWriter {
-            return PrintWriter(BufferedWriter(FileWriter(path)), false)
-        }
     }
 }

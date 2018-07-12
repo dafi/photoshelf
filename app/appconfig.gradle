@@ -1,0 +1,16 @@
+android {
+    buildTypes {
+        release {
+            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://visualdiffer.com/image\""
+        }
+        debug {
+            // used with genymotion
+            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://10.0.3.2:8080/image\""
+
+            // used with android emulator
+            // buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://192.168.0.2:8080/image\""
+
+            compileSdkVersion 'android-P'
+        }
+    }
+}

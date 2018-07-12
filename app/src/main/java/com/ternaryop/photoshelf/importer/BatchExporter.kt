@@ -19,8 +19,6 @@ class BatchExporter(val appSupport: AppSupport) {
 
     fun export() {
         val importer = Importer(appSupport)
-        exportPosts(importer)
-        exportBirthdays(importer)
         exportTotalUsers(importer)
     }
 
@@ -33,22 +31,6 @@ class BatchExporter(val appSupport: AppSupport) {
             } catch (e: Exception) {
                 Log.error(e, logPath, "Export total users")
             }
-        }
-    }
-
-    private fun exportBirthdays(importer: Importer) {
-        try {
-            importer.exportBirthdaysToCSV(Importer.birthdaysPath)
-        } catch (e: Exception) {
-            Log.error(e, logPath, "Export birthdays")
-        }
-    }
-
-    private fun exportPosts(importer: Importer) {
-        try {
-            importer.exportPostsToCSV(Importer.postsPath)
-        } catch (e: Exception) {
-            Log.error(e, logPath, "Export posts")
         }
     }
 }

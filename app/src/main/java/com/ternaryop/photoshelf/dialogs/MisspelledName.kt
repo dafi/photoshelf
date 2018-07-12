@@ -12,14 +12,7 @@ import com.ternaryop.photoshelf.util.network.ApiManager
  */
 class MisspelledName(val context: Context) {
     fun getMisspelledInfo(name: String): Pair<Int, String> {
-        var pair = getMatchingName(name)
-        if (pair != null) {
-            return pair
-        }
-        pair = getMisspelledName(name)
-        return if (pair != null) {
-            pair
-        } else Pair(NAME_NOT_FOUND, name)
+        return getMatchingName(name) ?: getMisspelledName(name) ?: Pair(NAME_NOT_FOUND, name)
     }
 
     private fun getMatchingName(name: String): Pair<Int, String>? {

@@ -44,10 +44,6 @@ class BirthdayManager(override val accessToken: String) : PhotoShelfApi(accessTo
         return readBirthdayResult("$API_PREFIX/v1/birthday/date/find?${findParams.toQueryString()}")
     }
 
-    fun findByMatchingName(name: String, offset: Int, limit: Int): BirthdayResult {
-        return readBirthdayResult("$API_PREFIX/v1/birthday/name/matching?offset=$offset&limit=$limit&name=$name")
-    }
-
     fun findSameDay(findParams: FindParams): BirthdayResult {
         return readBirthdayResult("$API_PREFIX/v1/birthday/date/sameday?${findParams.toQueryString()}")
     }
