@@ -314,7 +314,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         }
         Completable
             .fromAction { feedlyManager.markSaved(listOf(adapter.getItem(position).id), checked) }
-            .compose(photoShelfSwipe.applyCompletableSwipe<Void>())
+            .compose(photoShelfSwipe.applyCompletableSwipe())
             .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
     }

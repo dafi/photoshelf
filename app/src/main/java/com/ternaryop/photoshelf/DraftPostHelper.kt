@@ -8,16 +8,10 @@ import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getDraftPosts
-import com.ternaryop.tumblr.getPhotoPosts
 import com.ternaryop.tumblr.queueAll
-import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
 import java.util.Locale
-import java.util.concurrent.Executors
-
-const val MAX_TAG_LAST_PUBLISHED_THREAD_POOL = 5
 
 class DraftPostHelper(private val context: Context, private val blogName: String) {
     private val tumblr = TumblrManager.getInstance(context)
@@ -36,40 +30,13 @@ class DraftPostHelper(private val context: Context, private val blogName: String
             .groupBy { it.tags[0].toLowerCase(Locale.US) }
     }
 
-    private fun findLastPublishedPost(tag: String): Maybe<TumblrPhotoPost> {
-        return Single
-            .fromCallable {
-                val params = HashMap<String, String>()
-                params["type"] = "photo"
-                params["limit"] = "1"
-                params["tag"] = tag
-
-                tumblr.getPhotoPosts(blogName, params)
-            }
-            .filter { posts -> !posts.isEmpty() }
-            .map { posts -> posts[0] }
-    }
-
     fun getTagLastPublishedMap(tags: Set<String>): Single<Map<String, Long>> {
         val postByTags = ApiManager.postManager(context).getMapLastPublishedTimestampTag(tags, blogName)
-        val executorService = Executors.newFixedThreadPool(MAX_TAG_LAST_PUBLISHED_THREAD_POOL)
 
         return Observable
             .fromIterable(tags)
-            .flatMap { tag ->
-                val lastPublishedTime = postByTags[tag]
-                // TODO: Is this yet necessary? The call to ApiManager.postManager returns updated informations, the call to findLastPublishedPost() returns always an empty list is is no longer necessary
-                if (lastPublishedTime == null) {
-                    findLastPublishedPost(tag)
-                        .subscribeOn(Schedulers.from(executorService)).toObservable()
-                } else {
-                    val post = TumblrPhotoPost()
-                    post.tagsFromString(tag)
-                    post.timestamp = lastPublishedTime
-                    Observable.just(post)
-                }
-            }
-            .toMap({ post -> post.tags[0].toLowerCase(Locale.US) }, { it.timestamp })
+            .filter { tag -> postByTags[tag] != null }
+            .toMap( { tag -> tag.toLowerCase(Locale.US) }, { tag -> postByTags[tag]!! })
     }
 
     fun getPhotoShelfPosts(

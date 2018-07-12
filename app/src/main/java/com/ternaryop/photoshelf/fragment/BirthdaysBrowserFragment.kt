@@ -106,13 +106,12 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
                 resetSearch()
                 onScrollPostFetcher.incrementReadPostCount(it.birthdates!!.size)
                 adapter.addAll(it.birthdates)
-                scrollToFirstTodayBirthday()
-            }, { t ->
+            }) { t ->
                 val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                     "birthday_browser_errors.txt")
                 Log.error(t, file)
                 t.showErrorDialog(context!!)
-            })
+            }
 
         setupActionBar()
         setHasOptionsMenu(true)

@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.api
 
+import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.utils.json.readJson
 import java.net.HttpURLConnection
 import java.net.URL
@@ -40,9 +41,6 @@ abstract class PhotoShelfApi(protected open val accessToken: String) {
     }
 
     companion object {
-        const val API_PREFIX = "http://10.0.3.2:8080/image"
-//        const val API_PREFIX = "http://192.168.0.2:8080/image";
-//        const val API_PREFIX = "http://visualdiffer.com/image"
+        const val API_PREFIX = BuildConfig.PHOTOSHELF_API_PREFIX
     }
-
 }

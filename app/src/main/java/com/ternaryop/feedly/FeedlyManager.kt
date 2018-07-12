@@ -39,7 +39,7 @@ class FeedlyManager(var accessToken: String, userId: String, private val refresh
             FeedlyRateLimit.update(conn)
 
             val items = conn.inputStream.readJson().getJSONArray("items")
-            Array(items.length(), { SimpleFeedlyContent(items.getJSONObject(it)) as FeedlyContent }).toList()
+            Array(items.length()) { SimpleFeedlyContent(items.getJSONObject(it)) as FeedlyContent }.toList()
         } finally {
             try {
                 conn?.disconnect()

@@ -40,10 +40,10 @@ class BestOfFragment : Fragment() {
         results.keyListener = null
 
         button = view.findViewById(R.id.create_post)
-        button.setOnClickListener({
+        button.setOnClickListener {
             button.isEnabled = false
             startAddTags()
-        })
+        }
 
         return view
     }

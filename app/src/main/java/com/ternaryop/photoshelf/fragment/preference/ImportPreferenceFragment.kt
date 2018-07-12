@@ -7,20 +7,12 @@ import android.support.v7.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.importer.birthdaysPath
-import com.ternaryop.photoshelf.importer.missingBirthdaysPath
-import com.ternaryop.photoshelf.importer.postsPath
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.service.ImportIntentService
 import com.ternaryop.utils.date.daysSinceNow
 import java.io.File
 
-private const val KEY_IMPORT_POSTS_FROM_CSV = "import_posts_from_csv"
-private const val KEY_EXPORT_POSTS_FROM_CSV = "export_posts_csv"
 private const val KEY_IMPORT_TITLE_PARSER = "import_title_parser"
-private const val KEY_IMPORT_BIRTHDAYS = "import_birthdays"
-private const val KEY_EXPORT_BIRTHDAYS = "export_birthdays"
-private const val KEY_EXPORT_MISSING_BIRTHDAYS = "export_missing_birthdays"
 private const val KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia"
 
 /**
@@ -38,22 +30,10 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         appSupport = AppSupport(context!!)
 
         with(preferenceScreen) {
-            val csvPath = Importer.postsPath
-            setupPreferenceFilePath(csvPath, KEY_IMPORT_POSTS_FROM_CSV, preferenceScreen)
-
-            findPreference(KEY_EXPORT_POSTS_FROM_CSV).summary = csvPath
-
             setupPreferenceFilePath(Importer.titleParserPath, KEY_IMPORT_TITLE_PARSER, preferenceScreen)
                 .title = getString(R.string.import_title_parser_title, AndroidTitleParserConfig(context!!).version)
 
-            val birthdaysPath = Importer.birthdaysPath
-            setupPreferenceFilePath(birthdaysPath, KEY_IMPORT_BIRTHDAYS, preferenceScreen)
-
-            findPreference(KEY_EXPORT_BIRTHDAYS).summary = birthdaysPath
-
             findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
-
-            findPreference(KEY_EXPORT_MISSING_BIRTHDAYS)
 
             findPreference(AppSupport.PREF_EXPORT_DAYS_PERIOD)
             onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_EXPORT_DAYS_PERIOD)
@@ -61,38 +41,16 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
     }
 
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-        when (preference?.key) {
-            KEY_IMPORT_POSTS_FROM_CSV -> {
-                ImportIntentService.startImportPostsFromCSV(context!!, Importer.postsPath)
-                return true
-            }
+        return when (preference?.key) {
             KEY_IMPORT_TITLE_PARSER -> {
                 importer.importFile(Importer.titleParserPath, Importer.TITLE_PARSER_FILE_NAME)
-                return true
-            }
-            KEY_IMPORT_BIRTHDAYS -> {
-                ImportIntentService.startImportBirthdaysFromCSV(context!!, Importer.birthdaysPath)
-                return true
-            }
-            KEY_EXPORT_POSTS_FROM_CSV -> {
-                ImportIntentService.startExportPostsCSV(context!!, Importer.getExportPath(Importer.postsPath))
-                return true
-            }
-            KEY_EXPORT_BIRTHDAYS -> {
-                ImportIntentService.startExportBirthdaysCSV(context!!, Importer.getExportPath(Importer.birthdaysPath))
-                return true
+                true
             }
             KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA -> {
                 ImportIntentService.startImportBirthdaysFromWeb(context!!, appSupport.selectedBlogName!!)
-                return true
+                true
             }
-            KEY_EXPORT_MISSING_BIRTHDAYS -> {
-                ImportIntentService.startExportMissingBirthdaysCSV(context!!,
-                    Importer.getExportPath(Importer.missingBirthdaysPath),
-                    appSupport.selectedBlogName!!)
-                return true
-            }
-            else -> return super.onPreferenceTreeClick(preference)
+            else -> super.onPreferenceTreeClick(preference)
         }
     }
 

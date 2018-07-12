@@ -59,15 +59,19 @@ class MainActivity : DrawerActionBarActivity(),
         blogList.onItemSelectedListener = BlogItemSelectedListener()
         val logged = TumblrManager.isLogged(this)
         if (savedInstanceState == null) {
-            if (logged) {
-                if (!handleShortcutAction()) {
-                    showHome()
-                }
-            } else {
-                showSettings()
-            }
+            onAppStarted(logged)
         }
         enableUI(logged)
+    }
+
+    private fun onAppStarted(logged: Boolean) {
+        if (logged) {
+            if (!handleShortcutAction()) {
+                showHome()
+            }
+        } else {
+            showSettings()
+        }
     }
 
     public override fun onStart() {
