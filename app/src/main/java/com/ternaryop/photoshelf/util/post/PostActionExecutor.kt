@@ -60,7 +60,9 @@ class PostActionExecutor(private val context: Context,
         postAction = DELETE
         return executePostAction(postList, Consumer {
             TumblrManager.getInstance(context).deletePost(blogName, it.postId)
-            ApiManager.postManager(context).deletePost(it.postId)
+            ApiManager.postService(context)
+                .deletePost(it.postId)
+                .subscribe()
         })
     }
 
@@ -89,9 +91,12 @@ class PostActionExecutor(private val context: Context,
                 "tags" to tags
             )
             TumblrManager.getInstance(context).editPost(selectedBlogName, newValues)
-            ApiManager.postManager(context).editTags(post.postId, TumblrPost.tagsFromString(tags))
-            post.tagsFromString(tags)
-            post.caption = title
+            ApiManager.postService(context)
+                .editTags(post.postId, TumblrPost.tagsFromString(tags))
+                .subscribe {
+                    post.tagsFromString(tags)
+                    post.caption = title
+                }
         })
     }
 
@@ -99,12 +104,12 @@ class PostActionExecutor(private val context: Context,
         consumer: Consumer<TumblrPost>): Single<List<PostActionResult>> {
         return Observable
             .fromIterable(postList)
-            .flatMap<PostActionResult> { post ->
+            .map { post ->
                 try {
                     consumer.accept(post)
-                    Observable.just(PostActionResult(post))
+                    PostActionResult(post)
                 } catch (e: Throwable) {
-                    Observable.just(PostActionResult(post, e))
+                    PostActionResult(post, e)
                 }
             }
             .subscribeOn(Schedulers.io())

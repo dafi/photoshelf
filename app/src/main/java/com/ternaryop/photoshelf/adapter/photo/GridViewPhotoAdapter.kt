@@ -12,8 +12,8 @@ import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Birthday
+import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.api.birthday.ImageSize
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.TumblrPhotoPost
@@ -22,7 +22,7 @@ import com.ternaryop.widget.CheckableImageView
 import java.lang.Exception
 import java.util.Locale
 
-fun TumblrAltSize.toImageSize() = BirthdayManager.ImageSize(width, height, url)
+fun TumblrAltSize.toImageSize() = ImageSize(width, height, url)
 fun List<TumblrAltSize>.toImageSize() = map { it.toImageSize() }
 
 class GridViewPhotoAdapter(private val context: Context)

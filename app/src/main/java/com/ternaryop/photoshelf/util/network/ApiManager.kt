@@ -2,33 +2,22 @@ package com.ternaryop.photoshelf.util.network
 
 import android.content.Context
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
-import com.ternaryop.photoshelf.api.extractor.ImageExtractorManager
-import com.ternaryop.photoshelf.api.post.PostManager
+import com.ternaryop.photoshelf.api.PhotoShelfApi
+import com.ternaryop.photoshelf.api.birthday.BirthdayService
+import com.ternaryop.photoshelf.api.extractor.ImageExtractorService
+import com.ternaryop.photoshelf.api.post.PostService
 
 object ApiManager {
-    private var imageExtractorManager: ImageExtractorManager? = null
-    private var postManager: PostManager? = null
-    private var birthdayManager: BirthdayManager? = null
+    private var photoShelfApi: PhotoShelfApi? = null
 
-    fun imageExtractorManager(context: Context): ImageExtractorManager {
-        if (imageExtractorManager == null) {
-            imageExtractorManager = ImageExtractorManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
-        }
-        return imageExtractorManager!!
-    }
+    fun imageExtractorService(context: Context): ImageExtractorService = photoShelfApi(context).service()
+    fun birthdayService(context: Context): BirthdayService = photoShelfApi(context).service()
+    fun postService(context: Context): PostService = photoShelfApi(context).service()
 
-    fun postManager(context: Context): PostManager {
-        if (postManager == null) {
-            postManager = PostManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
+    private fun photoShelfApi(context: Context): PhotoShelfApi {
+        if (photoShelfApi == null) {
+            photoShelfApi = PhotoShelfApi(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
         }
-        return postManager!!
-    }
-
-    fun birthdayManager(context: Context): BirthdayManager {
-        if (birthdayManager == null) {
-            birthdayManager = BirthdayManager(context.getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
-        }
-        return birthdayManager!!
+        return photoShelfApi!!
     }
 }

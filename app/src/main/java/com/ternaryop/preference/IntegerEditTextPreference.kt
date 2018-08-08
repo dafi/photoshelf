@@ -20,6 +20,6 @@ class IntegerEditTextPreference : EditTextPreference {
     }
 
     override fun persistString(value: String): Boolean {
-        return persistInt(Integer.valueOf(value)!!)
+        return persistInt(Integer.valueOf(value))
     }
 }

@@ -19,7 +19,7 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.photo.GridViewPhotoAdapter
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
@@ -114,7 +114,7 @@ class BirthdaysPublisherFragment
     }
 
     private fun publish(mode: ActionMode, publishAsDraft: Boolean) {
-        val selectedBirthdays = ArrayList<BirthdayManager.Birthday>()
+        val selectedBirthdays = ArrayList<Birthday>()
         val names = ArrayList<String>()
 
         for (pair in gridViewPhotoAdapter.selectedItems) {
@@ -232,7 +232,7 @@ class BirthdaysPublisherFragment
             gridViewPhotoAdapter.notifyDataSetChanged()
         } else {
             val position = gridViewPhotoAdapter.itemCount
-            event.birthdayResult.birthdates?.let { list ->
+            event.birthdayResult.birthdays?.let { list ->
                 gridViewPhotoAdapter.addAll(list)
                 gridViewPhotoAdapter.notifyItemRangeInserted(position, list.size)
             }

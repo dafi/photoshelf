@@ -12,12 +12,10 @@ class PhotoShelfPost(photoPost: TumblrPhotoPost, var lastPublishedTimestamp: Lon
     var groupId: Int = 0
 
     val scheduleTimeType: ScheduleTime
-        get() = if (lastPublishedTimestamp == java.lang.Long.MAX_VALUE) {
-            ScheduleTime.POST_PUBLISH_NEVER
-        } else if (lastPublishedTimestamp > System.currentTimeMillis()) {
-            ScheduleTime.POST_PUBLISH_FUTURE
-        } else {
-            ScheduleTime.POST_PUBLISH_PAST
+        get() = when {
+            lastPublishedTimestamp == java.lang.Long.MAX_VALUE -> ScheduleTime.POST_PUBLISH_NEVER
+            lastPublishedTimestamp > System.currentTimeMillis() -> ScheduleTime.POST_PUBLISH_FUTURE
+            else -> ScheduleTime.POST_PUBLISH_PAST
         }
 
     val lastPublishedTimestampAsString: String

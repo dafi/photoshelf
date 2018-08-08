@@ -1,8 +1,7 @@
 package com.ternaryop.photoshelf.importer
 
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Companion.MAX_BIRTHDAY_COUNT
-import com.ternaryop.photoshelf.birthday.BirthdayUtils
+import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
+import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.util.network.ApiManager
 import io.reactivex.Emitter
@@ -17,22 +16,28 @@ import java.util.concurrent.Callable
 typealias StringProgressInfo = Importer.SimpleImportProgressInfo<String>
 
 fun Importer.importMissingBirthdaysFromWeb(blogName: String): Observable<StringProgressInfo> {
-    return Observable.generate<StringProgressInfo, StringProgressInfo>(Callable {
-        val params = BirthdayManager.FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT)
-        val names = ApiManager.birthdayManager(context).findMissingNames(params)
-        Importer.SimpleImportProgressInfo(names.size, names)
-        },
-        BiConsumer { iterator: StringProgressInfo, emitter: Emitter<StringProgressInfo> ->
-            if (iterator.progress < iterator.max) {
-                val name = iterator.list[iterator.progress]
+    val params = FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT).toQueryMap()
 
-                BirthdayUtils.searchBirthday(context, name)?.also { iterator.items.add(name) }
+    return ApiManager.birthdayService(context).findMissingNames(params).toObservable()
+        .flatMap {
+            Observable.generate<StringProgressInfo, StringProgressInfo>(Callable {
+                    Importer.SimpleImportProgressInfo(it.response.names.size, it.response.names)
+            },
+                BiConsumer { iterator: StringProgressInfo, emitter: Emitter<StringProgressInfo> ->
+                    if (iterator.progress < iterator.max) {
+                        val name = iterator.list[iterator.progress]
 
-                ++iterator.progress
-                emitter.onNext(iterator)
-            } else {
-                emitter.onNext(iterator)
-                emitter.onComplete()
-            }
-    })
+                        ApiManager.birthdayService(context)
+                            .getByName(name, true)
+                            .subscribe { _ -> iterator.items.add(name) }
+
+                        ++iterator.progress
+                        emitter.onNext(iterator)
+                    } else {
+                        emitter.onNext(iterator)
+                        emitter.onComplete()
+                    }
+                })
+
+        }
 }

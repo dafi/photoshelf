@@ -1,13 +1,17 @@
 package com.ternaryop.photoshelf.adapter.birthday
 
 import android.content.Context
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.Response
+import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.api.birthday.BirthdayResult
+import com.ternaryop.photoshelf.api.birthday.FindParams
+import com.ternaryop.photoshelf.api.birthday.ListResult
 import com.ternaryop.photoshelf.util.network.ApiManager
-import io.reactivex.Observable
+import io.reactivex.Single
 
 class BirthdayShowFlags(context: Context) {
     private var flags = SHOW_ALL
-    private val birthdayManager = ApiManager.birthdayManager(context)
+    private val birthdayService = ApiManager.birthdayService(context)
 
     val isShowIgnored: Boolean
         get() = flags and SHOW_IGNORED != 0
@@ -36,21 +40,20 @@ class BirthdayShowFlags(context: Context) {
         }
     }
 
-    fun find(pattern: String, month: Int, offset: Int, limit: Int): Observable<BirthdayManager.BirthdayResult> {
-        val params = BirthdayManager.FindParams(name = pattern, month = month + 1, offset = offset, limit = limit)
-        return Observable.fromCallable {
-            when {
-                isShowIgnored -> wrapBirthdayResult(birthdayManager.findIgnored(params))
-                isShowInSameDay -> birthdayManager.findSameDay(params)
-                isShowMissing -> wrapBirthdayResult(birthdayManager.findMissingNames(params))
-                isWithoutPost -> birthdayManager.findOrphans(params)
-                else -> birthdayManager.findByDate(params)
-            }
+    fun find(pattern: String, month: Int, offset: Int, limit: Int): Single<Response<BirthdayResult>> {
+        val params = FindParams(name = pattern, month = month + 1, offset = offset, limit = limit).toQueryMap()
+        return when {
+                isShowIgnored -> birthdayService.findIgnored(params).flatMap { wrapBirthdayResult(it) }
+                isShowInSameDay -> birthdayService.findSameDay(params)
+                isShowMissing -> birthdayService.findMissingNames(params).flatMap { wrapBirthdayResult(it) }
+                isWithoutPost -> birthdayService.findOrphans(params)
+                else -> birthdayService.findByDate(params)
         }
     }
 
-    private fun wrapBirthdayResult(list: List<String>): BirthdayManager.BirthdayResult {
-        return BirthdayManager.BirthdayResult(0, list.map { BirthdayManager.Birthday(it, nullDate) })
+    private fun wrapBirthdayResult(response: Response<ListResult>): Single<Response<BirthdayResult>> {
+        val listResult = response.response.names
+        return Single.just(Response(BirthdayResult(0, listResult.map { Birthday(it, nullDate) })))
     }
 
     companion object {

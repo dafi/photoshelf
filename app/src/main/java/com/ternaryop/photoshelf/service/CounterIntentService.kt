@@ -6,7 +6,7 @@ import android.content.Intent
 import com.ternaryop.photoshelf.EXTRA_ACTION
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_TYPE
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.tumblr.android.TumblrManager
@@ -61,9 +61,10 @@ class CounterIntentService : IntentService("counterIntent") {
 
     private fun birthdayCount(): Int {
         val now = Calendar.getInstance()
-        return ApiManager.birthdayManager(applicationContext).findByDate(
-            BirthdayManager.FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth))
-            .total.toInt()
+        return ApiManager.birthdayService(applicationContext).findByDate(
+            FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
+            .map { it.response.total.toInt() }
+            .blockingGet()
     }
 
     companion object {

@@ -133,14 +133,14 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         if (pattern.isEmpty()) {
             return true
         }
-        Observable
-            .fromCallable { ApiManager.postManager(context!!).findTags(pattern, blogName!!) }
+        ApiManager.postService(context!!)
+            .findTags(blogName!!, pattern)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { compositeDisposable.add(it) }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { tagInfoList ->
+            .subscribe { response ->
                 val adapter = searchView!!.suggestionsAdapter as TagCursorAdapter
-                adapter.swapCursor(adapter.createCursor(pattern, tagInfoList))
+                adapter.swapCursor(adapter.createCursor(pattern, response.response.tags))
         }
         return true
     }

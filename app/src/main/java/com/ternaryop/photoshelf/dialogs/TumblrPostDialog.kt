@@ -38,7 +38,6 @@ import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.text.anyMatches
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.toHtml
-import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -143,8 +142,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
     private fun searchMisspelledName(name: String) {
         (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
 
-        Single
-            .fromCallable { MisspelledName(context!!).getMisspelledInfo(name) }
+        MisspelledName(context!!).getMisspelledInfo(name)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {

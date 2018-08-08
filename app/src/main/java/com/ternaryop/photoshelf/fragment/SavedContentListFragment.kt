@@ -35,6 +35,7 @@ import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
 import com.ternaryop.photoshelf.adapter.feedly.titles
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.update
+import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.utils.json.readJson
@@ -42,7 +43,6 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.Callable
 
 class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
@@ -100,8 +100,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (photoShelfSwipe.isWaitingResult) {
             return
         }
-        Single
-            .fromCallable(callableFeedlyReader(deleteItemsIfAllowed))
+        callableFeedlyReader(deleteItemsIfAllowed)
             .compose(photoShelfSwipe.applySwipe())
             .subscribe(object : FeedlyObserver<List<FeedlyContentDelegate>>() {
                 override fun onSuccess(posts: List<FeedlyContentDelegate>) {
@@ -110,17 +109,19 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             })
     }
 
-    private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Callable<List<FeedlyContentDelegate>> {
-        return Callable {
-            val list = if (BuildConfig.DEBUG) {
-                fakeCall()
-            } else {
-                deleteItems(deleteItemsIfAllowed)
-                readSavedContents()
-            }.toContentDelegate()
-            list.update(ApiManager.postManager(context!!).getMapLastPublishedTimestampTag(list.titles(), blogName!!))
+    private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Single<List<FeedlyContentDelegate>> {
+        val list = if (BuildConfig.DEBUG) {
+            fakeCall()
+        } else {
+            deleteItems(deleteItemsIfAllowed)
+            readSavedContents()
+        }.toContentDelegate()
+        return ApiManager.postService(context!!)
+            .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
+            .map {
+                list.update(it.response.pairs)
             list
-        }
+            }
     }
 
     private fun setItems(items: List<FeedlyContentDelegate>) {

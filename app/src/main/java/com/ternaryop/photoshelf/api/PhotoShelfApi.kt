@@ -1,46 +1,49 @@
 package com.ternaryop.photoshelf.api
 
+import com.google.gson.GsonBuilder
 import com.ternaryop.photoshelf.BuildConfig
-import com.ternaryop.utils.json.readJson
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.StandardCharsets
+import com.ternaryop.photoshelf.util.gson.CalendarDeserializer
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.Calendar
 
-abstract class PhotoShelfApi(protected open val accessToken: String) {
-    protected fun getSignedGetConnection(url: String): HttpURLConnection {
-        return getSignedConnection(url, "GET")
-    }
+class Response<T>(val response: T)
 
-    protected fun getSignedConnection(url: String, requestMethod: String): HttpURLConnection {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        conn.setRequestProperty("PhotoShelf-Subscription-Key", accessToken)
-        conn.requestMethod = requestMethod
+class PhotoShelfApi(private val accessToken: String) {
+    inline fun <reified T> service() : T = builder.create(T::class.java)
 
-        return conn
-    }
-
-    protected fun getSignedPostConnection(url: String, contentType: String, data: String): HttpURLConnection {
-        val conn = getSignedConnection(url, "POST")
-        conn.setRequestProperty("Content-Type", contentType)
-        conn.doInput = true
-        conn.doOutput = true
-        conn.useCaches = false
-        conn.instanceFollowRedirects = false
-
-        conn.outputStream.use { os -> os.write(data.toByteArray(StandardCharsets.UTF_8)) }
-
-        return conn
-    }
-
-    protected fun handleError(conn: HttpURLConnection) {
-        if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-            return
+    val builder: Retrofit by lazy {
+        val gson = GsonBuilder()
+            .registerTypeAdapter(Calendar::class.java, CalendarDeserializer())
+            .create()
+        val interceptor = Interceptor {
+            chain: Interceptor.Chain -> {
+            val newRequest = chain.request().newBuilder()
+                .addHeader("PhotoShelf-Subscription-Key", accessToken).build()
+            chain.proceed(newRequest)
+            }()
         }
-        val error = conn.errorStream.readJson()
-        throw RuntimeException("Error ${conn.responseCode} : ${error.getString("errorMessage")}")
-    }
 
-    companion object {
-        const val API_PREFIX = BuildConfig.PHOTOSHELF_API_PREFIX
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+
+        if (BuildConfig.DEBUG) {
+            val debugInterceptor : HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
+                this.level = HttpLoggingInterceptor.Level.BODY
+            }
+            builder.interceptors().add(debugInterceptor)
+        }
+
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.PHOTOSHELF_API_PREFIX)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//            .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io())) // async by default
+            .client(builder.build())
+            .build()
     }
 }

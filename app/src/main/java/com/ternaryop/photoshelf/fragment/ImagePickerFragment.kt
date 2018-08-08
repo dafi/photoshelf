@@ -128,7 +128,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private fun readImageGallery(url: String) {
         imageUrlRetriever.readImageGallery(url)
                 .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
-                .subscribe({ this.onGalleryRetrieved(it) }
+                .subscribe({ this.onGalleryRetrieved(it.response.gallery) }
                 ) { throwable -> throwable.showErrorDialog(context!!) }
     }
 

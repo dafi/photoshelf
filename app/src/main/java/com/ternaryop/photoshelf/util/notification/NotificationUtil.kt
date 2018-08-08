@@ -15,7 +15,7 @@ import android.support.v4.app.NotificationCompat
 import android.text.TextUtils
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.date.yearsBetweenDates
 import com.ternaryop.utils.dialog.getExceptionMessageChain
@@ -85,7 +85,7 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         notificationManager.notify(BIRTHDAY_ADDED_TAG, NOTIFICATION_ID, notification)
     }
 
-    fun notifyTodayBirthdays(list: List<BirthdayManager.Birthday>, currYear: Int) {
+    fun notifyTodayBirthdays(list: List<Birthday>, currYear: Int) {
         if (list.isEmpty()) {
             return
         }
@@ -152,9 +152,9 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
         return builder.build()
     }
 
-    private fun getBirthdayNames(list: List<BirthdayManager.Birthday>): List<String> = list.map { it.name }
+    private fun getBirthdayNames(list: List<Birthday>): List<String> = list.map { it.name }
 
-    private fun buildBirthdayStyle(list: List<BirthdayManager.Birthday>, currYear: Int): NotificationCompat.Style {
+    private fun buildBirthdayStyle(list: List<Birthday>, currYear: Int): NotificationCompat.Style {
         val inboxStyle = NotificationCompat.InboxStyle()
 
         inboxStyle.setBigContentTitle(getString(R.string.birthday_notification_title))

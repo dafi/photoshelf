@@ -3,24 +3,25 @@ package com.ternaryop.photoshelf
 import android.content.Context
 import android.net.Uri
 import android.widget.ProgressBar
-import com.ternaryop.photoshelf.api.extractor.ImageGallery
+import com.ternaryop.photoshelf.api.Response
+import com.ternaryop.photoshelf.api.extractor.ImageGalleryResult
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.utils.network.UriUtils
 import com.ternaryop.utils.network.resolveShorten
 import com.ternaryop.utils.network.saveURL
 import com.ternaryop.utils.reactivex.ProgressIndicatorObservable
+import io.reactivex.Maybe
 import io.reactivex.Observable
-import io.reactivex.ObservableSource
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.net.URL
 
 class ImageUrlRetriever(private val context: Context, private val progressBar: ProgressBar) {
-    fun readImageGallery(url: String): Observable<ImageGallery> {
+    fun readImageGallery(url: String): Single<Response<ImageGalleryResult>> {
         return readImageGalleryObservable(url)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -29,65 +30,46 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
     fun retrieve(list: List<ImageInfo>, useFile: Boolean): Observable<Uri> {
         return Observable
                 .fromIterable(list)
-                .flatMap { imageInfo -> makeUriObservable(imageInfo, useFile) }
+                .flatMapMaybe { imageInfo -> retrieveImageUrl(imageInfo) }
+                .map { url -> makeUri(url, useFile) }
                 .compose(ProgressIndicatorObservable.apply(
                         progressBar,
                         list.size))
     }
 
-    private fun readImageGalleryObservable(url: String): Observable<ImageGallery> {
-        return Observable.fromCallable { ApiManager.imageExtractorManager(context).getGallery(URL(url).resolveShorten().toString()) }
+    private fun readImageGalleryObservable(url: String): Single<Response<ImageGalleryResult>> {
+        return ApiManager.imageExtractorService(context).getGallery(URL(url).resolveShorten().toString())
     }
 
-    @Throws(Exception::class)
-    private fun makeUriObservable(imageInfo: ImageInfo, useFile: Boolean): ObservableSource<Uri> {
-        val uri = makeUri(retrieveImageUrl(imageInfo), useFile)
-        return if (uri == null) Observable.empty() else Observable.just(uri)
+    private fun retrieveImageUrl(imageInfo: ImageInfo): Maybe<String> {
+        return getImageURL(imageInfo)
+            .flatMapMaybe { link ->
+                if (link.isEmpty()) {
+                    Maybe.empty()
+                } else Maybe.just(UriUtils.resolveRelativeURL(imageInfo.documentUrl, link))
+            }
     }
 
-    @Throws(Exception::class)
-    private fun retrieveImageUrl(imageInfo: ImageInfo): String? {
-        val link = getImageURL(imageInfo)
-
-        return if (link.isEmpty()) {
-            null
-        } else resolveRelativeURL(imageInfo.documentUrl, link)
-    }
-
-    @Throws(Exception::class)
-    private fun resolveRelativeURL(baseURL: String?, link: String): String {
-        val uri = UriUtils.encodeIllegalChar(link, "UTF-8")
-        return when {
-            uri.isAbsolute -> uri.toString()
-            baseURL != null -> UriUtils.encodeIllegalChar(baseURL, "UTF-8").resolve(uri).toString()
-            else -> throw IllegalArgumentException("baseUrl is null")
-        }
-    }
-
-    @Throws(Exception::class)
-    private fun getImageURL(imageInfo: ImageInfo): String {
+    private fun getImageURL(imageInfo: ImageInfo): Single<String> {
         val link = imageInfo.imageUrl
         // parse document only if the imageURL is not set (ie isn't cached)
         if (link != null) {
-            return link
+            return Single.just(link)
         }
         val url = imageInfo.documentUrl
-        return ApiManager.imageExtractorManager(context).getImageUrl(url!!)
+        return ApiManager.imageExtractorService(context).getImageUrl(url!!)
+            .map { it.response.imageUrl }
     }
 
-    @Throws(IOException::class)
-    private fun makeUri(url: String?, useFile: Boolean): Uri? {
-        if (url == null) {
-            return null
-        }
-        if (useFile) {
+    private fun makeUri(url: String, useFile: Boolean): Uri {
+        return if (useFile) {
             val file = File(context.cacheDir, url.hashCode().toString())
             FileOutputStream(file).use { fos ->
                 URL(url).saveURL(fos)
-                return Uri.fromFile(file)
+                Uri.fromFile(file)
             }
         } else {
-            return Uri.parse(url)
+            Uri.parse(url)
         }
     }
 }

@@ -2,9 +2,6 @@ package com.ternaryop.photoshelf.fragment
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
 import android.preference.PreferenceManager
 import android.util.SparseArray
 import android.view.LayoutInflater
@@ -14,18 +11,15 @@ import android.view.animation.AnimationUtils
 import android.widget.TextView
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.util.network.ApiManager
-import java.lang.ref.WeakReference
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.text.DecimalFormat
 
 class HomeFragment : AbsPhotoShelfFragment() {
 
-    private lateinit var handler: Handler
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_home, container, false)
-
-        handler = UIFillerHandler(this)
 
         refresh()
 
@@ -38,7 +32,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
             val containerView = it.findViewById<View>(R.id.home_container)
             containerView.visibility = View.VISIBLE
             for (i in 0 until viewIdColumnMap.size()) {
-                val textView = it.findViewById<View>(viewIdColumnMap.keyAt(i)) as TextView
+                val textView = it.findViewById<TextView>(viewIdColumnMap.keyAt(i))
                 val count = statsMap[viewIdColumnMap.valueAt(i)]
                 textView.text = format.format(count)
                 textView.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.fade))
@@ -50,19 +44,18 @@ class HomeFragment : AbsPhotoShelfFragment() {
         val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
         val lastRefresh = preferences.getLong(PREF_LAST_STATS_REFRESH, 0)
         if (System.currentTimeMillis() - lastRefresh < STATS_REFRESH_RATE_MILLIS) {
-            handler.obtainMessage(STATS_DATA_OK, loadStats(preferences)).sendToTarget()
+            fillStatsUI(loadStats(preferences))
             return
         }
-        Thread(Runnable {
-            try {
-                val statsMap = ApiManager.postManager(activity!!).getStats(blogName!!)
+        ApiManager.postService(activity!!).getStats(blogName!!)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                val statsMap = response.response.stats
                 saveStats(preferences, statsMap)
                 preferences.edit().putLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis()).apply()
-                handler.obtainMessage(STATS_DATA_OK, statsMap).sendToTarget()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }).start()
+                fillStatsUI(statsMap)
+            }, { it.printStackTrace() })
     }
 
     private fun loadStats(preferences: SharedPreferences): Map<String, Long> {
@@ -81,18 +74,6 @@ class HomeFragment : AbsPhotoShelfFragment() {
             editor.putLong(PREF_HOME_STATS_PREFIX + k, v)
         }
         editor.apply()
-    }
-
-    private class UIFillerHandler internal constructor(homeFragment: HomeFragment) : Handler(Looper.getMainLooper()) {
-        private val homeFragment: WeakReference<HomeFragment> = WeakReference(homeFragment)
-
-        override fun handleMessage(msg: Message) {
-            val homeFragment = this.homeFragment.get()
-            if (msg.what == STATS_DATA_OK && homeFragment != null) {
-                @Suppress("UNCHECKED_CAST")
-                homeFragment.fillStatsUI(msg.obj as Map<String, Long>)
-            }
-        }
     }
 
     companion object {
@@ -114,7 +95,6 @@ class HomeFragment : AbsPhotoShelfFragment() {
             viewIdColumnMap.put(R.id.missing_birthdays_count, MISSING_BIRTHDAYS_COUNT_COLUMN)
         }
 
-        private const val STATS_DATA_OK = 1
         private const val PREF_LAST_STATS_REFRESH = "home_last_stat_refresh"
         private const val PREF_HOME_STATS_PREFIX = "home_stats:"
         private const val STATS_REFRESH_RATE_MILLIS = 6 * 60 * 60 * 1000

@@ -4,7 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Environment
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
 import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.network.ApiManager
@@ -19,8 +20,6 @@ import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.date.yearsBetweenDates
-import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
@@ -33,12 +32,13 @@ private const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
 object BirthdayUtils {
     fun notifyBirthday(context: Context) {
         val now = Calendar.getInstance(Locale.US)
-        Single.fromCallable { ApiManager.birthdayManager(context).findByDate(
-            BirthdayManager.FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth)) }
+        ApiManager.birthdayService(context).findByDate(
+            FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .map { it.response }
             .subscribe({ birthdayResult ->
-                birthdayResult.birthdates?.let { list ->
+                birthdayResult.birthdays?.let { list ->
                     if (list.isNotEmpty()) {
                         NotificationUtil(context).notifyTodayBirthdays(list, now.year)
                     }
@@ -50,28 +50,8 @@ object BirthdayUtils {
                 NotificationUtil(context).notifyError(t, "Error") })
     }
 
-    fun getPhotoPosts(context: Context, birthDate: Calendar, blogName: String): Observable<BirthdayManager.BirthdayResult> {
-        return Observable
-            .fromCallable {
-                ApiManager.birthdayManager(context).findByDate(
-                    BirthdayManager.FindParams(
-                        month = birthDate.month + 1,
-                        dayOfMonth = birthDate.dayOfMonth,
-                        pickImages = true,
-                        blogName = blogName))
-            }
-    }
-
-    fun searchBirthday(context: Context, name: String): BirthdayManager.NameResult? {
-        return try {
-            ApiManager.birthdayManager(context).getByName(name, true)
-        } catch (ignored: Exception) {
-            null
-        }
-    }
-
     fun createBirthdayPost(tumblr: Tumblr,
-        cakeImage: Bitmap, birthday: BirthdayManager.Birthday, blogName: String, publishAsDraft: Boolean) {
+        cakeImage: Bitmap, birthday: Birthday, blogName: String, publishAsDraft: Boolean) {
         val name = birthday.name
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
             "birth-$name.png")
@@ -104,7 +84,7 @@ object BirthdayUtils {
         return destBmp
     }
 
-    private fun getBirthdayCaption(birthday: BirthdayManager.Birthday): String {
+    private fun getBirthdayCaption(birthday: Birthday): String {
         val age = birthday.birthdate.yearsBetweenDates()
         // caption must not be localized
         return "Happy ${age}th Birthday, ${birthday.name}!!"

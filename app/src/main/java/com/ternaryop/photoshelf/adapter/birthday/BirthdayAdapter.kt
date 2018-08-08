@@ -7,10 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Birthday
+import com.ternaryop.photoshelf.api.Response
+import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.utils.date.dayOfMonth
-import io.reactivex.Observable
+import io.reactivex.Single
 import java.util.Calendar
 
 val nullDate : Calendar by lazy {
@@ -95,7 +96,7 @@ class BirthdayAdapter(private val context: Context, var blogName: String)
         }
     }
 
-    fun find(offset: Int, limit: Int): Observable<BirthdayManager.BirthdayResult> {
+    fun find(offset: Int, limit: Int): Single<Response<BirthdayResult>> {
         return showFlags.find(pattern, month - 1, offset, limit)
     }
 

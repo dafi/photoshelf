@@ -3,8 +3,8 @@ package com.ternaryop.photoshelf.tests
 import android.app.Activity
 import android.os.Environment
 import android.util.Log
-import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.importer.CSVIterator
+import com.ternaryop.photoshelf.util.network.ApiManager
 import junit.framework.TestCase
 import java.io.File
 import java.io.IOException
@@ -34,10 +34,10 @@ class BirthdaysTest : TestCase() {
 
             while (iterator.hasNext()) {
                 val name = iterator.next()
-                val birthday = BirthdayUtils.searchBirthday(Activity(), name)
-                if (birthday != null) {
-                    Log.d("testFindMissing", "MissingBirthdaysTest.findMissing $birthday")
-                }
+                ApiManager.birthdayService(Activity()).getByName(name, true)
+                    .subscribe { birthday ->
+                        Log.d("testFindMissing", "MissingBirthdaysTest.findMissing $birthday")
+                    }
             }
         } catch (e: IOException) {
             e.printStackTrace()

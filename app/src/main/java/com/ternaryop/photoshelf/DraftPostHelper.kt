@@ -3,13 +3,13 @@ package com.ternaryop.photoshelf
 import android.content.Context
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getDraftPosts
 import com.ternaryop.tumblr.queueAll
-import io.reactivex.Observable
 import io.reactivex.Single
 import java.util.Locale
 
@@ -31,12 +31,9 @@ class DraftPostHelper(private val context: Context, private val blogName: String
     }
 
     fun getTagLastPublishedMap(tags: Set<String>): Single<Map<String, Long>> {
-        val postByTags = ApiManager.postManager(context).getMapLastPublishedTimestampTag(tags, blogName)
-
-        return Observable
-            .fromIterable(tags)
-            .filter { tag -> postByTags[tag] != null }
-            .toMap( { tag -> tag.toLowerCase(Locale.US) }, { tag -> postByTags[tag]!! })
+        return ApiManager.postService(context)
+            .getMapLastPublishedTimestampTag(blogName, titlesRequestBody(tags))
+            .map { result -> result.response.pairs }
     }
 
     fun getPhotoShelfPosts(

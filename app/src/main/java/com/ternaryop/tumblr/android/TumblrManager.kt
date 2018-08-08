@@ -19,7 +19,7 @@ object TumblrManager {
 
     fun getInstance(context: Context): Tumblr {
         if (instance == null) {
-            instance = Tumblr(TumblrHttpOAuthConsumer(context.getString(R.string.CONSUMER_KEY)!!,
+            instance = Tumblr(TumblrHttpOAuthConsumer(context.getString(R.string.CONSUMER_KEY),
                 context.getString(R.string.CONSUMER_SECRET),
                 context.getString(R.string.CALLBACK_URL),
                 TokenPreference.from(context).accessToken))

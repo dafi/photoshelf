@@ -24,13 +24,14 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayAdapter
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager.Companion.MAX_BIRTHDAY_COUNT
+import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
+import com.ternaryop.utils.date.toIsoFormat
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.dialog.showErrorDialog
 import io.reactivex.Observable
@@ -94,7 +95,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             })
         })
             .debounce(DEBOUNCE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .flatMap { pattern ->
+            .flatMapSingle { pattern ->
                 adapter.pattern = pattern
                 adapter.find(0, MAX_BIRTHDAY_COUNT)
             }
@@ -102,10 +103,11 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { d -> compositeDisposable.add(d) }
-            .subscribe({
+            .subscribe({ response ->
+                val birthdays = response.response.birthdays!!
                 resetSearch()
-                onScrollPostFetcher.incrementReadPostCount(it.birthdates!!.size)
-                adapter.addAll(it.birthdates)
+                onScrollPostFetcher.incrementReadPostCount(birthdays.size)
+                adapter.addAll(birthdays)
             }) { t ->
                 val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                     "birthday_browser_errors.txt")
@@ -178,11 +180,9 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
             birthday.birthdate = c
 
-            Observable
-                .fromCallable {
-                    ApiManager.birthdayManager(context!!).updateByName(birthday)
-                    birthday
-                }
+            ApiManager.birthdayService((context!!))
+                .updateByName(birthday.name, birthday.birthdate.toIsoFormat())
+                .toSingle { birthday }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe { d -> compositeDisposable.add(d) }
@@ -224,13 +224,14 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             .show()
     }
 
-    private fun markAsIgnored(list: List<BirthdayManager.Birthday>, mode: ActionMode) {
+    private fun markAsIgnored(list: List<Birthday>, mode: ActionMode) {
         Observable
             .fromIterable(list)
-            .map { bday ->
-                ApiManager.birthdayManager(context!!).markAsIgnored(bday.name)
-                bday.birthdate = nullDate
-                bday
+            .flatMapSingle { bday ->
+                ApiManager.birthdayService(context!!).markAsIgnored(bday.name).toSingle {
+                    bday.birthdate = nullDate
+                    bday
+                }
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -245,13 +246,10 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         mode.finish()
     }
 
-    private fun deleteBirthdays(list: List<BirthdayManager.Birthday>, mode: ActionMode) {
+    private fun deleteBirthdays(list: List<Birthday>, mode: ActionMode) {
         Observable
             .fromIterable(list)
-            .map { bday ->
-                ApiManager.birthdayManager(context!!).deleteByName(bday.name)
-                bday
-            }
+            .flatMapSingle { bday -> ApiManager.birthdayService(context!!).deleteByName(bday.name).toSingle { bday } }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { d -> compositeDisposable.add(d) }
@@ -383,9 +381,10 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { d -> compositeDisposable.add(d) }
-            .subscribe {
-                adapter.addAll(it.birthdates!!)
-                onScrollPostFetcher.incrementReadPostCount(it.birthdates.size)
+            .subscribe { response ->
+                val birthdays = response.response.birthdays!!
+                adapter.addAll(birthdays)
+                onScrollPostFetcher.incrementReadPostCount(birthdays.size)
                 scrollToFirstTodayBirthday()
             }
     }

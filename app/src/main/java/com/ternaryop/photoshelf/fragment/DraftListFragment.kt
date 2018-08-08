@@ -165,13 +165,12 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
         currentTextView.text = context!!.resources.getString(R.string.start_import_title)
-        compositeDisposable.add(Single.fromCallable {
-            val lastTimestamp = preferences.getLong(PREF_DRAFT_LAST_TIMESTAMP, -1)
-
-            ApiManager.postManager(context!!).getLastPublishedTimestamp(blogName!!, lastTimestamp)
-        }
+        val lastTimestamp = preferences.getLong(PREF_DRAFT_LAST_TIMESTAMP, -1)
+        compositeDisposable.add(
+            ApiManager.postService(context!!).getLastPublishedTimestamp(blogName!!, lastTimestamp)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .map { it.response }
             .subscribe({ last ->
                 currentTextView.text = context!!.resources.getQuantityString(
                     R.plurals.posts_read_count,
@@ -221,11 +220,11 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                     val tagsForQueuePosts = draftPostHelper.groupPostByTag(queuedPosts)
                     draftPostHelper
                         .getTagLastPublishedMap(tagsForDraftPosts.keys)
-                        .flatMap { lastPublished ->
-                            Single.just(draftPostHelper.getPhotoShelfPosts(
+                        .map { lastPublished ->
+                            draftPostHelper.getPhotoShelfPosts(
                                 tagsForDraftPosts,
                                 tagsForQueuePosts,
-                                lastPublished))
+                                lastPublished)
                         }
                 }
                 .observeOn(AndroidSchedulers.mainThread())

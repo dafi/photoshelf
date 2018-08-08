@@ -20,10 +20,13 @@ import com.ternaryop.photoshelf.EXTRA_POST_TAGS
 import com.ternaryop.photoshelf.EXTRA_POST_TITLE
 import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.api.birthday.BirthdayResult
+import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.util.log.Log
+import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
@@ -31,6 +34,10 @@ import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.publishPhotoPost
 import com.ternaryop.utils.bitmap.readBitmap
 import com.ternaryop.utils.bitmap.scale
+import com.ternaryop.utils.date.dayOfMonth
+import com.ternaryop.utils.date.month
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -102,17 +109,15 @@ class PublishIntentService : IntentService("publishIntent") {
     private fun addBirthdateFromTags(postTags: String) {
         val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return
 
-        Thread(Runnable {
-            try {
-                BirthdayUtils.searchBirthday(applicationContext, name)?.also { nameResult ->
-                    if (nameResult.isNew) {
-                        notificationUtil.notifyBirthdayAdded(name, nameResult.birthday.birthdate)
-                    }
+        ApiManager.birthdayService(applicationContext).getByName(name, true)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .map { it.response }
+            .subscribe({ nameResult ->
+                if (nameResult.isNew) {
+                    notificationUtil.notifyBirthdayAdded(name, nameResult.birthday.birthdate)
                 }
-            } catch (e: Exception) {
-                notificationUtil.notifyError(e, name, getString(R.string.birthday_add_error_ticker))
-            }
-        }).start()
+            }, { notificationUtil.notifyError(it, name, getString(R.string.birthday_add_error_ticker)) })
     }
 
     private fun logError(intent: Intent, e: Exception) {
@@ -131,18 +136,25 @@ class PublishIntentService : IntentService("publishIntent") {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
 
-        BirthdayUtils
-            .getPhotoPosts(applicationContext, birthday, blogName)
+        ApiManager.birthdayService(applicationContext).findByDate(
+            FindParams(
+                month = birthday.month + 1,
+                dayOfMonth = birthday.dayOfMonth,
+                pickImages = true,
+                blogName = blogName).toQueryMap())
+            .map { it.response }
             .subscribeOn(Schedulers.io())
             .doFinally { if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
                 EventBus.getDefault().post(BirthdayEvent()) }
-            .subscribe { if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
-                EventBus.getDefault().post(BirthdayEvent(it)) }
+            .subscribe(Consumer<BirthdayResult> {
+                if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
+                    EventBus.getDefault().post(BirthdayEvent(it))
+            })
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun birthdaysPublish(intent: Intent) {
-        val list = intent.getSerializableExtra(EXTRA_LIST1) as List<BirthdayManager.Birthday>
+        val list = intent.getSerializableExtra(EXTRA_LIST1) as List<Birthday>
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
         val publishAsDraft = intent.getBooleanExtra(EXTRA_BOOLEAN1, true)
         var name = ""
@@ -200,7 +212,7 @@ class PublishIntentService : IntentService("publishIntent") {
         }
 
         fun startPublishBirthdayIntent(context: Context,
-                                       list: ArrayList<BirthdayManager.Birthday>,
+                                       list: ArrayList<Birthday>,
                                        blogName: String,
                                        publishAsDraft: Boolean) {
             if (list.isEmpty()) {

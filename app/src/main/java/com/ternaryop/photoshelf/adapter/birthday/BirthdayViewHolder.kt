@@ -4,7 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.api.birthday.BirthdayManager
+import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.yearsBetweenDates
@@ -39,7 +39,7 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             }
         }
 
-    fun bindModel(pattern: String, birthday: BirthdayManager.Birthday) {
+    fun bindModel(pattern: String, birthday: Birthday) {
         try {
             updateBackground(birthday)
             updateName(pattern, birthday)
@@ -48,7 +48,7 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         }
     }
 
-    private fun updateBackground(birthday: BirthdayManager.Birthday) {
+    private fun updateBackground(birthday: Birthday) {
         val date = birthday.birthdate
 
         if (date == nullDate) {
@@ -69,11 +69,11 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         }
     }
 
-    private fun updateName(pattern: String, birthday: BirthdayManager.Birthday) {
+    private fun updateName(pattern: String, birthday: Birthday) {
         title.text = birthday.name.htmlHighlightPattern(pattern).fromHtml()
     }
 
-    private fun updateBirthdate(birthday: BirthdayManager.Birthday) {
+    private fun updateBirthdate(birthday: Birthday) {
         val date = birthday.birthdate
         if (date == nullDate) {
             subtitle.visibility = View.GONE
