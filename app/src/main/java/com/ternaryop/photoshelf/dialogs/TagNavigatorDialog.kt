@@ -43,7 +43,7 @@ class TagNavigatorDialog : DialogFragment() {
     @SuppressLint("InflateParams")
     private fun setupUI(): View {
         val view = activity!!.layoutInflater.inflate(R.layout.dialog_tag_navigator, null)
-        adapter = createAdapter(arguments!!.getStringArrayList(ARG_TAG_LIST))
+        adapter = createAdapter(arguments!!.getStringArrayList(ARG_TAG_LIST)!!)
         sortButton = view.findViewById<View>(R.id.sort_tag) as Button
         val tagList = view.findViewById<View>(R.id.tag_list) as ListView
 
@@ -100,7 +100,7 @@ class TagNavigatorDialog : DialogFragment() {
             }
         }
 
-        return ArrayAdapter(activity, android.R.layout.simple_list_item_1, map.values.toList())
+        return ArrayAdapter(activity!!, android.R.layout.simple_list_item_1, map.values.toList())
     }
 
     private fun sortByTagCount() {

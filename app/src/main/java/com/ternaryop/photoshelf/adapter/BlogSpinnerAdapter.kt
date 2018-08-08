@@ -28,7 +28,7 @@ class BlogSpinnerAdapter(context: Context, blogNames: List<String>)
             holder = convertView.tag as ViewHolder
         }
 
-        val blogName = getItem(position)
+        val blogName = getItem(position)!!
         holder.title.text = blogName
 
         Picasso

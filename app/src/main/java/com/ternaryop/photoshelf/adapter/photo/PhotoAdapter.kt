@@ -25,7 +25,7 @@ class PhotoAdapter(private val context: Context)
     private var visiblePosts = allPosts
     private var onPhotoBrowseClick: OnPhotoBrowseClick? = null
     private val thumbnailWidth = PreferenceManager
-        .getDefaultSharedPreferences(context).getString("thumbnail_width", "75").toInt()
+        .getDefaultSharedPreferences(context).getString("thumbnail_width", "75")!!.toInt()
 
     val sortSwitcher = PhotoSortSwitcher()
 

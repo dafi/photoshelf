@@ -349,7 +349,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         months[0] = getString(R.string.all)
         System.arraycopy(DateFormatSymbols().months, 0, months, 1, MONTH_COUNT)
         val monthAdapter = ArrayAdapter<String>(
-            supportActionBar?.themedContext,
+            supportActionBar?.themedContext!!,
             android.R.layout.simple_spinner_item,
             months)
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

@@ -79,7 +79,7 @@ object TumblrManager {
     fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
         val callbackUrl = context.getString(R.string.CALLBACK_URL)
 
-        return if (uri != null && callbackUrl.startsWith(uri.scheme)) {
+        return if (uri != null && callbackUrl.startsWith(uri.scheme!!)) {
             access(context, uri, callback)
             true
         } else false
