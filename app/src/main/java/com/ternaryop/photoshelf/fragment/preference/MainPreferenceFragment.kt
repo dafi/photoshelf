@@ -130,6 +130,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     private fun logout() {
         val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
             TumblrManager.logout(context!!)
+            appSupport.clearBlogList()
             toggleTumblrLoginTitle()
         }
 
