@@ -110,18 +110,21 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Single<List<FeedlyContentDelegate>> {
-        val list = if (BuildConfig.DEBUG) {
-            fakeCall()
-        } else {
-            deleteItems(deleteItemsIfAllowed)
-            readSavedContents()
-        }.toContentDelegate()
-        return ApiManager.postService(context!!)
-            .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
-            .map {
-                list.update(it.response.pairs)
-            list
-            }
+        return Single.fromCallable {
+            if (BuildConfig.DEBUG) {
+                fakeCall()
+            } else {
+                deleteItems(deleteItemsIfAllowed)
+                readSavedContents()
+            }.toContentDelegate()
+        }.flatMap { list ->
+            ApiManager.postService(context!!)
+                .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
+                .map {
+                    list.update(it.response.pairs)
+                    list
+                }
+        }
     }
 
     private fun setItems(items: List<FeedlyContentDelegate>) {
@@ -238,7 +241,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             .subscribe(object : FeedlyObserver<String>() {
                 override fun onSuccess(accessToken: String) {
                     preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply()
-                    feedlyManager.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken)
+                    feedlyManager.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken)!!
                     // hide swipe otherwise refresh() exists immediately
                     photoShelfSwipe.setRefreshingAndWaitingResult(false)
                     refresh(true)
