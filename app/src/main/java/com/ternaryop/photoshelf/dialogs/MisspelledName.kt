@@ -46,14 +46,17 @@ class MisspelledName(val context: Context) {
     }
 
     private fun getMisspelledName(name: String): Maybe<Pair<Int, String>> {
-        return Maybe
-            .fromCallable {
-                GoogleCustomSearchClient(
-                    context.getString(R.string.GOOGLE_CSE_APIKEY),
-                    context.getString(R.string.GOOGLE_CSE_CX))
-                    .getCorrectedQuery(name)
+        return GoogleCustomSearchClient(
+            context.getString(R.string.GOOGLE_CSE_APIKEY),
+            context.getString(R.string.GOOGLE_CSE_CX))
+            .getCorrectedQuery(name)
+            .flatMapMaybe { result ->
+                if (result.spelling?.correctedQuery == null) {
+                    Maybe.empty()
+                } else {
+                    Maybe.just(Pair(NAME_MISSPELLED, result.spelling.correctedQuery))
+                }
             }
-            .map { Pair(NAME_MISSPELLED, it) }
     }
 
     companion object {
