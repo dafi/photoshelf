@@ -1,8 +1,8 @@
 package com.ternaryop.feedly
 
+import okhttp3.Headers
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
-import java.io.IOException
 import java.net.HttpURLConnection
 
 /**
@@ -46,15 +46,13 @@ object FeedlyRateLimit {
         apiResetLimit = -1
     }
 
-    @Throws(IOException::class)
-    fun update(conn: HttpURLConnection) {
+    fun update(responseCode: Int, headers: Headers) {
         synchronized(this) {
             reset()
-            if (conn.responseCode != HttpURLConnection.HTTP_OK) {
-                return
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                apiCallsCount = headers.get("X-Ratelimit-Count")?.toInt() ?: -1
+                apiResetLimit = headers.get("X-Ratelimit-Reset")?.toInt() ?: -1
             }
-            apiCallsCount = conn.getHeaderField("X-Ratelimit-Count")?.toInt() ?: -1
-            apiResetLimit = conn.getHeaderField("X-Ratelimit-Reset")?.toInt() ?: -1
         }
     }
 }

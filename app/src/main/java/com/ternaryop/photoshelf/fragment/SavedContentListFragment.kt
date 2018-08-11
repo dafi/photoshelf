@@ -17,10 +17,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
-import com.ternaryop.feedly.FeedlyContent
-import com.ternaryop.feedly.FeedlyManager
+import com.google.gson.GsonBuilder
+import com.ternaryop.feedly.AccessToken
+import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.FeedlyRateLimit
-import com.ternaryop.feedly.SimpleFeedlyContent
+import com.ternaryop.feedly.StreamContent
+import com.ternaryop.feedly.StreamContentFindParam
 import com.ternaryop.feedly.TokenExpiredException
 import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.photoshelf.R
@@ -38,17 +40,17 @@ import com.ternaryop.photoshelf.adapter.feedly.update
 import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
-import com.ternaryop.utils.json.readJson
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.disposables.Disposable
+import java.io.InputStreamReader
 
 class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private lateinit var adapter: FeedlyContentAdapter
     private lateinit var recyclerView: RecyclerView
-    private lateinit var feedlyManager: FeedlyManager
+    private lateinit var feedlyClient: FeedlyClient
     private lateinit var preferences: SharedPreferences
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
 
@@ -87,7 +89,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         adapter.sortSwitcher.setType(preferences.getInt(PREF_SORT_TYPE, TITLE_NAME))
         adapter.clickListener = this
 
-        feedlyManager = FeedlyManager(
+        feedlyClient = FeedlyClient(
             preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN))!!,
             getString(R.string.FEEDLY_USER_ID),
             getString(R.string.FEEDLY_REFRESH_TOKEN))
@@ -100,7 +102,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (photoShelfSwipe.isWaitingResult) {
             return
         }
-        callableFeedlyReader(deleteItemsIfAllowed)
+        getFeedlyContentDelegate(deleteItemsIfAllowed)
             .compose(photoShelfSwipe.applySwipe())
             .subscribe(object : FeedlyObserver<List<FeedlyContentDelegate>>() {
                 override fun onSuccess(posts: List<FeedlyContentDelegate>) {
@@ -109,21 +111,24 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             })
     }
 
-    private fun callableFeedlyReader(deleteItemsIfAllowed: Boolean): Single<List<FeedlyContentDelegate>> {
-        return Single.fromCallable {
-            if (BuildConfig.DEBUG) {
-                fakeCall()
-            } else {
-                deleteItems(deleteItemsIfAllowed)
-                readSavedContents()
-            }.toContentDelegate()
-        }.flatMap { list ->
-            ApiManager.postService(context!!)
-                .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
-                .map {
-                    list.update(it.response.pairs)
-                    list
-                }
+    private fun getFeedlyContentDelegate(deleteItemsIfAllowed: Boolean): Single<List<FeedlyContentDelegate>> {
+        return readStreamContent(deleteItemsIfAllowed)
+            .map { it.items.toContentDelegate() }
+            .flatMap { list ->
+                ApiManager.postService(context!!)
+                    .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
+                    .map {
+                        list.update(it.response.pairs)
+                        list
+                    }
+            }
+    }
+
+    private fun readStreamContent(deleteItemsIfAllowed: Boolean): Single<StreamContent> {
+        return if (BuildConfig.DEBUG) {
+            fakeCall()
+        } else {
+            deleteItems(deleteItemsIfAllowed).andThen(Single.defer { getNewerSavedContent() })
         }
     }
 
@@ -137,23 +142,24 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         refreshUI()
     }
 
-    private fun deleteItems(deleteItemsIfAllowed: Boolean) {
+    private fun deleteItems(deleteItemsIfAllowed: Boolean): Completable {
         if (deleteItemsIfAllowed && deleteOnRefresh()) {
             val idList = adapter.uncheckedItems.map { it.id }
-            feedlyManager.markSaved(idList, false)
+            return feedlyClient.markSaved(idList, false)
         }
+        return Completable.complete()
     }
 
-    private fun readSavedContents(): List<FeedlyContent> {
+    private fun getNewerSavedContent(): Single<StreamContent> {
         val ms = System.currentTimeMillis() - newerThanHours * ONE_HOUR_MILLIS
-        return feedlyManager.getStreamContents(feedlyManager.globalSavedTag, maxFetchItemCount, ms, null)
+        val params = StreamContentFindParam(maxFetchItemCount, ms)
+        return feedlyClient.getStreamContents(feedlyClient.globalSavedTag, params.toQueryMap())
     }
 
-    private fun fakeCall(): List<FeedlyContent> {
-        context!!.assets.open("sample/feedly.json").use { stream ->
-            val items = stream.readJson().getJSONArray("items")
-            return (0 until items.length()).mapTo(mutableListOf<FeedlyContent>()) {
-                SimpleFeedlyContent(items.getJSONObject(it))
+    private fun fakeCall(): Single<StreamContent> {
+        return Single.fromCallable {
+            context!!.assets.open("sample/feedly.json").use { stream ->
+                GsonBuilder().create().fromJson(InputStreamReader(stream), StreamContent::class.java)
             }
         }
     }
@@ -231,17 +237,14 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun refreshToken() {
-        Single
-            .fromCallable {
-                feedlyManager.refreshAccessToken(
-                    getString(R.string.FEEDLY_CLIENT_ID),
-                    getString(R.string.FEEDLY_CLIENT_SECRET))
-            }
+        feedlyClient.refreshAccessToken(
+            getString(R.string.FEEDLY_CLIENT_ID),
+            getString(R.string.FEEDLY_CLIENT_SECRET))
             .compose(photoShelfSwipe.applySwipe())
-            .subscribe(object : FeedlyObserver<String>() {
-                override fun onSuccess(accessToken: String) {
-                    preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken).apply()
-                    feedlyManager.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken)!!
+            .subscribe(object : FeedlyObserver<AccessToken>() {
+                override fun onSuccess(accessToken: AccessToken) {
+                    preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken.accessToken).apply()
+                    feedlyClient.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken.accessToken)!!
                     // hide swipe otherwise refresh() exists immediately
                     photoShelfSwipe.setRefreshingAndWaitingResult(false)
                     refresh(true)
@@ -316,8 +319,7 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (deleteOnRefresh()) {
             return
         }
-        Completable
-            .fromAction { feedlyManager.markSaved(listOf(adapter.getItem(position).id), checked) }
+        feedlyClient.markSaved(listOf(adapter.getItem(position).id), checked)
             .compose(photoShelfSwipe.applyCompletableSwipe())
             .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }

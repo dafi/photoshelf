@@ -1,7 +1,6 @@
 package com.ternaryop.feedly
 
-import org.json.JSONException
-import org.json.JSONObject
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by dave on 24/02/17.
@@ -9,25 +8,42 @@ import org.json.JSONObject
  */
 
 interface FeedlyContent {
-    var id: String
-    var title: String
-    var originId: String
-    var actionTimestamp: Long
-    var origin: FeedlyOrigin
+    val id: String
+    val title: String
+    val originId: String
+    val actionTimestamp: Long
+    val origin: FeedlyOrigin
 }
 
-interface FeedlyOrigin {
-    var title: String
+data class FeedlyOrigin(val title: String)
+
+data class SimpleFeedlyContent(
+    override val id: String,
+    override val title: String,
+    override val originId: String,
+    override val actionTimestamp: Long,
+    override val origin: FeedlyOrigin) : FeedlyContent
+
+data class StreamContent(var id: String, val items: List<SimpleFeedlyContent>)
+
+data class StreamContentFindParam(val count: Int = 0, val newerThan: Long = 0, val continuation: String? = null) {
+    fun toQueryMap(): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+
+        if (count > 0) {
+            map["count"] = count.toString()
+        }
+        if (newerThan > 0) {
+            map["newerThan"] = newerThan.toString()
+        }
+        continuation?.let { map["continuation"] = it }
+
+        return map
+    }
 }
 
-class SimpleFeedlyOrigin @Throws(JSONException::class) constructor(json: JSONObject) : FeedlyOrigin {
-    override var title = json.getString("title")!!
-}
-
-class SimpleFeedlyContent @Throws(JSONException::class) constructor(json: JSONObject) : FeedlyContent {
-    override var id = json.getString("id")!!
-    override var title = json.getString("title")!!
-    override var originId = json.getString("originId")!!
-    override var actionTimestamp = json.getLong("actionTimestamp")
-    override var origin: FeedlyOrigin = SimpleFeedlyOrigin(json.getJSONObject("origin"))
+data class AccessToken(@SerializedName("access_token") val accessToken: String)
+data class Marker(val type: String, val action: String, val entryIds: List<String>)
+data class Error(val errorCode: Int, val errorId: String, val errorMessage: String?) {
+    fun hasTokenExpired() : Boolean = errorMessage != null && errorMessage.startsWith("token expired")
 }
