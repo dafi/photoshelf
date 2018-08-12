@@ -41,13 +41,14 @@ class HomeFragment : AbsPhotoShelfFragment() {
     }
 
     private fun refresh() {
+        val currentBlog = blogName ?: return
         val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
         val lastRefresh = preferences.getLong(PREF_LAST_STATS_REFRESH, 0)
         if (System.currentTimeMillis() - lastRefresh < STATS_REFRESH_RATE_MILLIS) {
             fillStatsUI(loadStats(preferences))
             return
         }
-        ApiManager.postService(activity!!).getStats(blogName!!)
+        ApiManager.postService(activity!!).getStats(currentBlog)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
