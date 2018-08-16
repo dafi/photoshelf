@@ -70,15 +70,15 @@ class Importer constructor(val context: Context) {
     }
 
     interface ImportProgressInfo<T> {
-        val progress: Int
-        val max: Int
-        val items: MutableList<T>
+        var progress: Int
+        var max: Int
+        var items: MutableList<T>
     }
 
-    class SimpleImportProgressInfo<T>(override val max: Int, val list: List<T> = emptyList()) : ImportProgressInfo<T> {
+    class SimpleImportProgressInfo<T>(override var max: Int = 0, val list: MutableList<T> = mutableListOf())
+        : ImportProgressInfo<T> {
         override var progress: Int = 0
-            internal set
-        override val items: MutableList<T> = mutableListOf()
+        override var items: MutableList<T> = mutableListOf()
 
         override fun toString(): String = "progress $progress max $max items $items"
     }
