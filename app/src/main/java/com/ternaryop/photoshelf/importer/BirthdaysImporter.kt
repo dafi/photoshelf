@@ -4,10 +4,7 @@ import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTH
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.util.network.ApiManager
-import io.reactivex.Emitter
 import io.reactivex.Observable
-import io.reactivex.functions.BiConsumer
-import java.util.concurrent.Callable
 
 /**
  * Created by dave on 24/03/18.
@@ -17,27 +14,21 @@ typealias StringProgressInfo = Importer.SimpleImportProgressInfo<String>
 
 fun Importer.importMissingBirthdaysFromWeb(blogName: String): Observable<StringProgressInfo> {
     val params = FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT).toQueryMap()
+    val info = Importer.SimpleImportProgressInfo<String>()
 
-    return ApiManager.birthdayService(context).findMissingNames(params).toObservable()
-        .flatMap {
-            Observable.generate<StringProgressInfo, StringProgressInfo>(Callable {
-                    Importer.SimpleImportProgressInfo(it.response.names.size, it.response.names)
-            },
-                BiConsumer { iterator: StringProgressInfo, emitter: Emitter<StringProgressInfo> ->
-                    if (iterator.progress < iterator.max) {
-                        val name = iterator.list[iterator.progress]
-
-                        ApiManager.birthdayService(context)
-                            .getByName(name, true)
-                            .subscribe { _ -> iterator.items.add(name) }
-
-                        ++iterator.progress
-                        emitter.onNext(iterator)
-                    } else {
-                        emitter.onNext(iterator)
-                        emitter.onComplete()
-                    }
-                })
-
+    return ApiManager.birthdayService(context).findMissingNames(params)
+        .flatMapObservable {
+            info.max = it.response.names.size
+            info.list.addAll(it.response.names)
+            Observable.fromIterable(it.response.names)
         }
+        .flatMapSingle { name -> ApiManager.birthdayService(context).getByName(name, true) }
+        .doOnNext { response ->
+            val nameResult  = response.response
+            if (nameResult.isNew) {
+                info.items.add(nameResult.birthday.name)
+            }
+            ++info.progress
+        }
+        .map { info }
 }

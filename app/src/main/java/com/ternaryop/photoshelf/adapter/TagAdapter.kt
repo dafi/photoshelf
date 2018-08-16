@@ -57,12 +57,15 @@ class TagAdapter(context: Context, val resource: Int, var blogName: String) : Ar
             pattern = constraint?.trim() ?: ""
 
             error = null
-            ApiManager.postService(context)
-                .findTags(blogName, pattern.toString())
-                .subscribe({ response ->
-                    filterResults.values = response.response.tags
-                    filterResults.count = response.response.tags.size
-                }, { error = it })
+            try {
+                val response = ApiManager.postService(context)
+                    .findTags(blogName, pattern.toString())
+                    .blockingGet()
+                filterResults.values = response.response.tags
+                filterResults.count = response.response.tags.size
+            } catch (t: Throwable) {
+                error = t
+            }
 
             return filterResults
         }
