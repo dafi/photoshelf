@@ -14,6 +14,7 @@ import com.ternaryop.utils.intent.ShareUtils
 import com.ternaryop.utils.text.fromHtml
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
@@ -44,12 +45,12 @@ object ImageViewerUtil {
         Toast.makeText(context, resultMessage, Toast.LENGTH_SHORT).show()
     }
 
-    fun shareImage(context: Context, url: String, suggestedTitle: String? = null) {
+    fun shareImage(context: Context, url: String, suggestedTitle: String? = null): Disposable? {
         try {
             val fileName = buildFileName(url)
             // write to a public location otherwise the called app can't access to file
             val destFile = File(AppSupport.picturesDirectory, fileName)
-            downloadImageUrl(URL(url), destFile)
+            return downloadImageUrl(URL(url), destFile)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
@@ -63,6 +64,7 @@ object ImageViewerUtil {
         } catch (e: Exception) {
             e.showErrorDialog(context)
         }
+        return null
     }
 
     private fun downloadImageUrl(imageUrl: URL, destFile: File): Completable {

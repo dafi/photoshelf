@@ -126,10 +126,10 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun readImageGallery(url: String) {
-        imageUrlRetriever.readImageGallery(url)
-                .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
+        val d = imageUrlRetriever.readImageGallery(url)
                 .subscribe({ this.onGalleryRetrieved(it.response.gallery) }
                 ) { throwable -> throwable.showErrorDialog(context!!) }
+        compositeDisposable.add(d)
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -172,12 +172,12 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun retrieveImages(useFile: Boolean) {
-        imageUrlRetriever.retrieve(imagePickerAdapter.selectedItems, useFile)
-                .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
+        val d = imageUrlRetriever.retrieve(imagePickerAdapter.selectedItems, useFile)
                 .toList()
                 .subscribe({ this.onImagesRetrieved(it) }
                 ) { throwable ->
                     DialogUtils.showSimpleMessageDialog(context!!, R.string.url_not_found, throwable.localizedMessage) }
+        compositeDisposable.add(d)
     }
 
     private fun onImagesRetrieved(imageUriList: List<Uri>) {
@@ -210,8 +210,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         val imageInfo = imagePickerAdapter.getItem(position)
         val imageUrl = imageInfo.imageUrl
         if (imageUrl == null) {
-            imageUrlRetriever.retrieve(listOf(imageInfo), false)
-                    .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
+            val d = imageUrlRetriever.retrieve(listOf(imageInfo), false)
                     .take(1)
                     .subscribe({ uri ->
                         // cache retrieved value
@@ -221,6 +220,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                     }
                     ) { throwable -> DialogUtils.showSimpleMessageDialog(context!!,
                         R.string.url_not_found, throwable.localizedMessage) }
+            compositeDisposable.add(d)
         } else {
             ImageViewerActivity.startImageViewer(context!!, imageUrl)
         }

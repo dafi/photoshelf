@@ -21,6 +21,7 @@ import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.date.yearsBetweenDates
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.net.URL
@@ -30,9 +31,9 @@ import java.util.Locale
 private const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
 
 object BirthdayUtils {
-    fun notifyBirthday(context: Context) {
+    fun notifyBirthday(context: Context): Disposable? {
         val now = Calendar.getInstance(Locale.US)
-        ApiManager.birthdayService(context).findByDate(
+        return ApiManager.birthdayService(context).findByDate(
             FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

@@ -319,10 +319,10 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (deleteOnRefresh()) {
             return
         }
-        feedlyClient.markSaved(listOf(adapter.getItem(position).id), checked)
+        val d = feedlyClient.markSaved(listOf(adapter.getItem(position).id), checked)
             .compose(photoShelfSwipe.applyCompletableSwipe())
-            .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
+        compositeDisposable.add(d)
     }
 
     private fun deleteOnRefresh(): Boolean {

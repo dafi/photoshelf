@@ -37,6 +37,7 @@ import com.ternaryop.utils.bitmap.scale
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
@@ -106,10 +107,10 @@ class PublishIntentService : IntentService("publishIntent") {
         }
     }
 
-    private fun addBirthdateFromTags(postTags: String) {
-        val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return
+    private fun addBirthdateFromTags(postTags: String): Disposable? {
+        val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return null
 
-        ApiManager.birthdayService(applicationContext).getByName(name, true)
+        return ApiManager.birthdayService(applicationContext).getByName(name, true)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map { it.response }
@@ -132,11 +133,11 @@ class PublishIntentService : IntentService("publishIntent") {
         }
     }
 
-    private fun broadcastBirthdaysByDate(intent: Intent) {
+    private fun broadcastBirthdaysByDate(intent: Intent): Disposable? {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
 
-        ApiManager.birthdayService(applicationContext).findByDate(
+        return ApiManager.birthdayService(applicationContext).findByDate(
             FindParams(
                 month = birthday.month + 1,
                 dayOfMonth = birthday.dayOfMonth,

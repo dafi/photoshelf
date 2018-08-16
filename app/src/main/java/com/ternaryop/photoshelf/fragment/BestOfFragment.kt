@@ -2,7 +2,6 @@ package com.ternaryop.photoshelf.fragment
 
 import android.os.Bundle
 import android.os.Environment
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +22,7 @@ import java.util.concurrent.Executors
 
 private const val THREAD_POOL_SIZE = 25
 
-class BestOfFragment : Fragment() {
+class BestOfFragment : AbsPhotoShelfFragment() {
     lateinit var tags: EditText
     lateinit var results: EditText
     lateinit var button: Button
@@ -62,7 +61,7 @@ class BestOfFragment : Fragment() {
 
             val blogName = AppSupport(context!!).selectedBlogName!!
 
-            Observable
+            val d = Observable
                 .fromIterable(postIds)
                 .flatMap { postId ->
                     Observable
@@ -77,6 +76,7 @@ class BestOfFragment : Fragment() {
                 }
                 .subscribe({ appendLine("done $it")
                 }, { appendLine(it.message!!) })
+            compositeDisposable.add(d)
         } catch (e: Exception) {
             appendLine(e.message!!)
             button.isEnabled = true

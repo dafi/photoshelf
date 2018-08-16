@@ -258,13 +258,13 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             findScheduleTime(),
             object : SchedulePostDialog.OnPostScheduleListener {
                 override fun onPostScheduled(dialog: SchedulePostDialog) {
-                    postActionExecutor
+                    val d = postActionExecutor
                         .schedule(item, dialog.scheduleDateTime)
                         .doFinally { dialog.dismiss() }
-                        .doOnSubscribe { d -> compositeDisposable.add(d) }
                         .subscribe(
                             { },
                             { t -> t.showErrorDialog(context!!) })
+                    compositeDisposable.add(d)
                 }
             }).show()
     }

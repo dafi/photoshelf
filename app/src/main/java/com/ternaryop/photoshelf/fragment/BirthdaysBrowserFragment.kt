@@ -84,7 +84,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         val searchView = rootView.findViewById<View>(R.id.searchView1) as SearchView
 
         // Set up the query listener that executes the search
-        Observable.create(ObservableOnSubscribe<String> { subscriber ->
+        val d = Observable.create(ObservableOnSubscribe<String> { subscriber ->
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextChange(query: String): Boolean {
                     subscriber.onNext(query)
@@ -102,7 +102,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             .doFinally { onScrollPostFetcher.isScrolling = false }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({ response ->
                 val birthdays = response.response.birthdays!!
                 resetSearch()
@@ -114,6 +113,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
                 Log.error(t, file)
                 t.showErrorDialog(context!!)
             }
+        compositeDisposable.add(d)
 
         setupActionBar()
         setHasOptionsMenu(true)
@@ -225,7 +225,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     private fun markAsIgnored(list: List<Birthday>, mode: ActionMode) {
-        Observable
+        val d = Observable
             .fromIterable(list)
             .flatMapSingle { bday ->
                 ApiManager.birthdayService(context!!).markAsIgnored(bday.name).toSingle {
@@ -235,24 +235,23 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({
                 val pos = adapter.findPosition(it)
                 if (pos >= 0) {
                     adapter.notifyItemChanged(pos)
                 }
             }, { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() })
+        compositeDisposable.add(d)
 
         mode.finish()
     }
 
     private fun deleteBirthdays(list: List<Birthday>, mode: ActionMode) {
-        Observable
+        val d = Observable
             .fromIterable(list)
             .flatMapSingle { bday -> ApiManager.birthdayService(context!!).deleteByName(bday.name).toSingle { bday } }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe({
                 val pos = adapter.findPosition(it)
                 if (pos >= 0) {
@@ -260,6 +259,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
                     adapter.notifyItemRemoved(pos)
                 }
             }, { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() })
+        compositeDisposable.add(d)
 
         mode.finish()
     }
@@ -376,17 +376,17 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     private fun resubmitQuery() {
-        adapter.find(onScrollPostFetcher.offset, MAX_BIRTHDAY_COUNT)
+        val d = adapter.find(onScrollPostFetcher.offset, MAX_BIRTHDAY_COUNT)
             .doFinally { onScrollPostFetcher.isScrolling = false }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { d -> compositeDisposable.add(d) }
             .subscribe { response ->
                 val birthdays = response.response.birthdays!!
                 adapter.addAll(birthdays)
                 onScrollPostFetcher.incrementReadPostCount(birthdays.size)
                 scrollToFirstTodayBirthday()
             }
+        compositeDisposable.add(d)
     }
 
     private fun scrollToPosition(position: Int) {

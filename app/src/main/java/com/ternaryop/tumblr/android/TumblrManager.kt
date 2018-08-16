@@ -12,6 +12,7 @@ import com.ternaryop.tumblr.TumblrHttpOAuthConsumer
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
 object TumblrManager {
@@ -50,9 +51,9 @@ object TumblrManager {
         context.startActivity(intent)
     }
 
-    private fun access(context: Context, uri: Uri, callback: AuthenticationCallback) {
+    private fun access(context: Context, uri: Uri, callback: AuthenticationCallback): Disposable? {
         val prefs = TokenPreference.from(context)
-        Single
+        return Single
             .fromCallable {
                 TumblrHttpOAuthConsumer.createAuthService(context.getString(R.string.CONSUMER_KEY),
                     context.getString(R.string.CONSUMER_SECRET),

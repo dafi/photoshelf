@@ -48,7 +48,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
             fillStatsUI(loadStats(preferences))
             return
         }
-        ApiManager.postService(activity!!).getStats(currentBlog)
+        val d = ApiManager.postService(activity!!).getStats(currentBlog)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
@@ -57,6 +57,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
                 preferences.edit().putLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis()).apply()
                 fillStatsUI(statsMap)
             }, { it.printStackTrace() })
+        compositeDisposable.add(d)
     }
 
     private fun loadStats(preferences: SharedPreferences): Map<String, Long> {
