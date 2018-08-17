@@ -63,8 +63,8 @@ class CounterIntentService : IntentService("counterIntent") {
         val now = Calendar.getInstance()
         return ApiManager.birthdayService(applicationContext).findByDate(
             FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
-            .map { it.response.total.toInt() }
             .blockingGet()
+            .response.total.toInt()
     }
 
     companion object {
