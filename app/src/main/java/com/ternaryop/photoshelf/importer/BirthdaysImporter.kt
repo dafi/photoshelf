@@ -12,7 +12,7 @@ import io.reactivex.Observable
  */
 typealias StringProgressInfo = Importer.SimpleImportProgressInfo<String>
 
-fun Importer.importMissingBirthdaysFromWeb(blogName: String): Observable<StringProgressInfo> {
+fun Importer.importMissingBirthdaysFromWeb(): Observable<StringProgressInfo> {
     val params = FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT).toQueryMap()
     val info = Importer.SimpleImportProgressInfo<String>()
 

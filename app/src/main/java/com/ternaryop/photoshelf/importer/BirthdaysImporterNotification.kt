@@ -12,12 +12,13 @@ import io.reactivex.disposables.Disposable
  * Import/Export functions notifying the status to user
  */
 
-fun Importer.notifyImportBirthdaysFromWeb(blogName: String, notificationUtil: NotificationUtil): Disposable? {
+fun Importer.notifyImportBirthdaysFromWeb(notificationUtil: NotificationUtil): Disposable? {
     val progressNotification = ProgressNotification(notificationUtil,
         R.string.import_missing_birthdays_from_web_title,
-        NOTIFICATION_ID_IMPORT_BIRTHDAY)
+        NOTIFICATION_ID_IMPORT_BIRTHDAY,
+        R.drawable.stat_notify_import_export)
 
-    return importMissingBirthdaysFromWeb(blogName)
+    return importMissingBirthdaysFromWeb()
         .doOnNext { info ->
             progressNotification
                 .setProgress(info.max, info.progress, false)

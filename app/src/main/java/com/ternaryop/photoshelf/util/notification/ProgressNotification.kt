@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf.util.notification
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
-import com.ternaryop.photoshelf.R
 
 /**
  * Created by dave on 03/03/18.
@@ -12,12 +11,13 @@ import com.ternaryop.photoshelf.R
 class ProgressNotification(
     private val notificationUtil: NotificationUtil,
     @StringRes titleId: Int,
-    private val notificationId: Int) {
+    private val notificationId: Int,
+    iconId: Int) {
     var builder: NotificationCompat.Builder = notificationUtil.createNotification(
         "",
         "",
         null,
-        R.drawable.stat_notify_import_export)
+        iconId)
         .setContentTitle(notificationUtil.getString(titleId))
 
     fun setProgress(max: Int, progress: Int, indeterminate: Boolean): ProgressNotification {

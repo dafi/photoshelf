@@ -15,9 +15,7 @@ class ImportIntentService : IntentService("ImportIntentService") {
     override fun onHandleIntent(intent: Intent?) {
         val notificationUtil = NotificationUtil(this)
         when (intent?.action) {
-            ACTION_IMPORT_BIRTHDAYS_FROM_WEB ->
-                Importer(this)
-                    .notifyImportBirthdaysFromWeb(intent.getStringExtra(EXTRA_BLOG_NAME), notificationUtil)
+            ACTION_IMPORT_BIRTHDAYS_FROM_WEB -> Importer(this).notifyImportBirthdaysFromWeb(notificationUtil)
         }
     }
 
