@@ -10,7 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.post.TagInfo
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.htmlHighlightPattern
 

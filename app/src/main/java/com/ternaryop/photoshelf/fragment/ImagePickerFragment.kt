@@ -27,9 +27,9 @@ import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.parsers.TitleParser
-import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
 import com.ternaryop.utils.dialog.DialogUtils
 import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.ProgressHighlightViewLayout
 
 const val MAX_DETAIL_LINES = 3

@@ -1,7 +1,7 @@
 package com.ternaryop.utils.reactivex
 
 import android.os.Environment
-import com.ternaryop.photoshelf.util.log.Log
+import com.ternaryop.utils.log.Log
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.functions.Consumer
 import java.io.File

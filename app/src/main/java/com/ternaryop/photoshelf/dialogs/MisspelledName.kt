@@ -4,7 +4,7 @@ import android.content.Context
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.photoshelf.db.DBHelper
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import io.reactivex.Maybe
 import io.reactivex.Single
 

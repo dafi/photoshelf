@@ -22,8 +22,8 @@ import com.ternaryop.photoshelf.adapter.photo.GridViewPhotoAdapter
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.service.PublishIntentService
-import com.ternaryop.photoshelf.view.AutofitGridLayoutManager
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

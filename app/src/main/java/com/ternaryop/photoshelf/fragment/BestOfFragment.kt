@@ -9,7 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.android.editTags

@@ -3,8 +3,8 @@ package com.ternaryop.photoshelf.importer
 import android.os.Environment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.util.log.Log
 import com.ternaryop.utils.date.daysSinceNow
+import com.ternaryop.utils.log.Log
 import java.io.File
 
 private const val ERROR_FILE_NAME = "export_errors.txt"

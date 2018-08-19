@@ -7,8 +7,7 @@ import android.os.Environment
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
-import com.ternaryop.photoshelf.util.log.Log
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrAltSize
@@ -20,6 +19,7 @@ import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.date.yearsBetweenDates
+import com.ternaryop.utils.log.Log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers

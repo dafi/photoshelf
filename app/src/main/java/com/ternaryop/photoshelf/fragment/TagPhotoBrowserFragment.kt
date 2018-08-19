@@ -16,7 +16,7 @@ import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.TagCursorAdapter
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.tumblr.TumblrPhotoPost

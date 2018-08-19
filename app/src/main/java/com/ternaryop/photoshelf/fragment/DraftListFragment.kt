@@ -28,7 +28,7 @@ import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE

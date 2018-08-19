@@ -8,7 +8,7 @@ import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_TYPE
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftCount
 import com.ternaryop.tumblr.queueCount

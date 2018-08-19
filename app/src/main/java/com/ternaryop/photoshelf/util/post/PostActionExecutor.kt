@@ -6,13 +6,13 @@ import androidx.core.content.ContextCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
-import com.ternaryop.photoshelf.util.network.ApiManager
-import com.ternaryop.photoshelf.view.ColorItemDecoration
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.saveDraft
 import com.ternaryop.tumblr.schedulePost
+import com.ternaryop.utils.recyclerview.ColorItemDecoration
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers

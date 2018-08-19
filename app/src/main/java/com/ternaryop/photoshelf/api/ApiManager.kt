@@ -1,8 +1,7 @@
-package com.ternaryop.photoshelf.util.network
+package com.ternaryop.photoshelf.api
 
 import android.content.Context
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.api.PhotoShelfApi
 import com.ternaryop.photoshelf.api.birthday.BirthdayService
 import com.ternaryop.photoshelf.api.extractor.ImageExtractorService
 import com.ternaryop.photoshelf.api.post.PostService

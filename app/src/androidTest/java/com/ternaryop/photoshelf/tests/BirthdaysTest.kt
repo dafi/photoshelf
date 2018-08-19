@@ -4,7 +4,7 @@ import android.app.Activity
 import android.os.Environment
 import android.util.Log
 import com.ternaryop.photoshelf.importer.CSVIterator
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import junit.framework.TestCase
 import java.io.File
 import java.io.IOException

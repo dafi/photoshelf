@@ -16,9 +16,9 @@ import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.dropbox.DropboxManager
-import com.ternaryop.photoshelf.util.security.PermissionUtil
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.security.PermissionUtil
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
 private const val DROPBOX_SERVICE_NAME = "Dropbox"
@@ -51,7 +51,10 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
         toggleTumblrLoginTitle()
         toggleDropboxLoginTitle()
-        PermissionUtil.askPermission(activity!!, Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_FILE_PERMISSION)
+        PermissionUtil.askPermission(activity!!,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            REQUEST_FILE_PERMISSION,
+            AlertDialog.Builder(activity).setMessage(R.string.import_permission_rationale))
 
         findPreference(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
         onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)

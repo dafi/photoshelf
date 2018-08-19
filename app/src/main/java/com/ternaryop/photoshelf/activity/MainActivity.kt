@@ -11,9 +11,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
+import com.ternaryop.photoshelf.EXTRA_URL
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter
-import com.ternaryop.photoshelf.drawer.ItemTestDrawerItem
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.BestOfFragment
 import com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment
@@ -125,7 +125,11 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdaysPublisherFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", SavedContentListFragment::class.java))
-        adapter.add(ItemTestDrawerItem(DRAWER_ITEM_TEST_PAGE, getString(R.string.test_page_title), ImagePickerFragment::class.java))
+
+        val arguments = Bundle()
+        arguments.putString(EXTRA_URL, getString(R.string.test_page_url))
+        adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
+            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = arguments))
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))

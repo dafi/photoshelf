@@ -3,10 +3,10 @@ package com.ternaryop.photoshelf
 import android.content.Context
 import android.net.Uri
 import android.widget.ProgressBar
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.Response
 import com.ternaryop.photoshelf.api.extractor.ImageGalleryResult
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
-import com.ternaryop.photoshelf.util.network.ApiManager
 import com.ternaryop.utils.network.UriUtils
 import com.ternaryop.utils.network.resolveShorten
 import com.ternaryop.utils.network.saveURL

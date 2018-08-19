@@ -26,14 +26,14 @@ import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
-import com.ternaryop.photoshelf.util.log.Log
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.toIsoFormat
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.log.Log
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers

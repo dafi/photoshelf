@@ -6,7 +6,7 @@ import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.ListResult
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import io.reactivex.Single
 
 class BirthdayShowFlags(context: Context) {

@@ -25,8 +25,7 @@ import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.event.BirthdayEvent
-import com.ternaryop.photoshelf.util.log.Log
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
@@ -36,6 +35,7 @@ import com.ternaryop.utils.bitmap.readBitmap
 import com.ternaryop.utils.bitmap.scale
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
+import com.ternaryop.utils.log.Log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer

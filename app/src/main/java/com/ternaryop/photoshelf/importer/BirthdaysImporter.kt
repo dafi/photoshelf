@@ -3,7 +3,7 @@ package com.ternaryop.photoshelf.importer
 import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.util.network.ApiManager
+import com.ternaryop.photoshelf.api.ApiManager
 import io.reactivex.Observable
 
 /**
