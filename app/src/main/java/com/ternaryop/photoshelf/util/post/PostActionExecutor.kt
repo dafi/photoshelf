@@ -1,8 +1,8 @@
 package com.ternaryop.photoshelf.util.post
 
 import android.content.Context
-import android.support.annotation.PluralsRes
-import android.support.v4.content.ContextCompat
+import androidx.annotation.PluralsRes
+import androidx.core.content.ContextCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache

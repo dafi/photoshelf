@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.util.post
 
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Hold position information about items read while scrolling view
@@ -15,8 +15,8 @@ class OnScrollPostFetcher(private val fetcher: PostFetcher, val limitCount: Int)
     var totalPosts = 0L
         private set
 
-    override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-        val layoutManager = recyclerView!!.layoutManager
+    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+        val layoutManager = recyclerView.layoutManager ?: return
         val visibleItemCount = layoutManager.childCount
         val totalItemCount = layoutManager.itemCount
         val firstVisibleItem = (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()

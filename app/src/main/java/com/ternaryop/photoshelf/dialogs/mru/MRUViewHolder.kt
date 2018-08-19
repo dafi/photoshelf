@@ -1,8 +1,8 @@
 package com.ternaryop.photoshelf.dialogs.mru
 
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Created by dave on 16/12/17.

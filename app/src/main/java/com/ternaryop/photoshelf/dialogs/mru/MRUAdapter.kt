@@ -1,20 +1,22 @@
 package com.ternaryop.photoshelf.dialogs.mru
 
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Created by dave on 15/12/17.
  * The adapter used to selected and remove MRU items
  */
 
-class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<String>) : RecyclerView.Adapter<MRUViewHolder>(), View.OnClickListener {
+class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<String>)
+    : RecyclerView.Adapter<MRUViewHolder>(), View.OnClickListener {
     var onMRUListener: OnMRUListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MRUViewHolder {
-        return MRUViewHolder(LayoutInflater.from(dialog.activity).inflate(android.R.layout.simple_list_item_1, parent, false))
+        return MRUViewHolder(LayoutInflater.from(dialog.activity)
+            .inflate(android.R.layout.simple_list_item_1, parent, false))
     }
 
     override fun onBindViewHolder(holder: MRUViewHolder, position: Int) {

@@ -1,9 +1,9 @@
 package com.ternaryop.photoshelf.dialogs
 
-import android.support.v7.app.AlertDialog
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import androidx.appcompat.app.AlertDialog
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.utils.dialog.showErrorDialog
 import io.reactivex.SingleObserver

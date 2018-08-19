@@ -5,9 +5,9 @@ import android.content.Context
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.provider.BaseColumns
-import android.support.v4.widget.SimpleCursorAdapter
 import android.view.View
 import android.widget.TextView
+import androidx.cursoradapter.widget.SimpleCursorAdapter
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.utils.text.fromHtml

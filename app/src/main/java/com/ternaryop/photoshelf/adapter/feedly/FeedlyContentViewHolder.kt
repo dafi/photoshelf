@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.adapter.feedly
 
 import android.os.Build
-import android.support.v7.widget.RecyclerView
 import android.util.TypedValue
 import android.view.View
 import android.view.View.GONE
@@ -10,6 +9,7 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_STYLE

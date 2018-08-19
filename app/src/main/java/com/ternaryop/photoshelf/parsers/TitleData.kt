@@ -107,7 +107,12 @@ class TitleData(private val config: TitleParserConfig) {
         return sb.toString()
     }
 
-    fun formatWho(whoTagOpen: String, whoTagClose: String, descTagOpen: String, descTagClose: String, sb: StringBuilder): StringBuilder {
+    fun formatWho(
+        whoTagOpen: String,
+        whoTagClose: String,
+        descTagOpen: String,
+        descTagClose: String,
+        sb: StringBuilder): StringBuilder {
         if (who.isEmpty()) {
             return sb
         }

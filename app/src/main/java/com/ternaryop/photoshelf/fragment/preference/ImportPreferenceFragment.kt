@@ -2,8 +2,8 @@ package com.ternaryop.photoshelf.fragment.preference
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v7.preference.Preference
-import android.support.v7.preference.PreferenceScreen
+import androidx.preference.Preference
+import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Importer

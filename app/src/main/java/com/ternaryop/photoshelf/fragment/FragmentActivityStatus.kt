@@ -1,6 +1,6 @@
 package com.ternaryop.photoshelf.fragment
 
-import android.support.v7.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
 
 import com.ternaryop.photoshelf.AppSupport
 

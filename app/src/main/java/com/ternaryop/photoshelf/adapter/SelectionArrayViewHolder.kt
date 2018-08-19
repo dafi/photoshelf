@@ -1,13 +1,14 @@
 package com.ternaryop.photoshelf.adapter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Created by dave on 13/04/16.
  *
  * Notify changes to the adapter delegate
  */
-class SelectionArrayViewHolder<T : RecyclerView.ViewHolder>(private val adapter: RecyclerView.Adapter<T>) : SelectionArray() {
+class SelectionArrayViewHolder<T : RecyclerView.ViewHolder>(private val adapter: RecyclerView.Adapter<T>)
+    : SelectionArray() {
 
     override fun toggle(position: Int) {
         super.toggle(position)

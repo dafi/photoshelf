@@ -21,7 +21,7 @@
         android:orientation="horizontal"
         android:layout_gravity="end">
 
-        <android.support.v7.widget.AppCompatButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/cancelButton"
             style="?attr/buttonBarButtonStyle"
             android:layout_width="100dp"
@@ -30,7 +30,7 @@
             android:layout_marginTop="5dp"
             android:text="@string/cancel_title" />
 
-        <android.support.v7.widget.AppCompatButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/schedule_button"
             style="?attr/buttonBarButtonStyle"
             android:layout_width="100dp"

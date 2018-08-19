@@ -11,8 +11,8 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
-import android.support.v4.app.NotificationCompat
 import android.text.TextUtils
+import androidx.core.app.NotificationCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity
 import com.ternaryop.photoshelf.api.birthday.Birthday

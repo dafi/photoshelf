@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.adapter.photo
 
 import android.annotation.SuppressLint
-import android.support.v7.widget.RecyclerView
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -9,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_CAPTION_TEXT_COLOR

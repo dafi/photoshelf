@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.tests
 
-import android.support.test.InstrumentationRegistry.getTargetContext
-import android.support.test.runner.AndroidJUnit4
+import androidx.test.InstrumentationRegistry.getTargetContext
+import androidx.test.runner.AndroidJUnit4
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.parsers.TitleParser
 import org.junit.Test

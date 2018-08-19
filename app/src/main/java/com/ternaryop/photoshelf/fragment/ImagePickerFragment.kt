@@ -4,9 +4,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.RecyclerView
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
@@ -16,6 +13,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.EXTRA_URL
 import com.ternaryop.photoshelf.ImageUrlRetriever
 import com.ternaryop.photoshelf.R
@@ -277,7 +277,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         val snackbar = Snackbar.make(gridView, detailsText!!, duration)
         val sbView = snackbar.view
         sbView.setBackgroundColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_bg))
-        val textView = sbView.findViewById<TextView>(android.support.design.R.id.snackbar_text)
+        val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
         textView.setTextColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_text))
         textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()

@@ -1,15 +1,18 @@
 package com.ternaryop.photoshelf.util.notification
 
-import android.support.annotation.PluralsRes
-import android.support.annotation.StringRes
-import android.support.v4.app.NotificationCompat
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
+import androidx.core.app.NotificationCompat
 import com.ternaryop.photoshelf.R
 
 /**
  * Created by dave on 03/03/18.
  * Notification builder for progress indicator
  */
-class ProgressNotification(private val notificationUtil: NotificationUtil, @StringRes titleId: Int, private val notificationId: Int) {
+class ProgressNotification(
+    private val notificationUtil: NotificationUtil,
+    @StringRes titleId: Int,
+    private val notificationId: Int) {
     var builder: NotificationCompat.Builder = notificationUtil.createNotification(
         "",
         "",

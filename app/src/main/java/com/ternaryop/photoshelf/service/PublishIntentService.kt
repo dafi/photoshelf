@@ -9,8 +9,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
 import android.os.Handler
-import android.support.annotation.StringRes
 import android.widget.Toast
+import androidx.annotation.StringRes
 import com.ternaryop.photoshelf.EXTRA_ACTION
 import com.ternaryop.photoshelf.EXTRA_BIRTHDAY_DATE
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME

@@ -32,7 +32,7 @@
         android:visibility="gone"
         android:textColor="@android:color/white"/>
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/drawer_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

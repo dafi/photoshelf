@@ -2,9 +2,9 @@ package com.ternaryop.photoshelf.fragment.preference
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
 import android.view.View
-import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat
+import androidx.core.content.ContextCompat
+import com.takisoft.preferencex.PreferenceFragmentCompat
 
 /**
  * Created by dave on 17/03/18.

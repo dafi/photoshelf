@@ -14,8 +14,9 @@ class BootServiceReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             // don't slow the boot running immediately the service, wait some amount of time before run
-            AlarmBroadcastReceiver.createBirthdayAlarm(context, System.currentTimeMillis() + BIRTHDAY_BOOT_ALARM_DELAY_MILLIS)
-            AlarmBroadcastReceiver.createExportAlarm(context, System.currentTimeMillis() + EXPORT_BOOT_ALARM_DELAY_MILLIS)
+            val millis = System.currentTimeMillis()
+            AlarmBroadcastReceiver.createBirthdayAlarm(context, millis + BIRTHDAY_BOOT_ALARM_DELAY_MILLIS)
+            AlarmBroadcastReceiver.createExportAlarm(context, millis + EXPORT_BOOT_ALARM_DELAY_MILLIS)
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.ternaryop.photoshelf.adapter.birthday
 
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.utils.date.dayOfMonth

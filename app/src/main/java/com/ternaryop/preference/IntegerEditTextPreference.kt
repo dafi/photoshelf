@@ -2,7 +2,7 @@ package com.ternaryop.preference
 
 import android.content.Context
 import android.util.AttributeSet
-import com.takisoft.fix.support.v7.preference.EditTextPreference
+import com.takisoft.preferencex.EditTextPreference
 
 class IntegerEditTextPreference : EditTextPreference {
     constructor(context: Context) : super(context)

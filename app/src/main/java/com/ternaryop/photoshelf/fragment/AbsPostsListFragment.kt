@@ -2,10 +2,6 @@ package com.ternaryop.photoshelf.fragment
 
 import android.content.DialogInterface
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.SearchView
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
@@ -13,6 +9,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
@@ -155,7 +155,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         recyclerView.post {
             // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
             // so we wait for finished animations before call it
-            recyclerView.itemAnimator.isRunning { photoAdapter.notifyDataSetChanged() }
+            recyclerView.itemAnimator?.isRunning { photoAdapter.notifyDataSetChanged() }
         }
     }
 
@@ -278,7 +278,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 // when action mode is on the finish() method could be called
                 // while the item animation is running stopping it
                 // so we wait the animation is completed and then call finish()
-                recyclerView.post { recyclerView.itemAnimator.isRunning { actionMode?.finish() } }
+                recyclerView.post { recyclerView.itemAnimator?.isRunning { actionMode?.finish() } }
             }
             return
         }
@@ -310,6 +310,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
         val d = postActionExecutor.edit(post, dialog.titleHolder.htmlTitle, dialog.tagsHolder.tags, selectedBlogName)
+                .doOnSubscribe { d -> compositeDisposable.add(d) }
                 .subscribe({ }, { t -> t.showErrorDialog(context!!) })
         compositeDisposable.add(d)
     }

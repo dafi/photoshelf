@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.adapter
 
-import android.support.v7.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Created by dave on 10/03/18.

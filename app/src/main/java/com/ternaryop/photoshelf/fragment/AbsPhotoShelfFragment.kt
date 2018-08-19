@@ -2,14 +2,14 @@ package com.ternaryop.photoshelf.fragment
 
 import android.content.Context
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.ActionBar
-import android.support.v7.app.AppCompatActivity
 import android.view.ActionMode
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
@@ -62,7 +62,7 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     protected fun showSnackbar(snackbar: Snackbar) {
         val sbView = snackbar.view
         sbView.setBackgroundColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_bg))
-        val textView = sbView.findViewById<TextView>(android.support.design.R.id.snackbar_text)
+        val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
         textView.setTextColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_text))
         textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()
