@@ -19,7 +19,7 @@ class Blog @Throws(JSONException::class) constructor(jsonResponse: JSONObject) :
         private const val serialVersionUID = -7241228948040188270L
 
         fun getAvatarUrlBySize(baseHost: String, size: Int): String {
-            return "http://api.tumblr.com/v2/blog/$baseHost.tumblr.com/avatar/$size"
+            return "https://api.tumblr.com/v2/blog/$baseHost.tumblr.com/avatar/$size"
         }
     }
 }

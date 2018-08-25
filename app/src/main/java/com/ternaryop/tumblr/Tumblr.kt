@@ -86,7 +86,7 @@ class Tumblr constructor(val consumer: TumblrHttpOAuthConsumer) {
 
     companion object {
         const val MAX_POST_PER_REQUEST = 20
-        private const val API_PREFIX = "http://api.tumblr.com/v2"
+        private const val API_PREFIX = "https://api.tumblr.com/v2"
 
         fun getApiUrl(tumblrName: String, suffix: String): String = "$API_PREFIX/blog/$tumblrName.tumblr.com$suffix"
 
