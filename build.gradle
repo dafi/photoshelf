@@ -1,30 +1,33 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+// https://github.com/ben-manes/gradle-versions-plugin
+apply plugin: "com.github.ben-manes.versions"
+
 buildscript {
-    ext.kotlin_version = '1.2.60'
+    ext.kotlin_version = '1.2.61'
     ext {
         minSdkVersion = 21
         targetSdkVersion = 28
         compileSdkVersion = 28
         buildToolsVersion = '28.0.2'
         androidXLibVersion = '1.0.0-rc01'
-        flexboxLibVersion = '0.3.1'
+        flexboxLibVersion = '1.1.0-beta1'
         ternaryUtilLibVersion = '1.4'
 
-        rxjavaLibVersion = '2.1.16'
-        rxandroidLibVersion = '2.0.2'
+        rxjavaLibVersion = '2.2.1'
+        rxandroidLibVersion = '2.1.0'
 
-        dropboxCoreLibVersion = '3.0.5'
+        dropboxCoreLibVersion = '3.0.8'
 
-        eventbusLibVersion = '3.0.0'
-        scribejavaCoreLibVersion = '5.3.0'
-        jodaLibVersion = '2.9.9'
+        eventbusLibVersion = '3.1.1'
+        scribejavaCoreLibVersion = '5.5.0'
+        jodaLibVersion = '2.9.9.4'
         picassoLibVersion = '2.71828'
         retrofitLibVersion = '2.4.0'
         gsonLibVersion = '2.8.5'
         retrofitAdapterRrxjavaLibVersion = '2.4.0'
         retrofitConverterGsonLibVersion = '2.4.0'
-        okhttp3LoggingInterceptorLibVersion = '3.6.0'
+        okhttp3LoggingInterceptorLibVersion = '3.11.0'
         androidXTakisoftPreferencex = 'preferencex:1.0.0-alpha2'
 
 
@@ -38,9 +41,10 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0-alpha05'
+        classpath 'com.android.tools.build:gradle:3.3.0-alpha06'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.20.0"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
