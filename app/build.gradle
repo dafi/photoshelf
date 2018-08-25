@@ -116,10 +116,10 @@ repositories {
 def versionCodeByTask() {
     def props = new Properties()
     def versionFile = new File("$rootDir/app/version.properties")
-    def versionCode = 0
+    def versionCode = 1
     if (versionFile.exists()) {
         props.load(new FileReader(versionFile))
-        versionCode = props["versionCode"]?.isInteger() ? props["versionCode"].toInteger() : 0
+        versionCode = props["versionCode"]?.isInteger() ? props["versionCode"].toInteger() : 1
     }
 
     // Increment the versionCode only for specific tasks (eg the assemble release tasks)
