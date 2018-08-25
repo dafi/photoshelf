@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-// http://stackoverflow.com/questions/7344897/autostart-android-service
-// adb shell am broadcast -a android.intent.action.BOOT_COMPLETED
+// https://stackoverflow.com/questions/11325920/how-to-test-boot-completed-broadcast-receiver-in-emulator#comment57079528_30407531
+// adb shell am broadcast -a android.intent.action.BOOT_COMPLETED -p com.ternaryop.photoshelf.debug
 
 const val BIRTHDAY_BOOT_ALARM_DELAY_MILLIS = 4 * 60 * 1000L
 const val EXPORT_BOOT_ALARM_DELAY_MILLIS = 15000L
