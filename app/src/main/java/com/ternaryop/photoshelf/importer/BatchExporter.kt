@@ -26,7 +26,8 @@ class BatchExporter(val appSupport: AppSupport) {
         val lastUpdate = appSupport.lastFollowersUpdateTime
         if (lastUpdate < 0 || appSupport.exportDaysPeriod <= lastUpdate.daysSinceNow()) {
             try {
-                importer.syncExportTotalUsersToCSV(Importer.totalUsersPath, appSupport.selectedBlogName!!)
+                val path = Importer.totalUsersPath.replace(".csv", "-${appSupport.selectedBlogName!!}.csv")
+                importer.syncExportTotalUsersToCSV(path, appSupport.selectedBlogName!!)
                 appSupport.lastFollowersUpdateTime = System.currentTimeMillis()
             } catch (e: Exception) {
                 Log.error(e, logPath, "Export total users")
