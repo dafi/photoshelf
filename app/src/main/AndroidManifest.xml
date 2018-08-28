@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- Needed by JobService under pre-O platforms -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".PhotoShelfApplication"
@@ -64,7 +66,6 @@
         <service android:name=".service.PublishIntentService"/>
         <service android:name=".service.CounterIntentService"/>
 
-        <receiver android:name=".service.AlarmBroadcastReceiver"/>
         <receiver android:name=".service.BootServiceReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
@@ -97,6 +98,8 @@
             android:name=".service.ImportIntentService"
             android:exported="false">
         </service>
+        <service android:name=".service.PhotoShelfJobService"
+                 android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>
