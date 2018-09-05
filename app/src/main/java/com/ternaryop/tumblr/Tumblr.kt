@@ -64,7 +64,7 @@ class Tumblr constructor(val consumer: TumblrHttpOAuthConsumer) {
         modifiedParams.remove("type")
 
         try {
-            val json = consumer.publicJsonFromGet(apiUrl, modifiedParams)
+            val json = consumer.jsonFromGet(apiUrl, modifiedParams)
             val jsonArray = json.getJSONObject("response").getJSONArray("posts")
             return (0 until jsonArray.length()).map { build(jsonArray.getJSONObject(it)) }
         } catch (e: JSONException) {
