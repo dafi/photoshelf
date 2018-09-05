@@ -28,6 +28,8 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     val supportActionBar: ActionBar?
         get() = (activity as AppCompatActivity).supportActionBar
 
+    private var snackbar: Snackbar? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
@@ -35,6 +37,7 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     }
 
     override fun onDestroy() {
+        snackbar?.dismiss()
         compositeDisposable.clear()
         super.onDestroy()
     }
@@ -60,6 +63,7 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     }
 
     protected fun showSnackbar(snackbar: Snackbar) {
+        this.snackbar = snackbar
         val sbView = snackbar.view
         sbView.setBackgroundColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_bg))
         val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
@@ -70,5 +74,18 @@ abstract class AbsPhotoShelfFragment : Fragment() {
 
     protected open fun makeSnake(view: View, t: Throwable): Snackbar {
         return Snackbar.make(view, t.localizedMessage, Snackbar.LENGTH_LONG)
+    }
+
+    protected open fun makeSnack(view: View,
+        errorMessage: String,
+        action: ((View?) -> (Unit))? = null): Snackbar {
+        return if (action == null) {
+            Snackbar.make(view, errorMessage, Snackbar.LENGTH_LONG)
+        } else {
+            Snackbar
+                .make(view, errorMessage, Snackbar.LENGTH_INDEFINITE)
+                .setActionTextColor(ContextCompat.getColor(context!!, R.color.snack_error_color))
+                .setAction(resources.getString(R.string.refresh), action)
+        }
     }
 }
