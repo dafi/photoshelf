@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName
 data class ImageGalleryResult(val gallery: ImageGallery)
 class ImageGallery(val domain: String? = null,
     val title: String? = null,
-    @SerializedName("gallery") val imageInfoList: Array<ImageInfo>)
+    @SerializedName("gallery") val imageInfoList: List<ImageInfo>)
 
 data class ImageResult(val imageUrl: String)
 

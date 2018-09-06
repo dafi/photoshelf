@@ -14,6 +14,8 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.EXTRA_URL
@@ -23,12 +25,12 @@ import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.adapter.ImagePickerAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.api.extractor.ImageGallery
+import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.parsers.TitleParser
 import com.ternaryop.utils.dialog.DialogUtils
-import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.ProgressHighlightViewLayout
 
@@ -36,10 +38,12 @@ const val MAX_DETAIL_LINES = 3
 
 class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private lateinit var gridView: RecyclerView
+    private lateinit var selectionListView: RecyclerView
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
 
     private lateinit var imageUrlRetriever: ImageUrlRetriever
     private lateinit var imagePickerAdapter: ImagePickerAdapter
+    private lateinit var selectionListAdapter: ImagePickerAdapter
     private var detailsText: String? = null
     private lateinit var parsableTitle: String
 
@@ -91,6 +95,24 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         gridView.layoutManager = AutofitGridLayoutManager(context!!,
             resources.getDimension(R.dimen.image_picker_grid_width).toInt())
 
+        selectionListAdapter = ImagePickerAdapter(context!!)
+        selectionListAdapter.setOnPhotoBrowseClick(object: OnPhotoBrowseClickMultiChoice {
+            override fun onItemClick(position: Int) {
+                val index = imagePickerAdapter.getIndex(selectionListAdapter.getItem(position))
+                gridView.layoutManager!!.scrollToPosition(index)
+            }
+
+            override fun onItemLongClick(position: Int) {}
+            override fun onTagClick(position: Int, clickedTag: String) {}
+            override fun onThumbnailImageClick(position: Int) {}
+            override fun onOverflowClick(position: Int, view: View) {}
+        })
+
+        selectionListView = rootView.findViewById(R.id.selectedItems)
+        selectionListView.adapter = selectionListAdapter
+        selectionListView.setHasFixedSize(true)
+        selectionListView.layoutManager = LinearLayoutManager(context!!, HORIZONTAL, false)
+
         setHasOptionsMenu(true)
 
         return rootView
@@ -98,6 +120,10 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        refreshUI()
+    }
+
+    override fun refreshUI() {
         openUrl(textWithUrl)
     }
 
@@ -127,8 +153,9 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     private fun readImageGallery(url: String) {
         val d = imageUrlRetriever.readImageGallery(url)
+                .doFinally { progressHighlightViewLayout.stopProgress() }
                 .subscribe({ this.onGalleryRetrieved(it.response.gallery) }
-                ) { throwable -> throwable.showErrorDialog(context!!) }
+                ) { t -> showSnackbar(makeSnack(gridView, t.localizedMessage) { refreshUI() }) }
         compositeDisposable.add(d)
     }
 
@@ -161,14 +188,27 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                 mode.finish()
                 true
             }
+            R.id.show_selected_items -> {
+                toogleSelectionVisibility()
+                true
+            }
             else -> false
+        }
+    }
+
+    private fun toogleSelectionVisibility() {
+        selectionListView.visibility = if (selectionListView.visibility == View.GONE) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
     }
 
     override fun onDestroyActionMode(mode: ActionMode) {
         this.actionMode = null
         imagePickerAdapter.showButtons = false
-        imagePickerAdapter.getSelection().clear()
+        imagePickerAdapter.selection.clear()
+        updateSelectionList(emptyList())
     }
 
     private fun retrieveImages(useFile: Boolean) {
@@ -194,7 +234,6 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun onGalleryRetrieved(imageGallery: ImageGallery) {
-        progressHighlightViewLayout.stopProgress()
         detailsText = imageGallery.title
         parsableTitle = buildParsableTitle(imageGallery)
         showDetails(Snackbar.LENGTH_LONG)
@@ -244,7 +283,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun updateSelection(position: Int) {
-        val selection = imagePickerAdapter.getSelection()
+        val selection = imagePickerAdapter.selection
         selection.toggle(position)
         if (selection.itemCount == 0) {
             actionMode!!.finish()
@@ -255,6 +294,16 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                     selectionCount,
                     selectionCount,
                     imagePickerAdapter.itemCount)
+        }
+        updateSelectionList(imagePickerAdapter.selectedItems)
+    }
+
+    private fun updateSelectionList(items: List<ImageInfo>) {
+        selectionListAdapter.clear()
+        if (items.isEmpty()) {
+            selectionListView.visibility = View.GONE
+        } else {
+            selectionListAdapter.addAll(imagePickerAdapter.selectedItems)
         }
     }
 

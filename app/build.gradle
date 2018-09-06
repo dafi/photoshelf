@@ -6,9 +6,10 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXLibVersion}"
     implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXLibVersion}"
-    implementation "com.google.android.material:material:${rootProject.ext.androidXLibVersion}"
     implementation "androidx.cardview:cardview:${rootProject.ext.androidXLibVersion}"
+    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
 
+    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
     implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

@@ -6,10 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.widget.CheckableImageView
+import java.lang.Exception
 
 class ImagePickerAdapter(private val context: Context)
     : AbsBaseAdapter<ImagePickerAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
@@ -17,10 +19,10 @@ class ImagePickerAdapter(private val context: Context)
     private val items: MutableList<ImageInfo> = mutableListOf()
     var showButtons: Boolean = false
 
-    internal val selection = SelectionArrayViewHolder(this)
+    val selection = SelectionArrayViewHolder(this)
 
     val selectedItems: List<ImageInfo>
-        get() = getSelection().selectedPositions.map { getItem(it) }
+        get() = selection.selectedPositions.map { getItem(it) }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.gridview_photo_picker_item, parent, false))
@@ -28,21 +30,28 @@ class ImagePickerAdapter(private val context: Context)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val listener: View.OnClickListener? = if (onPhotoBrowseClick == null) null else this
-        holder.bindModel(items[position], showButtons)
+        holder.bindModel(items[position], showButtons, selection.isSelected(position))
         if (showButtons && listener != null) {
             holder.setOnClickListeners(listener)
         }
         holder.setOnClickMultiChoiceListeners(listener, this)
-        holder.thumbImage.isChecked = selection.isSelected(position)
     }
 
     override fun getItemCount() = items.size
 
     fun getItem(position: Int) = items[position]
 
-    fun addAll(list: Array<ImageInfo>) {
+    fun getIndex(item: ImageInfo) = items.indexOfFirst { it == item }
+
+    fun addAll(list: List<ImageInfo>) {
         items.addAll(list)
         notifyDataSetChanged()
+    }
+
+    fun clear() {
+        val size = items.size
+        items.clear()
+        notifyItemRangeRemoved(0, size)
     }
 
     override fun onClick(v: View) {
@@ -63,9 +72,9 @@ class ImagePickerAdapter(private val context: Context)
         internal val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
         internal val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
 
-        fun bindModel(imageInfo: ImageInfo, showButtons: Boolean) {
+        fun bindModel(imageInfo: ImageInfo, showButtons: Boolean, checked: Boolean) {
             setVisibility(showButtons)
-            displayImage(imageInfo)
+            displayImage(imageInfo, checked)
         }
 
         private fun setVisibility(showButtons: Boolean) {
@@ -73,13 +82,19 @@ class ImagePickerAdapter(private val context: Context)
             bgAction.visibility = if (showButtons) View.VISIBLE else View.INVISIBLE
         }
 
-        private fun displayImage(imageInfo: ImageInfo) {
+        private fun displayImage(imageInfo: ImageInfo, checked: Boolean) {
             Picasso
                 .get()
                 .load(imageInfo.thumbnailUrl!!)
                 .placeholder(R.drawable.stub)
                 .noFade()
-                .into(thumbImage)
+                .into(thumbImage, object: Callback {
+                    override fun onSuccess() {
+                        thumbImage.isChecked = checked
+                    }
+
+                    override fun onError(e: Exception?) {}
+                })
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {
@@ -102,9 +117,5 @@ class ImagePickerAdapter(private val context: Context)
 
     fun setOnPhotoBrowseClick(onPhotoBrowseClick: OnPhotoBrowseClickMultiChoice) {
         this.onPhotoBrowseClick = onPhotoBrowseClick
-    }
-
-    fun getSelection(): Selection {
-        return selection
     }
 }

@@ -8,6 +8,12 @@
         android:icon="@drawable/ic_action_cloud_upload"
         android:title="@string/go_title">
     </item>
+    <item
+        android:id="@+id/show_selected_items"
+        android:showAsAction="never"
+        app:showAsAction="never"
+        android:title="@string/select_items"
+        tools:ignore="AppCompatResource"/>
     <!-- AppCompat ignores showAsAction="never" in action mode menus, to fix this issue is necessary to specify both showAsAction -->
     <item
         android:id="@+id/create_from_file"
