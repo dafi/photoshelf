@@ -1,5 +1,5 @@
 {
-    "version":14,
+    "version":15,
     "titleParserRegExp":"(.*?)\\s+(at the|at|in|on the|on|for|by|attends?|arrives?|leaves?|(night\\s+)?out|[-–|~@])\\s",
     "__comment_locationPrefixes": [
       "remove verbs in the form *s (e.g. gets, grabs, leaves), the verbs length must be at least 3 characters, skip 'sports'",
@@ -35,7 +35,8 @@
               ["(?i)((\\bhot\\b)?\\s*\\bin\\b .*?\\b(dress|bikini|swimsuit|swimwear|jeans|tights|leggings)s?(\\s*\\b(top|bottom)\\b)?)", "", "remove text in the form:in color bikini top. jeans must "],
               ["(?i)(\\s*\\b(bikini|swimsuit|swimwear)\\s*\\b(photos?|photoshoot|pics?|candids?)\\b)", "", "remove text in the form:bikini photoshoot"],
               ["(?i)(\\b(autumn|casual|chic|cute|travel|urban|winter|street|night out)\\b)\\s*(\\bstreet\\b)?\\s*\\b(style|outfit)\\b\\s*", "", "remove text for 'style"],
-              ["(?i)(?<!night\\s)\\bout\\b\\s+\\bin\\b", "out and about in"]
+              ["(?i)(?<!night\\s)\\bout\\b\\s+\\bin\\b", "out and about in"],
+              ["[A-Z]+\\s+-\\s+(.*?)\\s\\|\\s+Phun.org Forum", "$1", "phun forum"]
             ]
     }
 }
