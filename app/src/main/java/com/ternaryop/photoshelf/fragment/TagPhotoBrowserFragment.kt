@@ -47,6 +47,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         photoAdapter.setEmptyView(rootView.findViewById(android.R.id.empty))
 
         photoShelfSwipe = rootView.findViewById(R.id.swipe_container)
+        photoShelfSwipe.setOnRefreshListener(null)
 
         if (blogName != null) {
             postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) onQueryTextSubmit(tag) }
