@@ -8,10 +8,10 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.SpinnerAdapter
 import android.widget.TextView
-import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.TumblrAltSize
+import com.ternaryop.tumblr.android.picasso.PicassoTumblrOAuth
 
 class BlogSpinnerAdapter(context: Context, blogNames: List<String>)
     : ArrayAdapter<String>(context, 0, blogNames), SpinnerAdapter {
@@ -31,8 +31,8 @@ class BlogSpinnerAdapter(context: Context, blogNames: List<String>)
         val blogName = getItem(position)!!
         holder.title.text = blogName
 
-        Picasso
-            .get()
+        PicassoTumblrOAuth
+            .get(context)
             .load(Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH))
             .placeholder(R.drawable.stub)
             .noFade()

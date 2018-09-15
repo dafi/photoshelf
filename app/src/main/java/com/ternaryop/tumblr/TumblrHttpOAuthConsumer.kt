@@ -32,7 +32,7 @@ class TumblrHttpOAuthConsumer(val consumerKey: String,
         return oAuthService.execute(MultipartConverter(oAuthReq, params).request)
     }
 
-    private fun getSignedGetResponse(url: String, params: Map<String, *>?): Response {
+    fun getSignedGetResponse(url: String, params: Map<String, *>?): Response {
         val oAuthReq = OAuthRequest(Verb.GET, url)
 
         if (params != null) {
