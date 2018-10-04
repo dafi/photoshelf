@@ -13,6 +13,7 @@ import android.graphics.Color
 import android.os.Build
 import android.text.TextUtils
 import androidx.core.app.NotificationCompat
+import com.ternaryop.photoshelf.EXTRA_NOTIFICATION_TAG
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.BirthdaysPublisherActivity
 import com.ternaryop.photoshelf.api.birthday.Birthday
@@ -58,6 +59,20 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
 
     init {
         createChannel()
+    }
+
+    fun notifyError(t: Throwable, title: String, actionTitle: String, intent: Intent, offsetId: Int) {
+        intent.putExtra(EXTRA_NOTIFICATION_TAG, ERROR_TAG)
+        // use offsetId to preserve extras for different notifications
+        val pendingIntent = PendingIntent.getBroadcast(this, offsetId, intent, PendingIntent.FLAG_ONE_SHOT)
+
+        val builder = NotificationCompat.Builder(this, BIRTHDAY_CHANNEL_ID)
+            .setSmallIcon(R.drawable.stat_notify_error)
+            .setContentTitle(title)
+            .setContentText(t.localizedMessage)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .addAction(R.drawable.stat_notify_error, actionTitle, pendingIntent)
+        notificationManager.notify(ERROR_TAG, offsetId, builder.build())
     }
 
     fun notifyError(t: Throwable, title: String, ticker: String? = null, offsetId: Int = 0) {

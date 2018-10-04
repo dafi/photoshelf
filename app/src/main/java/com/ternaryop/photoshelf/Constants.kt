@@ -22,3 +22,5 @@ const val EXTRA_FILE_PATH = "com.ternaryop.photoshelf.extra.FILEPATH"
 const val EXTRA_BIRTHDAY_DATE = "com.ternaryop.photoshelf.extra.BIRTHDATE"
 const val EXTRA_LIST1 = "com.ternaryop.photoshelf.extra.LIST1"
 const val EXTRA_BOOLEAN1 = "com.ternaryop.photoshelf.extra.BOOLEAN1"
+
+const val EXTRA_NOTIFICATION_TAG = "com.ternaryop.photoshelf.extra.NOTIFICATION_TAG"

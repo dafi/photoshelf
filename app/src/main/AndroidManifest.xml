@@ -78,6 +78,13 @@
                 <action android:name="com.ternaryop.photoshelf.birthday.clear"/>
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".service.PublishIntentService$RetryPublishNotificationBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.ternaryop.photoshelf.publish.retry"/>
+            </intent-filter>
+        </receiver>
 
         <!-- Dropbox -->
         <activity

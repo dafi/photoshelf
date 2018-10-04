@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.service
 
 import android.app.IntentService
 import android.app.WallpaperManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -16,16 +17,17 @@ import com.ternaryop.photoshelf.EXTRA_BIRTHDAY_DATE
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_BOOLEAN1
 import com.ternaryop.photoshelf.EXTRA_LIST1
+import com.ternaryop.photoshelf.EXTRA_NOTIFICATION_TAG
 import com.ternaryop.photoshelf.EXTRA_POST_TAGS
 import com.ternaryop.photoshelf.EXTRA_POST_TITLE
 import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.birthday.BirthdayUtils
 import com.ternaryop.photoshelf.event.BirthdayEvent
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
@@ -80,18 +82,24 @@ class PublishIntentService : IntentService("publishIntent") {
 
         try {
             postTags?.let { addBirthdateFromTags(it) }
-            when {
-                ACTION_PUBLISH_DRAFT == action -> TumblrManager.getInstance(applicationContext)
+            when (action) {
+                ACTION_PUBLISH_DRAFT -> TumblrManager.getInstance(applicationContext)
                     .draftPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
-                ACTION_PUBLISH_PUBLISH == action -> TumblrManager.getInstance(applicationContext)
+                ACTION_PUBLISH_PUBLISH -> TumblrManager.getInstance(applicationContext)
                     .publishPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
-                ACTION_BIRTHDAY_LIST_BY_DATE == action -> broadcastBirthdaysByDate(intent)
-                ACTION_BIRTHDAY_PUBLISH == action -> birthdaysPublish(intent)
-                ACTION_CHANGE_WALLPAPER == action -> changeWallpaper(url)
+                ACTION_BIRTHDAY_LIST_BY_DATE -> broadcastBirthdaysByDate(intent)
+                ACTION_BIRTHDAY_PUBLISH -> birthdaysPublish(intent)
+                ACTION_CHANGE_WALLPAPER -> changeWallpaper(url)
             }
         } catch (e: Exception) {
             logError(intent, e)
-            notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode())
+            when (action) {
+                ACTION_PUBLISH_DRAFT, ACTION_PUBLISH_PUBLISH ->
+                    notificationUtil.notifyError(e, postTags, getString(R.string.retry),
+                        createRetryPublishIntent(intent), url.hashCode())
+                else ->
+                    notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode())
+            }
         }
     }
 
@@ -177,12 +185,47 @@ class PublishIntentService : IntentService("publishIntent") {
         handler.post { Toast.makeText(applicationContext, res, Toast.LENGTH_LONG).show() }
     }
 
+    class RetryPublishNotificationBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val url = intent.getParcelableExtra<Uri>(EXTRA_URI)
+            val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME)
+            val postTitle = intent.getStringExtra(EXTRA_POST_TITLE)
+            val postTags = intent.getStringExtra(EXTRA_POST_TAGS)
+            val action = intent.getStringExtra(EXTRA_ACTION)
+            val notificationTag = intent.getStringExtra(EXTRA_NOTIFICATION_TAG)
+
+            NotificationUtil(context).notificationManager.cancel(notificationTag, url.hashCode())
+
+            PublishIntentService.startActionIntent(context,
+                url,
+                selectedBlogName,
+                postTitle,
+                postTags,
+                action == ACTION_PUBLISH_PUBLISH)
+        }
+    }
+
+    private fun createRetryPublishIntent(failedIntent: Intent): Intent {
+        val intent = Intent(this, RetryPublishNotificationBroadcastReceiver::class.java)
+        intent.action = RETRY_PUBLISH_ACTION
+
+        intent.putExtra(EXTRA_URI, failedIntent.getParcelableExtra<Uri>(EXTRA_URI))
+        intent.putExtra(EXTRA_BLOG_NAME, failedIntent.getStringExtra(EXTRA_BLOG_NAME))
+        intent.putExtra(EXTRA_POST_TITLE, failedIntent.getStringExtra(EXTRA_POST_TITLE))
+        intent.putExtra(EXTRA_POST_TAGS, failedIntent.getStringExtra(EXTRA_POST_TAGS))
+        intent.putExtra(EXTRA_ACTION, failedIntent.getStringExtra(EXTRA_ACTION))
+
+        return intent
+    }
+
     companion object {
         private const val ACTION_PUBLISH_DRAFT = "draft"
         private const val ACTION_PUBLISH_PUBLISH = "publish"
         private const val ACTION_BIRTHDAY_LIST_BY_DATE = "birthdayListByDate"
         private const val ACTION_BIRTHDAY_PUBLISH = "birthdayPublish"
         private const val ACTION_CHANGE_WALLPAPER = "changeWallpaper"
+
+        private const val RETRY_PUBLISH_ACTION = "com.ternaryop.photoshelf.publish.retry"
 
         @Suppress("LongParameterList")
         fun startActionIntent(context: Context,
