@@ -21,10 +21,8 @@ class SelectionArrayViewHolder<T : RecyclerView.ViewHolder>(private val adapter:
     }
 
     override fun clear() {
-        for (i in selectedPositions) {
-            setSelected(i, false)
-        }
         super.clear()
+        adapter.notifyItemRangeChanged(0, adapter.itemCount)
     }
 
     override fun setSelectedRange(start: Int, end: Int, selected: Boolean) {
