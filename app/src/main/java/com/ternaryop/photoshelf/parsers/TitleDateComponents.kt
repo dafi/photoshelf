@@ -2,10 +2,13 @@
 package com.ternaryop.photoshelf.parsers
 
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.MONTH_COUNT
+import com.ternaryop.photoshelf.parsers.DateComponents.Companion.NUMERIC_FORMAT
+import com.ternaryop.photoshelf.parsers.DateComponents.Companion.TEXTUAL_FORMAT
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.YEAR_2000
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.containsDateMatch
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.indexOfMonthFromShort
 import com.ternaryop.photoshelf.parsers.DateComponents.Companion.isMonthName
+import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import java.util.Calendar
 import java.util.Locale
@@ -35,7 +38,7 @@ object TextualDateComponents {
                 return null
             }
 
-            val dc = DateComponents()
+            val dc = DateComponents(format = TEXTUAL_FORMAT)
 
             dc.month = indexOfMonthFromShort(m.group(monthIndex).toLowerCase(Locale.getDefault()))
             dc.day = if (m.group(dayIndex).isEmpty()) 0 else m.group(dayIndex).toInt()
@@ -97,7 +100,8 @@ object NumericDateComponents {
                 day = m.group(1).toInt(),
                 month = m.group(2).toInt(),
                 year = m.group(3).toInt(),
-                datePosition = m.start(1))
+                datePosition = m.start(1),
+                format = NUMERIC_FORMAT)
         }
         return null
     }
@@ -113,7 +117,8 @@ object NumericDateComponents {
                 day = -1,
                 month = -1,
                 year = m.group(1).toInt(),
-                datePosition = m.start(1))
+                datePosition = m.start(1),
+                format = NUMERIC_FORMAT)
         }
         return null
     }
@@ -126,7 +131,8 @@ object NumericDateComponents {
                 day = m.group(3).toInt(),
                 month = m.group(2).toInt(),
                 year = m.group(1).toInt(),
-                datePosition = m.start(1))
+                datePosition = m.start(1),
+                format = NUMERIC_FORMAT)
         }
         return null
     }
@@ -158,9 +164,16 @@ object TitleDateComponents {
         dateComponents.fixYear(Calendar.getInstance().year)
 
         // maybe the components format is mm/dd/yyyy so we switch day and month to try dd/mm/yyyy
-        if (swapDayMonth || checkDateInTheFuture && dateComponents.isDateInTheFuture) {
+        if (swapDayMonth || (checkDateInTheFuture && dateComponents.isDateInTheFuture)) {
+            swapDayMonth(dateComponents)
+        } else if (dateComponents.format == NUMERIC_FORMAT && isDayEqualsToCurrentMonth(dateComponents)) {
             swapDayMonth(dateComponents)
         }
+    }
+
+    private fun isDayEqualsToCurrentMonth(dateComponents: DateComponents): Boolean {
+        val now = Calendar.getInstance()
+        return dateComponents.year == now.year && dateComponents.day == (now.month + 1)
     }
 
     private fun swapDayMonth(dateComponents: DateComponents) {

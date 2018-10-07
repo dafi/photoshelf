@@ -11,7 +11,8 @@ import java.util.regex.Matcher
  * Hold the date components day, month, year
  */
 @Suppress("MagicNumber")
-class DateComponents(var day: Int = 0, var month: Int = 0, var year: Int = -1, var datePosition: Int = -1) {
+class DateComponents(var day: Int = 0, var month: Int = 0, var year: Int = -1, var datePosition: Int = -1,
+    var format: Int = UNKNOWN_FORMAT) {
     val isDateInTheFuture: Boolean
         get() {
             if (month > MONTH_COUNT) {
@@ -63,6 +64,9 @@ class DateComponents(var day: Int = 0, var month: Int = 0, var year: Int = -1, v
         const val MONTH_COUNT = 12
         const val MONTH_NAME_SHORT_LEN = 3
         const val YEAR_2000 = 2000
+        const val UNKNOWN_FORMAT = 0
+        const val NUMERIC_FORMAT = 1
+        const val TEXTUAL_FORMAT = 2
 
         /**
          * Check if the matcher contains valid date components
