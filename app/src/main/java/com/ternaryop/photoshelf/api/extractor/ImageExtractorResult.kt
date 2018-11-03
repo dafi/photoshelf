@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.api.extractor
 
 import com.google.gson.annotations.SerializedName
+import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 
 /**
  * Created by dave on 01/04/17.
@@ -10,7 +11,15 @@ import com.google.gson.annotations.SerializedName
 data class ImageGalleryResult(val gallery: ImageGallery)
 class ImageGallery(val domain: String? = null,
     val title: String? = null,
-    @SerializedName("gallery") val imageInfoList: List<ImageInfo>)
+    var titleParsed: TitleComponentsResult,
+    @SerializedName("gallery") val imageInfoList: List<ImageInfo>) {
+    /**
+     * Return a string that can be used by the title parser
+     * @return the title plus domain string
+     */
+    val parsableTitle: String
+        get() = "$title ::::: $domain"
+}
 
 data class ImageResult(val imageUrl: String)
 

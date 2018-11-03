@@ -35,11 +35,6 @@
                     android:key="exportDaysPeriod"
                     android:maxLength="2"/>
             </PreferenceCategory>
-            <Preference
-                android:key="import_title_parser"
-                android:persistent="false"
-                android:title="@string/import_title_parser_title"/>
-
             <PreferenceCategory android:title="@string/pref_birthdays_title">
                 <Preference
                     android:key="import_birthdays_from_wikipedia"

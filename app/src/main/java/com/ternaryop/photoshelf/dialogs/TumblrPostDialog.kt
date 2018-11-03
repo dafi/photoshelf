@@ -23,14 +23,13 @@ import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.TagAdapter
+import com.ternaryop.photoshelf.api.ApiManager
+import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
 import com.ternaryop.photoshelf.dialogs.mru.MRUDialog
 import com.ternaryop.photoshelf.dialogs.mru.OnMRUListener
-import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
-import com.ternaryop.photoshelf.parsers.TitleData
-import com.ternaryop.photoshelf.parsers.TitleParser
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.util.mru.MRU
 import com.ternaryop.tumblr.TumblrPhotoPost
@@ -38,6 +37,7 @@ import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.text.anyMatches
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.toHtml
+import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -184,11 +184,11 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.parse_title -> {
-                fillTags(titleHolder.parseAgain(false).tags)
+                fillTagFromTitleHolder(false)
                 true
             }
             R.id.parse_title_swap -> {
-                fillTags(titleHolder.parseAgain(true).tags)
+                fillTagFromTitleHolder(true)
                 true
             }
             R.id.source_title -> {
@@ -197,6 +197,18 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
             }
             else -> false
         }
+    }
+
+    private fun fillTagFromTitleHolder(swapDayMonth: Boolean) {
+        val d = titleHolder
+            .parseAgain(swapDayMonth)
+            .subscribe({ fillTags(it.tags) }) {
+                android.app.AlertDialog.Builder(context!!)
+                    .setTitle(R.string.parsing_error)
+                    .setMessage(it.localizedMessage)
+                    .show()
+            }
+        compositeDisposable.add(d)
     }
 
     private inner class OnClickPublishListener : DialogInterface.OnClickListener {
@@ -400,11 +412,13 @@ class TitleHolder(private val fragment: Fragment,
         htmlTitle = sourceTitle
     }
 
-    fun parseAgain(swapDayMonth: Boolean): TitleData {
-        val titleData = TitleParser.instance(AndroidTitleParserConfig(fragment.context!!))
-            .parseTitle(editText.text.toString(), swapDayMonth)
-        htmlTitle = titleData.toHtml()
-
-        return titleData
+    fun parseAgain(swapDayMonth: Boolean): Single<TitleComponentsResult> {
+        return ApiManager.parserService(fragment.context!!).components(editText.text.toString(), swapDayMonth)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .map {
+                htmlTitle = it.response.html
+                it.response
+            }
     }
 }

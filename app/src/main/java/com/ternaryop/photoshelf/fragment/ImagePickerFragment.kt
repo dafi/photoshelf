@@ -34,9 +34,8 @@ import com.ternaryop.photoshelf.api.extractor.ImageGallery
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
-import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
-import com.ternaryop.photoshelf.parsers.TitleParser
 import com.ternaryop.utils.dialog.DialogUtils
+import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.ProgressHighlightViewLayout
 
@@ -50,8 +49,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private lateinit var constraintLayout: ConstraintLayout
     private lateinit var selectedItemsViewContainer: SelectedItemsViewContainer
-    private var detailsText: String? = null
-    private lateinit var parsableTitle: String
+    private lateinit var imageGallery: ImageGallery
 
     // Search on fragment arguments
     private val textWithUrl: String?
@@ -221,20 +219,16 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     private fun onImagesRetrieved(imageUriList: List<Uri>) {
         try {
-            val titleData = TitleParser.instance(AndroidTitleParserConfig(context!!)).parseTitle(parsableTitle)
-            TumblrPostDialog.newInstance(PostDialogData(parsableTitle,
-                titleData.toHtml(), titleData.tags, imageUriList), null).show(fragmentManager, "dialog")
+            TumblrPostDialog.newInstance(PostDialogData(imageGallery.parsableTitle,
+                imageGallery.titleParsed.html, imageGallery.titleParsed.tags, imageUriList), null)
+                .show(fragmentManager, "dialog")
         } catch (e: Exception) {
-            AlertDialog.Builder(context!!)
-                    .setTitle(R.string.parsing_error)
-                    .setMessage(e.localizedMessage)
-                    .show()
+            e.showErrorDialog(context!!)
         }
     }
 
     private fun onGalleryRetrieved(imageGallery: ImageGallery) {
-        detailsText = imageGallery.title
-        parsableTitle = buildParsableTitle(imageGallery)
+        this.imageGallery = imageGallery
         showDetails(Snackbar.LENGTH_LONG)
         val imageInfoList = imageGallery.imageInfoList
         supportActionBar?.subtitle = resources.getQuantityString(R.plurals.image_found,
@@ -313,22 +307,13 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun showDetails(duration: Int) {
-        val snackbar = Snackbar.make(gridView, detailsText!!, duration)
+        val snackbar = Snackbar.make(gridView, imageGallery.title ?: "No title", duration)
         val sbView = snackbar.view
         sbView.setBackgroundColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_bg))
         val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
         textView.setTextColor(ContextCompat.getColor(context!!, R.color.image_picker_detail_text_text))
         textView.maxLines = MAX_DETAIL_LINES
         snackbar.show()
-    }
-
-    /**
-     * Return a string that can be used by the title parser
-     * @param imageGallery the source
-     * @return the title plus domain string
-     */
-    private fun buildParsableTitle(imageGallery: ImageGallery): String {
-        return imageGallery.title + " ::::: " + imageGallery.domain
     }
 }
 

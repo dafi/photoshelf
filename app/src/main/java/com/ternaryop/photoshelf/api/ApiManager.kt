@@ -4,6 +4,7 @@ import android.content.Context
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.birthday.BirthdayService
 import com.ternaryop.photoshelf.api.extractor.ImageExtractorService
+import com.ternaryop.photoshelf.api.parser.ParserService
 import com.ternaryop.photoshelf.api.post.PostService
 
 object ApiManager {
@@ -12,6 +13,7 @@ object ApiManager {
     fun imageExtractorService(context: Context): ImageExtractorService = photoShelfApi(context).service()
     fun birthdayService(context: Context): BirthdayService = photoShelfApi(context).service()
     fun postService(context: Context): PostService = photoShelfApi(context).service()
+    fun parserService(context: Context): ParserService = photoShelfApi(context).service()
 
     private fun photoShelfApi(context: Context): PhotoShelfApi {
         if (photoShelfApi == null) {

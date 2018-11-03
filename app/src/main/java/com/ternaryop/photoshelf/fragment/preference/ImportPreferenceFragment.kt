@@ -7,12 +7,10 @@ import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.parsers.AndroidTitleParserConfig
 import com.ternaryop.photoshelf.service.ImportIntentService
 import com.ternaryop.utils.date.daysSinceNow
 import java.io.File
 
-private const val KEY_IMPORT_TITLE_PARSER = "import_title_parser"
 private const val KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia"
 
 /**
@@ -30,9 +28,6 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         appSupport = AppSupport(context!!)
 
         with(preferenceScreen) {
-            setupPreferenceFilePath(Importer.titleParserPath, KEY_IMPORT_TITLE_PARSER, preferenceScreen)
-                .title = getString(R.string.import_title_parser_title, AndroidTitleParserConfig(context!!).version)
-
             findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
 
             findPreference(AppSupport.PREF_EXPORT_DAYS_PERIOD)
@@ -42,10 +37,6 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
 
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
         return when (preference?.key) {
-            KEY_IMPORT_TITLE_PARSER -> {
-                importer.importFile(Importer.titleParserPath, Importer.TITLE_PARSER_FILE_NAME)
-                true
-            }
             KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA -> {
                 ImportIntentService.startImportBirthdaysFromWeb(context!!, appSupport.selectedBlogName!!)
                 true

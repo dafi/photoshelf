@@ -84,7 +84,6 @@ class Importer constructor(val context: Context) {
     }
 
     companion object {
-        const val TITLE_PARSER_FILE_NAME = "titleParser.json"
         private const val TOTAL_USERS_FILE_NAME = "totalUsers.csv"
 
         private val ISO_8601_DATE = SimpleDateFormat("yyyy-MM-dd", Locale.US)
@@ -96,10 +95,6 @@ class Importer constructor(val context: Context) {
                         .observeOn(AndroidSchedulers.mainThread())
             }
         }
-
-        val titleParserPath: String
-            get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                .toString() + File.separator + TITLE_PARSER_FILE_NAME
 
         val totalUsersPath: String
             get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
