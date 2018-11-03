@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.photoshelf.R
 
 /**
  * Created by dave on 15/12/17.
@@ -16,7 +17,7 @@ class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<S
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MRUViewHolder {
         return MRUViewHolder(LayoutInflater.from(dialog.activity)
-            .inflate(android.R.layout.simple_list_item_1, parent, false))
+            .inflate(R.layout.dialog_mru, parent, false))
     }
 
     override fun onBindViewHolder(holder: MRUViewHolder, position: Int) {
