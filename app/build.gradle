@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android'
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
 
-    implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXLibVersion}"
+    implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
     implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXLibVersion}"
     implementation "androidx.cardview:cardview:${rootProject.ext.androidXLibVersion}"
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
