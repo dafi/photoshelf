@@ -4,7 +4,6 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
-import kotlin.math.absoluteValue
 
 /**
  * Created by dave on 16/12/17.
@@ -28,7 +27,7 @@ class MRUViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private fun setColors(item: String) {
         val textArray = itemView.context.resources.obtainTypedArray(R.array.tag_text_colors)
         val backgroundArray = itemView.context.resources.obtainTypedArray(R.array.tag_background_colors)
-        val index = item.hashCode().absoluteValue % textArray.length()
+        val index  = (item.first().toInt() + item.last().toInt() * item.length) % textArray.length()
         ruleView.setBackgroundColor(backgroundArray.getColor(index, 0))
         ruleView.setTextColor(textArray.getColor(index, 0))
 
