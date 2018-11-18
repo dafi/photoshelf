@@ -217,7 +217,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
             tagsHolder.updateMruList()
             createPosts(which == DialogInterface.BUTTON_NEUTRAL,
-                blogList.selectedBlogName, data.imageUrls!!, titleHolder.htmlTitle, tagsHolder.tags)
+                blogList.selectedBlogName, data.imageUrls!!.map { Uri.parse(it) }, titleHolder.htmlTitle, tagsHolder.tags)
         }
 
         private fun createPosts(publish: Boolean,
@@ -264,7 +264,7 @@ class PostDialogData : Serializable {
     val htmlSourceTitle: String
     val tags: List<String>
     val photoPost: TumblrPhotoPost?
-    val imageUrls: List<Uri>?
+    val imageUrls: List<String>?
 
     constructor(photoPost: TumblrPhotoPost) {
         // use the HTML text for source title, too
@@ -279,7 +279,8 @@ class PostDialogData : Serializable {
         this.sourceTitle = sourceTitle
         this.htmlSourceTitle = htmlSourceTitle
         this.tags = tags
-        this.imageUrls = imageUrls
+        // URIs can't be serialized so we convert them to string
+        this.imageUrls = imageUrls.map { it.toString() }
         this.photoPost = null
     }
 }
