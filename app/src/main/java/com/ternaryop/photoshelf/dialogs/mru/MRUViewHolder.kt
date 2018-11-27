@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.dialogs.mru
 
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
 
@@ -13,10 +14,10 @@ class MRUViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val ruleView: TextView = itemView.findViewById(R.id.rule)
     private val textView: TextView = itemView.findViewById(android.R.id.text1)
 
-    fun bindModel(item: String) {
+    fun bindModel(item: String, maxTopItems: Int) {
         textView.text = item
 
-        setColors(item)
+        setColors(maxTopItems)
     }
 
     fun setOnClickListeners(item: String, listener: View.OnClickListener?) {
@@ -24,14 +25,11 @@ class MRUViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         textView.tag = item
     }
 
-    private fun setColors(item: String) {
-        val textArray = itemView.context.resources.obtainTypedArray(R.array.tag_text_colors)
-        val backgroundArray = itemView.context.resources.obtainTypedArray(R.array.tag_background_colors)
-        val index  = (item.first().toInt() + item.last().toInt() * item.length) % textArray.length()
-        ruleView.setBackgroundColor(backgroundArray.getColor(index, 0))
-        ruleView.setTextColor(textArray.getColor(index, 0))
-
-        textArray.recycle()
-        backgroundArray.recycle()
+    private fun setColors(maxTopItems: Int) {
+        if (adapterPosition < maxTopItems) {
+            ruleView.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.mru_top_item_background))
+        } else {
+            ruleView.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.mru_other_item_background))
+        }
     }
 }

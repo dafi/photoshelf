@@ -19,6 +19,7 @@ import com.ternaryop.utils.recyclerview.SwipeToDeleteCallback
  * Allow to select items from MRU
  */
 private const val ARG_MRU_LIST = "mruList"
+private const val MAX_TOP_ITEMS = 2
 
 class MRUDialog : DialogFragment() {
 
@@ -51,7 +52,7 @@ class MRUDialog : DialogFragment() {
     }
 
     private fun initRecyclerView(rootView: View) {
-        adapter = MRUAdapter(this, arguments!!.getStringArrayList(ARG_MRU_LIST)!!)
+        adapter = MRUAdapter(this, sortExcludingTopItems(), MAX_TOP_ITEMS)
         adapter.onMRUListener = onMRUListener
 
         val recyclerView = rootView.findViewById<RecyclerView>(R.id.list)
@@ -59,6 +60,14 @@ class MRUDialog : DialogFragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
         addSwipeToDelete(recyclerView)
+    }
+
+    private fun sortExcludingTopItems(): ArrayList<String> {
+        val items = arguments!!.getStringArrayList(ARG_MRU_LIST)!!
+        if (items.size > MAX_TOP_ITEMS) {
+            items.subList(MAX_TOP_ITEMS, items.size).sort()
+        }
+        return items
     }
 
     private fun addSwipeToDelete(recyclerView: RecyclerView) {

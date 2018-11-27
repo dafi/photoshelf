@@ -11,7 +11,7 @@ import com.ternaryop.photoshelf.R
  * The adapter used to selected and remove MRU items
  */
 
-class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<String>)
+class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<String>, val maxTopItems: Int)
     : RecyclerView.Adapter<MRUViewHolder>(), View.OnClickListener {
     var onMRUListener: OnMRUListener? = null
 
@@ -22,7 +22,7 @@ class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<S
 
     override fun onBindViewHolder(holder: MRUViewHolder, position: Int) {
         val item = items[position]
-        holder.bindModel(item)
+        holder.bindModel(item, maxTopItems)
 
         holder.setOnClickListeners(item, if (onMRUListener == null) null else this)
     }

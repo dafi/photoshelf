@@ -75,13 +75,7 @@
 
     <color name="snack_error_color">#ffdd00</color>
 
-    <array name="tag_background_colors">
-        <item>#1496bb</item>
-        <item>#FF6600</item>
-    </array>
+    <color name="mru_top_item_background">#1496bb</color>
+    <color name="mru_other_item_background">#FF6600</color>
 
-    <array name="tag_text_colors">
-        <item>#ffffff</item>
-        <item>#ffffff</item>
-    </array>
 </resources>
