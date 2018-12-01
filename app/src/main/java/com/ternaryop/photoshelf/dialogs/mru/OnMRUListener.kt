@@ -6,6 +6,6 @@ package com.ternaryop.photoshelf.dialogs.mru
  */
 
 interface OnMRUListener {
-    fun onItemsSelected(dialog: MRUDialog, positions: IntArray)
-    fun onItemDelete(dialog: MRUDialog, position: Int)
+    fun onItemSelect(item: String)
+    fun onItemDelete(item: String)
 }
