@@ -9,7 +9,7 @@ buildscript {
         minSdkVersion = 21
         targetSdkVersion = 28
         compileSdkVersion = 28
-        buildToolsVersion = '28.0.2'
+        buildToolsVersion = '28.0.3'
         androidXAppCompatLibVersion = '1.0.2'
         androidXLibVersion = '1.0.0'
         androidXMaterialLibVersion = '1.1.0-alpha01'
@@ -17,7 +17,7 @@ buildscript {
         flexboxLibVersion = '1.1.0'
         ternaryUtilLibVersion = '1.4'
 
-        rxjavaLibVersion = '2.2.3'
+        rxjavaLibVersion = '2.2.4'
         rxandroidLibVersion = '2.1.0'
 
         dropboxCoreLibVersion = '3.0.10'
@@ -26,10 +26,10 @@ buildscript {
         scribejavaCoreLibVersion = '6.1.0'
         jodaLibVersion = '2.10.1'
         picassoLibVersion = '2.71828'
-        retrofitLibVersion = '2.4.0'
+        retrofitLibVersion = '2.5.0'
         gsonLibVersion = '2.8.5'
-        retrofitAdapterRrxjavaLibVersion = '2.4.0'
-        retrofitConverterGsonLibVersion = '2.4.0'
+        retrofitAdapterRrxjavaLibVersion = '2.5.0'
+        retrofitConverterGsonLibVersion = '2.5.0'
         okhttp3LoggingInterceptorLibVersion = '3.12.0'
         androidXTakisoftPreferencex = 'preferencex:1.0.0'
 

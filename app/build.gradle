@@ -107,8 +107,9 @@ task nativeLibsToJar(type: Zip) {
 }
 
 tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn(nativeLibsToJar)
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    compileTask ->
+        compileTask.dependsOn(nativeLibsToJar)
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 repositories {
     mavenCentral()
@@ -126,7 +127,7 @@ def versionCodeByTask() {
     // Increment the versionCode only for specific tasks (eg the assemble release tasks)
     def runTasks = gradle.startParameter.taskNames
     def incrementableTaskNames = ["aR", "assembleRelease"]
-    if (incrementableTaskNames.find {name -> name in runTasks}) {
+    if (incrementableTaskNames.find { name -> name in runTasks }) {
         ++versionCode
         props["versionCode"] = versionCode.toString()
         props.store(new FileWriter(versionFile), null)
@@ -135,3 +136,4 @@ def versionCodeByTask() {
 }
 
 apply from: 'appconfig.gradle'
+apply plugin: 'kotlin-android-extensions'
