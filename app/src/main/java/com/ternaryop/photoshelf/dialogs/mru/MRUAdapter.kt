@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.dialogs.mru
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,13 +12,13 @@ import com.ternaryop.photoshelf.R
  * The adapter used to selected and remove MRU items
  */
 
-class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<String>, val maxTopItems: Int)
+class MRUAdapter(private val context: Context, private val items: MutableList<String>, val maxTopItems: Int)
     : RecyclerView.Adapter<MRUViewHolder>(), View.OnClickListener {
     var onMRUListener: OnMRUListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MRUViewHolder {
-        return MRUViewHolder(LayoutInflater.from(dialog.activity)
-            .inflate(R.layout.dialog_mru, parent, false))
+        return MRUViewHolder(LayoutInflater.from(context)
+            .inflate(R.layout.mru_list_row, parent, false))
     }
 
     override fun onBindViewHolder(holder: MRUViewHolder, position: Int) {
@@ -35,18 +36,12 @@ class MRUAdapter(private val dialog: MRUDialog, private val items: MutableList<S
         return items[position]
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun getPosition(item: String): Int {
-        return items.indexOf(item)
-    }
-
     override fun onClick(v: View) {
-        val positions = intArrayOf(getPosition(v.tag as String))
-        onMRUListener!!.onItemsSelected(dialog, positions)
+        onMRUListener!!.onItemSelect(v.tag as String)
     }
 
     fun removeAt(position: Int) {
-        onMRUListener!!.onItemDelete(dialog, position)
+        onMRUListener!!.onItemDelete(items[position])
         items.removeAt(position)
         notifyItemRemoved(position)
     }

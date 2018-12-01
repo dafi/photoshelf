@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.dialogs
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
 import android.net.Uri
@@ -12,12 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.MultiAutoCompleteTextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.Toolbar
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.AppSupport
@@ -28,10 +27,9 @@ import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
-import com.ternaryop.photoshelf.dialogs.mru.MRUDialog
+import com.ternaryop.photoshelf.dialogs.mru.MRUHolder
 import com.ternaryop.photoshelf.dialogs.mru.OnMRUListener
 import com.ternaryop.photoshelf.service.PublishIntentService
-import com.ternaryop.photoshelf.util.mru.MRU
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.text.anyMatches
@@ -56,6 +54,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
     lateinit var tagsHolder: TagsHolder
     lateinit var titleHolder: TitleHolder
+    lateinit var mruHolder: MRUHolder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +76,16 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
         val view = activity!!.layoutInflater.inflate(R.layout.dialog_publish_post, null)
 
-        tagsHolder = TagsHolder(this, view, appSupport.selectedBlogName!!)
-        titleHolder = TitleHolder(this, view, data.sourceTitle, data.htmlSourceTitle)
+        // the ContextThemeWrapper is necessary otherwise the autocomplete drop down items
+        // and the toolbar overflow menu items are styled incorrectly
+        // since the switch to the AlertDialog the toolbar isn't styled from code
+        // so to fix it the theme is declared directly into xml
+        tagsHolder = TagsHolder(
+            ContextThemeWrapper(activity!!, R.style.Theme_PhotoShelf_Dialog),
+            view.findViewById(R.id.post_tags),
+            appSupport.selectedBlogName!!)
+        titleHolder = TitleHolder(context!!,view.findViewById(R.id.post_title), data.sourceTitle, data.htmlSourceTitle)
+        mruHolder = MRUHolder(this.context!!, view.findViewById(R.id.mru_list), tagsHolder)
         fillTags(data.tags)
 
         setupUI(view)
@@ -93,7 +100,8 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
             view.findViewById<View>(R.id.refreshBlogList)
                 .setOnClickListener { blogList.fetchBlogNames(dialog as AlertDialog, compositeDisposable) }
         } else {
-            view.findViewById<View>(R.id.blog_list).visibility = View.GONE
+            view.findViewById<View>(R.id.blog).visibility = View.GONE
+            view.findViewById<View>(R.id.refreshBlogList).visibility = View.GONE
             builder.setPositiveButton(R.string.edit_post_title) { _, _ -> editPost() }
         }
 
@@ -215,7 +223,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
         override fun onClick(dialog: DialogInterface, which: Int) {
             appSupport.selectedBlogName = blogList.selectedBlogName
 
-            tagsHolder.updateMruList()
+            updateMruList()
             createPosts(which == DialogInterface.BUTTON_NEUTRAL,
                 blogList.selectedBlogName, data.imageUrls!!.map { Uri.parse(it) }, titleHolder.htmlTitle, tagsHolder.tags)
         }
@@ -234,8 +242,12 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun editPost() {
-        tagsHolder.updateMruList()
+        updateMruList()
         (targetFragment as? PostListener)?.onEdit(this, data.photoPost!!, appSupport.selectedBlogName!!)
+    }
+
+    private fun updateMruList() {
+        mruHolder.updateMruList(TumblrPost.tagsFromString(tagsHolder.tags).drop(1))
     }
 
     interface PostListener {
@@ -285,30 +297,21 @@ class PostDialogData : Serializable {
     }
 }
 
-class TagsHolder(private val fragment: Fragment, rootView: View, blogName: String) : OnMRUListener {
-    private val textView: MultiAutoCompleteTextView = rootView.findViewById(R.id.post_tags)
-    private val mruButton: ImageButton = rootView.findViewById(R.id.mruTags)
+class TagsHolder(context: Context,
+    private val textView: MultiAutoCompleteTextView,
+    blogName: String) : OnMRUListener {
 
     private var defaultColor = textView.textColors
     private var defaultBackground = textView.background
 
-    private val mru = MRU(fragment.context!!, MRU_TAGS_KEY, MRU_TAGS_MAX_SIZE)
-
-    // the ContextThemeWrapper is necessary otherwise the autocomplete drop down items
-    // and the toolbar overflow menu items are styled incorrectly
-    // since the switch to the AlertDialog the toolbar isn't styled from code
-    // so to fix it the theme is declared directly into xml
     private val tagAdapter = TagAdapter(
-        ContextThemeWrapper(fragment.activity!!, R.style.Theme_PhotoShelf_Dialog),
+        context,
         android.R.layout.simple_dropdown_item_1line,
         blogName)
 
     init {
         textView.setAdapter<TagAdapter>(tagAdapter)
         textView.setTokenizer(MultiAutoCompleteTextView.CommaTokenizer())
-
-        mruButton.setOnClickListener { openMRUDialog() }
-        mruButton.isEnabled = mru.list.isNotEmpty()
     }
 
     fun updateBlogName(blogName: String) {
@@ -328,71 +331,35 @@ class TagsHolder(private val fragment: Fragment, rootView: View, blogName: Strin
             NAME_ALREADY_EXISTS -> {
                 textView.setTextColor(defaultColor)
                 textView.background = defaultBackground
-                val enabledState = intArrayOf(android.R.attr.state_enabled)
-                DrawableCompat.setTint(mruButton.drawable,
-                    defaultColor!!.getColorForState(enabledState, Color.GREEN))
-                mruButton.setBackgroundColor(Color.TRANSPARENT)
             }
             NAME_MISSPELLED -> {
                 textView.setTextColor(Color.RED)
                 textView.setBackgroundColor(Color.YELLOW)
                 textView.setText(correctedName)
-                DrawableCompat.setTint(mruButton.drawable, Color.RED)
-                mruButton.setBackgroundColor(Color.YELLOW)
             }
             NAME_NOT_FOUND -> {
                 textView.setTextColor(Color.WHITE)
                 textView.setBackgroundColor(Color.RED)
-                DrawableCompat.setTint(mruButton.drawable, Color.WHITE)
-                mruButton.setBackgroundColor(Color.RED)
             }
         }
     }
 
-    fun updateMruList() {
+    override fun onItemSelect(item: String) {
         val tags = TumblrPost.tagsFromString(tags)
-        tags.removeAt(0)
-        mru.add(tags)
-        mru.save()
-    }
-
-    override fun onItemsSelected(dialog: MRUDialog, positions: IntArray) {
-        val tags = TumblrPost.tagsFromString(tags)
-        for (position in positions) {
-            val selectedTag = dialog.getItem(position)
-            if (!tags.anyMatches(selectedTag)) {
-                tags.add(selectedTag)
-            }
-            mru.add(selectedTag)
+        if (!tags.anyMatches(item)) {
+            tags.add(item)
+            textView.setText(tags.joinToString(", "))
         }
-        textView.setText(tags.joinToString(", "))
-        dialog.dismiss()
     }
 
-    override fun onItemDelete(dialog: MRUDialog, position: Int) {
-        val selectedTag = dialog.getItem(position)
-        mru.remove(selectedTag)
-        mru.save()
-    }
-
-    private fun openMRUDialog() {
-        MRUDialog.newInstance(mru.list)
-            .setOnMRUListener(this)
-            .show(fragment.activity!!.supportFragmentManager, MRU_FRAGMENT_DIALOG_TAG)
-    }
-
-    companion object {
-        private const val MRU_TAGS_KEY = "mruTags"
-        private const val MRU_TAGS_MAX_SIZE = 20
-        private const val MRU_FRAGMENT_DIALOG_TAG = "mruFragmentDialogTag"
+    override fun onItemDelete(item: String) {
     }
 }
 
-class TitleHolder(private val fragment: Fragment,
-    rootView: View,
+class TitleHolder(private val context: Context,
+    private val editText: EditText,
     private var sourceTitle: String,
     htmlSourceTitle: String) {
-    private val editText: EditText = rootView.findViewById(R.id.post_title)
 
     var htmlTitle: String
         get() {
@@ -414,7 +381,7 @@ class TitleHolder(private val fragment: Fragment,
     }
 
     fun parseAgain(swapDayMonth: Boolean): Single<TitleComponentsResult> {
-        return ApiManager.parserService(fragment.context!!).components(editText.text.toString(), swapDayMonth)
+        return ApiManager.parserService(context).components(editText.text.toString(), swapDayMonth)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map {
