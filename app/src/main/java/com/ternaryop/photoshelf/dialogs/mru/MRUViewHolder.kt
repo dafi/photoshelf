@@ -21,8 +21,8 @@ class MRUViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     fun setOnClickListeners(item: String, listener: View.OnClickListener?) {
-        textView.setOnClickListener(listener)
-        textView.tag = item
+        itemView.setOnClickListener(listener)
+        itemView.tag = item
     }
 
     private fun setColors(maxTopItems: Int) {

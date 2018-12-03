@@ -43,6 +43,8 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.Serializable
 
+fun EditText.moveCaretToEnd() = setSelection(length())
+
 class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
     private lateinit var blogList: BlogList
@@ -349,6 +351,8 @@ class TagsHolder(context: Context,
         if (!tags.anyMatches(item)) {
             tags.add(item)
             textView.setText(tags.joinToString(", "))
+            textView.moveCaretToEnd()
+            textView.requestFocus()
         }
     }
 
@@ -368,8 +372,7 @@ class TitleHolder(private val context: Context,
         }
         set(value) {
             editText.setText(value.fromHtml())
-            // move caret to end
-            editText.setSelection(editText.length())
+            editText.moveCaretToEnd()
         }
 
     init {

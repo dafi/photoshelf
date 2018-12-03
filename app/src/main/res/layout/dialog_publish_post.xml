@@ -73,7 +73,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mru_list"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="180dp"
         android:clipToPadding="false"
         android:scrollbars="vertical"
