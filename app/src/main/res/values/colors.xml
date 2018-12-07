@@ -75,7 +75,6 @@
 
     <color name="snack_error_color">#ffdd00</color>
 
-    <color name="mru_top_item_background">#1496bb</color>
-    <color name="mru_other_item_background">#FF6600</color>
-
+    <color name="mru_top_item_bg">#1496bb</color>
+    <color name="mru_other_item_bg">#FF6600</color>
 </resources>
