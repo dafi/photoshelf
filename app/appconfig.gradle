@@ -7,11 +7,11 @@ android {
             // used with genymotion
             buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://10.0.3.2:8080/image/\""
 
-            // used with android emulator
-//             buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://192.168.0.2:8080/image/\""
-
             // use from real devices to access to local network
-//             buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://10.0.2.2:8080/image/\""
+//            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://192.168.0.2:8080/image/\""
+
+            // used with android emulator
+//            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://10.0.2.2:8080/image/\""
 
 //            compileSdkVersion 'android-P'
         }
