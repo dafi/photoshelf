@@ -37,8 +37,8 @@ import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
 import com.ternaryop.photoshelf.adapter.feedly.titles
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.update
-import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.api.ApiManager
+import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -62,15 +62,17 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.saved_content_list, container, false)
+        return inflater.inflate(R.layout.saved_content_list, container, false)
+    }
 
-        initRecyclerView(rootView)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initRecyclerView(view)
 
         setHasOptionsMenu(true)
 
-        photoShelfSwipe = rootView!!.findViewById(R.id.swipe_container)
+        photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener { refresh(true) }
-        return rootView
     }
 
     private fun initRecyclerView(rootView: View) {

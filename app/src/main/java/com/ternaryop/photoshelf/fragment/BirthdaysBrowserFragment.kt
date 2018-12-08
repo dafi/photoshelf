@@ -24,9 +24,9 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayAdapter
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
@@ -65,12 +65,16 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     override fun onCreateView(inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_birthdays_by_name, container, false)
+        return inflater.inflate(R.layout.fragment_birthdays_by_name, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         adapter = BirthdayAdapter(activity!!, fragmentActivityStatus.appSupport.selectedBlogName!!)
         adapter.onClickListener = this
         adapter.onLongClickListener = this
-        recyclerView = rootView.findViewById<View>(R.id.list) as RecyclerView
+        recyclerView = view.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
@@ -81,7 +85,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
         recyclerView.addOnScrollListener(onScrollPostFetcher)
 
-        val searchView = rootView.findViewById<View>(R.id.searchView1) as SearchView
+        val searchView = view.findViewById<SearchView>(R.id.searchView1)
 
         // Set up the query listener that executes the search
         val d = Observable.create(ObservableOnSubscribe<String> { subscriber ->
@@ -117,8 +121,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
         setupActionBar()
         setHasOptionsMenu(true)
-
-        return rootView
     }
 
     override fun setRetainInstance(retain: Boolean) {

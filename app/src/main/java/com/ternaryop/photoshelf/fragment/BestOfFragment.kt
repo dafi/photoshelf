@@ -5,8 +5,6 @@ import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
@@ -16,35 +14,33 @@ import com.ternaryop.tumblr.android.editTags
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_best_of.results
+import kotlinx.android.synthetic.main.fragment_best_of.tags
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlinx.android.synthetic.main.fragment_best_of.create_post as button
 
 private const val THREAD_POOL_SIZE = 25
 
 class BestOfFragment : AbsPhotoShelfFragment() {
-    lateinit var tags: EditText
-    lateinit var results: EditText
-    lateinit var button: Button
     private lateinit var executorService: ExecutorService
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_best_of, container, false)
+        return inflater.inflate(R.layout.fragment_best_of, container, false)
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE)
 
-        tags = view.findViewById(R.id.tags)
-        results = view.findViewById(R.id.results)
         results.keyListener = null
 
-        button = view.findViewById(R.id.create_post)
         button.setOnClickListener {
             button.isEnabled = false
             startAddTags()
         }
-
-        return view
     }
 
     private fun startAddTags() {

@@ -33,27 +33,26 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
     private var allowSearch: Boolean = false
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
 
-    override val postListViewResource: Int
-        get() = R.layout.fragment_tag_browse_photo_list
-
     override val actionModeMenuId: Int
         get() = R.menu.tag_browser_context
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = super.onCreateView(inflater, container, savedInstanceState) ?: return null
+        return inflater.inflate(R.layout.fragment_tag_browse_photo_list, container, false)
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         photoAdapter.setOnPhotoBrowseClick(this)
-        photoAdapter.setEmptyView(rootView.findViewById(android.R.id.empty))
+        photoAdapter.setEmptyView(view.findViewById(android.R.id.empty))
 
-        photoShelfSwipe = rootView.findViewById(R.id.swipe_container)
+        photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener(null)
 
         if (blogName != null) {
             postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) onQueryTextSubmit(tag) }
         }
 
-        return rootView
     }
 
     override fun onAttach(context: Context?) {

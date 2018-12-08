@@ -51,21 +51,22 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     protected lateinit var postActionExecutor: PostActionExecutor
 
-    protected open val postListViewResource: Int
-        get() = R.layout.fragment_photo_list
-
     protected abstract val actionModeMenuId: Int
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(postListViewResource, container, false)
+        return inflater.inflate(R.layout.fragment_photo_list, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         photoAdapter = PhotoAdapter(context!!)
         postActionExecutor = PostActionExecutor(context!!, blogName!!, this)
 
         postFetcher = OnScrollPostFetcher(this, Tumblr.MAX_POST_PER_REQUEST)
 
-        recyclerView = rootView.findViewById(R.id.list)
+        recyclerView = view.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context!!)
         recyclerView.adapter = photoAdapter
@@ -73,7 +74,6 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         recyclerView.addOnScrollListener(postFetcher)
 
         setHasOptionsMenu(true)
-        return rootView
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

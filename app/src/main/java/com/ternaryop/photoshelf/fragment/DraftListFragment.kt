@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.ActionMode
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -22,13 +21,13 @@ import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.LAST_PUBLISHED_TAG
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.TAG_NAME
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.UPLOAD_TIME
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
 import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
@@ -65,22 +64,17 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     override val actionModeMenuId: Int
         get() = R.menu.draft_context
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        val rootView = super.onCreateView(inflater, container, savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val view = View.inflate(context!!, R.layout.draft_empty_list, rootView as ViewGroup?)
-        progressHighlightViewLayout = view.findViewById(android.R.id.empty)
+        val draftEmptyView = View.inflate(context!!, R.layout.draft_empty_list, view as ViewGroup?)
+        progressHighlightViewLayout = draftEmptyView.findViewById(android.R.id.empty)
         progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context!!, R.anim.fade_loop)
         photoAdapter.counterType = CounterEvent.DRAFT
 
-        if (rootView != null) {
-            swipeLayout = rootView.findViewById(R.id.swipe_container)
-            swipeLayout.setColorScheme(R.array.progress_swipe_colors)
-            swipeLayout.setOnRefreshListener(this)
-        }
-
-        return rootView
+        swipeLayout = view.findViewById(R.id.swipe_container)
+        swipeLayout.setColorScheme(R.array.progress_swipe_colors)
+        swipeLayout.setOnRefreshListener(this)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

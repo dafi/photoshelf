@@ -2,12 +2,10 @@ package com.ternaryop.photoshelf.fragment
 
 import android.os.Bundle
 import android.text.format.DateUtils.SECOND_IN_MILLIS
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.event.CounterEvent
@@ -28,14 +26,11 @@ open class ScheduledListFragment : AbsPostsListFragment() {
     override val actionModeMenuId: Int
         get() = R.menu.scheduled_context
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
-        val rootView = super.onCreateView(inflater, container, savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         photoAdapter.counterType = CounterEvent.SCHEDULE
-        photoShelfSwipe = rootView!!.findViewById(R.id.swipe_container)
+        photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener { resetAndReloadPhotoPosts() }
-        return rootView
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
