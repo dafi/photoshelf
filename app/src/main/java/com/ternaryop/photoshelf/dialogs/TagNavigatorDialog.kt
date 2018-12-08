@@ -1,21 +1,25 @@
 package com.ternaryop.photoshelf.dialogs
 
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
-import androidx.fragment.app.DialogFragment
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.dialogs.tagnavigator.TagCounter
+import com.ternaryop.photoshelf.dialogs.tagnavigator.TagNavigatorAdapter
+import com.ternaryop.photoshelf.dialogs.tagnavigator.TagNavigatorListener
+import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_count
+import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_title
+import kotlinx.android.synthetic.main.dialog_tag_navigator.sort_tag
+import kotlinx.android.synthetic.main.dialog_tag_navigator.tag_list
 
 /**
  * Created by dave on 17/05/15.
@@ -28,39 +32,32 @@ private const val SELECTED_TAG = "selectedTag"
 private const val ARG_TAG_LIST = "list"
 private const val PREF_NAME_TAG_SORT = "tagNavigatorSort"
 
-class TagNavigatorDialog : DialogFragment() {
-    private lateinit var adapter: ArrayAdapter<TagCounter>
-    private lateinit var sortButton: Button
+class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
+    private lateinit var adapter: TagNavigatorAdapter
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AlertDialog.Builder(activity)
-                .setView(setupUI())
-                .setTitle(resources.getString(R.string.tag_navigator_title, adapter.count))
-                .setNegativeButton(resources.getString(R.string.close), null)
-                .create()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        // https://github.com/material-components/material-components-android/issues/99
+        return inflater
+            .cloneInContext(ContextThemeWrapper(activity, R.style.Theme_PhotoShelf))
+            .inflate(R.layout.dialog_tag_navigator, container, false)
     }
 
-    @SuppressLint("InflateParams")
-    private fun setupUI(): View {
-        val view = activity!!.layoutInflater.inflate(R.layout.dialog_tag_navigator, null)
-        adapter = createAdapter(arguments!!.getStringArrayList(ARG_TAG_LIST)!!)
-        sortButton = view.findViewById<View>(R.id.sort_tag) as Button
-        val tagList = view.findViewById<View>(R.id.tag_list) as ListView
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        tagList.adapter = adapter
-        tagList.onItemClickListener = AdapterView.OnItemClickListener(function = { _, _, position, _ ->
-            val item = adapter.getItem(position)
-            if (item != null) {
-                val intent = Intent()
-                intent.putExtra(SELECTED_TAG, item.tag)
-                targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
-            }
-            dismiss()
-        })
+        adapter = TagNavigatorAdapter(activity!!,
+            TagCounter.fromStrings(arguments!!.getStringArrayList(ARG_TAG_LIST)!!),
+            this)
+        tag_list.setHasFixedSize(true)
+        tag_list.layoutManager = LinearLayoutManager(activity)
+        tag_list.adapter = adapter
+
+        distinct_tag_count.text = String.format("%d", adapter.itemCount)
+        distinct_tag_title.text = resources.getString(R.string.tag_navigator_distinct_title)
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(activity)
         changeSortType(preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME))
-        val sortClick = View.OnClickListener { v ->
+        sort_tag.setOnClickListener { v ->
             when (v.id) {
                 R.id.sort_tag -> {
                     var sortType = preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME)
@@ -70,63 +67,26 @@ class TagNavigatorDialog : DialogFragment() {
                 }
             }
         }
-        sortButton.setOnClickListener(sortClick)
-        return view
+    }
+
+    override fun onClick(item: TagCounter) {
+        val intent = Intent()
+        intent.putExtra(SELECTED_TAG, item.tag)
+        targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
+        dismiss()
     }
 
     private fun changeSortType(sortType: Int) {
         when (sortType) {
             SORT_TAG_NAME -> {
-                sortButton.setText(R.string.sort_by_count)
-                sortByTagName()
+                sort_tag.setText(R.string.sort_by_count)
+                adapter.sortByTagName()
             }
             SORT_TAG_COUNT -> {
-                sortButton.setText(R.string.sort_by_name)
-                sortByTagCount()
+                sort_tag.setText(R.string.sort_by_name)
+                adapter.sortByTagCount()
             }
         }
-    }
-
-    private fun createAdapter(tagList: List<String>): ArrayAdapter<TagCounter> {
-        val map = HashMap<String, TagCounter>(tagList.size)
-        for (s in tagList) {
-            val lower = s.toLowerCase()
-            var tagCounter: TagCounter? = map[lower]
-            if (tagCounter == null) {
-                tagCounter = TagCounter(s)
-                map[lower] = tagCounter
-            } else {
-                ++tagCounter.count
-            }
-        }
-
-        return ArrayAdapter(activity!!, android.R.layout.simple_list_item_1, map.values.toList())
-    }
-
-    private fun sortByTagCount() {
-        adapter.sort { lhs, rhs ->
-            // sort descending
-            val sign = rhs.count - lhs.count
-            if (sign == 0) lhs.compareTagTo(rhs) else sign
-        }
-        adapter.notifyDataSetChanged()
-    }
-
-    private fun sortByTagName() {
-        adapter.sort { lhs, rhs -> lhs.compareTagTo(rhs) }
-        adapter.notifyDataSetChanged()
-    }
-
-    private class TagCounter(val tag: String) {
-        var count: Int = 1
-
-        override fun toString(): String {
-            return if (count == 1) {
-                tag
-            } else "$tag ($count)"
-        }
-
-        fun compareTagTo(other: TagCounter): Int = tag.compareTo(other.tag, ignoreCase = true)
     }
 
     companion object {

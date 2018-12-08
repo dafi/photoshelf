@@ -191,7 +191,7 @@
     <string name="upload_time">Upload Time</string>
     <string name="navigate_tags">Navigate Tags</string>
     <string name="close">Close</string>
-    <string name="tag_navigator_title">Navigate tags (%1$d)</string>
+    <string name="tag_navigator_distinct_title">Distinct Tags</string>
     <string name="reload">Reload</string>
     <string name="clear_cache">Clear Cache</string>
     <string name="sort_by_count">Sort by Count</string>
