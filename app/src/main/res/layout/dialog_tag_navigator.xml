@@ -25,10 +25,10 @@
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        android:textStyle="bold"
 
         app:layout_constraintStart_toEndOf="@id/distinct_tag_count"
-        app:layout_constraintTop_toTopOf="parent"
-        android:textStyle="bold"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <Button
         android:id="@+id/sort_tag"
@@ -40,14 +40,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- without layout_constrainedHeight the recyclerView content overlaps the elements above it -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tag_list"
-        android:layout_height="wrap_content"
         android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:paddingBottom="30dp"
         android:clipToPadding="false"
         android:scrollbars="vertical"
-        android:layout_marginTop="30dp"
+
+        app:layout_constrainedHeight="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sort_tag"
