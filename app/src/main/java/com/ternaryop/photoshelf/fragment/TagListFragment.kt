@@ -6,33 +6,35 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
-import android.widget.ListView
 import android.widget.SearchView
-import android.widget.SearchView.OnQueryTextListener
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.TagAdapter
 import com.ternaryop.photoshelf.api.post.TagInfo
+import kotlinx.android.synthetic.main.fragment_list_tags.list
+import kotlinx.android.synthetic.main.fragment_list_tags.searchView1
 
 class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_list_tags, container, false)
+        return inflater.inflate(R.layout.fragment_list_tags, container, false)
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val adapter = TagAdapter(
-                context!!,
-                android.R.layout.simple_list_item_1,
-                blogName!!)
+            context!!,
+            android.R.layout.simple_list_item_1,
+            blogName!!)
 
-        val listView = rootView.findViewById<View>(R.id.list) as ListView
-        listView.adapter = adapter
-        listView.onItemClickListener = this
-        listView.isTextFilterEnabled = true
+        list.adapter = adapter
+        list.onItemClickListener = this
+        list.isTextFilterEnabled = true
         // start with list filled
         adapter.filter.filter("")
-        (rootView.findViewById<View>(R.id.searchView1) as SearchView)
-            .setOnQueryTextListener(object : OnQueryTextListener {
+        searchView1
+            .setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
                     return false
                 }
@@ -42,7 +44,6 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
                     return true
                 }
             })
-        return rootView
     }
 
     override fun onItemClick(parent: AdapterView<*>, v: View, position: Int, id: Long) {
