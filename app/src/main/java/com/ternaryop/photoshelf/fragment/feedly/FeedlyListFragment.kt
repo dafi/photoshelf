@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.fragment
+package com.ternaryop.photoshelf.fragment.feedly
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -30,8 +31,6 @@ import com.ternaryop.photoshelf.activity.ImagePickerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentDelegate
-import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.LAST_PUBLISH_TIMESTAMP
-import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.SAVED_TIMESTAMP
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.TITLE_NAME
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
 import com.ternaryop.photoshelf.adapter.feedly.titles
@@ -39,6 +38,8 @@ import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.update
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.titlesRequestBody
+import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
+import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -46,22 +47,19 @@ import io.reactivex.SingleObserver
 import io.reactivex.disposables.Disposable
 import java.io.InputStreamReader
 
-class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
-
+class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     private lateinit var adapter: FeedlyContentAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var feedlyClient: FeedlyClient
     private lateinit var preferences: SharedPreferences
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
-
     private val newerThanHours: Int
         get() = preferences.getInt(PREF_NEWER_THAN_HOURS, DEFAULT_NEWER_THAN_HOURS)
-
     private val maxFetchItemCount: Int
         get() = preferences.getInt(PREF_MAX_FETCH_ITEMS_COUNT, DEFAULT_MAX_FETCH_ITEMS_COUNT)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+        savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.saved_content_list, container, false)
     }
 
@@ -175,24 +173,23 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.saved_content, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-
-        when (adapter.sortSwitcher.currentSortable.sortId) {
-            TITLE_NAME -> menu.findItem(R.id.sort_title_name).isChecked = true
-            SAVED_TIMESTAMP -> menu.findItem(R.id.sort_saved_time).isChecked = true
-            LAST_PUBLISH_TIMESTAMP -> menu.findItem(R.id.sort_published_tag).isChecked = true
+    override fun onAttachFragment(childFragment: Fragment?) {
+        super.onAttachFragment(childFragment)
+        if (childFragment !is BottomMenuSheetDialogFragment) {
+            return
+        }
+        childFragment.menuListener = when (childFragment.tag) {
+            FRAGMENT_TAG_SORT -> FeedlySortBottomMenuListener(this, adapter.sortSwitcher)
+            else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val isChecked = !item.isChecked
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.feedly, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_refresh -> {
                 refresh(true)
@@ -210,28 +207,8 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                 settings()
                 return true
             }
-            R.id.sort_title_name -> {
-                item.isChecked = isChecked
-                adapter.sortBy(TITLE_NAME)
-                adapter.notifyDataSetChanged()
-                scrollToPosition(0)
-                saveSortSettings()
-                return true
-            }
-            R.id.sort_saved_time -> {
-                item.isChecked = isChecked
-                adapter.sortBy(SAVED_TIMESTAMP)
-                adapter.notifyDataSetChanged()
-                scrollToPosition(0)
-                saveSortSettings()
-                return true
-            }
-            R.id.sort_published_tag -> {
-                item.isChecked = isChecked
-                adapter.sortBy(LAST_PUBLISH_TIMESTAMP)
-                adapter.notifyDataSetChanged()
-                scrollToPosition(0)
-                saveSortSettings()
+            R.id.action_sort -> {
+                BottomMenuSheetDialogFragment().show(childFragmentManager, FRAGMENT_TAG_SORT)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -352,12 +329,21 @@ class SavedContentListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         }
     }
 
+    fun sortBy(sortType: Int) {
+        adapter.sortBy(sortType)
+        adapter.notifyDataSetChanged()
+        scrollToPosition(0)
+        saveSortSettings()
+    }
+
     companion object {
         const val PREF_MAX_FETCH_ITEMS_COUNT = "savedContent.MaxFetchItemCount"
         const val PREF_NEWER_THAN_HOURS = "savedContent.NewerThanHours"
         const val PREF_DELETE_ON_REFRESH = "savedContent.DeleteOnRefresh"
         const val PREF_SORT_TYPE = "savedContent.SortType"
         const val PREF_SORT_ASCENDING = "savedContent.SortAscending"
+
+        const val FRAGMENT_TAG_SORT = "sort"
 
         const val DEFAULT_MAX_FETCH_ITEMS_COUNT = 300
         const val DEFAULT_NEWER_THAN_HOURS = 24

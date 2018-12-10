@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.fragment
+package com.ternaryop.photoshelf.fragment.draft
 
 import android.app.Activity
 import android.content.Intent
@@ -13,14 +13,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.DraftPostHelper
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.LAST_PUBLISHED_TAG
-import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.TAG_NAME
-import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.UPLOAD_TIME
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
@@ -28,6 +27,8 @@ import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
+import com.ternaryop.photoshelf.fragment.AbsPostsListFragment
+import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
@@ -56,7 +57,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
     private lateinit var draftPostHelper: DraftPostHelper
-    private lateinit var draftCache: TumblrPostCacheDAO
+    lateinit var draftCache: TumblrPostCacheDAO
 
     private val currentTextView: TextView
         get() = progressHighlightViewLayout.currentView as TextView
@@ -89,68 +90,43 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         refreshCache()
     }
 
+    override fun onAttachFragment(childFragment: Fragment?) {
+        super.onAttachFragment(childFragment)
+        if (childFragment !is BottomMenuSheetDialogFragment) {
+            return
+        }
+        childFragment.menuListener = when (childFragment.tag) {
+            FRAGMENT_TAG_SORT -> DraftSortBottomMenuListener(this, photoAdapter.sortSwitcher)
+            FRAGMENT_TAG_REFRESH -> DraftRefreshBottomMenuListener(this)
+            else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.draft, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-
-        when (photoAdapter.sortSwitcher.sortable.sortId) {
-            TAG_NAME -> menu.findItem(R.id.sort_tag_name).isChecked = true
-            LAST_PUBLISHED_TAG -> menu.findItem(R.id.sort_published_tag).isChecked = true
-            UPLOAD_TIME -> menu.findItem(R.id.sort_upload_time).isChecked = true
-        }
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val isChecked = !item.isChecked
-
         when (item.itemId) {
-            R.id.clear_draft_cache -> {
-                draftCache.clearCache(TumblrPostCache.CACHE_TYPE_DRAFT)
-                refreshCache()
+            R.id.action_refresh -> {
+                BottomMenuSheetDialogFragment().show(childFragmentManager, FRAGMENT_TAG_REFRESH)
                 return true
             }
-            R.id.reload_draft -> {
-                refreshCache()
-                return true
-            }
-            R.id.sort_tag_name -> {
-                item.isChecked = isChecked
-                photoAdapter.sortBy(TAG_NAME)
-                photoAdapter.notifyDataSetChanged()
-                scrollToPosition(0)
-                saveSettings()
-                return true
-            }
-            R.id.sort_published_tag -> {
-                item.isChecked = isChecked
-                photoAdapter.sortBy(LAST_PUBLISHED_TAG)
-                photoAdapter.notifyDataSetChanged()
-                scrollToPosition(0)
-                saveSettings()
-                return true
-            }
-            R.id.sort_upload_time -> {
-                item.isChecked = isChecked
-                photoAdapter.sortBy(UPLOAD_TIME)
-                photoAdapter.notifyDataSetChanged()
-                scrollToPosition(0)
-                saveSettings()
+            R.id.action_sort -> {
+                BottomMenuSheetDialogFragment().show(childFragmentManager, FRAGMENT_TAG_SORT)
                 return true
             }
             R.id.action_tag_navigator -> {
                 TagNavigatorDialog.newInstance(photoAdapter.photoList,
-                    this, TAG_NAVIGATOR_DIALOG).show(fragmentManager, "dialog")
+                    this, TAG_NAVIGATOR_DIALOG).show(fragmentManager, FRAGMENT_TAG_NAVIGATOR)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    private fun refreshCache() {
+    fun refreshCache() {
         // do not start another refresh if the current one is running
         if (swipeLayout.isWaitingResult) {
             return
@@ -347,10 +323,23 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             .apply()
     }
 
+    fun sortBy(sortType: Int, isAscending: Boolean) {
+        photoAdapter.sortBy(sortType, isAscending)
+        photoAdapter.notifyDataSetChanged()
+        scrollToPosition(0)
+        saveSettings()
+    }
+
     companion object {
         private const val TAG_NAVIGATOR_DIALOG = 1
+
+        const val FRAGMENT_TAG_REFRESH = "refresh"
+        const val FRAGMENT_TAG_SORT = "sort"
+        const val FRAGMENT_TAG_NAVIGATOR = "navigator"
+
         const val PREF_DRAFT_SORT_TYPE = "draft_sort_type"
         const val PREF_DRAFT_SORT_ASCENDING = "draft_sort_ascending"
         const val PREF_DRAFT_LAST_TIMESTAMP = "draft_last_timeStamp"
     }
 }
+

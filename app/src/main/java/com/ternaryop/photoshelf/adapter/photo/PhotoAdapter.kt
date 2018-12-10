@@ -162,7 +162,12 @@ class PhotoAdapter(private val context: Context)
         }
     }
 
-    fun sortBy(sortType: Int) {
+    fun sortBy(sortType: Int, isAscending: Boolean) {
+        sortSwitcher.setType(sortType, isAscending)
+        sort()
+    }
+
+    fun toogleSortBy(sortType: Int) {
         if (sortSwitcher.changeDirection(sortType)) {
             sort()
         }

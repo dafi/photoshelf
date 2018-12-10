@@ -185,10 +185,13 @@
     <string name="app_name_share_label">A Photo Shelf</string>
     <string name="never_run">Never run</string>
     <string name="extracting_images">Extracting images</string>
-    <string name="sort">Sort</string>
+    <string name="sort_by">Sort By</string>
     <string name="tag_name">Tag Name</string>
-    <string name="last_published_tag">Last Published Tag</string>
-    <string name="upload_time">Upload Time</string>
+    <string name="sort_tag_name_a_z">Tag Name (A to Z)</string>
+    <string name="sort_tag_name_z_a">Tag Name (Z to A)</string>
+    <string name="sort_last_published_tag">Last Published Tag</string>
+    <string name="sort_upload_time_date_newest">Upload Time (newest first)</string>
+    <string name="sort_upload_time_date_oldest">Upload Time (oldest first)</string>
     <string name="navigate_tags">Navigate Tags</string>
     <string name="close">Close</string>
     <string name="tag_navigator_distinct_title">Distinct Tags</string>

@@ -18,12 +18,12 @@ import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.BestOfFragment
 import com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment
 import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment
-import com.ternaryop.photoshelf.fragment.DraftListFragment
+import com.ternaryop.photoshelf.fragment.draft.DraftListFragment
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
 import com.ternaryop.photoshelf.fragment.HomeFragment
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment
 import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment
-import com.ternaryop.photoshelf.fragment.SavedContentListFragment
+import com.ternaryop.photoshelf.fragment.feedly.FeedlyListFragment
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment
 import com.ternaryop.photoshelf.fragment.TagListFragment
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment
@@ -124,7 +124,7 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdaysPublisherFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", SavedContentListFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", FeedlyListFragment::class.java))
 
         val arguments = Bundle()
         arguments.putString(EXTRA_URL, getString(R.string.test_page_url))

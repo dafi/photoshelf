@@ -6,18 +6,7 @@
             android:id="@+id/action_refresh"
             android:icon="@drawable/ic_action_refresh"
             app:showAsAction="ifRoom"
-            android:title="@string/refresh">
-            <menu>
-                <group>
-                    <item
-                        android:id="@+id/reload_draft"
-                        android:title="@string/reload"/>
-                    <item
-                        android:id="@+id/clear_draft_cache"
-                        android:title="@string/clear_cache"/>
-                </group>
-            </menu>
-        </item>
+            android:title="@string/refresh"/>
         <item
             android:id="@+id/action_search"
             app:actionViewClass="androidx.appcompat.widget.SearchView"
@@ -28,22 +17,7 @@
             android:id="@+id/action_sort"
             android:icon="@drawable/ic_action_sort"
             app:showAsAction="ifRoom"
-            android:title="@string/sort">
-            <menu>
-                <group android:checkableBehavior="single">
-                    <item
-                        android:id="@+id/sort_tag_name"
-                        android:title="@string/tag_name"/>
-                    <item
-                        android:id="@+id/sort_published_tag"
-                        android:checked="true"
-                        android:title="@string/last_published_tag"/>
-                    <item
-                        android:id="@+id/sort_upload_time"
-                        android:title="@string/upload_time"/>
-                </group>
-            </menu>
-        </item>
+            android:title="@string/sort_by"/>
         <item
             android:id="@+id/action_tag_navigator"
             android:icon="@drawable/ic_action_tag_navigator"
