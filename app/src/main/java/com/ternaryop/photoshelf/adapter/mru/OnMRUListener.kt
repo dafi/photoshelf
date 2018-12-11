@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.dialogs.mru
+package com.ternaryop.photoshelf.adapter.mru
 
 /**
  * Created by dave on 16/12/17.

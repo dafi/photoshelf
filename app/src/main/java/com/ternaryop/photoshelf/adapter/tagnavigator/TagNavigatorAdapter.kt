@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.dialogs.tagnavigator
+package com.ternaryop.photoshelf.adapter.tagnavigator
 
 import android.content.Context
 import android.view.LayoutInflater

@@ -14,8 +14,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.api.post.TagInfo
-import com.ternaryop.photoshelf.dialogs.tagnavigator.TagNavigatorAdapter
-import com.ternaryop.photoshelf.dialogs.tagnavigator.TagNavigatorListener
+import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorAdapter
+import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorListener
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_count
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_title
 import kotlinx.android.synthetic.main.dialog_tag_navigator.sort_tag

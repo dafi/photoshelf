@@ -27,8 +27,8 @@ import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
-import com.ternaryop.photoshelf.dialogs.mru.MRUHolder
-import com.ternaryop.photoshelf.dialogs.mru.OnMRUListener
+import com.ternaryop.photoshelf.adapter.mru.MRUHolder
+import com.ternaryop.photoshelf.adapter.mru.OnMRUListener
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost

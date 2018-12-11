@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.dialogs.mru
+package com.ternaryop.photoshelf.adapter.mru
 
 import android.content.Context
 import android.graphics.drawable.ColorDrawable

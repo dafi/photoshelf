@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.dialogs.tagnavigator
+package com.ternaryop.photoshelf.adapter.tagnavigator
 
 import android.view.View
 import android.widget.TextView
