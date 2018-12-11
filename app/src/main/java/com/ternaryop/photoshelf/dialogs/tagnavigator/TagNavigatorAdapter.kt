@@ -6,14 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.api.post.TagInfo
 
 interface TagNavigatorListener {
-    fun onClick(item: TagCounter)
+    fun onClick(item: TagInfo)
 }
 
 class TagNavigatorAdapter(
     private val context: Context,
-    list: List<TagCounter>,
+    list: List<TagInfo>,
     private val tagNavigatorListener: TagNavigatorListener)
     : RecyclerView.Adapter<TagNavigatorViewHolder>(), View.OnClickListener  {
 
@@ -42,7 +43,7 @@ class TagNavigatorAdapter(
     fun sortByTagCount() {
         items.sortWith(Comparator { lhs, rhs ->
             // sort descending
-            val sign = rhs.count - lhs.count
+            val sign = (rhs.postCount - lhs.postCount).toInt()
             if (sign == 0) lhs.compareTagTo(rhs) else sign
         })
         notifyDataSetChanged()

@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
-import com.ternaryop.photoshelf.dialogs.tagnavigator.TagCounter
+import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.photoshelf.dialogs.tagnavigator.TagNavigatorAdapter
 import com.ternaryop.photoshelf.dialogs.tagnavigator.TagNavigatorListener
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_count
@@ -46,7 +46,7 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = TagNavigatorAdapter(activity!!,
-            TagCounter.fromStrings(arguments!!.getStringArrayList(ARG_TAG_LIST)!!),
+            TagInfo.fromStrings(arguments!!.getStringArrayList(ARG_TAG_LIST)!!),
             this)
         tag_list.setHasFixedSize(true)
         tag_list.layoutManager = LinearLayoutManager(activity)
@@ -69,7 +69,7 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
         }
     }
 
-    override fun onClick(item: TagCounter) {
+    override fun onClick(item: TagInfo) {
         val intent = Intent()
         intent.putExtra(SELECTED_TAG, item.tag)
         targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
