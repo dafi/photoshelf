@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
+import android.widget.Filterable
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick
@@ -19,7 +20,7 @@ import org.greenrobot.eventbus.EventBus
 import java.util.Calendar
 
 class PhotoAdapter(private val context: Context)
-    : AbsBaseAdapter<PhotoViewHolder>(), View.OnClickListener, View.OnLongClickListener {
+    : AbsBaseAdapter<PhotoViewHolder>(), View.OnClickListener, View.OnLongClickListener, Filterable {
 
     private val allPosts = mutableListOf<PhotoShelfPost>()
     private var visiblePosts = allPosts
@@ -32,9 +33,8 @@ class PhotoAdapter(private val context: Context)
     var counterType = CounterEvent.NONE
     val selection = SelectionArrayViewHolder(this)
 
-    val filter: Filter
-        get() = object : Filter() {
-
+    override fun getFilter(): Filter {
+        return object : Filter() {
             override fun publishResults(constraint: CharSequence, results: Filter.FilterResults) {
                 if (results.values === allPosts) {
                     visiblePosts = allPosts
@@ -63,6 +63,7 @@ class PhotoAdapter(private val context: Context)
                 return results
             }
         }
+    }
 
     val photoList: List<PhotoShelfPost>
         get() = visiblePosts
