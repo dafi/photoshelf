@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
-import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorAdapter
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorListener
+import com.ternaryop.photoshelf.api.post.TagInfo
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_count
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_title
 import kotlinx.android.synthetic.main.dialog_tag_navigator.sort_tag
@@ -47,6 +47,7 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
 
         adapter = TagNavigatorAdapter(activity!!,
             TagInfo.fromStrings(arguments!!.getStringArrayList(ARG_TAG_LIST)!!),
+            "",
             this)
         tag_list.setHasFixedSize(true)
         tag_list.layoutManager = LinearLayoutManager(activity)

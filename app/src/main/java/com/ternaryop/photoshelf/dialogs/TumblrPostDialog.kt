@@ -21,18 +21,18 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.TagAdapter
+import com.ternaryop.photoshelf.adapter.mru.MRUHolder
+import com.ternaryop.photoshelf.adapter.mru.OnMRUListener
+import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorArrayAdapter
+import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorFilter
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
-import com.ternaryop.photoshelf.adapter.mru.MRUHolder
-import com.ternaryop.photoshelf.adapter.mru.OnMRUListener
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
-import com.ternaryop.utils.text.anyMatches
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.toHtml
 import io.reactivex.Single
@@ -299,25 +299,27 @@ class PostDialogData : Serializable {
     }
 }
 
-class TagsHolder(context: Context,
+class TagsHolder(
+    context: Context,
     private val textView: MultiAutoCompleteTextView,
-    blogName: String) : OnMRUListener {
+    blogName: String)
+    : OnMRUListener {
 
     private var defaultColor = textView.textColors
     private var defaultBackground = textView.background
 
-    private val tagAdapter = TagAdapter(
+    private val tagAdapter = TagNavigatorArrayAdapter(
         context,
-        android.R.layout.simple_dropdown_item_1line,
+        R.layout.tag_navigator_row,
         blogName)
 
     init {
-        textView.setAdapter<TagAdapter>(tagAdapter)
+        textView.setAdapter(tagAdapter)
         textView.setTokenizer(MultiAutoCompleteTextView.CommaTokenizer())
     }
 
     fun updateBlogName(blogName: String) {
-        tagAdapter.blogName = blogName
+        (tagAdapter.filter as TagNavigatorFilter).blogName = blogName
         tagAdapter.notifyDataSetChanged()
     }
 
@@ -347,13 +349,21 @@ class TagsHolder(context: Context,
     }
 
     override fun onItemSelect(item: String) {
+        textView.setText(toggleTag(item).joinToString(", "))
+        textView.moveCaretToEnd()
+        textView.requestFocus()
+    }
+
+    private fun toggleTag(item: String): MutableList<String> {
         val tags = TumblrPost.tagsFromString(tags)
-        if (!tags.anyMatches(item)) {
+        val index = tags.indexOfFirst { it.equals(item, true) }
+
+        if (index < 0) {
             tags.add(item)
-            textView.setText(tags.joinToString(", "))
-            textView.moveCaretToEnd()
-            textView.requestFocus()
+        } else {
+            tags.removeAt(index)
         }
+        return tags
     }
 
     override fun onItemDelete(item: String) {

@@ -4,18 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemClickListener
 import android.widget.SearchView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
-import com.ternaryop.photoshelf.adapter.TagAdapter
+import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorAdapter
+import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorListener
 import com.ternaryop.photoshelf.api.post.TagInfo
-import kotlinx.android.synthetic.main.fragment_list_tags.list
 import kotlinx.android.synthetic.main.fragment_list_tags.searchView1
+import kotlinx.android.synthetic.main.fragment_list_tags.tag_list
 
-class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
-
+class TagListFragment : AbsPhotoShelfFragment(), TagNavigatorListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_list_tags, container, false)
@@ -23,14 +22,16 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = TagAdapter(
+        val adapter = TagNavigatorAdapter(
             context!!,
-            android.R.layout.simple_list_item_1,
-            blogName!!)
+            emptyList(),
+            blogName!!,
+            this)
 
-        list.adapter = adapter
-        list.onItemClickListener = this
-        list.isTextFilterEnabled = true
+        tag_list.adapter = adapter
+        tag_list.setHasFixedSize(true)
+        tag_list.layoutManager = LinearLayoutManager(activity)
+
         // start with list filled
         adapter.filter.filter("")
         searchView1
@@ -46,8 +47,7 @@ class TagListFragment : AbsPhotoShelfFragment(), OnItemClickListener {
             })
     }
 
-    override fun onItemClick(parent: AdapterView<*>, v: View, position: Int, id: Long) {
-        val tag = (parent.getItemAtPosition(position) as TagInfo).tag
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, tag, false)
+    override fun onClick(item: TagInfo) {
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, item.tag, false)
     }
 }
