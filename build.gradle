@@ -32,7 +32,7 @@ buildscript {
         retrofitConverterGsonLibVersion = '2.5.0'
         okhttp3LoggingInterceptorLibVersion = '3.12.0'
         androidXTakisoftPreferencex = 'preferencex:1.0.0'
-
+        jsoupLibVersion = '1.11.3'
 
         junitLibVersion = '4.12'
         androidXRulesLibVersion = '1.1.0'

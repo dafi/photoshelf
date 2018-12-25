@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "selectors": [
+    {
+      "urlPattern": "images.bangtidy.net\/.*\/attachment",
+      "image": {
+        "css": "#theimage"
+      }
+    },
+    {
+      "urlPattern": "images.bangtidy.net\/[0-9]+\/[0-9]+\/.*\/.*\/",
+      "image": {
+        "css": "#theimage"
+      }
+    },
+    {
+      "urlPattern": "x05.org",
+      "image": {
+        "css": "#img_obj"
+      }
+    },
+    {
+      "urlPattern": "imagebam.com",
+      "image": {
+        "css": ".image-container img",
+        "regExp": "property=\"og:image\"\\s+content=\"(.*?)\""
+      }
+    },
+    {
+      "urlPattern": "pixhost.*?\/show",
+      "image": {
+        "css": "#image"
+      }
+    },
+    {
+      "urlPattern": "pixtreat.com",
+      "image": {
+        "css": "#img_obj"
+      }
+    },
+    {
+      "urlPattern": "imagesion.com",
+      "image": {
+        "css": "#full_image"
+      }
+    },
+    {
+      "urlPattern": "picturesion.com",
+      "image": {
+        "css": "#full_image"
+      }
+    },
+    {
+      "urlPattern": "imagevenue.com",
+      "image": {
+        "css": "#thepic"
+      }
+    },
+    {
+      "urlPattern": "imagetwist.com",
+      "image": {
+        "css": ".pic"
+      }
+    },
+    {
+      "urlPattern": "hotcelebshome.com",
+      "gallery": {
+        "container": ".tiled-gallery",
+        "isImageDirectUrl": true,
+        "regExp": "<noscript><img(?:.*?)data-orig-file=\"(.*?)\"(?:.*?)src=\"(.*?)\"(?:.*?)\/><\/noscript>",
+        "regExpImageUrlIndex": 1,
+        "regExpThumbUrlIndex": 2
+      }
+    },
+    {
+      "urlPattern": "hollywoodtuna.com",
+      "image": {
+        "css": "p a img"
+      },
+      "gallery": {
+        "title": ".topictitle"
+      }
+    },
+    {
+      "urlPattern": "imgchili.net",
+      "image": {
+        "css": "#show_image"
+      }
+    },
+    {
+      "urlPattern": "celebmafia.com",
+      "gallery": {
+        "isImageDirectUrl": true,
+        "container": ".entry-content a img[src*=jpg]",
+        "title": ".wp-caption-text"
+      }
+    },
+    {
+      "urlPattern": "disabled_hawtcelebs.com",
+      "gallery": {
+        "isImageDirectUrl": true,
+        "title": ".posthead h1"
+      }
+    },
+    {
+      "urlPattern": "hawtcelebs.com\/wp-content",
+      "gallery": {
+        "isImageDirectUrl": true,
+        "title": ".posthead h1"
+      }
+    },
+    {
+      "urlPattern": "imgearn.net",
+      "image": {
+        "css": ".pic"
+      }
+    },
+    {
+      "urlPattern": "storeimgs.net",
+      "image": {
+        "css": ".centred_resized"
+      }
+    },
+    {
+      "urlPattern": "imagegaga.net",
+      "image": {
+        "css": "#full_image"
+      }
+    },
+    {
+      "urlPattern": "sawfirst.com",
+      "image": {
+        "pageChain": [
+          {
+          "pageSel": ".entry-title a",
+          "selAttr": "href"
+          }
+        ]
+      },
+      "gallery": {
+        "container": "#gallery-1 a img[data-src*=jpg]",
+        "thumbImageSelAttr": "data-src",
+        "title": ".entry p strong"
+      }
+    },
+    {
+      "urlPattern": "imgbox.com",
+      "image": {
+        "css": "#img"
+      }
+    },
+    {
+      "urlPattern": ".*someimage.com",
+      "image": {
+        "css": "#viewimage"
+      }
+    },
+    {
+      "urlPattern": "imgpit.com",
+      "image": {
+        "css": ".centred_resized"
+      }
+    },
+    {
+      "urlPattern": "gceleb.com",
+      "gallery": {
+        "isImageDirectUrl": true,
+        "container":".entry img"
+      }
+    },
+    {
+      "urlPattern": "imgz.pw",
+      "image": {
+        "regExp": "CHV\\.obj\\.image_viewer\\.image.*?url:\\s+[\\'\"](.*?)[\\'\"]"
+      }
+    },
+    {
+      "urlPattern": "imagetong.ga",
+      "image": {
+        "regExp": "CHV\\.obj\\.image_viewer\\.image.*?url:\\s+[\\'\"](.*?)[\\'\"]"
+      }
+    },
+    {
+      "urlPattern": "imageleon.com",
+      "image": {
+        "css": "#full_image"
+      }
+    },
+    {
+      "urlPattern": "imgcredit.xyz",
+      "image": {
+        "css": ".centred, .centred_resized",
+        "regExp": "CHV\\.obj\\.image_viewer\\.image.*?url:\\s+[\\'\"](.*?)[\\'\"]"
+      }
+    },
+    {
+      "urlPattern": "moreimage.pw",
+      "image": {
+        "css": ".centred, .centred_resized",
+        "regExp": "CHV\\.obj\\.image_viewer\\.image.*?url:\\s+[\\'\"](.*?)[\\'\"]"
+      }
+    },
+    {
+      "urlPattern": "hotflick.net",
+      "image": {
+        "css": ".pict_content img"
+      },
+      "gallery": {
+        "title": "#box-gallery-info-title",
+        "container": ".box-item-155-img img",
+        "multiPage": ".box-paging a.active ~ a"
+      }
+    },
+    {
+      "urlPattern": "carreck.com",
+      "gallery": {
+        "title": ".postentry p"
+      }
+    },
+    {
+      "urlPattern": "kosty555.info",
+      "gallery": {
+        "title": ".ipsType_pagetitle"
+      }
+    },
+    {
+      "urlPattern": "img.yt",
+      "image": {
+        "css": "img.centred",
+        "postData": {
+          "imgContinue": "Continue to image ... "
+        }
+      }
+    },
+    {
+      "urlPattern": "gotceleb",
+      "image": {
+        "pageChain": [
+            {
+              "pageSel": ".postinfo a",
+              "pageSel_after_gotceleb_change_site": ".entry-content .attachment a",
+              "selAttr":"href"
+            }
+        ]
+      },
+      "gallery": {
+        "container": ".attachment-medium, #gallery-1 a img"
+      }
+    },
+    {
+      "urlPattern": "croea.com",
+      "image": {
+        "css": "img.pic.img"
+      }
+    },
+    {
+      "urlPattern": "pixroute.com",
+      "image": {
+        "css": "img[style*='cursor.cur']"
+      }
+    },
+    {
+      "urlPattern": "celebrityphotos.co",
+      "gallery": {
+        "title": ".mb30"
+      }
+    },
+    {
+      "urlPattern": "image-bugs.com",
+      "image": {
+        "regExp": "CHV\\.obj\\.image_viewer\\.image.*?url:\\s+[\\'\"](.*?)[\\'\"]"
+      }
+    },
+    {
+      "urlPattern": "sexybabepics",
+      "image": {
+        "regExp": "CHV\\.obj\\.image_viewer\\.image.*?url:\\s+[\\'\"](.*?)[\\'\"]"
+      }
+    },
+    {
+      "urlPattern": "thesuperficial.com",
+      "gallery": {
+        "isImageDirectUrl": true,
+        "regExp": "\"images\":{.*?\"main\":\"(.*?)\",\"full\":\"(.*?)\"",
+        "regExpImageUrlIndex": 2,
+        "regExpThumbUrlIndex": 1
+      }
+    }
+  ]
+}

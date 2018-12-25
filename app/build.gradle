@@ -32,6 +32,8 @@ dependencies {
 
     implementation "com.google.code.gson:gson:${rootProject.ext.gsonLibVersion}"
 
+    implementation "org.jsoup:jsoup:${rootProject.ext.jsoupLibVersion}"
+
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryUtilLibVersion}"
 
     testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"

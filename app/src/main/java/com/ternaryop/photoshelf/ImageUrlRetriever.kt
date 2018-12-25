@@ -7,6 +7,9 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.Response
 import com.ternaryop.photoshelf.api.extractor.ImageGalleryResult
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
+import com.ternaryop.photoshelf.domselector.DomSelectorManager
+import com.ternaryop.photoshelf.domselector.GalleryExtractor
+import com.ternaryop.photoshelf.domselector.ImageExtractor
 import com.ternaryop.utils.network.UriUtils
 import com.ternaryop.utils.network.resolveShorten
 import com.ternaryop.utils.network.saveURL
@@ -38,7 +41,8 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
     }
 
     private fun readImageGalleryObservable(url: String): Single<Response<ImageGalleryResult>> {
-        return ApiManager.imageExtractorService(context).getGallery(URL(url).resolveShorten().toString())
+        return GalleryExtractor(DomSelectorManager.selectors(context), ApiManager.parserService(context))
+            .getGallery(URL(url).resolveShorten().toString())
     }
 
     private fun retrieveImageUrl(imageInfo: ImageInfo): Maybe<String> {
@@ -57,8 +61,7 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
             return Single.just(link)
         }
         val url = imageInfo.documentUrl
-        return ApiManager.imageExtractorService(context).getImageUrl(url!!)
-            .map { it.response.imageUrl }
+        return ImageExtractor(DomSelectorManager.selectors(context)).getImageURL(url!!)
     }
 
     private fun makeUri(url: String, useFile: Boolean): Uri {
