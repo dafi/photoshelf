@@ -285,6 +285,12 @@
         "regExpImageUrlIndex": 2,
         "regExpThumbUrlIndex": 1
       }
+    },
+    {
+      "urlPattern": "turboimagehost.com",
+      "image": {
+        "css": ".uImage"
+      }
     }
   ]
 }
