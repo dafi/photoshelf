@@ -15,7 +15,7 @@ class DraftSortBottomMenuListener(
         get() = R.menu.draft_sort
 
     private val uploadTimeId =
-        if (sortSwitcher.sortable.isAscending) R.id.sort_upload_time_date_newest else R.id.sort_upload_time_date_oldest
+        if (sortSwitcher.sortable.isAscending) R.id.sort_upload_time_date_oldest else R.id.sort_upload_time_date_newest
 
     private val tagNameId =
         if (sortSwitcher.sortable.isAscending) R.id.sort_tag_name_a_z else R.id.sort_tag_name_z_a
