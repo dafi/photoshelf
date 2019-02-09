@@ -65,11 +65,11 @@
     {
       "urlPattern": "hotcelebshome.com",
       "gallery": {
-        "container": ".tiled-gallery",
+        "container": "..entry-content",
         "isImageDirectUrl": true,
-        "regExp": "<noscript><img(?:.*?)data-orig-file=\"(.*?)\"(?:.*?)src=\"(.*?)\"(?:.*?)\/><\/noscript>",
-        "regExpImageUrlIndex": 1,
-        "regExpThumbUrlIndex": 2
+        "regExp": "<noscript><img(?:.*?)data-url=\"(.*?)\"(?:.*?)src=\"(.*?)\"(?:.*?)\/><\/noscript>",
+        "regExpImageUrlIndex": 2,
+        "regExpThumbUrlIndex": 1
       }
     },
     {
