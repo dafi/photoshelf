@@ -237,7 +237,8 @@
       "image": {
         "pageChain": [
             {
-              "pageSel": ".postinfo a",
+              "pageSel": ".entry-content a[href*=wp-content]",
+              "pageSel_changed_again": ".postinfo a",
               "pageSel_after_gotceleb_change_site": ".entry-content .attachment a",
               "selAttr":"href"
             }
