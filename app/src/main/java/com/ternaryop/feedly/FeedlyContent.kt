@@ -19,10 +19,13 @@ data class FeedlyOrigin(val title: String)
 
 data class SimpleFeedlyContent(
     override val id: String,
-    override val title: String,
+    @SerializedName("title") val nullableTitle: String?,
     override val originId: String,
     override val actionTimestamp: Long,
-    override val origin: FeedlyOrigin) : FeedlyContent
+    override val origin: FeedlyOrigin) : FeedlyContent {
+    override val title: String
+        get() = nullableTitle ?: "No title"
+}
 
 data class StreamContent(var id: String, val items: List<SimpleFeedlyContent>)
 
