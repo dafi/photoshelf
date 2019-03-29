@@ -3,7 +3,7 @@ package com.ternaryop.photoshelf
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Environment
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.android.TumblrManager
 import io.reactivex.Single

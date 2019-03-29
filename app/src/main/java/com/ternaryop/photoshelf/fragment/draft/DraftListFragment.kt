@@ -3,7 +3,7 @@ package com.ternaryop.photoshelf.fragment.draft
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.ActionMode
 import android.view.Menu
