@@ -34,12 +34,12 @@ class UndeliverableErrorHandler : Consumer<Throwable> {
         }
         if (t is NullPointerException || t is IllegalArgumentException) {
             // that's likely a bug in the application
-            Thread.currentThread().uncaughtExceptionHandler.uncaughtException(Thread.currentThread(), t)
+            Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), t)
             return
         }
         if (t is IllegalStateException) {
             // that's a bug in RxJava or in a custom operator
-            Thread.currentThread().uncaughtExceptionHandler.uncaughtException(Thread.currentThread(), t)
+            Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), t)
         }
     }
 

@@ -160,7 +160,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         val d = imageUrlRetriever.readImageGallery(url)
                 .doFinally { progressHighlightViewLayout.stopProgress() }
                 .subscribe({ this.onGalleryRetrieved(it.response.gallery) }
-                ) { t -> showSnackbar(makeSnack(gridView, t.localizedMessage) { refreshUI() }) }
+                ) { t -> showSnackbar(makeSnack(gridView, t.localizedMessage ?: "") { refreshUI() }) }
         compositeDisposable.add(d)
     }
 
@@ -213,7 +213,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                 .toList()
                 .subscribe({ this.onImagesRetrieved(it) }
                 ) { throwable ->
-                    DialogUtils.showSimpleMessageDialog(context!!, R.string.url_not_found, throwable.localizedMessage) }
+                    DialogUtils.showSimpleMessageDialog(context!!, R.string.url_not_found, throwable.localizedMessage ?: "") }
         compositeDisposable.add(d)
     }
 
@@ -251,7 +251,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                         ImageViewerActivity.startImageViewer(context!!, url)
                     }
                     ) { throwable -> DialogUtils.showSimpleMessageDialog(context!!,
-                        R.string.url_not_found, throwable.localizedMessage) }
+                        R.string.url_not_found, throwable.localizedMessage ?: "") }
             compositeDisposable.add(d)
         } else {
             ImageViewerActivity.startImageViewer(context!!, imageUrl)

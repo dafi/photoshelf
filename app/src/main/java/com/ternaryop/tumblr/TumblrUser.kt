@@ -10,9 +10,9 @@ import java.io.Serializable
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class TumblrUser @Throws(JSONException::class) constructor(json: JSONObject) : Serializable {
-    var name = json.getString("name")!!
+    var name: String? = json.getString("name")
     var isFollowing = json.getBoolean("following")
-    var url = json.getString("url")!!
+    var url: String? = json.getString("url")
     var updated = json.getLong("updated")
 
     override fun toString(): String {

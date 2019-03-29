@@ -44,9 +44,14 @@ class ImageExtractor(private val domSelectors: DomSelectors) {
 
     private fun urlFromRegExp(selector: Image, documentUrl: String): String {
         val html = HtmlDocumentSupport.download(documentUrl).replace("""([\n\r\t])""".toRegex(), "")
-        val m = Pattern.compile(selector.regExp).matcher(html)
-        if (m.find()) {
-            return m.group(1)
+        selector.regExp?.apply {
+            val m = Pattern.compile(selector.regExp).matcher(html)
+            if (m.find()) {
+                val url = m.group(1)
+                if (url != null) {
+                    return url
+                }
+            }
         }
         throw ParseException("Unable to find image url for $documentUrl", 0)
     }

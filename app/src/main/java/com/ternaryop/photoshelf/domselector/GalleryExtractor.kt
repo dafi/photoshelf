@@ -52,8 +52,8 @@ class GalleryExtractor(private val domSelectors: DomSelectors, private val parse
         val list = mutableListOf<ImageInfo>()
 
         while (matches.find()) {
-            val thumbnailURL = matches.group(thumbIndex)
-            val destinationDocumentURL = matches.group(imageIndex)
+            val thumbnailURL = matches.group(thumbIndex) ?: continue
+            val destinationDocumentURL = matches.group(imageIndex) ?: continue
 
             list.add(galleryItemBuilder.build(selector, thumbnailURL, destinationDocumentURL))
         }

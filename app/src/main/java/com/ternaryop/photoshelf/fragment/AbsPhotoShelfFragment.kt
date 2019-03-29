@@ -73,7 +73,7 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     }
 
     protected open fun makeSnake(view: View, t: Throwable): Snackbar {
-        return Snackbar.make(view, t.localizedMessage, Snackbar.LENGTH_LONG)
+        return Snackbar.make(view, t.localizedMessage ?: "", Snackbar.LENGTH_LONG)
     }
 
     protected open fun makeSnack(view: View,

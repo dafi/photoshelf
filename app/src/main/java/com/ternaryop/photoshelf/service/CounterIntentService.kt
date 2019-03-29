@@ -6,9 +6,9 @@ import android.content.Intent
 import com.ternaryop.photoshelf.EXTRA_ACTION
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.EXTRA_TYPE
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftCount
 import com.ternaryop.tumblr.queueCount
@@ -24,10 +24,9 @@ import java.util.Calendar
 class CounterIntentService : IntentService("counterIntent") {
 
     override fun onHandleIntent(intent: Intent?) {
-        if (intent == null) {
-            return
-        }
-        val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME)
+        intent ?: return
+
+        val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME) ?: return
         val type = intent.getIntExtra(EXTRA_TYPE, CounterEvent.NONE)
         val action = intent.getStringExtra(EXTRA_ACTION)
 

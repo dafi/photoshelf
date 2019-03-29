@@ -5,7 +5,7 @@ import org.json.JSONObject
 import java.io.Serializable
 
 class TumblrPhoto @Throws(JSONException::class) constructor(json: JSONObject) : Serializable {
-    var caption = json.getString("caption")!!
+    var caption: String? = json.getString("caption")
     val altSizes = mutableListOf<TumblrAltSize>()
 
     companion object {

@@ -52,8 +52,8 @@ open class TumblrPost : Serializable {
         reblogKey = json.getString("reblog_key")
         isBookmarklet = json.optBoolean("bookmarklet", false)
         isMobile = json.optBoolean("mobile", false)
-        sourceUrl = json.optString("source_url", null)
-        sourceTitle = json.optString("source_title", null)
+        sourceUrl = json.optString("source_url")
+        sourceTitle = json.optString("source_title")
         isLiked = json.optBoolean("liked", false)
         state = json.getString("state")
         totalPosts = json.optLong("total_posts", 0)
@@ -100,6 +100,6 @@ open class TumblrPost : Serializable {
         private const val serialVersionUID = 9136359874716067522L
 
         fun tagsFromString(str: String) = str.split(",")
-            .map { it -> it.trim { it <= ' ' } }.filter { it.isNotEmpty() }.mapTo(mutableListOf()) { it }
+            .map { it.trim { it <= ' ' } }.filter { it.isNotEmpty() }.mapTo(mutableListOf()) { it }
     }
 }

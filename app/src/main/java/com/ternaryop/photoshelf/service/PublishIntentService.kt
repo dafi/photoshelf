@@ -74,14 +74,14 @@ class PublishIntentService : IntentService("publishIntent") {
         if (intent == null) {
             return
         }
-        val url = intent.getParcelableExtra<Uri>(EXTRA_URI)
-        val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME)
-        val postTitle = intent.getStringExtra(EXTRA_POST_TITLE)
-        val postTags = intent.getStringExtra(EXTRA_POST_TAGS)
-        val action = intent.getStringExtra(EXTRA_ACTION)
+        val url = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: return
+        val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME) ?: return
+        val postTitle = intent.getStringExtra(EXTRA_POST_TITLE) ?: return
+        val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: return
+        val action = intent.getStringExtra(EXTRA_ACTION) ?: return
 
         try {
-            postTags?.let { addBirthdateFromTags(it) }
+            addBirthdateFromTags(postTags)
             when (action) {
                 ACTION_PUBLISH_DRAFT -> TumblrManager.getInstance(applicationContext)
                     .draftPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
@@ -164,7 +164,7 @@ class PublishIntentService : IntentService("publishIntent") {
     @Suppress("UNCHECKED_CAST")
     private fun birthdaysPublish(intent: Intent) {
         val list = intent.getSerializableExtra(EXTRA_LIST1) as List<Birthday>
-        val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
+        val blogName = intent.getStringExtra(EXTRA_BLOG_NAME) ?: return
         val publishAsDraft = intent.getBooleanExtra(EXTRA_BOOLEAN1, true)
         var name = ""
 
@@ -187,10 +187,10 @@ class PublishIntentService : IntentService("publishIntent") {
 
     class RetryPublishNotificationBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val url = intent.getParcelableExtra<Uri>(EXTRA_URI)
-            val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME)
-            val postTitle = intent.getStringExtra(EXTRA_POST_TITLE)
-            val postTags = intent.getStringExtra(EXTRA_POST_TAGS)
+            val url = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: return
+            val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME) ?: return
+            val postTitle = intent.getStringExtra(EXTRA_POST_TITLE) ?: return
+            val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: return
             val action = intent.getStringExtra(EXTRA_ACTION)
             val notificationTag = intent.getStringExtra(EXTRA_NOTIFICATION_TAG)
 
