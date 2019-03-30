@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.adapter.feedly
 
-import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.view.View.GONE
@@ -9,6 +8,7 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
@@ -94,17 +94,11 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         }
     }
 
-    @Suppress("MagicNumber")
     private fun setColors(resArray: Int) {
         val array = itemView.context.resources.obtainTypedArray(resArray)
         itemView.background = array.getDrawable(POST_STYLE_INDEX_VIEW_BACKGROUND)
 
-        val titleStyle = array.getResourceId(POST_STYLE_INDEX_TITLE_STYLE, 0)
-        if (Build.VERSION.SDK_INT < 23) {
-            title.setTextAppearance(itemView.context, titleStyle)
-        } else {
-            title.setTextAppearance(titleStyle)
-        }
+        TextViewCompat.setTextAppearance(title, array.getResourceId(POST_STYLE_INDEX_TITLE_STYLE, 0))
         subtitle.setTextColor(array.getColorStateList(POST_STYLE_INDEX_TITLE_TEXT_COLOR))
         array.recycle()
     }

@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
@@ -161,8 +162,9 @@ class MainPreferenceFragment : AppPreferenceFragment() {
         var preferenceVersion = preferenceScreen.findPreference(KEY_VERSION)
         preferenceVersion.title = getString(R.string.version_title, getString(R.string.app_name))
         preferenceVersion.summary = try {
-            val versionName = context!!.packageManager.getPackageInfo(context!!.packageName, 0).versionName
-            val versionCode = context!!.packageManager.getPackageInfo(context!!.packageName, 0).versionCode
+            val packageInfo = context!!.packageManager.getPackageInfo(context!!.packageName, 0)
+            val versionName = packageInfo.versionName
+            val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
             "$versionName build $versionCode"
         } catch (e: Exception) {
             "N/A"
