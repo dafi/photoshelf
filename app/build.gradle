@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
-    implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXLibVersion}"
+    implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXRecyclerviewLibVersion}"
     implementation "androidx.cardview:cardview:${rootProject.ext.androidXLibVersion}"
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
 
@@ -37,7 +37,7 @@ dependencies {
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryUtilLibVersion}"
 
     testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
-    androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXLibVersion}"
+    androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
     androidTestImplementation "androidx.test:rules:${rootProject.ext.androidXRulesLibVersion}"
     androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.androidXEspressoCoreLibVersion}"
 }

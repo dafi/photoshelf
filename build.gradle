@@ -2,43 +2,45 @@
 
 // https://github.com/ben-manes/gradle-versions-plugin
 
-// run gradle dependencyUpdates
+// run ./gradlew dependencyUpdates
 apply plugin: "com.github.ben-manes.versions"
 
 buildscript {
-    ext.kotlin_version = '1.3.20'
+    ext.kotlin_version = '1.3.21'
     ext {
         minSdkVersion = 21
         targetSdkVersion = 28
         compileSdkVersion = 28
         buildToolsVersion = '28.0.3'
-        androidXAppCompatLibVersion = '1.0.2'
         androidXLibVersion = '1.0.0'
-        androidXMaterialLibVersion = '1.1.0-alpha01'
-        androidXConstraintlayoutLibVersion = '2.0.0-alpha2'
+        androidXAppCompatLibVersion = '1.1.0-alpha03'
+        androidXRecyclerviewLibVersion = '1.1.0-alpha03'
+        androidXAnnotationLibVersion = '1.1.0-alpha02'
+        androidXMaterialLibVersion = '1.1.0-alpha05'
+        androidXConstraintlayoutLibVersion = '2.0.0-alpha3'
         flexboxLibVersion = '1.1.0'
         ternaryUtilLibVersion = '1.4'
 
-        rxjavaLibVersion = '2.2.4'
-        rxandroidLibVersion = '2.1.0'
+        rxjavaLibVersion = '2.2.8'
+        rxandroidLibVersion = '2.1.1'
 
-        dropboxCoreLibVersion = '3.0.10'
+        dropboxCoreLibVersion = '3.0.11'
 
         eventbusLibVersion = '3.1.1'
-        scribejavaCoreLibVersion = '6.1.0'
-        jodaLibVersion = '2.10.1'
+        scribejavaCoreLibVersion = '6.5.1'
+        jodaLibVersion = '2.10.1.2'
         picassoLibVersion = '2.71828'
         retrofitLibVersion = '2.5.0'
         gsonLibVersion = '2.8.5'
         retrofitAdapterRrxjavaLibVersion = '2.5.0'
         retrofitConverterGsonLibVersion = '2.5.0'
-        okhttp3LoggingInterceptorLibVersion = '3.12.0'
+        okhttp3LoggingInterceptorLibVersion = '3.14.0'
         androidXTakisoftPreferencex = 'preferencex:1.0.0'
         jsoupLibVersion = '1.11.3'
 
-        junitLibVersion = '4.12'
-        androidXRulesLibVersion = '1.1.0'
-        androidXEspressoCoreLibVersion = '3.1.0'
+        junitLibVersion = '4.13-beta-2'
+        androidXRulesLibVersion = '1.1.2-alpha02'
+        androidXEspressoCoreLibVersion = '3.2.0-alpha02'
     }
     repositories {
         jcenter()
@@ -49,7 +51,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:3.3.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.20.0"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.21.0"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -63,3 +65,8 @@ allprojects {
         google()
     }
 }
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
