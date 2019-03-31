@@ -41,7 +41,7 @@ class ImageUrlRetriever(private val context: Context, private val progressBar: P
     }
 
     private fun readImageGalleryObservable(url: String): Single<Response<ImageGalleryResult>> {
-        return GalleryExtractor(DomSelectorManager.selectors(context), ApiManager.parserService(context))
+        return GalleryExtractor(DomSelectorManager.selectors(context), ApiManager.parserService())
             .getGallery(URL(url).resolveShorten().toString())
     }
 

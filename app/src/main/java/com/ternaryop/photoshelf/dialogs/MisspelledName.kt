@@ -1,10 +1,9 @@
 package com.ternaryop.photoshelf.dialogs
 
 import android.content.Context
-import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.photoshelf.db.DBHelper
-import com.ternaryop.photoshelf.api.ApiManager
 import io.reactivex.Maybe
 import io.reactivex.Single
 
@@ -34,7 +33,7 @@ class MisspelledName(val context: Context) {
     }
 
     private fun getCorrectMisspelledName(name: String): Maybe<String> {
-        return ApiManager.postService(context).getCorrectMisspelledName(name)
+        return ApiManager.postService().getCorrectMisspelledName(name)
             .flatMapMaybe {
                 if (it.response.corrected == null) {
                     Maybe.empty()
@@ -46,10 +45,7 @@ class MisspelledName(val context: Context) {
     }
 
     private fun getMisspelledName(name: String): Maybe<Pair<Int, String>> {
-        return GoogleCustomSearchClient(
-            context.getString(R.string.GOOGLE_CSE_APIKEY),
-            context.getString(R.string.GOOGLE_CSE_CX))
-            .getCorrectedQuery(name)
+        return GoogleCustomSearchClient.getCorrectedQuery(name)
             .flatMapMaybe { result ->
                 if (result.spelling?.correctedQuery == null) {
                     Maybe.empty()

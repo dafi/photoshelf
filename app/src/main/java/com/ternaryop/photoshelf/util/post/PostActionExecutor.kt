@@ -60,7 +60,7 @@ class PostActionExecutor(private val context: Context,
         postAction = DELETE
         return executePostAction(postList, Consumer {
             TumblrManager.getInstance(context).deletePost(blogName, it.postId)
-            ApiManager.postService(context)
+            ApiManager.postService()
                 .deletePost(it.postId)
                 .subscribe()
         })
@@ -91,7 +91,7 @@ class PostActionExecutor(private val context: Context,
                 "tags" to tags
             )
             TumblrManager.getInstance(context).editPost(selectedBlogName, newValues)
-            ApiManager.postService(context)
+            ApiManager.postService()
                 .editTags(post.postId, TumblrPost.tagsFromString(tags))
                 .subscribe {
                     post.tagsFromString(tags)

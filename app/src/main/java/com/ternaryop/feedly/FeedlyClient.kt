@@ -1,6 +1,5 @@
 package com.ternaryop.feedly
 
-import com.dropbox.core.util.StringUtil.UTF8
 import com.google.gson.GsonBuilder
 import com.ternaryop.photoshelf.BuildConfig
 import io.reactivex.Completable
@@ -120,7 +119,7 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
             if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 response.body()?.source()?.also { source ->
                     source.request(java.lang.Long.MAX_VALUE) // Buffer the entire body.
-                    val json = source.buffer().clone().readString(UTF8)
+                    val json = source.buffer.clone().readUtf8()
                     val error = GsonBuilder().create().fromJson<Error>(json, Error::class.java)
                     if (error.hasTokenExpired()) {
                         throw TokenExpiredException(error.errorMessage!!)

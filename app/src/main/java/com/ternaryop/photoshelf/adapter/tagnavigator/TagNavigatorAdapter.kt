@@ -64,7 +64,7 @@ class TagNavigatorAdapter(
 
     override fun getFilter(): Filter {
         if (tagFilter == null) {
-            tagFilter = TagNavigatorFilter(context, blogName, this)
+            tagFilter = TagNavigatorFilter(blogName, this)
         }
         return tagFilter!!
     }

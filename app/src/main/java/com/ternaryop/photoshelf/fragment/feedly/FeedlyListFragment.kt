@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -15,6 +14,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -115,7 +115,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         return readStreamContent(deleteItemsIfAllowed)
             .map { it.items.toContentDelegate() }
             .flatMap { list ->
-                ApiManager.postService(context!!)
+                ApiManager.postService()
                     .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
                     .map {
                         list.update(it.response.pairs)
@@ -173,7 +173,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         }
     }
 
-    override fun onAttachFragment(childFragment: Fragment?) {
+    override fun onAttachFragment(childFragment: Fragment) {
         super.onAttachFragment(childFragment)
         if (childFragment !is BottomMenuSheetDialogFragment) {
             return

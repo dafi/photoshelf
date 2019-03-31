@@ -27,7 +27,7 @@ object BirthdayJob : Job {
 
     private fun notifyBirthday(jobService: AbsJobService, blogName: String, params: JobParameters?) {
         val now = Calendar.getInstance(Locale.US)
-        val d = ApiManager.birthdayService(jobService).findByDate(
+        val d = ApiManager.birthdayService().findByDate(
             FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth, blogName = blogName).toQueryMap())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

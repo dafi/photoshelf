@@ -47,7 +47,7 @@ abstract class AbsPhotoShelfFragment : Fragment() {
         super.onDetach()
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
 
         // all Activities must adhere to FragmentActivityStatus
@@ -58,8 +58,10 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     }
 
     protected fun showEditDialog(item: TumblrPhotoPost, mode: ActionMode?) {
-        actionMode = mode
-        TumblrPostDialog.newInstance(PostDialogData(item), this).show(fragmentManager, "dialog")
+        fragmentManager?.also {
+            actionMode = mode
+            TumblrPostDialog.newInstance(PostDialogData(item), this).show(it, "dialog")
+        }
     }
 
     protected fun showSnackbar(snackbar: Snackbar) {

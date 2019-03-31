@@ -16,13 +16,13 @@ fun Importer.importMissingBirthdaysFromWeb(): Observable<StringProgressInfo> {
     val params = FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT).toQueryMap()
     val info = Importer.SimpleImportProgressInfo<String>()
 
-    return ApiManager.birthdayService(context).findMissingNames(params)
+    return ApiManager.birthdayService().findMissingNames(params)
         .flatMapObservable {
             info.max = it.response.names.size
             info.list.addAll(it.response.names)
             Observable.fromIterable(it.response.names)
         }
-        .flatMapSingle { name -> ApiManager.birthdayService(context).getByName(name, true) }
+        .flatMapSingle { name -> ApiManager.birthdayService().getByName(name, true) }
         .doOnNext { response ->
             val nameResult  = response.response
             if (nameResult.isNew) {

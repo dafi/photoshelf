@@ -219,9 +219,11 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     private fun onImagesRetrieved(imageUriList: List<Uri>) {
         try {
-            TumblrPostDialog.newInstance(PostDialogData(imageGallery.parsableTitle,
-                imageGallery.titleParsed.html, imageGallery.titleParsed.tags, imageUriList), null)
-                .show(fragmentManager, "dialog")
+            fragmentManager?.also {
+                TumblrPostDialog.newInstance(PostDialogData(imageGallery.parsableTitle,
+                    imageGallery.titleParsed.html, imageGallery.titleParsed.tags, imageUriList), null)
+                    .show(it, "dialog")
+            }
         } catch (e: Exception) {
             e.showErrorDialog(context!!)
         }

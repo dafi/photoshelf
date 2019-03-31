@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.adapter.tagnavigator
 
-import android.content.Context
 import android.widget.Filter
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.TagInfo
@@ -11,10 +10,9 @@ interface TagNavigatorFilterListener {
 }
 
 class TagNavigatorFilter(
-    context: Context,
     var blogName: String,
     val listener: TagNavigatorFilterListener) : Filter() {
-    val postService = ApiManager.postService(context)
+    val postService = ApiManager.postService()
     var pattern: CharSequence? = null
     var error: Throwable? = null
 

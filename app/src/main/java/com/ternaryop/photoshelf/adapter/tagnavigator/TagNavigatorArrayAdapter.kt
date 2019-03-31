@@ -20,7 +20,7 @@ class TagNavigatorArrayAdapter(context: Context, val resource: Int, var blogName
     ArrayAdapter<TagInfo>(context, 0),
     TagNavigatorFilterListener {
     private val items = mutableListOf<TagInfo>()
-    private val tagFilter = TagNavigatorFilter(context, blogName, this)
+    private val tagFilter = TagNavigatorFilter(blogName, this)
 
     override fun getCount(): Int = items.size
     override fun getItem(position: Int): TagInfo = items[position]

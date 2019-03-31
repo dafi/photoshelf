@@ -36,7 +36,7 @@ class BirthdayAdapter(private val context: Context, var blogName: String)
     private val items = mutableListOf<Birthday>()
     val selection = SelectionArrayViewHolder(this)
 
-    val showFlags = BirthdayShowFlags(context)
+    val showFlags = BirthdayShowFlags()
 
     var onClickListener: View.OnClickListener? = null
     var onLongClickListener: View.OnLongClickListener? = null

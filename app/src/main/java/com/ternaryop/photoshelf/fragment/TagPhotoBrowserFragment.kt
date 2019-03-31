@@ -55,7 +55,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         val bundle = (context as Activity?)?.intent?.extras
         if (bundle == null) {
@@ -133,7 +133,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         if (pattern.isEmpty()) {
             return true
         }
-        val d = ApiManager.postService(context!!)
+        val d = ApiManager.postService()
             .findTags(blogName!!, pattern)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

@@ -113,7 +113,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
     override fun onResume() {
         super.onResume()
         // Dimensions defined on xml layout are not used so we set them here (it works only if called inside onResume)
-        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
     private fun setupUI(view: View) {
@@ -394,7 +394,7 @@ class TitleHolder(private val context: Context,
     }
 
     fun parseAgain(swapDayMonth: Boolean): Single<TitleComponentsResult> {
-        return ApiManager.parserService(context).components(editText.text.toString(), swapDayMonth)
+        return ApiManager.parserService().components(editText.text.toString(), swapDayMonth)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map {

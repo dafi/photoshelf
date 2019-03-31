@@ -7,7 +7,6 @@ import com.dropbox.core.DbxSdkVersion
 import com.dropbox.core.android.Auth
 import com.dropbox.core.android.AuthActivity
 import com.dropbox.core.v2.DbxClientV2
-import com.ternaryop.photoshelf.R
 
 /**
  * Created by dave on 25/04/15.
@@ -22,7 +21,6 @@ class DropboxManager private constructor(context: Context) {
 
     private val preferences = context.getSharedPreferences(DROPBOX_ACCOUNT_PREFS_NAME, 0)
 
-    private val appKey = context.getString(R.string.DROPBOX_APP_KEY)
     private var dbxClientV2: DbxClientV2? = null
 
     val client: DbxClientV2?
@@ -78,6 +76,12 @@ class DropboxManager private constructor(context: Context) {
         private var instance: DropboxManager? = null
 
         val Version = DbxSdkVersion.Version!!
+
+        private var appKey = ""
+
+        fun setup(appKey: String) {
+            this.appKey = appKey;
+        }
 
         fun getInstance(context: Context): DropboxManager {
             if (instance == null) {

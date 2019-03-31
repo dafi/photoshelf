@@ -86,7 +86,7 @@ class BestOfFragment : AbsPhotoShelfFragment() {
     private fun addTags(postId: Long, newTags: List<String>, blogName: String): Long {
         context?.let { context ->
             val tags = TumblrManager.getInstance(context).editTags(postId, blogName, newTags) ?: return postId
-            ApiManager.postService(context).editTags(postId, tags)
+            ApiManager.postService().editTags(postId, tags)
         }
         return postId
     }

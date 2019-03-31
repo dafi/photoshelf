@@ -31,7 +31,7 @@ class DraftPostHelper(private val context: Context, private val blogName: String
     }
 
     fun getTagLastPublishedMap(tags: Set<String>): Single<Map<String, Long>> {
-        return ApiManager.postService(context)
+        return ApiManager.postService()
             .getMapLastPublishedTimestampTag(blogName, titlesRequestBody(tags))
             .map { result -> result.response.pairs }
     }

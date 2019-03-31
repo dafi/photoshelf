@@ -33,7 +33,7 @@ private const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
 object BirthdayUtils {
     fun notifyBirthday(context: Context): Disposable? {
         val now = Calendar.getInstance(Locale.US)
-        return ApiManager.birthdayService(context).findByDate(
+        return ApiManager.birthdayService().findByDate(
             FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

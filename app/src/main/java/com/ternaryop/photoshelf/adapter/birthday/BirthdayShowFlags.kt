@@ -1,17 +1,16 @@
 package com.ternaryop.photoshelf.adapter.birthday
 
-import android.content.Context
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.Response
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.ListResult
-import com.ternaryop.photoshelf.api.ApiManager
 import io.reactivex.Single
 
-class BirthdayShowFlags(context: Context) {
+class BirthdayShowFlags {
     private var flags = SHOW_ALL
-    private val birthdayService = ApiManager.birthdayService(context)
+    private val birthdayService = ApiManager.birthdayService()
 
     val isShowIgnored: Boolean
         get() = flags and SHOW_IGNORED != 0

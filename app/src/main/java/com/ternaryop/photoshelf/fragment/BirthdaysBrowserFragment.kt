@@ -182,7 +182,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
             birthday.birthdate = c
 
-            ApiManager.birthdayService((context!!))
+            ApiManager.birthdayService()
                 .updateByName(birthday.name, birthday.birthdate.toIsoFormat())
                 .toSingle { birthday }
                 .subscribeOn(Schedulers.io())
@@ -230,7 +230,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         val d = Observable
             .fromIterable(list)
             .flatMapSingle { bday ->
-                ApiManager.birthdayService(context!!).markAsIgnored(bday.name).toSingle {
+                ApiManager.birthdayService().markAsIgnored(bday.name).toSingle {
                     bday.birthdate = nullDate
                     bday
                 }
@@ -251,7 +251,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     private fun deleteBirthdays(list: List<Birthday>, mode: ActionMode) {
         val d = Observable
             .fromIterable(list)
-            .flatMapSingle { bday -> ApiManager.birthdayService(context!!).deleteByName(bday.name).toSingle { bday } }
+            .flatMapSingle { bday -> ApiManager.birthdayService().deleteByName(bday.name).toSingle { bday } }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

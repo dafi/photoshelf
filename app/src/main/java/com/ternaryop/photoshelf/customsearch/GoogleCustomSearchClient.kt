@@ -29,14 +29,22 @@ interface GoogleCustomSearchService {
     fun runCustomSearch(@Query("q") q: String, @Query("fields") fields: String): Single<CustomSearchResult>
 }
 
-class GoogleCustomSearchClient(private val apiKey: String, private val cx: String) {
+object GoogleCustomSearchClient {
+    private var apiKey = ""
+    private var cx = ""
+
+    fun setup(apiKey: String, cx: String) {
+        this.apiKey = apiKey
+        this.cx = cx
+    }
+
     fun getCorrectedQuery(q: String): Single<CustomSearchResult> {
         return service().runCustomSearch(q, arrayOf("spelling").joinToString(","))
     }
 
-    fun service(): GoogleCustomSearchService = builder.create(GoogleCustomSearchService::class.java)
+    private fun service(): GoogleCustomSearchService = builder.create(GoogleCustomSearchService::class.java)
 
-    val builder: Retrofit by lazy {
+    private val builder: Retrofit by lazy {
         val gson = GsonBuilder()
             .create()
         val interceptor = Interceptor { chain: Interceptor.Chain -> {

@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf.fragment.draft
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.preference.PreferenceManager
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.ActionMode
 import android.view.Menu
@@ -14,6 +13,7 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.DraftPostHelper
@@ -90,7 +90,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         refreshCache()
     }
 
-    override fun onAttachFragment(childFragment: Fragment?) {
+    override fun onAttachFragment(childFragment: Fragment) {
         super.onAttachFragment(childFragment)
         if (childFragment !is BottomMenuSheetDialogFragment) {
             return
@@ -118,8 +118,10 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                 return true
             }
             R.id.action_tag_navigator -> {
-                TagNavigatorDialog.newInstance(photoAdapter.photoList,
-                    this, TAG_NAVIGATOR_DIALOG).show(fragmentManager, FRAGMENT_TAG_NAVIGATOR)
+                fragmentManager?.also {
+                    TagNavigatorDialog.newInstance(photoAdapter.photoList,
+                        this, TAG_NAVIGATOR_DIALOG).show(it, FRAGMENT_TAG_NAVIGATOR)
+                }
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -137,7 +139,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         currentTextView.text = context!!.resources.getString(R.string.start_import_title)
         val lastTimestamp = preferences.getLong(PREF_DRAFT_LAST_TIMESTAMP, -1)
         compositeDisposable.add(
-            ApiManager.postService(context!!).getLastPublishedTimestamp(blogName!!, lastTimestamp)
+            ApiManager.postService().getLastPublishedTimestamp(blogName!!, lastTimestamp)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map { it.response }

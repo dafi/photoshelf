@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.tests
 
-import android.app.Activity
 import android.os.Environment
 import android.util.Log
 import com.ternaryop.photoshelf.importer.CSVIterator
@@ -34,7 +33,7 @@ class BirthdaysTest : TestCase() {
 
             while (iterator.hasNext()) {
                 val name = iterator.next()
-                ApiManager.birthdayService(Activity()).getByName(name, true)
+                ApiManager.birthdayService().getByName(name, true)
                     .subscribe { birthday ->
                         Log.d("testFindMissing", "MissingBirthdaysTest.findMissing $birthday")
                     }

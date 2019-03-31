@@ -49,7 +49,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
             fillStatsUI(loadStats(preferences))
             return
         }
-        val d = ApiManager.postService(activity!!).getStats(currentBlog)
+        val d = ApiManager.postService().getStats(currentBlog)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->

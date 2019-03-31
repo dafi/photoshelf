@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import com.github.scribejava.core.model.OAuthConstants
-import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.AuthenticationCallback
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrException
@@ -17,12 +16,23 @@ import io.reactivex.schedulers.Schedulers
 
 object TumblrManager {
     private var instance: Tumblr? = null
+    private var consumerKey = ""
+    private var consumerSecret = ""
+    private var callbackUrl = ""
+
+    fun setup(consumerKey: String,
+        consumerSecret: String,
+        callbackUrl: String) {
+        this.consumerKey = consumerKey
+        this.consumerSecret = consumerSecret
+        this.callbackUrl = callbackUrl
+    }
 
     fun getInstance(context: Context): Tumblr {
         if (instance == null) {
-            instance = Tumblr(TumblrHttpOAuthConsumer(context.getString(R.string.CONSUMER_KEY),
-                context.getString(R.string.CONSUMER_SECRET),
-                context.getString(R.string.CALLBACK_URL),
+            instance = Tumblr(TumblrHttpOAuthConsumer(consumerKey,
+                consumerSecret,
+                callbackUrl,
                 TokenPreference.from(context).accessToken))
         }
         return instance!!
@@ -40,9 +50,9 @@ object TumblrManager {
 
     private fun authorize(context: Context) {
         // Callback url scheme is defined into manifest
-        val oAuthService = TumblrHttpOAuthConsumer.createAuthService(context.getString(R.string.CONSUMER_KEY),
-            context.getString(R.string.CONSUMER_SECRET),
-            context.getString(R.string.CALLBACK_URL))
+        val oAuthService = TumblrHttpOAuthConsumer.createAuthService(consumerKey,
+            consumerSecret,
+            callbackUrl)
         val requestToken = oAuthService.requestToken
         TokenPreference.from(context).storeRequestToken(requestToken)
         val authorizationUrl = oAuthService.getAuthorizationUrl(requestToken)
@@ -55,9 +65,9 @@ object TumblrManager {
         val prefs = TokenPreference.from(context)
         return Single
             .fromCallable {
-                TumblrHttpOAuthConsumer.createAuthService(context.getString(R.string.CONSUMER_KEY),
-                    context.getString(R.string.CONSUMER_SECRET),
-                    context.getString(R.string.CALLBACK_URL))
+                TumblrHttpOAuthConsumer.createAuthService(consumerKey,
+                    consumerSecret,
+                    callbackUrl)
                     .getAccessToken(prefs.requestToken, uri.getQueryParameter(OAuthConstants.VERIFIER))
                     ?: throw TumblrException("Invalid token")
             }
@@ -78,8 +88,6 @@ object TumblrManager {
      * @return true if uri can be handled, false otherwise
      */
     fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
-        val callbackUrl = context.getString(R.string.CALLBACK_URL)
-
         return if (uri != null && callbackUrl.startsWith(uri.scheme!!)) {
             access(context, uri, callback)
             true

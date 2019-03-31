@@ -118,7 +118,7 @@ class PublishIntentService : IntentService("publishIntent") {
     private fun addBirthdateFromTags(postTags: String): Disposable? {
         val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return null
 
-        return ApiManager.birthdayService(applicationContext).getByName(name, true)
+        return ApiManager.birthdayService().getByName(name, true)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map { it.response }
@@ -145,7 +145,7 @@ class PublishIntentService : IntentService("publishIntent") {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
 
-        return ApiManager.birthdayService(applicationContext).findByDate(
+        return ApiManager.birthdayService().findByDate(
             FindParams(
                 month = birthday.month + 1,
                 dayOfMonth = birthday.dayOfMonth,
