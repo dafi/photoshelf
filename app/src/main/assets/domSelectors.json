@@ -138,8 +138,7 @@
         ]
       },
       "gallery": {
-        "container": "#gallery-1 a img[data-src*=jpg]",
-        "thumbImageSelAttr": "data-src",
+        "container": "#gallery-1 a img",
         "title": ".entry p strong"
       }
     },
@@ -237,9 +236,7 @@
       "image": {
         "pageChain": [
             {
-              "pageSel": ".entry-content a[href*=wp-content]",
-              "pageSel_changed_again": ".postinfo a",
-              "pageSel_after_gotceleb_change_site": ".entry-content .attachment a",
+              "pageSel": "a[href*=wp-content]",
               "selAttr":"href"
             }
         ]
