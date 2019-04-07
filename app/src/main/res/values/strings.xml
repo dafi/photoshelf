@@ -139,6 +139,10 @@
         <item quantity="one">Found %1$d item</item>
         <item quantity="other">Found %1$d items</item>
     </plurals>
+    <plurals name="tags_in_posts">
+        <item quantity="one">%1$d tag in %2$d posts</item>
+        <item quantity="other">%1$d tags in %2$d posts</item>
+    </plurals>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>

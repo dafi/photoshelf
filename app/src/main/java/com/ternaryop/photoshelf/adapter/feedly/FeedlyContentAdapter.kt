@@ -11,7 +11,7 @@ import com.ternaryop.photoshelf.R
 
 class FeedlyContentAdapter(private val context: Context) :
     RecyclerView.Adapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
-    private val allContents = mutableListOf<FeedlyContentDelegate>()
+    val allContents = mutableListOf<FeedlyContentDelegate>()
     val sortSwitcher = FeedlyContentSortSwitcher(context)
 
     var clickListener: OnFeedlyContentClick? = null
