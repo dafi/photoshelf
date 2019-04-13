@@ -37,7 +37,6 @@ import com.ternaryop.photoshelf.adapter.feedly.titles
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.update
 import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
@@ -170,19 +169,20 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun subtitleFromTags(): String {
-        val tagInfo = TagInfo.fromStrings(adapter.allContents.map { it.tag ?: "" })
-        if (tagInfo.size == adapter.itemCount) {
+        val groupedNotNullTags = adapter.allContents.filter { it.tag != null }.map { it.tag!! }.groupBy { it }
+        val nullTags = adapter.allContents.count { it.tag == null }
+
+        if (nullTags + groupedNotNullTags.size == adapter.itemCount) {
             return resources.getQuantityString(
                 R.plurals.posts_count,
                 adapter.itemCount,
                 adapter.itemCount)
         }
         return resources.getQuantityString(
-                R.plurals.tags_in_posts,
-                tagInfo.size,
-                tagInfo.size,
-                adapter.itemCount)
-
+            R.plurals.tags_in_posts,
+            groupedNotNullTags.size,
+            groupedNotNullTags.size,
+            adapter.itemCount)
     }
 
     override fun onAttachFragment(childFragment: Fragment) {

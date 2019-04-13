@@ -15,18 +15,12 @@ data class TagInfo(val tag: String, var postCount: Long) {
 
     companion object {
         fun fromStrings(tagList: List<String>): List<TagInfo> {
-            val map = HashMap<String, TagInfo>(tagList.size)
-            for (s in tagList) {
-                val lower = s.toLowerCase()
-                var tagInfo = map[lower]
-                if (tagInfo == null) {
-                    tagInfo = TagInfo(s, 1)
-                    map[lower] = tagInfo
-                } else {
-                    ++tagInfo.postCount
-                }
-            }
-            return map.values.toList()
+            return tagList
+                .groupingBy { it.toLowerCase() }
+                .fold(
+                    { key, _ -> TagInfo(key, 0)},
+                    { _, tagInfo, _ -> tagInfo.also { ++it.postCount}})
+                .values.toList()
         }
     }
 }
