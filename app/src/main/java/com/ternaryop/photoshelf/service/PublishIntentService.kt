@@ -71,40 +71,48 @@ class PublishIntentService : IntentService("publishIntent") {
 
     @Suppress("ComplexMethod")
     override fun onHandleIntent(intent: Intent?) {
-        if (intent == null) {
-            return
+        intent ?: return
+
+        try {
+            addBirthdateFromTags(intent)
+            when (intent.getStringExtra(EXTRA_ACTION)) {
+                ACTION_PUBLISH_DRAFT -> publish(intent, true)
+                ACTION_PUBLISH_PUBLISH -> publish(intent, false)
+                ACTION_BIRTHDAY_LIST_BY_DATE -> broadcastBirthdaysByDate(intent)
+                ACTION_BIRTHDAY_PUBLISH -> birthdaysPublish(intent)
+                ACTION_CHANGE_WALLPAPER -> changeWallpaper(intent)
+            }
+        } catch (e: Exception) {
+            logError(intent, e)
+            val url = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: ""
+            val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: ""
+            notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode())
         }
+    }
+
+    private fun publish(intent: Intent, isDraft: Boolean) {
         val url = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: return
         val selectedBlogName = intent.getStringExtra(EXTRA_BLOG_NAME) ?: return
         val postTitle = intent.getStringExtra(EXTRA_POST_TITLE) ?: return
         val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: return
-        val action = intent.getStringExtra(EXTRA_ACTION) ?: return
 
         try {
-            addBirthdateFromTags(postTags)
-            when (action) {
-                ACTION_PUBLISH_DRAFT -> TumblrManager.getInstance(applicationContext)
+            if (isDraft) {
+                TumblrManager.getInstance(applicationContext)
                     .draftPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
-                ACTION_PUBLISH_PUBLISH -> TumblrManager.getInstance(applicationContext)
+            } else {
+                TumblrManager.getInstance(applicationContext)
                     .publishPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
-                ACTION_BIRTHDAY_LIST_BY_DATE -> broadcastBirthdaysByDate(intent)
-                ACTION_BIRTHDAY_PUBLISH -> birthdaysPublish(intent)
-                ACTION_CHANGE_WALLPAPER -> changeWallpaper(url)
             }
         } catch (e: Exception) {
-            logError(intent, e)
-            when (action) {
-                ACTION_PUBLISH_DRAFT, ACTION_PUBLISH_PUBLISH ->
-                    notificationUtil.notifyError(e, postTags, getString(R.string.retry),
-                        createRetryPublishIntent(intent), url.hashCode())
-                else ->
-                    notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode())
-            }
+            notificationUtil.notifyError(e, postTags, getString(R.string.retry),
+                createRetryPublishIntent(intent), url.hashCode())
         }
     }
 
-    private fun changeWallpaper(imageUrl: Uri) {
+    private fun changeWallpaper(intent: Intent) {
         try {
+            val imageUrl = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: return
             val metrics = resources.displayMetrics
             val bitmap = URL(imageUrl.toString())
                 .readBitmap().scale(metrics.widthPixels, metrics.heightPixels, true)
@@ -115,7 +123,8 @@ class PublishIntentService : IntentService("publishIntent") {
         }
     }
 
-    private fun addBirthdateFromTags(postTags: String): Disposable? {
+    private fun addBirthdateFromTags(intent: Intent): Disposable? {
+        val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: return null
         val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return null
 
         return ApiManager.birthdayService().getByName(name, true)

@@ -28,7 +28,7 @@ class TagNavigatorArrayAdapter(context: Context, val resource: Int, var blogName
 
     override fun getFilter(): Filter = tagFilter
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val inflatedView = convertView ?: LayoutInflater.from(context).inflate(resource, parent, false)
 
         val tagInfo = getItem(position)

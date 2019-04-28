@@ -41,7 +41,7 @@ object ImageViewerUtil {
 
     fun copyToClipboard(context: Context, text: String, label: String, @StringRes resultMessage: Int) {
         val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboardManager.primaryClip = ClipData.newPlainText(label, text)
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(label, text))
         Toast.makeText(context, resultMessage, Toast.LENGTH_SHORT).show()
     }
 
