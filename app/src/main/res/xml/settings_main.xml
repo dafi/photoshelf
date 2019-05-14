@@ -14,6 +14,9 @@
             android:key="dropbox_login"
             android:persistent="false"
             android:title="@string/login_title"/>
+        <EditTextPreference
+            android:key="photoshelfApikey"
+            android:title="@string/photoshelf_apikey"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_import_export_key"

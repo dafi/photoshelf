@@ -29,6 +29,7 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava2:${rootProject.ext.retrofitAdapterRrxjavaLibVersion}"
     implementation "com.squareup.retrofit2:converter-gson:${rootProject.ext.retrofitConverterGsonLibVersion}"
     implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp3LoggingInterceptorLibVersion}"
+    implementation "com.squareup.okio:okio:${rootProject.ext.okio}"
 
     implementation "com.google.code.gson:gson:${rootProject.ext.gsonLibVersion}"
 

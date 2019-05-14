@@ -44,6 +44,9 @@ class AppSupport(context: Context) : ContextWrapper(context) {
         get() = preferences.getLong(PREF_LAST_FOLLOWERS_UPDATE_TIME, -1)
         set(millisecs) = preferences.edit().putLong(PREF_LAST_FOLLOWERS_UPDATE_TIME, millisecs).apply()
 
+    val photoShelfApikey: String
+        get() = preferences.getString(PREF_PHOTOSHELF_APIKEY, "")!!
+
     fun clearBlogList() {
         preferences.edit().remove(PREF_BLOG_NAMES).apply()
     }
@@ -89,6 +92,7 @@ class AppSupport(context: Context) : ContextWrapper(context) {
         const val PREF_SCHEDULE_MINUTES_TIME_SPAN = "schedule_minutes_time_span"
         const val PREF_EXPORT_DAYS_PERIOD = "exportDaysPeriod"
         const val PREF_LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime"
+        const val PREF_PHOTOSHELF_APIKEY = "photoshelfApikey"
 
         val picturesDirectory: File
             get() {

@@ -26,7 +26,7 @@ class PhotoShelfApplication : Application() {
             getString(R.string.TUMBLR_CONSUMER_SECRET),
             getString(R.string.TUMBLR_CALLBACK_URL))
         DropboxManager.setup(getString(R.string.DROPBOX_APP_KEY))
-        ApiManager.setup(getString(R.string.PHOTOSHELF_EXTRACTOR_ACCESS_TOKEN))
+        ApiManager.setup(AppSupport(this).photoShelfApikey)
         GoogleCustomSearchClient.setup(
             getString(R.string.GOOGLE_CSE_APIKEY),
             getString(R.string.GOOGLE_CSE_CX))
