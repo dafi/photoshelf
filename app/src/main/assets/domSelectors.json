@@ -242,6 +242,7 @@
         ]
       },
       "gallery": {
+        "title": "h1.post-title",
         "container": ".attachment-medium, #gallery-1 a img"
       }
     },
