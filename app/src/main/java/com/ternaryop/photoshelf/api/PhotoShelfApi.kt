@@ -1,11 +1,9 @@
 package com.ternaryop.photoshelf.api
 
 import com.google.gson.GsonBuilder
-import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.photoshelf.util.gson.CalendarDeserializer
+import com.ternaryop.photoshelf.utils.okhttp3.OkHttpUtil
 import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -29,19 +27,12 @@ class PhotoShelfApi(private val accessToken: String) {
             }()
         }
 
-        val builder = OkHttpClient.Builder()
+        val builder = OkHttpUtil.Builder()
         builder.interceptors().add(interceptor)
         builder.readTimeout(5, TimeUnit.MINUTES)
 
-        if (BuildConfig.DEBUG) {
-            val debugInterceptor : HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
-                this.level = HttpLoggingInterceptor.Level.BODY
-            }
-            builder.interceptors().add(debugInterceptor)
-        }
-
         Retrofit.Builder()
-            .baseUrl(BuildConfig.PHOTOSHELF_API_PREFIX)
+//            .baseUrl(BuildConfig.PHOTOSHELF_API_PREFIX)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
 //            .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io())) // async by default

@@ -3,18 +3,17 @@ package com.ternaryop.photoshelf.db
 import android.content.Context
 import android.os.Environment
 import android.widget.Toast
-import com.dropbox.core.v2.files.WriteMode
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getFollowers
+import com.ternaryop.utils.dropbox.DropboxManager
+import com.ternaryop.utils.dropbox.copyFile
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.BufferedWriter
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileWriter
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
@@ -38,26 +37,6 @@ class Importer constructor(val context: Context) {
         }
     }
 
-    fun copyFileToDropbox(exportPath: String) {
-        val dropboxManager = DropboxManager.getInstance(context)
-
-        if (dropboxManager.isLinked) {
-            val exportFile = File(exportPath)
-            FileInputStream(exportFile).use { stream ->
-                // Autorename = true and Mode = OVERWRITE allow to overwrite
-                // the file if it exists or create it if doesn't
-                dropboxManager.client!!
-                        .files()
-                        .uploadBuilder(dropboxPath(exportFile))
-                        .withAutorename(true)
-                        .withMode(WriteMode.OVERWRITE)
-                        .uploadAndFinish(stream)
-            }
-        }
-    }
-
-    private fun dropboxPath(exportFile: File): String = "/${exportFile.name}"
-
     fun syncExportTotalUsersToCSV(exportPath: String, blogName: String) {
         // do not overwrite the entire file but append to the existing one
         PrintWriter(BufferedWriter(FileWriter(exportPath, true))).use { pw ->
@@ -65,7 +44,7 @@ class Importer constructor(val context: Context) {
             val totalUsers = TumblrManager.getInstance(context).getFollowers(blogName).totalUsers
             pw.println("$time;$blogName;$totalUsers")
             pw.flush()
-            copyFileToDropbox(exportPath)
+            DropboxManager.getInstance(context).copyFile(exportPath)
         }
     }
 

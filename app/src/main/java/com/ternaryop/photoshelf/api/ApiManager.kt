@@ -19,6 +19,8 @@ object ApiManager {
         this.photoShelfApi = null
     }
 
+    fun updateToken(accessToken: String) = setup(accessToken)
+
     private fun photoShelfApi(): PhotoShelfApi {
         if (photoShelfApi == null) {
             photoShelfApi = PhotoShelfApi(accessToken)

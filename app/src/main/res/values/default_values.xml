@@ -3,6 +3,7 @@
     <item type="integer" name="schedule_minutes_time_span_default">180</item>
     <item type="integer" name="export_days_period_default">7</item>
     <item type="string" name="thumbnail_width_value_default">75</item>
+    <item type="string" name="dropbox_client_identifier">photoshelf-android/1.0</item>
     <string-array name="list_thumbnail_width_entries_default">
         <item>75px</item>
         <item>100px</item>

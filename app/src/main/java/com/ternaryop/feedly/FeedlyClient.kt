@@ -1,12 +1,10 @@
 package com.ternaryop.feedly
 
 import com.google.gson.GsonBuilder
-import com.ternaryop.photoshelf.BuildConfig
+import com.ternaryop.photoshelf.utils.okhttp3.OkHttpUtil
 import io.reactivex.Completable
 import io.reactivex.Single
 import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -90,17 +88,10 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
             }()
         }
 
-        val builder = OkHttpClient.Builder()
+        val builder = OkHttpUtil.Builder()
         builder.interceptors().add(authInterceptor)
         builder.interceptors().add(errorInterceptor)
         builder.interceptors().add(rateInterceptor)
-
-        if (BuildConfig.DEBUG) {
-            val debugInterceptor : HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
-                this.level = HttpLoggingInterceptor.Level.BODY
-            }
-            builder.interceptors().add(debugInterceptor)
-        }
 
         Retrofit.Builder()
             .baseUrl(API_PREFIX)

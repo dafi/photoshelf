@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.dropbox
+package com.ternaryop.utils.dropbox
 
 import android.content.Context
 import androidx.fragment.app.Fragment
@@ -17,7 +17,7 @@ private const val DROPBOX_ACCESS_KEY_NAME = "dropboxAccessKey"
 private const val DROPBOX_ACCESS_SECRET_NAME = "dropboxAccessSecretName"
 private const val DROPBOX_ACCOUNT_PREFS_NAME = "dropboxAccount"
 
-class DropboxManager private constructor(context: Context) {
+class DropboxManager private constructor(context: Context, val clientIdentifier: String) {
 
     private val preferences = context.getSharedPreferences(DROPBOX_ACCOUNT_PREFS_NAME, 0)
 
@@ -27,7 +27,7 @@ class DropboxManager private constructor(context: Context) {
         get() {
             val accessToken = preferences.getString(DROPBOX_ACCESS_SECRET_NAME, null) ?: return null
             if (dbxClientV2 == null) {
-                val config = DbxRequestConfig.newBuilder("photoshelf-android/1.0").build()
+                val config = DbxRequestConfig.newBuilder(clientIdentifier).build()
                 dbxClientV2 = DbxClientV2(config, accessToken)
             }
             return dbxClientV2
@@ -74,20 +74,23 @@ class DropboxManager private constructor(context: Context) {
 
     companion object {
         private var instance: DropboxManager? = null
+        private var clientIdentifier = ""
 
         val Version = DbxSdkVersion.Version!!
 
         private var appKey = ""
 
-        fun setup(appKey: String) {
-            this.appKey = appKey;
+        fun setup(appKey: String, clientIdentifier: String) {
+            Companion.appKey = appKey
+            Companion.clientIdentifier = clientIdentifier
+            instance = null
         }
 
         fun getInstance(context: Context): DropboxManager {
             if (instance == null) {
                 synchronized(DropboxManager::class.java) {
                     if (instance == null) {
-                        instance = DropboxManager(context)
+                        instance = DropboxManager(context, clientIdentifier)
                     }
                 }
             }

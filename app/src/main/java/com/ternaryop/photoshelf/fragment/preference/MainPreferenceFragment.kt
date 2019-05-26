@@ -17,9 +17,9 @@ import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.dropbox.DropboxManager
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.dropbox.DropboxManager
 import com.ternaryop.utils.security.PermissionUtil
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
@@ -73,7 +73,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
         when (key) {
             AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN -> onChangedScheduleMinutesTimeSpan(sharedPreferences, key)
             KEY_THUMBNAIL_WIDTH -> onChangedThumbnailWidth(sharedPreferences, key)
-            AppSupport.PREF_PHOTOSHELF_APIKEY -> ApiManager.setup(sharedPreferences.getString(key, "")!!)
+            AppSupport.PREF_PHOTOSHELF_APIKEY -> ApiManager.updateToken(sharedPreferences.getString(key, "")!!)
         }
     }
 
