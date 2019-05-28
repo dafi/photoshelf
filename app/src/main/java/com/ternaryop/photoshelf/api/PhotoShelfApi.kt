@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 class Response<T>(val response: T)
 
-class PhotoShelfApi(private val accessToken: String) {
+class PhotoShelfApi(private val accessToken: String, private val apiUrlPrefix: String) {
     inline fun <reified T> service() : T = builder.create(T::class.java)
 
     val builder: Retrofit by lazy {
@@ -32,7 +32,7 @@ class PhotoShelfApi(private val accessToken: String) {
         builder.readTimeout(5, TimeUnit.MINUTES)
 
         Retrofit.Builder()
-//            .baseUrl(BuildConfig.PHOTOSHELF_API_PREFIX)
+            .baseUrl(apiUrlPrefix)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
 //            .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io())) // async by default
