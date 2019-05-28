@@ -17,7 +17,7 @@ class OAuthDownloader(val tumblr: Tumblr) : Downloader {
     }
 
     override fun load(request: Request): Response {
-        val url = request.url().url().toString()
+        val url = request.url().toString()
         val buffer = ByteArrayOutputStream()
         val oauthResponse = tumblr.consumer.getSignedGetResponse(url, null)
         oauthResponse.stream.use { stream ->
