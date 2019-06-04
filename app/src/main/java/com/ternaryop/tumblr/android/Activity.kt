@@ -1,14 +1,13 @@
-package com.ternaryop.photoshelf.util.tumblr
+package com.ternaryop.tumblr.android
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 
@@ -17,27 +16,30 @@ import com.ternaryop.tumblr.TumblrPost
  * Extension to use TumblrPost with Activity
  */
 
-fun TumblrPost.finishActivity(activity: Activity) {
+fun TumblrPost.finishActivity(activity: Activity, extraPostName: String) {
     val data = Intent()
-    data.putExtra(EXTRA_POST, this)
+    data.putExtra(extraPostName, this)
     activity.setResult(Activity.RESULT_OK, data)
     activity.finish()
 }
 
-fun TumblrPhotoPost.browseTagImageBySize(activity: Activity, tag: String = firstTag): Boolean {
-    val photoAltSize = firstPhotoAltSize ?: return false
+fun TumblrPhotoPost.browseTagImageBySize(
+    Context: Context,
+    tag: String = firstTag,
+    startImageViewer: (String, TumblrPhotoPost) -> Unit) {
+    val photoAltSize = firstPhotoAltSize ?: return
     val arrayAdapter = ArrayAdapter(
-        activity,
+        Context,
         android.R.layout.select_dialog_item,
         photoAltSize)
 
-    AlertDialog.Builder(activity)
-        .setTitle(activity.getString(R.string.menu_header_show_image, tag) + " (" + postId + ")")
+    AlertDialog.Builder(Context)
+        .setTitle(Context.getString(R.string.menu_header_show_image, tag) + " (" + postId + ")")
         .setAdapter(arrayAdapter) { _, which ->
-            arrayAdapter.getItem(which)?.let { ImageViewerActivity.startImageViewer(activity, it.url, this) }
+            arrayAdapter.getItem(which)?.let { startImageViewer(it.url, this) }
         }
         .show()
-    return true
+    return
 }
 
 fun TumblrPost.viewPost(fragment: Fragment) {

@@ -4,15 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import com.github.scribejava.core.model.OAuthConstants
-import com.ternaryop.tumblr.AuthenticationCallback
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrException
 import com.ternaryop.tumblr.TumblrHttpOAuthConsumer
 import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 
 object TumblrManager {
     private var instance: Tumblr? = null
@@ -40,11 +37,7 @@ object TumblrManager {
 
     fun isLogged(context: Context): Boolean = TokenPreference.from(context).isAccessTokenValid
 
-    fun login(context: Context): Completable {
-        return Completable.fromAction { authorize(context) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-    }
+    fun login(context: Context): Completable = Completable.fromAction { authorize(context) }
 
     fun logout(context: Context) = TokenPreference.from(context).clearAccessToken()
 
@@ -61,7 +54,7 @@ object TumblrManager {
         context.startActivity(intent)
     }
 
-    private fun access(context: Context, uri: Uri, callback: AuthenticationCallback): Disposable? {
+    private fun access(context: Context, uri: Uri): Single<Boolean> {
         val prefs = TokenPreference.from(context)
         return Single
             .fromCallable {
@@ -71,12 +64,8 @@ object TumblrManager {
                     .getAccessToken(prefs.requestToken, uri.getQueryParameter(OAuthConstants.VERIFIER))
                     ?: throw TumblrException("Invalid token")
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ token ->
-                prefs.storeAccessToken(token)
-                callback.tumblrAuthenticated(token.token, token.tokenSecret)
-            }, { callback.tumblrAuthenticationError(it) })
+            .doOnSuccess { token -> prefs.storeAccessToken(token)}
+            .flatMap { Single.just(true) }
     }
 
     /**
@@ -84,13 +73,10 @@ object TumblrManager {
      * The returned value indicated only the scheme can be handled, the method complete the access asynchronously
      * @param context the context
      * @param uri the uri to check
-     * @param callback can be null
      * @return true if uri can be handled, false otherwise
      */
-    fun handleOpenURI(context: Context, uri: Uri?, callback: AuthenticationCallback): Boolean {
-        return if (uri != null && callbackUrl.startsWith(uri.scheme!!)) {
-            access(context, uri, callback)
-            true
-        } else false
+    fun handleOpenURI(context: Context, uri: Uri?): Observable<Boolean> {
+        return if (uri != null && callbackUrl.startsWith(uri.scheme!!)) access(context, uri).toObservable()
+        else Observable.just(false)
     }
 }

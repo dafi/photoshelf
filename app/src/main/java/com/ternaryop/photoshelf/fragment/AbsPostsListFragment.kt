@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
@@ -29,11 +30,11 @@ import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.SAVE_AS_D
 import com.ternaryop.photoshelf.util.post.PostActionResult
 import com.ternaryop.photoshelf.util.post.errorList
 import com.ternaryop.photoshelf.util.post.showErrorDialog
-import com.ternaryop.photoshelf.util.tumblr.browseTagImageBySize
-import com.ternaryop.photoshelf.util.tumblr.finishActivity
-import com.ternaryop.photoshelf.util.tumblr.viewPost
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.tumblr.android.browseTagImageBySize
+import com.ternaryop.tumblr.android.finishActivity
+import com.ternaryop.tumblr.android.viewPost
 import com.ternaryop.utils.dialog.showErrorDialog
 
 abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener, OnScrollPostFetcher.PostFetcher,
@@ -194,7 +195,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         if (activity!!.callingActivity == null) {
 //            onThumbnailImageClick(position)
         } else {
-            photoAdapter.getItem(position).finishActivity(activity!!)
+            photoAdapter.getItem(position).finishActivity(activity!!, EXTRA_POST)
         }
     }
 
@@ -221,7 +222,9 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 return true
             }
             R.id.group_menu_image_dimension -> {
-                postList[0].browseTagImageBySize(activity!!)
+                postList[0].browseTagImageBySize(activity!!) { url, post ->
+                    ImageViewerActivity.startImageViewer(activity!!, url, post)
+                }
                 return true
             }
             R.id.post_delete -> {

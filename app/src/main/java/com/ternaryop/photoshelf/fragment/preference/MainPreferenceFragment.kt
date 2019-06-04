@@ -21,6 +21,8 @@ import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.dropbox.DropboxManager
 import com.ternaryop.utils.security.PermissionUtil
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
 private const val DROPBOX_SERVICE_NAME = "Dropbox"
@@ -111,6 +113,8 @@ class MainPreferenceFragment : AppPreferenceFragment() {
                 } else {
                     TumblrManager
                         .login(context!!)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe({}, { it.showErrorDialog(context!!) })
                 }
                 return true

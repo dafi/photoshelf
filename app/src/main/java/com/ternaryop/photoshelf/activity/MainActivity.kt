@@ -18,40 +18,42 @@ import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.BestOfFragment
 import com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment
 import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment
-import com.ternaryop.photoshelf.fragment.draft.DraftListFragment
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
 import com.ternaryop.photoshelf.fragment.HomeFragment
 import com.ternaryop.photoshelf.fragment.ImagePickerFragment
 import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment
-import com.ternaryop.photoshelf.fragment.feedly.FeedlyListFragment
 import com.ternaryop.photoshelf.fragment.ScheduledListFragment
 import com.ternaryop.photoshelf.fragment.TagListFragment
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment
+import com.ternaryop.photoshelf.fragment.draft.DraftListFragment
+import com.ternaryop.photoshelf.fragment.feedly.FeedlyListFragment
 import com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment
 import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.service.CounterIntentService
-import com.ternaryop.tumblr.AuthenticationCallback
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
-import io.reactivex.SingleObserver
-import io.reactivex.disposables.Disposable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : DrawerActionBarActivity(),
-    AuthenticationCallback, FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
+    FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     override lateinit var appSupport: AppSupport
     private lateinit var blogList: Spinner
     val blogName: String?
         get() = appSupport.selectedBlogName
+    protected lateinit var compositeDisposable: CompositeDisposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        compositeDisposable = CompositeDisposable()
         appSupport = AppSupport(this)
         rebuildDrawerMenu()
 
@@ -62,6 +64,11 @@ class MainActivity : DrawerActionBarActivity(),
             onAppStarted(logged)
         }
         enableUI(logged)
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.clear()
+        super.onDestroy()
     }
 
     private fun onAppStarted(logged: Boolean) {
@@ -142,13 +149,19 @@ class MainActivity : DrawerActionBarActivity(),
 
         if (!TumblrManager.isLogged(this)) {
             // if we are returning from authentication then enable the UI
-            val handled = TumblrManager.handleOpenURI(this, intent.data, this)
-            // show the preference only if we aren't in the middle of URI handling and not already logged in
-            if (handled) {
-                showHome()
-            } else {
-                showSettings()
-            }
+            compositeDisposable.add(TumblrManager.handleOpenURI(this, intent.data)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ handled ->
+                    // show the preference only if we aren't in the middle of URI handling and not already logged in
+                    if (handled) {
+                        tumblrAuthenticated()
+                        showHome()
+                    } else {
+                        showSettings()
+                    }
+                }, { tumblrAuthenticationError(it) })
+            )
         }
     }
 
@@ -184,37 +197,35 @@ class MainActivity : DrawerActionBarActivity(),
 
     private fun enableUI(enabled: Boolean) {
         if (enabled) {
-            appSupport.fetchBlogNames(this)
-                .subscribe(object : SingleObserver<List<String>> {
-                    override fun onSubscribe(d: Disposable) {}
-                    override fun onSuccess(blogNames: List<String>) = fillBlogList(blogNames)
-                    override fun onError(e: Throwable) = e.showErrorDialog(applicationContext)
-                })
+            compositeDisposable.add(appSupport.fetchBlogNames(this)
+                .subscribe(
+                    { fillBlogList(it) },
+                    { it.showErrorDialog(applicationContext)}
+                ))
         }
         drawerToggle.isDrawerIndicatorEnabled = enabled
         adapter.isSelectionEnabled = enabled
         adapter.notifyDataSetChanged()
     }
 
-    override fun tumblrAuthenticated(token: String, tokenSecret: String) {
+    private fun tumblrAuthenticated() {
         Toast.makeText(this,
             getString(R.string.authentication_success_title),
             Toast.LENGTH_LONG)
             .show()
         // after authentication cache blog names
-        appSupport.fetchBlogNames(this)
-            .subscribe(object : SingleObserver<List<String>> {
-                override fun onSubscribe(d: Disposable) {}
-                override fun onSuccess(value: List<String>) = enableUI(true)
-                override fun onError(e: Throwable) = e.showErrorDialog(applicationContext)
-            })
+        compositeDisposable.add(appSupport.fetchBlogNames(this)
+            .subscribe(
+                { enableUI(true) },
+                { it.showErrorDialog(applicationContext) }
+            ))
     }
 
-    override fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)
+    private fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)
 
     override fun onDrawerItemSelected(drawerItem: DrawerItem) {
         try {
-            val fragment = drawerItem.instantiateFragment(applicationContext)
+            val fragment = drawerItem.instantiateFragment(applicationContext, supportFragmentManager)
             supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
         } catch (e: Exception) {
             e.showErrorDialog(application)
