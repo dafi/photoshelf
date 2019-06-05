@@ -3,13 +3,11 @@ package com.ternaryop.photoshelf.fragment.preference
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
-import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.service.ImportIntentService
 import com.ternaryop.utils.date.daysSinceNow
-import java.io.File
 
 private const val KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia"
 
@@ -28,9 +26,9 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         appSupport = AppSupport(context!!)
 
         with(preferenceScreen) {
-            findPreference(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
+            findPreference<Preference>(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
 
-            findPreference(AppSupport.PREF_EXPORT_DAYS_PERIOD)
+            findPreference<Preference>(AppSupport.PREF_EXPORT_DAYS_PERIOD)
             onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_EXPORT_DAYS_PERIOD)
         }
     }
@@ -43,14 +41,6 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
             }
             else -> super.onPreferenceTreeClick(preference)
         }
-    }
-
-    private fun setupPreferenceFilePath(fullPath: String, prefKey: String,
-        preferenceScreen: PreferenceScreen): Preference {
-        val pref = preferenceScreen.findPreference(prefKey)
-        pref.summary = fullPath
-        pref.isEnabled = File(fullPath).exists()
-        return pref
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -70,7 +60,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
             val remainingDays = (days - lastFollowersUpdateTime.daysSinceNow()).toInt()
             resources.getQuantityString(R.plurals.next_in_day, remainingDays, remainingDays)
         }
-        findPreference(AppSupport.PREF_EXPORT_DAYS_PERIOD).summary =
+        findPreference<Preference>(AppSupport.PREF_EXPORT_DAYS_PERIOD)?.summary =
             resources.getQuantityString(R.plurals.day_title, days, days) + " ($remainingMessage)"
     }
 }

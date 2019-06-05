@@ -60,7 +60,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
             REQUEST_FILE_PERMISSION,
             AlertDialog.Builder(activity).setMessage(R.string.import_permission_rationale))
 
-        findPreference(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
+        findPreference<Preference>(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
         onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
 
         onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_THUMBNAIL_WIDTH)
@@ -81,7 +81,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
     private fun onChangedThumbnailWidth(sharedPreferences: SharedPreferences, key: String) {
         val value = sharedPreferences.getString(key, resources.getString(R.string.thumbnail_width_value_default))
-        (findPreference(KEY_THUMBNAIL_WIDTH) as ListPreference).apply {
+        (findPreference<Preference>(KEY_THUMBNAIL_WIDTH) as ListPreference).apply {
             val index = findIndexOfValue(value)
             if (index > -1) {
                 summary = entries[index]
@@ -91,13 +91,13 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
     private fun onChangedScheduleMinutesTimeSpan(sharedPreferences: SharedPreferences, key: String) {
         val minutes = sharedPreferences.getInt(key, 0)
-        findPreference(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
-            .summary = resources.getQuantityString(R.plurals.minute_title, minutes, minutes)
+        findPreference<Preference>(AppSupport.PREF_SCHEDULE_MINUTES_TIME_SPAN)
+            ?.summary = resources.getQuantityString(R.plurals.minute_title, minutes, minutes)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == DROPBOX_RESULT) {
-            findPreference(KEY_DROPBOX_LOGIN).title = if (dropboxManager.finishAuthentication() == null) {
+            findPreference<Preference>(KEY_DROPBOX_LOGIN)?.title = if (dropboxManager.finishAuthentication() == null) {
                 getString(R.string.login_title, DROPBOX_SERVICE_NAME)
             } else {
                 getString(R.string.logout_title, DROPBOX_SERVICE_NAME)
@@ -165,25 +165,27 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     }
 
     private fun setupVersionInfo(preferenceScreen: PreferenceScreen) {
-        var preferenceVersion = preferenceScreen.findPreference(KEY_VERSION)
-        preferenceVersion.title = getString(R.string.version_title, getString(R.string.app_name))
-        preferenceVersion.summary = try {
-            val packageInfo = context!!.packageManager.getPackageInfo(context!!.packageName, 0)
-            val versionName = packageInfo.versionName
-            val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
-            "$versionName build $versionCode"
-        } catch (e: Exception) {
-            "N/A"
+        preferenceScreen.findPreference<Preference>(KEY_VERSION)?.apply {
+            title = getString(R.string.version_title, getString(R.string.app_name))
+            summary = try {
+                val packageInfo = context!!.packageManager.getPackageInfo(context!!.packageName, 0)
+                val versionName = packageInfo.versionName
+                val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+                "$versionName build $versionCode"
+            } catch (e: Exception) {
+                "N/A"
+            }
         }
 
         // dropbox
-        preferenceVersion = preferenceScreen.findPreference(KEY_DROPBOX_VERSION)
-        preferenceVersion.title = getString(R.string.version_title, "Dropbox")
-        preferenceVersion.summary = DropboxManager.Version
+        preferenceScreen.findPreference<Preference>(KEY_DROPBOX_VERSION)?.apply {
+            title = getString(R.string.version_title, "Dropbox")
+            summary = DropboxManager.Version
+        }
     }
 
     private fun toggleTumblrLoginTitle() {
-        findPreference(KEY_TUMBLR_LOGIN).apply {
+        findPreference<Preference>(KEY_TUMBLR_LOGIN)?.apply {
             title = if (TumblrManager.isLogged(context!!)) {
                 getString(R.string.logout_title, TUMBLR_SERVICE_NAME)
             } else {
@@ -193,7 +195,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     }
 
     private fun toggleDropboxLoginTitle() {
-        findPreference(KEY_DROPBOX_LOGIN).apply {
+        findPreference<Preference>(KEY_DROPBOX_LOGIN)?.apply {
             title = if (dropboxManager.isLinked) {
                 getString(R.string.logout_title, DROPBOX_SERVICE_NAME)
             } else {
