@@ -83,7 +83,7 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
                 val request = chain.request()
                 val response = chain.proceed(request)
 
-                FeedlyRateLimit.update(response.code(), response.headers())
+                FeedlyRateLimit.update(response.code, response.headers)
                 response
             }()
         }
@@ -105,10 +105,10 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
         private val errorInterceptor = Interceptor { chain ->
             val request = chain.request()
             val response = chain.proceed(request)
-            val responseCode = response.code()
+            val responseCode = response.code
 
             if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                response.body()?.source()?.also { source ->
+                response.body?.source()?.also { source ->
                     source.request(java.lang.Long.MAX_VALUE) // Buffer the entire body.
                     val json = source.buffer.clone().readUtf8()
                     val error = GsonBuilder().create().fromJson<Error>(json, Error::class.java)

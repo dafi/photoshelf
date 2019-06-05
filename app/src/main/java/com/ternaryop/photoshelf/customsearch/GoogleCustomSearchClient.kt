@@ -47,7 +47,7 @@ object GoogleCustomSearchClient {
             .create()
         val interceptor = Interceptor { chain: Interceptor.Chain -> {
                 val original = chain.request()
-                val originalHttpUrl = original.url()
+                val originalHttpUrl = original.url
                 val url = originalHttpUrl.newBuilder()
                     .addQueryParameter("key", apiKey)
                     .addQueryParameter("cx", cx)

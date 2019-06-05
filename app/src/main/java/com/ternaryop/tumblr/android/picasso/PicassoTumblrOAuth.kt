@@ -9,7 +9,7 @@ import com.ternaryop.tumblr.android.TumblrManager
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.ByteArrayOutputStream
 
 class OAuthDownloader(val tumblr: Tumblr) : Downloader {
@@ -17,7 +17,7 @@ class OAuthDownloader(val tumblr: Tumblr) : Downloader {
     }
 
     override fun load(request: Request): Response {
-        val url = request.url().toString()
+        val url = request.url.toString()
         val buffer = ByteArrayOutputStream()
         val oauthResponse = tumblr.consumer.getSignedGetResponse(url, null)
         oauthResponse.stream.use { stream ->
@@ -28,7 +28,7 @@ class OAuthDownloader(val tumblr: Tumblr) : Downloader {
                 .protocol(Protocol.HTTP_1_1)
                 .request(Request.Builder().url(url).build())
                 .message(oauthResponse.message)
-                .body(ResponseBody.create(null, buffer.toByteArray()))
+                .body(buffer.toByteArray().toResponseBody())
                 .build()
         }
     }
