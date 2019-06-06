@@ -100,6 +100,6 @@ open class TumblrPost : Serializable {
         private const val serialVersionUID = 9136359874716067522L
 
         fun tagsFromString(str: String) = str.split(",")
-            .map { it.trim { it <= ' ' } }.filter { it.isNotEmpty() }.mapTo(mutableListOf()) { it }
+            .map { it.trim() }.filter { it.isNotEmpty() }.mapTo(mutableListOf()) { it }
     }
 }
