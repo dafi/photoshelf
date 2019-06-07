@@ -47,6 +47,8 @@
     <string name="pref_service_login_title">Services Access</string>
     <string name="pref_import_category_title">Import and Export</string>
     <string name="pref_schedule_title">Schedule</string>
+    <string name="import_config_from_file">Import config from file</string>
+    <string name="pref_domselector_title">DomSelector</string>
     <string name="set_wallpaper_title">Set Wallpaper</string>
     <string name="wallpaper_changed_title">Wallpaper changed</string>
     <string name="share_image_title">Share Image</string>

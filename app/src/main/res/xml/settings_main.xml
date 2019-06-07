@@ -44,6 +44,12 @@
                     android:persistent="false"
                     android:title="@string/import_missing_birthdays_from_web_title"/>
             </PreferenceCategory>
+            <PreferenceCategory android:title="@string/pref_domselector_title">
+                <Preference
+                    android:key="import_dom_selector_config"
+                    android:persistent="false"
+                    android:title="@string/import_config_from_file"/>
+            </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory

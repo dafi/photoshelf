@@ -1,15 +1,20 @@
 package com.ternaryop.photoshelf.fragment.preference
 
+import android.app.Activity
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.db.Importer
+import com.ternaryop.photoshelf.domselector.DomSelectorManager
 import com.ternaryop.photoshelf.service.ImportIntentService
 import com.ternaryop.utils.date.daysSinceNow
+import com.ternaryop.utils.dialog.showErrorDialog
 
 private const val KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia"
+private const val KEY_IMPORT_DOM_SELECTOR_CONFIG = "import_dom_selector_config"
+private const val DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE = 1
 
 /**
  * Created by dave on 17/03/18.
@@ -17,8 +22,6 @@ private const val KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_w
  */
 class ImportPreferenceFragment : AppPreferenceFragment() {
     private lateinit var appSupport: AppSupport
-    private val importer: Importer
-        get() = Importer(context!!)
 
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_main, rootKey)
@@ -27,6 +30,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
 
         with(preferenceScreen) {
             findPreference<Preference>(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
+            findPreference<Preference>(KEY_IMPORT_DOM_SELECTOR_CONFIG)
 
             findPreference<Preference>(AppSupport.PREF_EXPORT_DAYS_PERIOD)
             onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_EXPORT_DAYS_PERIOD)
@@ -39,7 +43,32 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
                 ImportIntentService.startImportBirthdaysFromWeb(context!!, appSupport.selectedBlogName!!)
                 true
             }
+            KEY_IMPORT_DOM_SELECTOR_CONFIG -> {
+                performPick("application/json", DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE)
+                true
+            }
             else -> super.onPreferenceTreeClick(preference)
+        }
+    }
+
+    private fun performPick(mediaType: String, requestCode: Int) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = mediaType
+        }
+
+        startActivityForResult(intent, requestCode)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        if (requestCode == DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            resultData?.data?.also { uri ->
+                try {
+                    DomSelectorManager.upgradeConfig(activity!!, uri)
+                } catch (e: Exception) {
+                    e.showErrorDialog(activity!!)
+                }
+            }
         }
     }
 

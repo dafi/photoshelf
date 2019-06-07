@@ -1,11 +1,9 @@
 package com.ternaryop.photoshelf.domselector
 
 import android.content.Context
-import android.os.Environment
+import android.net.Uri
+import android.provider.DocumentsContract
 import com.google.gson.GsonBuilder
-import com.ternaryop.utils.log.Log
-import java.io.File
-import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -18,21 +16,16 @@ import java.io.InputStreamReader
 object DomSelectorManager {
     private var domSelectors: DomSelectors? = null
     private const val SELECTORS_FILENAME = "domSelectors.json"
-    private const val LOG_FILENAME = "photoshelf.txt"
 
     fun selectors(context: Context): DomSelectors {
         synchronized(DomSelectors::class.java) {
-            if (upgradeConfig(context)) {
-                domSelectors = null
-            }
             if (domSelectors == null) {
-                try {
-                    domSelectors = openConfig(context).use { stream ->
+                domSelectors = try {
+                    openConfig(context).use { stream ->
                         GsonBuilder().create().fromJson(InputStreamReader(stream), DomSelectors::class.java)
                     }
                 } catch (e: Exception) {
-                    domSelectors = DomSelectors(-1, emptyList())
-                    log(e)
+                    DomSelectors(-1, emptyList())
                 }
             }
         }
@@ -52,22 +45,11 @@ object DomSelectorManager {
         input.use { stream -> context.openFileOutput(SELECTORS_FILENAME, 0).use { out -> stream.copyTo(out) } }
     }
 
-    private fun upgradeConfig(context: Context): Boolean {
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), SELECTORS_FILENAME)
-        if (!file.exists()) {
-            return false
+    fun upgradeConfig(context: Context, uri: Uri) {
+        checkNotNull(context.contentResolver.openInputStream(uri)) { "Unable to read configuration" }.also { stream ->
+            copyConfig(context, stream)
+            DocumentsContract.deleteDocument(context.contentResolver, uri)
+            domSelectors = null
         }
-        try {
-            copyConfig(context, FileInputStream(file.absolutePath))
-            file.delete()
-            return true
-        } catch (e: Exception) {
-            log(e)
-        }
-        return false
-    }
-
-    private fun log(e: Throwable) {
-        Log.error(e, File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), LOG_FILENAME))
     }
 }
