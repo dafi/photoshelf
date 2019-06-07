@@ -26,7 +26,7 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
-import com.ternaryop.photoshelf.birthday.BirthdayUtils
+import com.ternaryop.photoshelf.birthday.createBirthdayPost
 import com.ternaryop.photoshelf.event.BirthdayEvent
 import com.ternaryop.photoshelf.util.notification.NotificationUtil
 import com.ternaryop.tumblr.TumblrPost
@@ -182,7 +182,7 @@ class PublishIntentService : IntentService("publishIntent") {
             val tumblr = TumblrManager.getInstance(applicationContext)
             for (bday in list) {
                 name = bday.name
-                BirthdayUtils.createBirthdayPost(tumblr, cakeImage, bday, blogName, publishAsDraft)
+                tumblr.createBirthdayPost(cakeImage, bday, blogName, cacheDir, publishAsDraft)
             }
         } catch (e: Exception) {
             logError(intent, e)
@@ -205,7 +205,7 @@ class PublishIntentService : IntentService("publishIntent") {
 
             NotificationUtil(context).notificationManager.cancel(notificationTag, url.hashCode())
 
-            PublishIntentService.startActionIntent(context,
+            startActionIntent(context,
                 url,
                 selectedBlogName,
                 postTitle,
