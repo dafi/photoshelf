@@ -5,7 +5,6 @@ import android.app.job.JobParameters
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
-import com.ternaryop.utils.log.Log
 import java.util.concurrent.TimeUnit
 
 class PhotoShelfJobService : AbsJobService() {
@@ -14,10 +13,7 @@ class PhotoShelfJobService : AbsJobService() {
         return when (params?.jobId) {
             BIRTHDAY_JOB_ID -> BirthdayJob.runJob(this, params)
             EXPORT_JOB_ID -> ExportJob.runJob(this, params)
-            else -> {
-                Log.error(logFile, "Invalid jobId ${params?.jobId}")
-                false
-            }
+            else -> false
         }
     }
 

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.os.Environment
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
@@ -33,12 +32,10 @@ import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.toIsoFormat
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.dialog.showErrorDialog
-import com.ternaryop.utils.log.Log
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
 import java.text.DateFormatSymbols
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -111,12 +108,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
                 resetSearch()
                 onScrollPostFetcher.incrementReadPostCount(birthdays.size)
                 adapter.addAll(birthdays)
-            }) { t ->
-                val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                    "birthday_browser_errors.txt")
-                Log.error(t, file)
-                t.showErrorDialog(context!!)
-            }
+            }) { t -> t.showErrorDialog(context!!) }
         compositeDisposable.add(d)
 
         setupActionBar()
@@ -203,8 +195,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         val dialogClickListener = DialogInterface.OnClickListener { _, which ->
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> when (postAction) {
-                    BirthdaysBrowserFragment.ItemAction.DELETE -> deleteBirthdays(birthdays, mode)
-                    BirthdaysBrowserFragment.ItemAction.MARK_AS_IGNORED -> markAsIgnored(birthdays, mode)
+                    ItemAction.DELETE -> deleteBirthdays(birthdays, mode)
+                    ItemAction.MARK_AS_IGNORED -> markAsIgnored(birthdays, mode)
                 }
             }
         }

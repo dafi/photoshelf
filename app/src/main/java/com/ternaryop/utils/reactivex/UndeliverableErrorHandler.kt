@@ -1,10 +1,7 @@
 package com.ternaryop.utils.reactivex
 
-import android.os.Environment
-import com.ternaryop.utils.log.Log
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.functions.Consumer
-import java.io.File
 import java.io.IOException
 
 /**
@@ -14,13 +11,9 @@ import java.io.IOException
 
 class UndeliverableErrorHandler : Consumer<Throwable> {
 
-    private val logPath: File
-        get() = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), LOG_FILE_NAME)
-
     @Throws(Exception::class)
     override fun accept(throwable: Throwable) {
         var t = throwable
-        Log.error(t, logPath, "Catched error from RX")
         if (t is UndeliverableException) {
             t = t.cause!!
         }
@@ -41,9 +34,5 @@ class UndeliverableErrorHandler : Consumer<Throwable> {
             // that's a bug in RxJava or in a custom operator
             Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), t)
         }
-    }
-
-    companion object {
-        const val LOG_FILE_NAME = "rx_errors.txt"
     }
 }

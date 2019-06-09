@@ -8,7 +8,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Environment
 import android.os.Handler
 import android.widget.Toast
 import androidx.annotation.StringRes
@@ -37,13 +36,11 @@ import com.ternaryop.utils.bitmap.readBitmap
 import com.ternaryop.utils.bitmap.scale
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
-import com.ternaryop.utils.log.Log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
-import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.net.URL
@@ -83,7 +80,6 @@ class PublishIntentService : IntentService("publishIntent") {
                 ACTION_CHANGE_WALLPAPER -> changeWallpaper(intent)
             }
         } catch (e: Exception) {
-            logError(intent, e)
             val url = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: ""
             val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: ""
             notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode())
@@ -138,18 +134,6 @@ class PublishIntentService : IntentService("publishIntent") {
             }, { notificationUtil.notifyError(it, name, getString(R.string.birthday_add_error_ticker)) })
     }
 
-    private fun logError(intent: Intent, e: Exception) {
-        val url = intent.getParcelableExtra<Uri>(EXTRA_URI)
-        val postTags = intent.getStringExtra(EXTRA_POST_TAGS)
-
-        try {
-            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                "publish_errors.txt")
-            Log.error(e, file, " Error on url $url", " tags $postTags")
-        } catch (ignored: Exception) {
-        }
-    }
-
     private fun broadcastBirthdaysByDate(intent: Intent): Disposable? {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
@@ -185,7 +169,6 @@ class PublishIntentService : IntentService("publishIntent") {
                 tumblr.createBirthdayPost(cakeImage, bday, blogName, cacheDir, publishAsDraft)
             }
         } catch (e: Exception) {
-            logError(intent, e)
             notificationUtil.notifyError(e, name, getString(R.string.birthday_publish_error_ticker, name, e.message))
         }
     }

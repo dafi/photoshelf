@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.db
 
 import android.content.Context
-import android.os.Environment
 import android.widget.Toast
 import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.TumblrPost
@@ -62,6 +61,9 @@ class Importer constructor(val context: Context) {
         override fun toString(): String = "progress $progress max $max items $items"
     }
 
+    val totalUsersPath: String
+        get() = context.filesDir.absolutePath + File.separator + TOTAL_USERS_FILE_NAME
+
     companion object {
         private const val TOTAL_USERS_FILE_NAME = "totalUsers.csv"
 
@@ -74,9 +76,5 @@ class Importer constructor(val context: Context) {
                         .observeOn(AndroidSchedulers.mainThread())
             }
         }
-
-        val totalUsersPath: String
-            get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                .toString() + File.separator + TOTAL_USERS_FILE_NAME
     }
 }
