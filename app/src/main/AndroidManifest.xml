@@ -107,6 +107,18 @@
         </service>
         <service android:name=".service.PhotoShelfJobService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.ternaryop.photoshelf.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
     </application>
 
 </manifest>

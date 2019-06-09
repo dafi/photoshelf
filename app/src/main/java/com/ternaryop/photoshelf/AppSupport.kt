@@ -2,14 +2,12 @@ package com.ternaryop.photoshelf
 
 import android.content.Context
 import android.content.ContextWrapper
-import android.os.Environment
 import androidx.preference.PreferenceManager
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.android.TumblrManager
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
 
 class AppSupport(context: Context) : ContextWrapper(context) {
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -82,7 +80,6 @@ class AppSupport(context: Context) : ContextWrapper(context) {
     }
 
     companion object {
-        private const val SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf"
         private const val LAST_BIRTHDAY_SHOW_TIME = "lastBirthdayShowTime"
         private const val AUTOMATIC_EXPORT = "automatic_export"
 
@@ -93,15 +90,5 @@ class AppSupport(context: Context) : ContextWrapper(context) {
         const val PREF_EXPORT_DAYS_PERIOD = "exportDaysPeriod"
         const val PREF_LAST_FOLLOWERS_UPDATE_TIME = "lastFollowersUpdateTime"
         const val PREF_PHOTOSHELF_APIKEY = "photoshelfApikey"
-
-        val picturesDirectory: File
-            get() {
-                val fullDirPath = File(Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_PICTURES), SUBDIRECTORY_PICTURES)
-                if (!fullDirPath.exists()) {
-                    fullDirPath.mkdirs()
-                }
-                return fullDirPath
-            }
     }
 }

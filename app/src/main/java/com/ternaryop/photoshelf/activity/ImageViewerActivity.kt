@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
@@ -17,16 +18,33 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.photoshelf.util.viewer.ImageViewerUtil
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.utils.intent.ShareChooserParams
+import com.ternaryop.utils.text.fromHtml
+import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
+import java.net.URL
 import java.util.Locale
 
 const val DIMENSIONS_POST_DELAY_MILLIS = 3000L
+const val FILE_PROVIDER_SHARE_AUTHORITY = "com.ternaryop.photoshelf.fileprovider"
+
+private const val SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf"
+
+private fun getPicturesDirectory(): File {
+    val fullDirPath = File(Environment.getExternalStoragePublicDirectory(
+        Environment.DIRECTORY_PICTURES), SUBDIRECTORY_PICTURES)
+    if (!fullDirPath.exists()) {
+        fullDirPath.mkdirs()
+    }
+    return fullDirPath
+}
 
 @SuppressLint("SetJavaScriptEnabled")
 class ImageViewerActivity : AbsPhotoShelfActivity() {
@@ -133,11 +151,11 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
                 return true
             }
             R.id.action_image_viewer_share -> {
-                ImageViewerUtil.shareImage(this, imageUrl, intent.extras?.getString(IMAGE_TITLE))
+                startShareImage()
                 return true
             }
             R.id.action_image_viewer_download -> {
-                ImageViewerUtil.download(this, imageUrl, intent.extras?.getString(IMAGE_TAG))
+                startDownload()
                 return true
             }
             R.id.action_image_viewer_copy_url -> {
@@ -151,6 +169,20 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun startDownload() {
+        val fileName = ImageViewerUtil.buildFileName(imageUrl, intent.extras?.getString(IMAGE_TAG))
+        ImageViewerUtil.download(this, imageUrl, Uri.fromFile(File(getPicturesDirectory(), fileName)))
+    }
+
+    private fun startShareImage() {
+        val destFile = ImageViewerUtil.buildSharePath(this, imageUrl, "images")
+        val shareChooserParams = ShareChooserParams(
+            FileProvider.getUriForFile(this, FILE_PROVIDER_SHARE_AUTHORITY, destFile),
+            getString(R.string.share_image_title),
+            intent.extras?.getString(IMAGE_TITLE)?.fromHtml()?.toString() ?: "")
+        ImageViewerUtil.shareImage(this, URL(imageUrl), shareChooserParams)
     }
 
     private fun toggleDetails() {

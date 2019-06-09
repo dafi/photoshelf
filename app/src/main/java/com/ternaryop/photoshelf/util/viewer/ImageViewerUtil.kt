@@ -3,21 +3,19 @@ package com.ternaryop.photoshelf.util.viewer
 import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.annotation.StringRes
-import com.ternaryop.photoshelf.AppSupport
-import com.ternaryop.photoshelf.R
 import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.intent.ShareChooserParams
 import com.ternaryop.utils.intent.ShareUtils
-import com.ternaryop.utils.text.fromHtml
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.File
-import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
@@ -28,11 +26,10 @@ import java.net.URL
  * Errors and successes are shown using UI elements (eg. dialogs and toasts)
  */
 object ImageViewerUtil {
-    fun download(context: Context, url: String, suggestedFileName: String? = null) {
+    fun download(context: Context, url: String, fileUri: Uri) {
         try {
-            val fileName = buildFileName(url, suggestedFileName)
             val request = DownloadManager.Request(Uri.parse(url))
-                .setDestinationUri(Uri.fromFile(File(AppSupport.picturesDirectory, fileName)))
+                .setDestinationUri(fileUri)
             (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
         } catch (e: Exception) {
             e.showErrorDialog(context)
@@ -45,21 +42,12 @@ object ImageViewerUtil {
         Toast.makeText(context, resultMessage, Toast.LENGTH_SHORT).show()
     }
 
-    fun shareImage(context: Context, url: String, suggestedTitle: String? = null): Disposable? {
+    fun shareImage(context: Context, imageUrl: URL, shareChooserParams: ShareChooserParams): Disposable? {
         try {
-            val fileName = buildFileName(url)
-            // write to a public location otherwise the called app can't access to file
-            val destFile = File(AppSupport.picturesDirectory, fileName)
-            return downloadImageUrl(URL(url), destFile)
+            return downloadImageUrl(context.contentResolver, imageUrl, shareChooserParams.destFileUri)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    ShareUtils.shareImage(context,
-                        destFile.absolutePath,
-                        "image/jpeg",
-                        suggestedTitle?.fromHtml()?.toString() ?: "",
-                        context.getString(R.string.share_image_title))
-                }
+                .subscribe({ ShareUtils.showShareChooser(context, shareChooserParams) }
                 ) { throwable -> throwable.showErrorDialog(context) }
         } catch (e: Exception) {
             e.showErrorDialog(context)
@@ -67,15 +55,19 @@ object ImageViewerUtil {
         return null
     }
 
-    private fun downloadImageUrl(imageUrl: URL, destFile: File): Completable {
-        return Completable.fromCallable {
+    fun buildSharePath(context: Context, url: String, subDirectory: String): File {
+        val cacheDir = File(context.cacheDir, subDirectory).apply { mkdirs() }
+        return File(cacheDir, buildFileName(url))
+    }
+
+    private fun downloadImageUrl(contentResolver: ContentResolver, imageUrl: URL, uri: Uri): Completable {
+        return Completable.fromAction {
             val connection = imageUrl.openConnection() as HttpURLConnection
-            connection.inputStream.use { stream -> FileOutputStream(destFile).use { os -> stream.copyTo(os) } }
-            null
+            connection.inputStream.use { stream -> contentResolver.openOutputStream(uri)?.use { os -> stream.copyTo(os) } }
         }
     }
 
-    private fun buildFileName(imageUrl: String, fileName: String? = null): String {
+    fun buildFileName(imageUrl: String, fileName: String? = null): String {
         if (fileName == null) {
             var nameFromUrl = URI(imageUrl).path
             val index = nameFromUrl.lastIndexOf('/')
