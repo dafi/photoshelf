@@ -9,39 +9,53 @@ buildscript {
     ext.kotlin_version = '1.3.31'
     ext {
         minSdkVersion = 26
-        targetSdkVersion = 28
-        compileSdkVersion = 28
+        targetSdkVersion = 29
+        compileSdkVersion = 29
+
+        targetSdkVersionDevPreview = targetSdkVersion // 'Q'
+        compileSdkVersionDevPreview = compileSdkVersion // 'android-Q'
+
+        // workaround to change sdk for release APK
+        // see https://issuetracker.google.com/issues/36988361
+        def runTasks = gradle.startParameter.taskNames
+        def incrementableTaskNames = ["aR", "assembleRelease"]
+        if (!incrementableTaskNames.any { name -> name in runTasks }) {
+            targetSdkVersion = targetSdkVersionDevPreview
+            compileSdkVersion = compileSdkVersionDevPreview
+        }
+
         buildToolsVersion = '28.0.3'
         androidXLibVersion = '1.0.0'
-        androidXAppCompatLibVersion = '1.1.0-alpha05'
-        androidXRecyclerviewLibVersion = '1.1.0-alpha05'
-        androidXAnnotationLibVersion = '1.1.0-rc01'
-        androidXMaterialLibVersion = '1.1.0-alpha06'
+        androidXAppCompatLibVersion = '1.1.0-beta01'
+        androidXRecyclerviewLibVersion = '1.1.0-alpha06'
+        androidXAnnotationLibVersion = '1.1.0'
+        androidXMaterialLibVersion = '1.1.0-alpha07'
         androidXConstraintlayoutLibVersion = '2.0.0-beta1'
+        androidXPreferenceLibVersion = '1.1.0-alpha05'
         flexboxLibVersion = '1.1.0'
-        ternaryUtilLibVersion = '1.4'
+        ternaryUtilLibVersion = '1.4.2'
 
-        rxjavaLibVersion = '2.2.8'
+        rxjavaLibVersion = '2.2.9'
         rxandroidLibVersion = '2.1.1'
 
         dropboxCoreLibVersion = '3.1.0'
 
         eventbusLibVersion = '3.1.1'
-        scribejavaCoreLibVersion = '6.5.1'
+        scribejavaCoreLibVersion = '6.6.2'
         jodaLibVersion = '2.10.1.2'
         picassoLibVersion = '2.71828'
-        retrofitLibVersion = '2.5.0'
+        retrofitLibVersion = '2.6.0'
         gsonLibVersion = '2.8.5'
-        retrofitAdapterRrxjavaLibVersion = '2.5.0'
-        retrofitConverterGsonLibVersion = '2.5.0'
-        okhttp3LoggingInterceptorLibVersion = '4.0.0-alpha01'
+        retrofitAdapterRrxjavaLibVersion = '2.6.0'
+        retrofitConverterGsonLibVersion = '2.6.0'
+        okhttp3LoggingInterceptorLibVersion = '4.0.0-RC1'
         okio = '2.2.2'
-        androidXTakisoftPreferencex = 'preferencex:1.0.0'
+        androidXTakisoftPreferencex = androidXPreferenceLibVersion
         jsoupLibVersion = '1.12.1'
 
         junitLibVersion = '4.13-beta-3'
-        androidXRulesLibVersion = '1.2.0-beta01'
-        androidXEspressoCoreLibVersion = '3.2.0-beta01'
+        androidXRulesLibVersion = '1.2.0'
+        androidXEspressoCoreLibVersion = '3.2.0'
     }
     repositories {
         jcenter()
@@ -49,7 +63,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:3.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.21.0"
@@ -70,4 +84,3 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-

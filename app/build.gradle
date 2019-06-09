@@ -22,7 +22,7 @@ dependencies {
     implementation "org.greenrobot:eventbus:${rootProject.ext.eventbusLibVersion}"
     implementation "com.github.scribejava:scribejava-core:${rootProject.ext.scribejavaCoreLibVersion}"
     implementation "net.danlew:android.joda:${rootProject.ext.jodaLibVersion}"
-    implementation "com.takisoft.preferencex:${rootProject.ext.androidXTakisoftPreferencex}"
+    implementation "com.takisoft.preferencex:preferencex:${rootProject.ext.androidXTakisoftPreferencex}"
 
     implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
     implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofitLibVersion}"
@@ -80,12 +80,46 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
+            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://visualdiffer.com/image/\""
         }
         debug {
             applicationIdSuffix ".debug"
         }
+        debugGenymotion {
+            initWith debug
+            // used with genymotion
+            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.3.2:8080/image/\""
+        }
+        debugRealDevice {
+            // use from real devices to access to local network
+            initWith debug
+            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.0.2:8080/image/\""
+        }
+        debugAndroidEmulator {
+            // used with android emulator
+            initWith debug
+            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.2.2:8080/image/\""
+        }
     }
 
+    variantFilter { variant ->
+        // Must be used a more specific debug variant (eg debugGenymotion, debugAndroidEmulator, ...)
+        if (variant.buildType.name == "debug") {
+            setIgnore(true)
+        }
+    }
+
+    sourceSets {
+        debugGenymotion {
+            root = "src/debug"
+        }
+        debugRealDevice {
+            root = "src/debug"
+        }
+        debugAndroidEmulator {
+            root = "src/debug"
+        }
+    }
     // Workaround for "Method ... not mocked." in test cases
     testOptions {
         unitTests.returnDefaultValues = true
@@ -130,7 +164,7 @@ def versionCodeByTask() {
     // Increment the versionCode only for specific tasks (eg the assemble release tasks)
     def runTasks = gradle.startParameter.taskNames
     def incrementableTaskNames = ["aR", "assembleRelease"]
-    if (incrementableTaskNames.find { name -> name in runTasks }) {
+    if (incrementableTaskNames.any { name -> name in runTasks }) {
         ++versionCode
         props["versionCode"] = versionCode.toString()
         props.store(new FileWriter(versionFile), null)
@@ -138,5 +172,4 @@ def versionCodeByTask() {
     return versionCode
 }
 
-apply from: 'appconfig.gradle'
 apply plugin: 'kotlin-android-extensions'
