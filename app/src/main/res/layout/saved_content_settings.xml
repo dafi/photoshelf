@@ -10,14 +10,15 @@
         android:inputType="number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
+        android:importantForAutofill="no"/>
 
     <EditText
         android:id="@+id/newer_than_hours"
         android:hint="@string/newer_than_hours"
         android:inputType="number"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"/>
 
     <CheckBox
         android:id="@+id/delete_on_refresh"

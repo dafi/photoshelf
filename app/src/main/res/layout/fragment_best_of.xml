@@ -8,7 +8,8 @@
         android:hint="@string/tag_name"
         android:inputType="text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"/>
 
     <Button
         android:id="@+id/create_post"
@@ -23,6 +24,7 @@
         android:textIsSelectable="true"
         android:gravity="top"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:importantForAutofill="no"/>
 
 </LinearLayout>
