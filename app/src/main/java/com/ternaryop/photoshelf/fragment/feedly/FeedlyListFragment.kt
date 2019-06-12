@@ -2,7 +2,7 @@ package com.ternaryop.photoshelf.fragment.feedly
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.SharedPreferences
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -14,7 +14,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -22,6 +21,7 @@ import com.google.gson.GsonBuilder
 import com.ternaryop.feedly.AccessToken
 import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.FeedlyRateLimit
+import com.ternaryop.feedly.SimpleFeedlyContent
 import com.ternaryop.feedly.StreamContent
 import com.ternaryop.feedly.StreamContentFindParam
 import com.ternaryop.feedly.TokenExpiredException
@@ -31,13 +31,14 @@ import com.ternaryop.photoshelf.activity.ImagePickerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentDelegate
-import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentSortSwitcher.Companion.TITLE_NAME
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
 import com.ternaryop.photoshelf.adapter.feedly.titles
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.update
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.titlesRequestBody
+import com.ternaryop.photoshelf.dialogs.FeedlyCategoriesDialog
+import com.ternaryop.photoshelf.dialogs.OnCloseDialogListener
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
@@ -51,12 +52,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     private lateinit var adapter: FeedlyContentAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var feedlyClient: FeedlyClient
-    private lateinit var preferences: SharedPreferences
+    private lateinit var preferences: FeedlyPrefs
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
-    private val newerThanHours: Int
-        get() = preferences.getInt(PREF_NEWER_THAN_HOURS, DEFAULT_NEWER_THAN_HOURS)
-    private val maxFetchItemCount: Int
-        get() = preferences.getInt(PREF_MAX_FETCH_ITEMS_COUNT, DEFAULT_MAX_FETCH_ITEMS_COUNT)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -84,13 +81,13 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
+        preferences = FeedlyPrefs(context!!)
 
-        adapter.sortSwitcher.setType(preferences.getInt(PREF_SORT_TYPE, TITLE_NAME))
+        adapter.sortSwitcher.setType(preferences.getSortType())
         adapter.clickListener = this
 
         feedlyClient = FeedlyClient(
-            preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, getString(R.string.FEEDLY_ACCESS_TOKEN))!!,
+            preferences.accessToken ?: getString(R.string.FEEDLY_ACCESS_TOKEN),
             getString(R.string.FEEDLY_USER_ID),
             getString(R.string.FEEDLY_REFRESH_TOKEN))
 
@@ -113,7 +110,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun getFeedlyContentDelegate(deleteItemsIfAllowed: Boolean): Single<List<FeedlyContentDelegate>> {
         return readStreamContent(deleteItemsIfAllowed)
-            .map { it.items.toContentDelegate() }
+            .map { filterCategories(it) }
+            .map { it.toContentDelegate() }
             .flatMap { list ->
                 ApiManager.postService()
                     .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
@@ -122,6 +120,17 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                         list
                     }
             }
+    }
+
+    private fun filterCategories(streamContent: StreamContent): List<SimpleFeedlyContent> {
+        val selectedCategories = preferences.selectedCategoriesId
+
+        if (selectedCategories.isEmpty()) {
+            return streamContent.items
+        }
+        return streamContent.items.filter { sc ->
+            sc.categories?.any { cat -> selectedCategories.any { cat.id == it } } ?: true
+        }
     }
 
     private fun readStreamContent(deleteItemsIfAllowed: Boolean): Single<StreamContent> {
@@ -143,7 +152,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun deleteItems(deleteItemsIfAllowed: Boolean): Completable {
-        if (deleteItemsIfAllowed && deleteOnRefresh()) {
+        if (deleteItemsIfAllowed && preferences.deleteOnRefresh) {
             val idList = adapter.uncheckedItems.map { it.id }
             return feedlyClient.markSaved(idList, false)
         }
@@ -151,8 +160,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun getNewerSavedContent(): Single<StreamContent> {
-        val ms = System.currentTimeMillis() - newerThanHours * ONE_HOUR_MILLIS
-        val params = StreamContentFindParam(maxFetchItemCount, ms)
+        val ms = System.currentTimeMillis() - preferences.newerThanHours * ONE_HOUR_MILLIS
+        val params = StreamContentFindParam(preferences.maxFetchItemCount, ms)
         return feedlyClient.getStreamContents(feedlyClient.globalSavedTag, params.toQueryMap())
     }
 
@@ -223,6 +232,10 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                 BottomMenuSheetDialogFragment().show(childFragmentManager, FRAGMENT_TAG_SORT)
                 return true
             }
+            R.id.action_feedly_categories -> {
+                selectCategories()
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }
@@ -234,21 +247,13 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             .compose(photoShelfSwipe.applySwipe())
             .subscribe(object : FeedlyObserver<AccessToken>() {
                 override fun onSuccess(accessToken: AccessToken) {
-                    preferences.edit().putString(PREF_FEEDLY_ACCESS_TOKEN, accessToken.accessToken).apply()
-                    feedlyClient.accessToken = preferences.getString(PREF_FEEDLY_ACCESS_TOKEN, accessToken.accessToken)!!
+                    preferences.accessToken = accessToken.accessToken
+                    feedlyClient.accessToken = preferences.accessToken ?: accessToken.accessToken
                     // hide swipe otherwise refresh() exists immediately
                     photoShelfSwipe.setRefreshingAndWaitingResult(false)
                     refresh(true)
                 }
             })
-    }
-
-    private fun saveSortSettings() {
-        preferences
-            .edit()
-            .putInt(PREF_SORT_TYPE, adapter.sortSwitcher.currentSortable.sortId)
-            .putBoolean(PREF_SORT_ASCENDING, adapter.sortSwitcher.currentSortable.isAscending)
-            .apply()
     }
 
     private fun scrollToPosition(position: Int) {
@@ -280,11 +285,11 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         val fetch = view.findViewById<EditText>(R.id.max_fetch_items_count)
         val newerThanHours = view.findViewById<EditText>(R.id.newer_than_hours)
         val deleteOnRefresh = view.findViewById<CheckBox>(R.id.delete_on_refresh)
-        preferences.edit()
-            .putInt(PREF_MAX_FETCH_ITEMS_COUNT, Integer.parseInt(fetch.text.toString()))
-            .putInt(PREF_NEWER_THAN_HOURS, Integer.parseInt(newerThanHours.text.toString()))
-            .putBoolean(PREF_DELETE_ON_REFRESH, deleteOnRefresh.isChecked)
-            .apply()
+        preferences.saveOtherSettings(
+            Integer.parseInt(fetch.text.toString()),
+            Integer.parseInt(newerThanHours.text.toString()),
+            deleteOnRefresh.isChecked
+        )
     }
 
     private fun fillSettingsView(view: View) {
@@ -292,9 +297,9 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         val newerThanHoursView = view.findViewById<EditText>(R.id.newer_than_hours)
         val deleteOnRefreshView = view.findViewById<CheckBox>(R.id.delete_on_refresh)
 
-        fetchView.setText(maxFetchItemCount.toString())
-        newerThanHoursView.setText(newerThanHours.toString())
-        deleteOnRefreshView.isChecked = deleteOnRefresh()
+        fetchView.setText(preferences.maxFetchItemCount.toString())
+        newerThanHoursView.setText(preferences.newerThanHours.toString())
+        deleteOnRefreshView.isChecked = preferences.deleteOnRefresh
     }
 
     override fun onTitleClick(position: Int) {
@@ -307,17 +312,13 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     override fun onToggleClick(position: Int, checked: Boolean) {
-        if (deleteOnRefresh()) {
+        if (preferences.deleteOnRefresh) {
             return
         }
         val d = feedlyClient.markSaved(listOf(adapter.getItem(position).id), checked)
             .compose(photoShelfSwipe.applyCompletableSwipe())
             .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
         compositeDisposable.add(d)
-    }
-
-    private fun deleteOnRefresh(): Boolean {
-        return preferences.getBoolean(PREF_DELETE_ON_REFRESH, true)
     }
 
     override fun makeSnake(view: View, t: Throwable): Snackbar {
@@ -345,21 +346,23 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         adapter.sortBy(sortType)
         adapter.notifyDataSetChanged()
         scrollToPosition(0)
-        saveSortSettings()
+        preferences.saveSortSettings(adapter.sortSwitcher.currentSortable.sortId,
+            adapter.sortSwitcher.currentSortable.isAscending)
+    }
+
+    private fun selectCategories() {
+        FeedlyCategoriesDialog(activity!!, feedlyClient, object: OnCloseDialogListener<FeedlyCategoriesDialog> {
+            override fun onClose(source: FeedlyCategoriesDialog, button: Int) {
+                if (button == DialogInterface.BUTTON_POSITIVE) {
+                    refresh(false)
+                }
+            }
+        }).show()
     }
 
     companion object {
-        const val PREF_MAX_FETCH_ITEMS_COUNT = "savedContent.MaxFetchItemCount"
-        const val PREF_NEWER_THAN_HOURS = "savedContent.NewerThanHours"
-        const val PREF_DELETE_ON_REFRESH = "savedContent.DeleteOnRefresh"
-        const val PREF_SORT_TYPE = "savedContent.SortType"
-        const val PREF_SORT_ASCENDING = "savedContent.SortAscending"
-
         const val FRAGMENT_TAG_SORT = "sort"
 
-        const val DEFAULT_MAX_FETCH_ITEMS_COUNT = 300
-        const val DEFAULT_NEWER_THAN_HOURS = 24
         const val ONE_HOUR_MILLIS = 60 * 60 * 1000
-        const val PREF_FEEDLY_ACCESS_TOKEN = "feedlyAccessToken"
     }
 }

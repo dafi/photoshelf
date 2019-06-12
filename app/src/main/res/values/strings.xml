@@ -226,5 +226,6 @@
     <string name="feedly_title">Feedly</string>
     <string name="retry">Retry</string>
     <string name="photoshelf_apikey">PhotoShelf Api key</string>
+    <string name="feedly_filter_categories">Filter Categories</string>
 
 </resources>

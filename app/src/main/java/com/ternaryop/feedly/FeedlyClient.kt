@@ -36,6 +36,10 @@ interface FeedlyService {
 
     @POST("v3/markers")
     fun markSaved(@Body marker: Marker) : Completable
+
+    @GET("v3/categories")
+    fun getCategories(@Query("sort") sort: String? = null)
+        : Single<List<Category>>
 }
 
 class FeedlyClient(var accessToken: String, userId: String, private val refreshToken: String) {
@@ -64,6 +68,10 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
         )
         return service()
             .refreshAccessToken(data)
+    }
+
+    fun getCategories(sort: String? = null) : Single<List<Category>> {
+        return service().getCategories(sort)
     }
 
     fun service(): FeedlyService = builder.create(FeedlyService::class.java)

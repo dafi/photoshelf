@@ -16,13 +16,15 @@ interface FeedlyContent {
 }
 
 data class FeedlyOrigin(val title: String)
+data class Category(val id: String, val label: String, val description: String? = null)
 
 data class SimpleFeedlyContent(
     override val id: String,
-    @SerializedName("title") val nullableTitle: String?,
+    @SerializedName("title") private val nullableTitle: String?,
     override val originId: String,
     override val actionTimestamp: Long,
-    override val origin: FeedlyOrigin) : FeedlyContent {
+    override val origin: FeedlyOrigin,
+    val categories: List<Category>?) : FeedlyContent {
     override val title: String
         get() = nullableTitle ?: "No title"
 }
