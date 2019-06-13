@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.Button
@@ -24,7 +25,7 @@ import java.util.Locale
 class SchedulePostDialog(context: Context,
     val item: TumblrPost,
     val scheduleDateTime: Calendar,
-    private val onPostSchedule: OnPostScheduleListener?) : Dialog(context), View.OnClickListener,
+    private val onCloseListener: OnCloseDialogListener<SchedulePostDialog>) : Dialog(context), View.OnClickListener,
     TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
     private val chooseDateButton: Button
     private val chooseTimeButton: Button
@@ -82,7 +83,9 @@ class SchedulePostDialog(context: Context,
 
     private fun schedulePost() {
         findViewById<View>(R.id.schedule_button).isEnabled = false
-        onPostSchedule?.onPostScheduled(this)
+        if (onCloseListener.onClose(this, DialogInterface.BUTTON_POSITIVE)) {
+            dismiss()
+        }
     }
 
     override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
@@ -96,10 +99,6 @@ class SchedulePostDialog(context: Context,
         scheduleDateTime.month = monthOfYear
         scheduleDateTime.dayOfMonth = dayOfMonth
         updateDateButton()
-    }
-
-    interface OnPostScheduleListener {
-        fun onPostScheduled(dialog: SchedulePostDialog)
     }
 
     private fun updateDateButton() {

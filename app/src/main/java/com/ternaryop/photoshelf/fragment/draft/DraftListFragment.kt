@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.fragment.draft
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils.SECOND_IN_MILLIS
@@ -24,6 +25,7 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
 import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
+import com.ternaryop.photoshelf.dialogs.OnCloseDialogListener
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
 import com.ternaryop.photoshelf.event.CounterEvent
@@ -228,15 +230,19 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         SchedulePostDialog(context!!,
             item,
             findScheduleTime(),
-            object : SchedulePostDialog.OnPostScheduleListener {
-                override fun onPostScheduled(dialog: SchedulePostDialog) {
+            object : OnCloseDialogListener<SchedulePostDialog> {
+                override fun onClose(source: SchedulePostDialog, button: Int): Boolean {
+                    if (button == DialogInterface.BUTTON_NEGATIVE) {
+                        return true
+                    }
                     val d = postActionExecutor
-                        .schedule(item, dialog.scheduleDateTime)
-                        .doFinally { dialog.dismiss() }
+                        .schedule(item, source.scheduleDateTime)
+                        .doFinally { source.dismiss() }
                         .subscribe(
                             { },
                             { t -> t.showErrorDialog(context!!) })
                     compositeDisposable.add(d)
+                    return false
                 }
             }).show()
     }
