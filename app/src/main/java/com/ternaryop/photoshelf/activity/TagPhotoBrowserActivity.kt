@@ -11,8 +11,19 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment
 
 class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
+    private lateinit var _blogName: String
+
+    override val blogName: String
+        get() = _blogName
+
     override val contentViewLayoutId: Int
         get() = R.layout.activity_tag_photo_browser
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        _blogName = intent.extras?.getString(EXTRA_BLOG_NAME, appSupport.selectedBlogName)!!
+
+        super.onCreate(savedInstanceState)
+    }
 
     override fun createFragment(): Fragment? = TagPhotoBrowserFragment()
 

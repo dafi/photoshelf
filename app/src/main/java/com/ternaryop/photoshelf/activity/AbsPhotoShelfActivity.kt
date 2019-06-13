@@ -7,14 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.AppSupport
-import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
 
 abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStatus {
-    private var _blogName: String? = null
-    val blogName: String
-        get() = _blogName ?: appSupport.selectedBlogName!!
+    open val blogName: String
+        get() = appSupport.selectedBlogName!!
 
     override val appSupport: AppSupport by lazy { AppSupport(this) }
 
@@ -37,7 +35,6 @@ abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStat
         setupActionBar()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        _blogName = intent.extras?.getString(EXTRA_BLOG_NAME)
         val fragment = createFragment()
         if (fragment != null) {
             supportFragmentManager.beginTransaction().add(R.id.content_frame, fragment).commit()
