@@ -7,7 +7,6 @@ import android.net.Uri
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.ternaryop.photoshelf.R
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 
@@ -23,9 +22,9 @@ fun TumblrPost.finishActivity(activity: Activity, extraPostName: String) {
     activity.finish()
 }
 
-fun TumblrPhotoPost.browseTagImageBySize(
+fun TumblrPhotoPost.browseImageBySize(
     Context: Context,
-    tag: String = firstTag,
+    title: String,
     startImageViewer: (String, TumblrPhotoPost) -> Unit) {
     val photoAltSize = firstPhotoAltSize ?: return
     val arrayAdapter = ArrayAdapter(
@@ -34,7 +33,7 @@ fun TumblrPhotoPost.browseTagImageBySize(
         photoAltSize)
 
     AlertDialog.Builder(Context)
-        .setTitle(Context.getString(R.string.menu_header_show_image, tag) + " (" + postId + ")")
+        .setTitle(title)
         .setAdapter(arrayAdapter) { _, which ->
             arrayAdapter.getItem(which)?.let { startImageViewer(it.url, this) }
         }

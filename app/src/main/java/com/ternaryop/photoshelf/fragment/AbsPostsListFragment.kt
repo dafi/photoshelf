@@ -32,7 +32,7 @@ import com.ternaryop.photoshelf.util.post.errorList
 import com.ternaryop.photoshelf.util.post.showErrorDialog
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.tumblr.android.browseTagImageBySize
+import com.ternaryop.tumblr.android.browseImageBySize
 import com.ternaryop.tumblr.android.finishActivity
 import com.ternaryop.tumblr.android.viewPost
 import com.ternaryop.utils.dialog.showErrorDialog
@@ -222,9 +222,7 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 return true
             }
             R.id.group_menu_image_dimension -> {
-                postList[0].browseTagImageBySize(activity!!) { url, post ->
-                    ImageViewerActivity.startImageViewer(activity!!, url, post)
-                }
+                browseImageBySize(postList[0])
                 return true
             }
             R.id.post_delete -> {
@@ -244,6 +242,13 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 return true
             }
             else -> return false
+        }
+    }
+
+    private fun browseImageBySize(photo: PhotoShelfPost) {
+        val title = getString(R.string.menu_header_show_image, photo.firstTag) + " (" + photo.postId + ")"
+        photo.browseImageBySize(activity!!, title) { url, post ->
+            ImageViewerActivity.startImageViewer(activity!!, url, post)
         }
     }
 
