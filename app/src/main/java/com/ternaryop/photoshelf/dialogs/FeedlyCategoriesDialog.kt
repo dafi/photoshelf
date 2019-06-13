@@ -52,12 +52,14 @@ class FeedlyCategoriesDialog(
                 .checkedItems()
                 .map { it.item.id }
                 .toSet()
-            dismiss()
-            onCloseDialogListener.onClose(this, DialogInterface.BUTTON_POSITIVE)
+            if (onCloseDialogListener.onClose(this, DialogInterface.BUTTON_POSITIVE)) {
+                dismiss()
+            }
         }
         cancelButton.setOnClickListener {
-            dismiss()
-            onCloseDialogListener.onClose(this, DialogInterface.BUTTON_NEGATIVE)
+            if (onCloseDialogListener.onClose(this, DialogInterface.BUTTON_NEGATIVE)) {
+                dismiss()
+            }
         }
     }
 

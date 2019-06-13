@@ -352,10 +352,11 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun selectCategories() {
         FeedlyCategoriesDialog(activity!!, feedlyClient, object: OnCloseDialogListener<FeedlyCategoriesDialog> {
-            override fun onClose(source: FeedlyCategoriesDialog, button: Int) {
+            override fun onClose(source: FeedlyCategoriesDialog, button: Int): Boolean {
                 if (button == DialogInterface.BUTTON_POSITIVE) {
                     refresh(false)
                 }
+                return true
             }
         }).show()
     }
