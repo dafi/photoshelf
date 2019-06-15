@@ -235,10 +235,14 @@
       "urlPattern": "gotceleb",
       "image": {
         "pageChain": [
-            {
-              "pageSel": "a[href*=wp-content]",
-              "selAttr":"href"
-            }
+          {
+            "pageSel": "a[href*=full-image]",
+            "selAttr":"href"
+          },
+          {
+            "pageSel": "a[href*=wp-content]",
+            "selAttr":"href"
+          }
         ]
       },
       "gallery": {
