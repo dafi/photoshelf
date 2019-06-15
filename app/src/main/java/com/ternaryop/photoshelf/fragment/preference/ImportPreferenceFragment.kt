@@ -44,17 +44,22 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
                 true
             }
             KEY_IMPORT_DOM_SELECTOR_CONFIG -> {
-                performPick("application/json", DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE)
+                // on Oreo and below "application/json" isn't handled so we must add "application/octet-stream", too
+                performPick(
+                    "*/*",
+                    arrayOf("application/json", "application/octet-stream"),
+                    DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE)
                 true
             }
             else -> super.onPreferenceTreeClick(preference)
         }
     }
 
-    private fun performPick(mediaType: String, requestCode: Int) {
+    private fun performPick(mediaType: String, extraMediaTypes: Array<String>, requestCode: Int) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = mediaType
+            putExtra(Intent.EXTRA_MIME_TYPES, extraMediaTypes)
         }
 
         startActivityForResult(intent, requestCode)
