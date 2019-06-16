@@ -46,8 +46,7 @@
         android:minHeight="@dimen/webview_progressbar_height"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:visibility="gone"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <com.ternaryop.widget.ProgressHighlightViewLayout
         android:id="@android:id/empty"
