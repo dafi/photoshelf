@@ -6,8 +6,9 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
     implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXRecyclerviewLibVersion}"
-    implementation "androidx.cardview:cardview:${rootProject.ext.androidXLibVersion}"
+    implementation "androidx.cardview:cardview:${rootProject.ext.androidXCardViewLibVersion}"
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
+    implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
 
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
     implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
@@ -22,7 +23,6 @@ dependencies {
     implementation "org.greenrobot:eventbus:${rootProject.ext.eventbusLibVersion}"
     implementation "com.github.scribejava:scribejava-core:${rootProject.ext.scribejavaCoreLibVersion}"
     implementation "net.danlew:android.joda:${rootProject.ext.jodaLibVersion}"
-    implementation "com.takisoft.preferencex:preferencex:${rootProject.ext.androidXTakisoftPreferencex}"
 
     implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
     implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofitLibVersion}"

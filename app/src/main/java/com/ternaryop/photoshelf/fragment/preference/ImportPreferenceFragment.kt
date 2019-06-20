@@ -23,7 +23,7 @@ private const val DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE = 1
 class ImportPreferenceFragment : AppPreferenceFragment() {
     private lateinit var appSupport: AppSupport
 
-    override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_main, rootKey)
 
         appSupport = AppSupport(context!!)

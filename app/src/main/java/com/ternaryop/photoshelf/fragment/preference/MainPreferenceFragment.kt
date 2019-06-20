@@ -45,7 +45,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     private val supportActionBar: ActionBar?
         get() = (context!! as AppCompatActivity).supportActionBar
 
-    override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_main, rootKey)
 
         appSupport = AppSupport(context!!)

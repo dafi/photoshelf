@@ -1,15 +1,22 @@
 package com.ternaryop.preference
 
 import android.content.Context
+import android.text.InputType
 import android.util.AttributeSet
-import com.takisoft.preferencex.EditTextPreference
+import androidx.preference.EditTextPreference
 
 class IntegerEditTextPreference : EditTextPreference {
-    constructor(context: Context) : super(context)
+    constructor(context: Context) : super(context) {
+        setupEditListener()
+    }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        setupEditListener()
+    }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle)
+    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle) {
+        setupEditListener()
+    }
 
     override fun onSetInitialValue(restoreValue: Boolean, defaultValue: Any?) {
         text = if (restoreValue) getPersistedString(text) else defaultValue.toString()
@@ -21,5 +28,9 @@ class IntegerEditTextPreference : EditTextPreference {
 
     override fun persistString(value: String): Boolean {
         return persistInt(Integer.valueOf(value))
+    }
+
+    private fun setupEditListener() {
+        setOnBindEditTextListener { it.inputType = InputType.TYPE_CLASS_NUMBER }
     }
 }
