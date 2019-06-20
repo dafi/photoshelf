@@ -1,24 +1,12 @@
 package com.ternaryop.feedly
 
 import okhttp3.Headers
-import org.joda.time.Period
-import org.joda.time.format.PeriodFormatterBuilder
 import java.net.HttpURLConnection
 
 /**
  * Created by dave on 25/02/17.
  * Hold the info about rate limits
  */
-
-private var resetLimitFormat = PeriodFormatterBuilder()
-        .appendDays()
-        .appendSeparator(" days ")
-        .printZeroAlways().minimumPrintedDigits(2).appendHours()
-        .appendSeparator(":")
-        .printZeroAlways().minimumPrintedDigits(2).appendMinutes()
-        .appendSeparator(":")
-        .printZeroAlways().minimumPrintedDigits(2).appendSeconds()
-        .toFormatter()
 
 @Suppress("MemberVisibilityCanBePrivate")
 object FeedlyRateLimit {
@@ -33,12 +21,27 @@ object FeedlyRateLimit {
             if (apiResetLimit < 0) {
                 return "N/A"
             }
-            val period = Period.seconds(apiResetLimit).normalizedStandard()
-            return resetLimitFormat.print(period)
+            return formatResetLimit(apiResetLimit)
         }
 
     init {
         reset()
+    }
+
+    private fun formatResetLimit(seconds: Int): String {
+        val sb = StringBuilder()
+        var remainingSeconds = seconds
+        val days = remainingSeconds / (24 * 3600)
+        remainingSeconds %= (24 * 3600)
+        val hours = remainingSeconds / 3600
+        remainingSeconds %= 3600
+        val minutes = remainingSeconds / 60
+        remainingSeconds %= 60
+
+        if (days > 0) {
+            sb.append(" $days days ")
+        }
+        return sb.append(String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)).toString()
     }
 
     private fun reset() {
@@ -50,8 +53,8 @@ object FeedlyRateLimit {
         synchronized(this) {
             reset()
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                apiCallsCount = headers.get("X-Ratelimit-Count")?.toInt() ?: -1
-                apiResetLimit = headers.get("X-Ratelimit-Reset")?.toInt() ?: -1
+                apiCallsCount = headers["X-Ratelimit-Count"]?.toInt() ?: -1
+                apiResetLimit = headers["X-Ratelimit-Reset"]?.toInt() ?: -1
             }
         }
     }
