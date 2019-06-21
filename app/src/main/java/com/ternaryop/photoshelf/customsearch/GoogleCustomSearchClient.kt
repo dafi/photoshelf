@@ -1,16 +1,14 @@
 package com.ternaryop.photoshelf.customsearch
 
 import com.google.gson.GsonBuilder
-import com.ternaryop.photoshelf.utils.okhttp3.OkHttpUtil
 import io.reactivex.Single
 import okhttp3.Interceptor
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-
-
 
 /**
  * Created by dave on 30/04/17.
@@ -30,10 +28,12 @@ interface GoogleCustomSearchService {
 object GoogleCustomSearchClient {
     private var apiKey = ""
     private var cx = ""
+    private var okHttpClient: OkHttpClient? = null
 
-    fun setup(apiKey: String, cx: String) {
+    fun setup(apiKey: String, cx: String, okHttpClient: OkHttpClient?) {
         this.apiKey = apiKey
         this.cx = cx
+        this.okHttpClient = okHttpClient
     }
 
     fun getCorrectedQuery(q: String): Single<CustomSearchResult> {
@@ -56,7 +56,7 @@ object GoogleCustomSearchClient {
             }()
         }
 
-        val builder = OkHttpUtil.Builder()
+        val builder = okHttpClient?.newBuilder() ?: OkHttpClient.Builder()
         builder.interceptors().add(interceptor)
 
         Retrofit.Builder()

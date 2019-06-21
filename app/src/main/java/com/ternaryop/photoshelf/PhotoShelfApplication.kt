@@ -1,9 +1,10 @@
 package com.ternaryop.photoshelf
 
 import android.app.Application
+import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
-import com.ternaryop.photoshelf.utils.okhttp3.OkHttpUtil
+import com.ternaryop.util.okhttp3.OkHttpUtil
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dropbox.DropboxManager
 import com.ternaryop.utils.reactivex.UndeliverableErrorHandler
@@ -22,15 +23,19 @@ class PhotoShelfApplication : Application() {
         // joda-time-android will not work.
         JodaTimeAndroid.init(this)
         RxJavaPlugins.setErrorHandler(UndeliverableErrorHandler())
-        OkHttpUtil.isDebugEnabled = BuildConfig.DEBUG
         TumblrManager.setup(
             getString(R.string.TUMBLR_CONSUMER_KEY),
             getString(R.string.TUMBLR_CONSUMER_SECRET),
             getString(R.string.TUMBLR_CALLBACK_URL))
         DropboxManager.setup(getString(R.string.DROPBOX_APP_KEY), resources.getString(R.string.dropbox_client_identifier))
-        ApiManager.setup(AppSupport(this).photoShelfApikey, BuildConfig.PHOTOSHELF_API_PREFIX)
+        val okHttpClient = if (BuildConfig.DEBUG) OkHttpUtil.debugHttpClient() else null
+        ApiManager
+            .setup(AppSupport(this)
+            .photoShelfApikey, BuildConfig.PHOTOSHELF_API_PREFIX, okHttpClient)
+        FeedlyClient.setup(okHttpClient)
         GoogleCustomSearchClient.setup(
             getString(R.string.GOOGLE_CSE_APIKEY),
-            getString(R.string.GOOGLE_CSE_CX))
+            getString(R.string.GOOGLE_CSE_CX),
+            okHttpClient)
     }
 }

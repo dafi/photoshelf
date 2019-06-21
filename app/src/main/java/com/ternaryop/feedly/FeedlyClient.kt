@@ -1,10 +1,10 @@
 package com.ternaryop.feedly
 
 import com.google.gson.GsonBuilder
-import com.ternaryop.photoshelf.utils.okhttp3.OkHttpUtil
 import io.reactivex.Completable
 import io.reactivex.Single
 import okhttp3.Interceptor
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -96,7 +96,7 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
             }()
         }
 
-        val builder = OkHttpUtil.Builder()
+        val builder = okHttpClient?.newBuilder() ?: OkHttpClient.Builder()
         builder.interceptors().add(authInterceptor)
         builder.interceptors().add(errorInterceptor)
         builder.interceptors().add(rateInterceptor)
@@ -110,6 +110,12 @@ class FeedlyClient(var accessToken: String, userId: String, private val refreshT
     }
 
     companion object {
+        private var okHttpClient: OkHttpClient? = null
+
+        fun setup(okHttpClient: OkHttpClient?) {
+            this.okHttpClient = okHttpClient
+        }
+
         private val errorInterceptor = Interceptor { chain ->
             val request = chain.request()
             val response = chain.proceed(request)
