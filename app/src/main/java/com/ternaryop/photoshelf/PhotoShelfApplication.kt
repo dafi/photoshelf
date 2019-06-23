@@ -19,8 +19,6 @@ class PhotoShelfApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // It's important to initialize the ResourceZoneInfoProvider; otherwise
-        // joda-time-android will not work.
         RxJavaPlugins.setErrorHandler(UndeliverableErrorHandler())
         TumblrManager.setup(
             getString(R.string.TUMBLR_CONSUMER_KEY),
