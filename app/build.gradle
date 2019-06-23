@@ -13,7 +13,7 @@ dependencies {
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
     implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
     implementation "io.reactivex.rxjava2:rxjava:${rootProject.ext.rxjavaLibVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rootProject.ext.rxandroidLibVersion}"
@@ -22,7 +22,6 @@ dependencies {
 
     implementation "org.greenrobot:eventbus:${rootProject.ext.eventbusLibVersion}"
     implementation "com.github.scribejava:scribejava-core:${rootProject.ext.scribejavaCoreLibVersion}"
-    implementation "net.danlew:android.joda:${rootProject.ext.jodaLibVersion}"
 
     implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
     implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofitLibVersion}"

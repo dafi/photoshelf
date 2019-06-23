@@ -10,7 +10,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
 import android.text.TextUtils
 import androidx.core.app.NotificationCompat
 import com.ternaryop.photoshelf.EXTRA_NOTIFICATION_TAG
@@ -20,8 +19,6 @@ import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.date.yearsBetweenDates
 import com.ternaryop.utils.dialog.getExceptionMessageChain
-import org.joda.time.LocalDate
-import org.joda.time.Years
 import java.text.DateFormat
 import java.util.Calendar
 
@@ -88,7 +85,7 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
 
     fun notifyBirthdayAdded(name: String, birthday: Calendar) {
         val date = DateFormat.getDateInstance().format(birthday.time)
-        val age = Years.yearsBetween(LocalDate(birthday), LocalDate()).years.toString()
+        val age = birthday.yearsBetweenDates().toString()
 
         val notification = createBirthdayNotification(
                 getString(R.string.name_with_date_age, name, date, age),
@@ -128,9 +125,6 @@ class NotificationUtil(context: Context) : ContextWrapper(context) {
 
     @Suppress("MagicNumber")
     private fun createChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return
-        }
         val channelName = "Birthdays"
         val importance = NotificationManager.IMPORTANCE_LOW
         val channel = NotificationChannel(BIRTHDAY_CHANNEL_ID, channelName, importance)

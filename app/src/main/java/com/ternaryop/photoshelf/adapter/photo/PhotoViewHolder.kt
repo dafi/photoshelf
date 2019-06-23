@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.adapter.photo
 
 import android.annotation.SuppressLint
-import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -18,9 +17,13 @@ import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.tumblr.TumblrAltSize
+import com.ternaryop.utils.date.secondsToLocalDateTime
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.stripHtmlTags
-import org.joda.time.format.DateTimeFormat
+import java.time.format.DateTimeFormatter
+import kotlin.math.max
+
+private val DATE_FORMATTER_FULL = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
 
 /**
  * Created by dave on 13/04/16.
@@ -99,7 +102,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun setImageDimension(altSize: TumblrAltSize, thumbnailWidth: Int) {
-        val minThumbnailWidth = Math.max(thumbnailWidth, altSize.width)
+        val minThumbnailWidth = max(thumbnailWidth, altSize.width)
         // convert from pixel to DIP
         thumbImage.layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
             minThumbnailWidth.toFloat(), itemView.context.resources.displayMetrics).toInt()
@@ -121,7 +124,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private fun showUploadTime() {
         noteCountText.visibility = View.VISIBLE
         noteCountText.text = itemView.resources.getString(R.string.uploaded_at_time,
-            DateTimeFormat.forPattern("dd/MM/yyyy HH:mm").print(post.timestamp * SECOND_IN_MILLIS))
+            DATE_FORMATTER_FULL.format(post.timestamp.secondsToLocalDateTime()))
     }
 
     private fun updateNote() {

@@ -1,6 +1,6 @@
 package com.ternaryop.photoshelf.adapter
 
-import org.joda.time.DateTimeComparator
+import com.ternaryop.utils.date.millisToLocalDate
 
 /**
  * Sort using the order from top to bottom shown below
@@ -37,7 +37,7 @@ class LastPublishedTimestampComparator : Comparator<PhotoShelfPost> {
         }
 
         // compare only the date part
-        var compare = DateTimeComparator.getDateOnlyInstance().compare(lhsTimestamp, rhsTimestamp)
+        var compare = lhsTimestamp.millisToLocalDate().compareTo(rhsTimestamp.millisToLocalDate())
         if (compare == 0) {
             compare = compareTag(lhs, rhs, true)
         }
