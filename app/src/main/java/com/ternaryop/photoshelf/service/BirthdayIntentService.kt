@@ -14,9 +14,10 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
+import com.ternaryop.photoshelf.birthday.createBirthdayImageFile
 import com.ternaryop.photoshelf.birthday.createBirthdayPost
 import com.ternaryop.photoshelf.event.BirthdayEvent
-import com.ternaryop.photoshelf.util.notification.NotificationUtil
+import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
@@ -35,16 +36,9 @@ import java.util.Locale
  */
 class BirthdayIntentService : IntentService("birthdayIntent") {
 
-    private lateinit var notificationUtil: NotificationUtil
-
     private val birthdayBitmap: Bitmap
         @Throws(IOException::class)
         get() = assets.open("cake.png").use { stream -> return BitmapFactory.decodeStream(stream) }
-
-    override fun onCreate() {
-        super.onCreate()
-        notificationUtil = NotificationUtil(this)
-    }
 
     override fun onHandleIntent(intent: Intent?) {
         when (intent?.action) {
@@ -85,10 +79,11 @@ class BirthdayIntentService : IntentService("birthdayIntent") {
             val tumblr = TumblrManager.getInstance(applicationContext)
             for (bday in list) {
                 name = bday.name
-                tumblr.createBirthdayPost(cakeImage, bday, blogName, cacheDir, publishAsDraft)
+                val imageFile = createBirthdayImageFile(cakeImage, bday, cacheDir)
+                tumblr.createBirthdayPost(imageFile, bday, blogName, publishAsDraft)
             }
         } catch (e: Exception) {
-            notificationUtil.notifyError(e, name, getString(R.string.birthday_publish_error_ticker, name, e.message))
+            e.notify(this, name, getString(R.string.birthday_publish_error_ticker, name, e.message))
         }
     }
 

@@ -6,16 +6,14 @@ import android.content.Intent
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.importer.notifyImportBirthdaysFromWeb
-import com.ternaryop.photoshelf.util.notification.NotificationUtil
 
 /**
  * An [IntentService] subclass for handling import/export actions
  */
 class ImportIntentService : IntentService("ImportIntentService") {
     override fun onHandleIntent(intent: Intent?) {
-        val notificationUtil = NotificationUtil(this)
         when (intent?.action) {
-            ACTION_IMPORT_BIRTHDAYS_FROM_WEB -> Importer(this).notifyImportBirthdaysFromWeb(notificationUtil)
+            ACTION_IMPORT_BIRTHDAYS_FROM_WEB -> Importer(this).notifyImportBirthdaysFromWeb()
         }
     }
 

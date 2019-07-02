@@ -12,7 +12,9 @@ import com.ternaryop.photoshelf.EXTRA_POST_TITLE
 import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.util.notification.NotificationUtil
+import com.ternaryop.photoshelf.util.notification.BirthdayNotificationBroadcastReceiver.Companion.notifyBirthdayAdded
+import com.ternaryop.photoshelf.util.notification.notificationManager
+import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftPhotoPost
@@ -28,13 +30,6 @@ import java.net.URI
  */
 class PublishIntentService : IntentService("publishIntent") {
 
-    private lateinit var notificationUtil: NotificationUtil
-
-    override fun onCreate() {
-        super.onCreate()
-        notificationUtil = NotificationUtil(this)
-    }
-
     override fun onHandleIntent(intent: Intent?) {
         intent ?: return
 
@@ -47,7 +42,7 @@ class PublishIntentService : IntentService("publishIntent") {
         } catch (e: Exception) {
             val url = intent.getParcelableExtra<Uri>(EXTRA_URI) ?: ""
             val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: ""
-            notificationUtil.notifyError(e, postTags, getString(R.string.upload_error_ticker), url.hashCode())
+            e.notify(this, postTags, getString(R.string.upload_error_ticker), url.hashCode())
         }
     }
 
@@ -66,7 +61,7 @@ class PublishIntentService : IntentService("publishIntent") {
                     .publishPhotoPost(selectedBlogName, URI(url.toString()), postTitle, postTags)
             }
         } catch (e: Exception) {
-            notificationUtil.notifyError(e, postTags, getString(R.string.retry),
+            e.notify(this, postTags, getString(R.string.retry),
                 createRetryPublishIntent(intent), url.hashCode())
         }
     }
@@ -81,9 +76,9 @@ class PublishIntentService : IntentService("publishIntent") {
             .map { it.response }
             .subscribe({ nameResult ->
                 if (nameResult.isNew) {
-                    notificationUtil.notifyBirthdayAdded(name, nameResult.birthday.birthdate)
+                    notifyBirthdayAdded(this, name, nameResult.birthday.birthdate)
                 }
-            }, { notificationUtil.notifyError(it, name, getString(R.string.birthday_add_error_ticker)) })
+            }, { it.notify(this, name, getString(R.string.birthday_add_error_ticker)) })
     }
 
     class RetryPublishNotificationBroadcastReceiver : BroadcastReceiver() {
@@ -95,7 +90,7 @@ class PublishIntentService : IntentService("publishIntent") {
             val action = intent.action
             val notificationTag = intent.getStringExtra(EXTRA_NOTIFICATION_TAG)
 
-            NotificationUtil(context).notificationManager.cancel(notificationTag, url.hashCode())
+            context.notificationManager.cancel(notificationTag, url.hashCode())
 
             startActionIntent(context,
                 url,

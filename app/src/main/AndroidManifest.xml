@@ -71,15 +71,13 @@
         <service android:name=".service.PhotoShelfJobService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>
 
-
-
         <receiver android:name=".service.BootServiceReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".util.notification.NotificationUtil$ClearBirthdayNotificationBroadcastReceiver"
+            android:name=".util.notification.BirthdayNotificationBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.ternaryop.photoshelf.birthday.clear"/>

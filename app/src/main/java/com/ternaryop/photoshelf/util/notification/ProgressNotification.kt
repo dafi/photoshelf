@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.util.notification
 
+import android.content.Context
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
@@ -9,16 +10,17 @@ import androidx.core.app.NotificationCompat
  * Notification builder for progress indicator
  */
 class ProgressNotification(
-    private val notificationUtil: NotificationUtil,
+    private val context: Context,
     @StringRes titleId: Int,
+    notificationChannelId: String,
     private val notificationId: Int,
     iconId: Int) {
-    var builder: NotificationCompat.Builder = notificationUtil.createNotification(
-        "",
-        "",
-        null,
-        iconId)
-        .setContentTitle(notificationUtil.getString(titleId))
+    var builder: NotificationCompat.Builder = NotificationCompat.Builder(context, notificationChannelId)
+        .setContentText("")
+        .setContentTitle(context.getString(titleId))
+        .setTicker("")
+        .setSmallIcon(iconId)
+        .setAutoCancel(true) // remove notification when user clicks on it
 
     fun setProgress(max: Int, progress: Int, indeterminate: Boolean): ProgressNotification {
         builder.setProgress(max, progress, indeterminate)
@@ -27,8 +29,10 @@ class ProgressNotification(
     }
 
     fun notify(itemCount: Int, @PluralsRes pluralId: Int): ProgressNotification {
-        builder.setContentText(notificationUtil.resources.getQuantityString(pluralId, itemCount, itemCount))
-        notificationUtil.notificationManager.notify(notificationId, builder.build())
+        builder.setContentText(context.resources.getQuantityString(pluralId, itemCount, itemCount))
+
+        context.notificationManager.notify(notificationId, builder.build())
+
         return this
     }
 

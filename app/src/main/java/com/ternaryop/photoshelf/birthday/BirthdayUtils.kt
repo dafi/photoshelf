@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.birthday
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import com.ternaryop.photoshelf.api.ApiManager
@@ -7,7 +8,8 @@ import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
-import com.ternaryop.photoshelf.util.notification.NotificationUtil
+import com.ternaryop.photoshelf.util.notification.notify
+import com.ternaryop.photoshelf.util.notification.notifyTodayBirthdays
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.draftPhotoPost
@@ -26,31 +28,28 @@ import java.util.Locale
 
 private const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
 
-fun NotificationUtil.notifyBirthday(blogName: String? = null): Single<BirthdayResult> {
+fun notifyBirthday(context: Context, blogName: String? = null): Single<BirthdayResult> {
     val now = Calendar.getInstance(Locale.US)
     return ApiManager.birthdayService().findByDate(
         FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth, blogName = blogName).toQueryMap())
         .map { it.response }
-        .doOnSuccess { birthdayResult ->
-            birthdayResult.birthdays?.let { list ->
-                if (list.isNotEmpty()) {
-                    notifyTodayBirthdays(list, now.year)
-                }
-            }
-        }
-        .doOnError { notifyError(it, "Error") }
+        .doOnSuccess { birthdayResult -> birthdayResult.birthdays?.notifyTodayBirthdays(context, now.year) }
+        .doOnError { it.notify(context, "Error") }
 }
 
-fun Tumblr.createBirthdayPost(cakeImage: Bitmap, birthday: Birthday, blogName: String, cacheDir: File, publishAsDraft: Boolean) {
-    val name = birthday.name
-    val file = File(cacheDir, "birth-$name.png")
-    val imageUrl = birthday.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
-    file.savePng(createBirthdayBitmap(cakeImage, URL(imageUrl).readBitmap()))
+fun createBirthdayImageFile(cakeImage: Bitmap, birthday: Birthday, cacheDir: File): File {
+    return File(cacheDir, "birth-${birthday.name}.png").also { file ->
+        val imageUrl = birthday.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_400)!!.url
+        file.savePng(createBirthdayBitmap(cakeImage, URL(imageUrl).readBitmap()))
+    }
+}
+
+fun Tumblr.createBirthdayPost(file: File, birthday: Birthday, blogName: String, publishAsDraft: Boolean) {
     try {
         if (publishAsDraft) {
-            draftPhotoPost(blogName, file.toURI(), getBirthdayCaption(birthday), "Birthday, $name")
+            draftPhotoPost(blogName, file.toURI(), getBirthdayCaption(birthday), "Birthday, ${birthday.name}")
         } else {
-            publishPhotoPost(blogName, file.toURI(), getBirthdayCaption(birthday), "Birthday, $name")
+            publishPhotoPost(blogName, file.toURI(), getBirthdayCaption(birthday), "Birthday, ${birthday.name}")
         }
     } finally {
         file.delete()

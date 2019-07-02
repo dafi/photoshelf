@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import com.ternaryop.photoshelf.EXTRA_URI
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.util.notification.NotificationUtil
+import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.utils.bitmap.readBitmap
 import com.ternaryop.utils.bitmap.scale
 import java.net.URL
@@ -21,13 +21,7 @@ import java.net.URL
  */
 class WallpaperIntentService : IntentService("wallpaperIntent") {
 
-    private lateinit var notificationUtil: NotificationUtil
     private val handler = Handler()
-
-    override fun onCreate() {
-        super.onCreate()
-        notificationUtil = NotificationUtil(this)
-    }
 
     override fun onHandleIntent(intent: Intent?) {
         when (intent?.action) {
@@ -44,7 +38,7 @@ class WallpaperIntentService : IntentService("wallpaperIntent") {
             WallpaperManager.getInstance(this).setBitmap(bitmap)
             showToast(R.string.wallpaper_changed_title)
         } catch (e: Exception) {
-            notificationUtil.notifyError(e, "")
+            e.notify(this, "")
         }
     }
 
