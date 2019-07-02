@@ -34,12 +34,21 @@ dependencies {
 
     implementation "org.jsoup:jsoup:${rootProject.ext.jsoupLibVersion}"
 
-    implementation "com.ternaryop:utils:${rootProject.ext.ternaryUtilLibVersion}"
+    implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
 
     testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
     androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
     androidTestImplementation "androidx.test:rules:${rootProject.ext.androidXRulesLibVersion}"
     androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.androidXEspressoCoreLibVersion}"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 android {
