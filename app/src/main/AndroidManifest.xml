@@ -65,6 +65,13 @@
 
         <service android:name=".service.PublishIntentService"/>
         <service android:name=".service.CounterIntentService"/>
+        <service android:name=".service.BirthdayIntentService"/>
+        <service android:name=".service.WallpaperIntentService"/>
+        <service android:name=".service.ImportIntentService"/>
+        <service android:name=".service.PhotoShelfJobService"
+                 android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+
 
         <receiver android:name=".service.BootServiceReceiver">
             <intent-filter>
@@ -100,14 +107,6 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-
-        <service
-            android:name=".service.ImportIntentService"
-            android:exported="false">
-        </service>
-        <service android:name=".service.PhotoShelfJobService"
-                 android:permission="android.permission.BIND_JOB_SERVICE"/>
-
 
         <provider
             android:name="androidx.core.content.FileProvider"

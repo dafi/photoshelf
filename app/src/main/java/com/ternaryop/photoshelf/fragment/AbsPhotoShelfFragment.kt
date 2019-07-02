@@ -11,9 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.dialogs.PostDialogData
-import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
-import com.ternaryop.tumblr.TumblrPhotoPost
 import io.reactivex.disposables.CompositeDisposable
 
 abstract class AbsPhotoShelfFragment : Fragment() {
@@ -55,13 +52,6 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     }
 
     protected open fun refreshUI() {
-    }
-
-    protected fun showEditDialog(item: TumblrPhotoPost, mode: ActionMode?) {
-        fragmentManager?.also {
-            actionMode = mode
-            TumblrPostDialog.newInstance(PostDialogData(item), this).show(it, "dialog")
-        }
     }
 
     protected fun showSnackbar(snackbar: Snackbar) {

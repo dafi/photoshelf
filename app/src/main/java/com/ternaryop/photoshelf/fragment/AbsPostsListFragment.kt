@@ -20,6 +20,7 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoAdapter
+import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.util.post.OnPostActionListener
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
@@ -322,4 +323,12 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
                 .subscribe({ }, { t -> t.showErrorDialog(context!!) })
         compositeDisposable.add(d)
     }
+
+    private fun showEditDialog(item: TumblrPhotoPost, mode: ActionMode?) {
+        fragmentManager?.also {
+            actionMode = mode
+            TumblrPostDialog.newInstance(PostDialogData(item), this).show(it, "dialog")
+        }
+    }
+
 }

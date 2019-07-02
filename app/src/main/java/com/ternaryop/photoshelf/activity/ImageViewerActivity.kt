@@ -21,7 +21,7 @@ import android.widget.TextView
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.service.PublishIntentService
+import com.ternaryop.photoshelf.service.WallpaperIntentService
 import com.ternaryop.photoshelf.util.viewer.ImageViewerUtil
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.intent.ShareChooserParams
@@ -115,6 +115,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
     }
 
     @JavascriptInterface
+    @Suppress("unused")
     fun setDimensions(w: Int, h: Int) {
         runOnUiThread {
             detailsText.visibility = View.VISIBLE
@@ -147,7 +148,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_image_viewer_wallpaper -> {
-                PublishIntentService.startChangeWallpaperIntent(this, Uri.parse(imageUrl))
+                WallpaperIntentService.startChangeWallpaperIntent(this, Uri.parse(imageUrl))
                 return true
             }
             R.id.action_image_viewer_share -> {

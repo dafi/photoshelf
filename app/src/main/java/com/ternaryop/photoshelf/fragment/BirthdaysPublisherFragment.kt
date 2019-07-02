@@ -21,7 +21,7 @@ import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.photo.GridViewPhotoAdapter
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.event.BirthdayEvent
-import com.ternaryop.photoshelf.service.PublishIntentService
+import com.ternaryop.photoshelf.service.BirthdayIntentService
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
@@ -83,7 +83,7 @@ class BirthdaysPublisherFragment
         gridViewPhotoAdapter.clear()
         gridViewPhotoAdapter.notifyItemRangeRemoved(0, count)
         val now = Calendar.getInstance(Locale.US)
-        PublishIntentService.startBirthdayListIntent(context!!, now, blogName!!)
+        BirthdayIntentService.startBirthdayListIntent(context!!, now, blogName!!)
         swipeLayout.setRefreshingAndWaitingResult(true)
     }
 
@@ -122,7 +122,7 @@ class BirthdaysPublisherFragment
             selectedBirthdays.add(pair)
         }
 
-        PublishIntentService.startPublishBirthdayIntent(context!!, selectedBirthdays, blogName!!, publishAsDraft)
+        BirthdayIntentService.startPublishBirthdayIntent(context!!, selectedBirthdays, blogName!!, publishAsDraft)
         Toast.makeText(context!!,
             getString(R.string.sending_cake_title, TextUtils.join(", ", names)),
             Toast.LENGTH_LONG).show()

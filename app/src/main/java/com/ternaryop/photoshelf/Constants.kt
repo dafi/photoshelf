@@ -16,8 +16,6 @@ const val EXTRA_BROWSE_TAG = "com.ternaryop.photoshelf.extra.BROWSE_TAG"
 const val EXTRA_POST_TITLE = "com.ternaryop.photoshelf.extra.POST_TITLE"
 const val EXTRA_POST_TAGS = "com.ternaryop.photoshelf.extra.POST_TAGS"
 const val EXTRA_TYPE = "com.ternaryop.photoshelf.extra.TYPE"
-const val EXTRA_ACTION = "com.ternaryop.photoshelf.extra.ACTION"
-const val EXTRA_FILE_PATH = "com.ternaryop.photoshelf.extra.FILEPATH"
 
 const val EXTRA_BIRTHDAY_DATE = "com.ternaryop.photoshelf.extra.BIRTHDATE"
 const val EXTRA_LIST1 = "com.ternaryop.photoshelf.extra.LIST1"
