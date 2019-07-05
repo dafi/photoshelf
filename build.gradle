@@ -34,7 +34,11 @@ buildscript {
         androidXConstraintlayoutLibVersion = '2.0.0-beta2'
         androidXPreferenceLibVersion = '1.1.0-beta01'
         flexboxLibVersion = '1.1.0'
+
         ternaryOpUtilLibVersion = '1.4.4'
+        ternaryOpDomSelectorLibVersion = '1.0.2'
+        ternaryOpFeedlyLibVersion = '1.0.1'
+        ternaryOpTumblrLibVersion = '1.0.1'
 
         rxjavaLibVersion = '2.2.10'
         rxandroidLibVersion = '2.1.1'
@@ -42,7 +46,6 @@ buildscript {
         dropboxCoreLibVersion = '3.1.1'
 
         eventbusLibVersion = '3.1.1'
-        scribejavaCoreLibVersion = '6.6.3'
         picassoLibVersion = '2.71828'
         retrofitLibVersion = '2.6.0'
         gsonLibVersion = '2.8.5'
@@ -50,7 +53,6 @@ buildscript {
         retrofitConverterGsonLibVersion = '2.6.0'
         okhttp3LoggingInterceptorLibVersion = '4.0.0'
         okio = '2.2.2'
-        jsoupLibVersion = '1.12.1'
 
         junitLibVersion = '4.13-beta-3'
         androidXRulesLibVersion = '1.2.0'

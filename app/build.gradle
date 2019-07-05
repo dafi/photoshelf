@@ -21,7 +21,6 @@ dependencies {
     implementation "com.dropbox.core:dropbox-core-sdk:${rootProject.ext.dropboxCoreLibVersion}"
 
     implementation "org.greenrobot:eventbus:${rootProject.ext.eventbusLibVersion}"
-    implementation "com.github.scribejava:scribejava-core:${rootProject.ext.scribejavaCoreLibVersion}"
 
     implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
     implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofitLibVersion}"
@@ -32,9 +31,10 @@ dependencies {
 
     implementation "com.google.code.gson:gson:${rootProject.ext.gsonLibVersion}"
 
-    implementation "org.jsoup:jsoup:${rootProject.ext.jsoupLibVersion}"
-
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
+    implementation "com.ternaryop.photoshelf:domselector:${rootProject.ext.ternaryOpDomSelectorLibVersion}"
+    implementation "com.ternaryop:feedly:${rootProject.ext.ternaryOpFeedlyLibVersion}"
+    implementation "com.ternaryop:tumblr:${rootProject.ext.ternaryOpTumblrLibVersion}"
 
     testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
     androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"

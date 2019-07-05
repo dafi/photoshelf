@@ -35,11 +35,12 @@ class MisspelledName(val context: Context) {
     private fun getCorrectMisspelledName(name: String): Maybe<String> {
         return ApiManager.postService().getCorrectMisspelledName(name)
             .flatMapMaybe {
-                if (it.response.corrected == null) {
+                val corrected = it.response.corrected
+                if (corrected == null) {
                     Maybe.empty()
                 } else {
-                    DBHelper.getInstance(context).tagMatcherDAO.insert(it.response.corrected)
-                    Maybe.just(it.response.corrected)
+                    DBHelper.getInstance(context).tagMatcherDAO.insert(corrected)
+                    Maybe.just(corrected)
                 }
             }
     }
