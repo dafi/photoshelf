@@ -1,12 +1,12 @@
 package com.ternaryop.photoshelf.adapter.photo
 
 import android.content.Context
-import androidx.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
+import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClick
@@ -185,4 +185,14 @@ class PhotoAdapter(private val context: Context)
         }
         EventBus.getDefault().post(CounterEvent(counterType, itemCount))
     }
+
+    /**
+     * @return the tag index if found, -1 otherwise
+     */
+    fun findTagIndex(tag: String?): Int {
+        tag ?: return -1
+        return photoList.indexOfFirst { it.firstTag.compareTo(tag, ignoreCase = true) == 0 }
+    }
+
+    fun tagArrayList() = photoList.mapTo(ArrayList()) { it.firstTag }
 }

@@ -12,7 +12,6 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorAdapter
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorListener
 import com.ternaryop.photoshelf.api.post.TagInfo
@@ -28,7 +27,6 @@ import kotlinx.android.synthetic.main.dialog_tag_navigator.tag_list
 private const val SORT_TAG_NAME = 0
 private const val SORT_TAG_COUNT = 1
 
-private const val SELECTED_TAG = "selectedTag"
 private const val ARG_TAG_LIST = "list"
 private const val PREF_NAME_TAG_SORT = "tagNavigatorSort"
 
@@ -72,7 +70,7 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
 
     override fun onClick(item: TagInfo) {
         val intent = Intent()
-        intent.putExtra(SELECTED_TAG, item.tag)
+        intent.putExtra(EXTRA_SELECTED_TAG, item.tag)
         targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
         dismiss()
     }
@@ -91,26 +89,16 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     }
 
     companion object {
-        fun newInstance(photoList: List<PhotoShelfPost>, target: Fragment, requestCode: Int): TagNavigatorDialog {
+        const val EXTRA_SELECTED_TAG = "selectedTag"
+
+        fun newInstance(tagList: ArrayList<String>, target: Fragment, requestCode: Int): TagNavigatorDialog {
             val args = Bundle()
-            val strings = photoList.mapTo(ArrayList()) { it.firstTag }
-            args.putStringArrayList(ARG_TAG_LIST, strings)
+            args.putStringArrayList(ARG_TAG_LIST, tagList)
 
             val fragment = TagNavigatorDialog()
             fragment.arguments = args
             fragment.setTargetFragment(target, requestCode)
             return fragment
-        }
-
-        /**
-         * Helper method to use from dialog caller
-         * @param photoList the list where to look for the tag
-         * @param data the data returned by TagNavigatorDialog
-         * @return the tag index if found, -1 otherwise
-         */
-        fun findTagIndex(photoList: List<PhotoShelfPost>, data: Intent): Int {
-            val tag = data.getStringExtra(SELECTED_TAG) ?: return -1
-            return photoList.indexOfFirst { it.firstTag.compareTo(tag, ignoreCase = true) == 0 }
         }
     }
 }

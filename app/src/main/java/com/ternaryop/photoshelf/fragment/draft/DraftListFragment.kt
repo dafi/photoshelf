@@ -28,6 +28,7 @@ import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
 import com.ternaryop.photoshelf.dialogs.OnCloseDialogListener
 import com.ternaryop.photoshelf.dialogs.SchedulePostDialog
 import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog
+import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog.Companion.EXTRA_SELECTED_TAG
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.AbsPostsListFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
@@ -121,7 +122,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             }
             R.id.action_tag_navigator -> {
                 fragmentManager?.also {
-                    TagNavigatorDialog.newInstance(photoAdapter.photoList,
+                    TagNavigatorDialog.newInstance(photoAdapter.tagArrayList(),
                         this, TAG_NAVIGATOR_DIALOG).show(it, FRAGMENT_TAG_NAVIGATOR)
                 }
                 return true
@@ -306,7 +307,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             TAG_NAVIGATOR_DIALOG -> if (resultCode == Activity.RESULT_OK && data != null) {
-                scrollToPosition(TagNavigatorDialog.findTagIndex(photoAdapter.photoList, data))
+                scrollToPosition(photoAdapter.findTagIndex(data.getStringExtra(EXTRA_SELECTED_TAG)))
             }
         }
     }
