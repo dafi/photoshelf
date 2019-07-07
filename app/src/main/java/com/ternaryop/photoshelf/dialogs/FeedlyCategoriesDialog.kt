@@ -22,7 +22,7 @@ class FeedlyCategoriesDialog(
     context: Context,
     feedlyClient: FeedlyClient,
     private val onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>) : Dialog(context) {
-    private lateinit var categoryAdapter: FeedlyCategoryAdapter
+    private var categoryAdapter: FeedlyCategoryAdapter? = null
     private val feedlyPrefs = FeedlyPrefs(context)
     private val compositeDisposable = CompositeDisposable()
 
@@ -48,10 +48,12 @@ class FeedlyCategoriesDialog(
     private fun setupUI() {
         ok_button.isEnabled = true
         ok_button.setOnClickListener {
-            feedlyPrefs.selectedCategoriesId = categoryAdapter
-                .checkedItems()
-                .map { it.item.id }
-                .toSet()
+            categoryAdapter?.also { adapter ->
+                feedlyPrefs.selectedCategoriesId = adapter
+                    .checkedItems()
+                    .map { it.item.id }
+                    .toSet()
+            }
             if (onCloseDialogListener.onClose(this, DialogInterface.BUTTON_POSITIVE)) {
                 dismiss()
             }
