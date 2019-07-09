@@ -11,7 +11,6 @@ import com.squareup.picasso.Picasso
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.widget.CheckableImageView
-import java.lang.Exception
 
 class ImagePickerAdapter(private val context: Context)
     : AbsBaseAdapter<ImagePickerAdapter.ViewHolder>(), View.OnClickListener, View.OnLongClickListener {
@@ -83,11 +82,15 @@ class ImagePickerAdapter(private val context: Context)
         }
 
         private fun displayImage(imageInfo: ImageInfo, checked: Boolean) {
+            // thumbnail urls could be the same than destination images (i.e. very large images) causing
+            // a huge memory footprint so we resize the images using fit/centerCrop
             Picasso
                 .get()
                 .load(imageInfo.thumbnailUrl!!)
                 .placeholder(R.drawable.stub)
                 .noFade()
+                .fit()
+                .centerCrop()
                 .into(thumbImage, object: Callback {
                     override fun onSuccess() {
                         thumbImage.isChecked = checked
