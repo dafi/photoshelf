@@ -130,12 +130,7 @@
     {
       "urlPattern": "sawfirst.com",
       "image": {
-        "pageChain": [
-          {
-          "pageSel": ".entry-title a",
-          "selAttr": "href"
-          }
-        ]
+        "css": ".attachment-"
       },
       "gallery": {
         "container": "#gallery-1 a img",
