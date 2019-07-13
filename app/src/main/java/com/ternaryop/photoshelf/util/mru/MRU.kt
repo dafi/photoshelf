@@ -15,8 +15,12 @@ private const val ITEM_SEPARATOR = "\n"
 class MRU(context: Context, private val key: String, private val maxSize: Int) {
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     private val _list: MutableList<String> by lazy {
-        preferences.getString(key, null)?.split(ITEM_SEPARATOR)?.mapTo(mutableListOf()) { it }
-            ?: mutableListOf<String>()
+        val tags = preferences.getString(key, null)
+        if (tags == null || tags.isBlank()) {
+            mutableListOf<String>()
+        } else {
+            tags.split(ITEM_SEPARATOR).mapTo(mutableListOf()) { it }
+        }
     }
 
     val list: List<String> get() = _list
