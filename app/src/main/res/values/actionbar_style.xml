@@ -34,6 +34,19 @@
         <item name="topColorDrawerBackgroundFrame">@color/drawer_frame_bg</item>
 
         <item name="alertDialogTheme">@style/Theme.PhotoShelf.Dialog</item>
+
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+
+        <!-- Used for the buttons -->
+        <item name="colorAccent">@color/primary</item>
+        <item name="android:windowIsFloating">false</item>
     </style>
 
     <style name="Theme.PhotoShelf.ContextPopupMenuStyle" parent="@style/Widget.AppCompat.Light.PopupMenu">

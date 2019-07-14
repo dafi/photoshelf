@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +14,7 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorAdapter
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorListener
 import com.ternaryop.photoshelf.api.post.TagInfo
+import com.ternaryop.photoshelf.api.post.toTagInfo
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_count
 import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_title
 import kotlinx.android.synthetic.main.dialog_tag_navigator.sort_tag
@@ -34,17 +34,15 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     private lateinit var adapter: TagNavigatorAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // https://github.com/material-components/material-components-android/issues/99
         return inflater
-            .cloneInContext(ContextThemeWrapper(activity, R.style.Theme_PhotoShelf))
             .inflate(R.layout.dialog_tag_navigator, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = TagNavigatorAdapter(activity!!,
-            TagInfo.fromStrings(arguments!!.getStringArrayList(ARG_TAG_LIST)!!),
+        adapter = TagNavigatorAdapter(requireContext(),
+            arguments?.getStringArrayList(ARG_TAG_LIST)?.toTagInfo() ?: emptyList(),
             "",
             this)
         tag_list.setHasFixedSize(true)
@@ -69,9 +67,10 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     }
 
     override fun onClick(item: TagInfo) {
-        val intent = Intent()
-        intent.putExtra(EXTRA_SELECTED_TAG, item.tag)
-        targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
+        targetFragment?.let { target ->
+            val intent = Intent().putExtra(EXTRA_SELECTED_TAG, item.tag)
+            target.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
+        }
         dismiss()
     }
 

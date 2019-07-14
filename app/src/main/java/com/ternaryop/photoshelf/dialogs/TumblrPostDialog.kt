@@ -15,7 +15,6 @@ import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.MultiAutoCompleteTextView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -60,8 +59,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        appSupport = AppSupport(context!!)
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_PhotoShelf_Dialog)
+        appSupport = AppSupport(requireContext())
 
         compositeDisposable = CompositeDisposable()
     }
@@ -76,23 +74,19 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
         data = (arguments?.getSerializable(ARG_DATA) as PostDialogData?)
             ?: throw IllegalArgumentException("$ARG_DATA is mandatory")
 
-        val view = activity!!.layoutInflater.inflate(R.layout.dialog_publish_post, null)
+        val view = requireActivity().layoutInflater.inflate(R.layout.dialog_publish_post, null)
 
-        // the ContextThemeWrapper is necessary otherwise the autocomplete drop down items
-        // and the toolbar overflow menu items are styled incorrectly
-        // since the switch to the AlertDialog the toolbar isn't styled from code
-        // so to fix it the theme is declared directly into xml
         tagsHolder = TagsHolder(
-            ContextThemeWrapper(activity!!, R.style.Theme_PhotoShelf_Dialog),
+            requireContext(),
             view.findViewById(R.id.post_tags),
             appSupport.selectedBlogName!!)
-        titleHolder = TitleHolder(context!!,view.findViewById(R.id.post_title), data.sourceTitle, data.htmlSourceTitle)
-        mruHolder = MRUHolder(this.context!!, view.findViewById(R.id.mru_list), tagsHolder)
+        titleHolder = TitleHolder(view.findViewById(R.id.post_title), data.sourceTitle, data.htmlSourceTitle)
+        mruHolder = MRUHolder(requireContext(), view.findViewById(R.id.mru_list), tagsHolder)
         fillTags(data.tags)
 
         setupUI(view)
 
-        val builder = AlertDialog.Builder(context!!)
+        val builder = AlertDialog.Builder(requireContext())
             .setView(view)
             .setNegativeButton(R.string.cancel_title) { _, _ -> compositeDisposable.clear() }
         if (data.photoPost == null) {
@@ -131,7 +125,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
             toolbar.setTitle(R.string.edit_post_title)
         } else {
             val size = data.imageUrls!!.size
-            toolbar.title = context!!.resources.getQuantityString(
+            toolbar.title = requireContext().resources.getQuantityString(
                 R.plurals.post_image,
                 size,
                 size)
@@ -152,7 +146,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
     private fun searchMisspelledName(name: String) {
         (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
 
-        MisspelledName(context!!).getMisspelledInfo(name)
+        MisspelledName(requireContext()).getMisspelledInfo(name)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {
@@ -213,7 +207,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
         val d = titleHolder
             .parseAgain(swapDayMonth)
             .subscribe({ fillTags(it.tags) }) {
-                android.app.AlertDialog.Builder(context!!)
+                android.app.AlertDialog.Builder(requireContext())
                     .setTitle(R.string.parsing_error)
                     .setMessage(it.localizedMessage)
                     .show()
@@ -233,7 +227,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
         private fun createPosts(publish: Boolean,
             selectedBlogName: String, urls: List<Uri>, postTitle: String, postTags: String) {
             for (url in urls) {
-                PublishIntentService.startActionIntent(context!!,
+                PublishIntentService.startActionIntent(requireContext(),
                     url,
                     selectedBlogName,
                     postTitle,
@@ -370,8 +364,7 @@ class TagsHolder(
     }
 }
 
-class TitleHolder(private val context: Context,
-    private val editText: EditText,
+class TitleHolder(private val editText: EditText,
     private var sourceTitle: String,
     htmlSourceTitle: String) {
 

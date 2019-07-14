@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.ContextThemeWrapper
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.R
 import kotlinx.android.synthetic.main.fragment_bottom_menu.navigation_view
@@ -24,7 +23,6 @@ class BottomMenuSheetDialogFragment: BottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater
-            .cloneInContext(ContextThemeWrapper(activity, R.style.Theme_PhotoShelf))
             .inflate(R.layout.fragment_bottom_menu, container, false)
     }
 
