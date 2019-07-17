@@ -133,7 +133,6 @@
         "css": ".attachment-"
       },
       "gallery": {
-        "thumbImageSelAttr": "data-src",
         "container": "#gallery-1 a img",
         "title": ".entry p strong"
       }
