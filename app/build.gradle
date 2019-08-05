@@ -80,6 +80,8 @@ android {
         multiDexEnabled true
         versionCode versionCodeByTask()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // default value for android emulator
+        buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.2.2:8080/image/\""
     }
 
     lintOptions {
@@ -103,18 +105,6 @@ android {
             initWith debug
             buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.0.2:8080/image/\""
         }
-        debugAndroidEmulator {
-            // used with android emulator
-            initWith debug
-            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.2.2:8080/image/\""
-        }
-    }
-
-    variantFilter { variant ->
-        // Must be used a more specific debug variant (eg debugGenymotion, debugAndroidEmulator, ...)
-        if (variant.buildType.name == "debug") {
-            setIgnore(true)
-        }
     }
 
     sourceSets {
@@ -122,9 +112,6 @@ android {
             root = "src/debug"
         }
         debugRealDevice {
-            root = "src/debug"
-        }
-        debugAndroidEmulator {
             root = "src/debug"
         }
     }

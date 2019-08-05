@@ -36,23 +36,23 @@ buildscript {
         flexboxLibVersion = '1.1.0'
 
         ternaryOpUtilLibVersion = '1.4.4'
-        ternaryOpDomSelectorLibVersion = '1.0.3'
+        ternaryOpDomSelectorLibVersion = '1.0.4'
         ternaryOpFeedlyLibVersion = '1.0.1'
         ternaryOpTumblrLibVersion = '1.0.1'
 
-        rxjavaLibVersion = '2.2.10'
+        rxjavaLibVersion = '2.2.11'
         rxandroidLibVersion = '2.1.1'
 
         dropboxCoreLibVersion = '3.1.1'
 
         eventbusLibVersion = '3.1.1'
         picassoLibVersion = '2.71828'
-        retrofitLibVersion = '2.6.0'
+        retrofitLibVersion = '2.6.1'
         gsonLibVersion = '2.8.5'
-        retrofitAdapterRrxjavaLibVersion = '2.6.0'
-        retrofitConverterGsonLibVersion = '2.6.0'
+        retrofitAdapterRrxjavaLibVersion = '2.6.1'
+        retrofitConverterGsonLibVersion = '2.6.1'
         okhttp3LoggingInterceptorLibVersion = '4.0.1'
-        okio = '2.2.2'
+        okio = '2.3.0'
 
         junitLibVersion = '4.13-beta-3'
         androidXRulesLibVersion = '1.2.0'
