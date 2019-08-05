@@ -145,7 +145,6 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         adapter.clear()
         adapter.addAll(items)
         adapter.sort()
-        adapter.notifyDataSetChanged()
         scrollToPosition(0)
 
         refreshUI()
@@ -313,11 +312,18 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     override fun onToggleClick(position: Int, checked: Boolean) {
         if (preferences.deleteOnRefresh) {
+            if (!checked) {
+                adapter.moveToBottom(position)
+            }
             return
         }
         val d = feedlyClient.markSaved(listOf(adapter.getItem(position).id), checked)
             .compose(photoShelfSwipe.applyCompletableSwipe())
-            .subscribe({ }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
+            .subscribe({
+                if (!checked) {
+                    adapter.moveToBottom(position)
+                }
+            }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
         compositeDisposable.add(d)
     }
 

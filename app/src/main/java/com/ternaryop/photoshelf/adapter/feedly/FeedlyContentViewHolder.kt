@@ -45,14 +45,16 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     private fun displayImage(content: FeedlyContentDelegate, size: Int) {
         setImageDimension(size)
 
-        content.domain?.let { domain ->
+        (content.domain?.let { domain ->
             Picasso
                 .get()
                 .load("https://www.google.com/s2/favicons?domain_url=$domain")
-                .noFade()
-                .placeholder(R.drawable.stub)
-                .into(faviconImage)
-        }
+        } ?: Picasso
+            .get()
+            .load(R.drawable.stub))
+            .noFade()
+            .placeholder(R.drawable.stub)
+            .into(faviconImage)
     }
 
     private fun setImageDimension(size: Int) {
@@ -103,22 +105,20 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         array.recycle()
     }
 
-    fun setOnClickListeners(listener: View.OnClickListener?) {
+    fun setOnClickListeners(content: FeedlyContentDelegate, listener: View.OnClickListener?) {
         listener ?: return
 
-        val position = adapterPosition
         itemView.setOnClickListener(listener)
-        itemView.tag = position
+        itemView.tag = content.id
 
         tag.setOnClickListener(listener)
-        tag.tag = position
+        tag.tag = content.id
     }
 
-    fun setOnCheckedChangeListener(listener: CompoundButton.OnCheckedChangeListener?) {
+    fun setOnCheckedChangeListener(content: FeedlyContentDelegate, listener: CompoundButton.OnCheckedChangeListener?) {
         listener ?: return
 
-        val position = adapterPosition
         checkbox.setOnCheckedChangeListener(listener)
-        checkbox.tag = position
+        checkbox.tag = content.id
     }
 }

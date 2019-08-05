@@ -24,17 +24,18 @@ class FeedlyContentAdapter(private val context: Context) :
     }
 
     override fun onBindViewHolder(holder: FeedlyContentViewHolder, position: Int) {
-        holder.bindModel(allContents[position])
-        setClickListeners(holder)
+        val content = allContents[position]
+        holder.bindModel(content)
+        setClickListeners(content, holder)
     }
 
-    private fun setClickListeners(holder: FeedlyContentViewHolder) {
+    private fun setClickListeners(content: FeedlyContentDelegate, holder: FeedlyContentViewHolder) {
         if (clickListener == null) {
-            holder.setOnClickListeners(null)
-            holder.setOnCheckedChangeListener(null)
+            holder.setOnClickListeners(content, null)
+            holder.setOnCheckedChangeListener(content, null)
         } else {
-            holder.setOnClickListeners(this)
-            holder.setOnCheckedChangeListener(this)
+            holder.setOnClickListeners(content, this)
+            holder.setOnCheckedChangeListener(content, this)
         }
     }
 
@@ -42,7 +43,6 @@ class FeedlyContentAdapter(private val context: Context) :
 
     fun addAll(collection: Collection<FeedlyContentDelegate>) {
         allContents.addAll(collection)
-        notifyDataSetChanged()
     }
 
     fun clear() {
@@ -52,10 +52,15 @@ class FeedlyContentAdapter(private val context: Context) :
 
     fun getItem(position: Int): FeedlyContentDelegate = allContents[position]
 
+    fun getPositionById(id: String): Int = allContents.indexOfFirst { it.id == id }
+
     /**
      * Sort the list using the last used sort method
      */
-    fun sort() = sortSwitcher.sort(allContents)
+    fun sort() {
+        sortSwitcher.sort(allContents)
+        notifyDataSetChanged()
+    }
 
     fun sortBy(sortType: Int) {
         sortSwitcher.setType(sortType)
@@ -63,7 +68,12 @@ class FeedlyContentAdapter(private val context: Context) :
     }
 
     override fun onClick(v: View) {
-        val position = v.tag as Int
+        val position = getPositionById(v.tag as String)
+
+        if (position == -1) {
+            return
+        }
+
         when (v.id) {
             R.id.list_row2 -> clickListener!!.onTitleClick(position)
             R.id.tag -> clickListener!!.onTagClick(position)
@@ -71,12 +81,27 @@ class FeedlyContentAdapter(private val context: Context) :
     }
 
     override fun onCheckedChanged(v: CompoundButton, checked: Boolean) {
-        val position = v.tag as Int
+        val position = getPositionById(v.tag as String)
+
+        if (position == -1) {
+            return
+        }
         when (v.id) {
             android.R.id.checkbox -> {
                 getItem(position).isChecked = checked
                 clickListener!!.onToggleClick(position, checked)
             }
         }
+    }
+
+    fun moveToBottom(position: Int) {
+        if (position == (allContents.size - 1)) {
+            return
+        }
+        allContents.add(allContents.removeAt(position))
+        // notifyItemMoved scrolls to bottom so we use the pair notifyItemRemoved/notifyItemInserted
+        // to remain on item position
+        notifyItemRemoved(position)
+        notifyItemInserted(allContents.size - 1)
     }
 }
