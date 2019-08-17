@@ -25,9 +25,11 @@ class TagNavigatorFilter(
         filterResults.values = null
         filterResults.count = 0
 
-        pattern = constraint?.trim() ?: ""
-
         error = null
+
+        // execute findTags() only if constraint is not null
+        pattern = constraint?.trim() ?: return filterResults
+
         try {
             val response = postService
                 .findTags(blogName, pattern.toString())
