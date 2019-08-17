@@ -26,10 +26,10 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_main, rootKey)
 
-        appSupport = AppSupport(context!!)
+        appSupport = AppSupport(requireContext())
 
         with(preferenceScreen) {
-            findPreference<Preference>(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
+            findPreference<Preference>(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)?.isEnabled = !appSupport.selectedBlogName.isNullOrEmpty()
             findPreference<Preference>(KEY_IMPORT_DOM_SELECTOR_CONFIG)
 
             findPreference<Preference>(AppSupport.PREF_EXPORT_DAYS_PERIOD)
@@ -40,7 +40,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
         return when (preference?.key) {
             KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA -> {
-                ImportIntentService.startImportBirthdaysFromWeb(context!!, appSupport.selectedBlogName!!)
+                appSupport.selectedBlogName?.also { ImportIntentService.startImportBirthdaysFromWeb(requireContext(), it) }
                 true
             }
             KEY_IMPORT_DOM_SELECTOR_CONFIG -> {
@@ -69,9 +69,9 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         if (requestCode == DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             resultData?.data?.also { uri ->
                 try {
-                    DomSelectorManager.upgradeConfig(activity!!, uri)
+                    DomSelectorManager.upgradeConfig(requireContext(), uri)
                 } catch (e: Exception) {
-                    e.showErrorDialog(activity!!)
+                    e.showErrorDialog(requireContext())
                 }
             }
         }
