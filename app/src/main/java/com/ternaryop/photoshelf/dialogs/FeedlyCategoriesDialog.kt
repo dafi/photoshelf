@@ -1,8 +1,12 @@
 package com.ternaryop.photoshelf.dialogs
 
-import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ternaryop.feedly.Category
 import com.ternaryop.feedly.FeedlyClient
@@ -19,25 +23,34 @@ import kotlinx.android.synthetic.main.dialog_feedly_categories.category_list
 import kotlinx.android.synthetic.main.dialog_feedly_categories.ok_button
 
 class FeedlyCategoriesDialog(
-    context: Context,
-    feedlyClient: FeedlyClient,
-    private val onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>) : Dialog(context) {
+    private val feedlyClient: FeedlyClient,
+    private val onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>) : DialogFragment() {
     private var categoryAdapter: FeedlyCategoryAdapter? = null
-    private val feedlyPrefs = FeedlyPrefs(context)
+    private lateinit var feedlyPrefs: FeedlyPrefs
     private val compositeDisposable = CompositeDisposable()
 
-    init {
-        setContentView(R.layout.dialog_feedly_categories)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater
+            .inflate(R.layout.dialog_feedly_categories, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         setupUI()
-        compositeDisposable.add(feedlyClient.getCategories()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                categoryAdapter = fillAdapter(it)
-                setupList()
-            },
-                { it.showErrorDialog(context)}))
+
+        context?.also { context ->
+            feedlyPrefs = FeedlyPrefs(context)
+
+            compositeDisposable.add(feedlyClient.getCategories()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ categories ->
+                    categoryAdapter = fillAdapter(context, categories)
+                    setupList()
+                },
+                    { it.showErrorDialog(context)}))
+        }
     }
 
     override fun onStop() {
@@ -65,7 +78,7 @@ class FeedlyCategoriesDialog(
         }
     }
 
-    private fun fillAdapter(categories: List<Category>): FeedlyCategoryAdapter {
+    private fun fillAdapter(context: Context, categories: List<Category>): FeedlyCategoryAdapter {
         val selected = feedlyPrefs.selectedCategoriesId
         val checkboxList = categories
             .map { CheckBoxItem(selected.contains(it.id), it) }
@@ -84,6 +97,14 @@ class FeedlyCategoriesDialog(
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = categoryAdapter
+        }
+    }
+
+    companion object {
+        fun newInstance(
+            feedlyClient: FeedlyClient,
+            onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>): FeedlyCategoriesDialog {
+            return FeedlyCategoriesDialog(feedlyClient, onCloseDialogListener)
         }
     }
 }

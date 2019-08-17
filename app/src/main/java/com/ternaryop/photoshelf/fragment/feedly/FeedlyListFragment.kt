@@ -357,19 +357,22 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun selectCategories() {
-        FeedlyCategoriesDialog(activity!!, feedlyClient, object: OnCloseDialogListener<FeedlyCategoriesDialog> {
-            override fun onClose(source: FeedlyCategoriesDialog, button: Int): Boolean {
-                if (button == DialogInterface.BUTTON_POSITIVE) {
-                    refresh(false)
+        fragmentManager?.also {
+            FeedlyCategoriesDialog.newInstance(feedlyClient, object : OnCloseDialogListener<FeedlyCategoriesDialog> {
+                override fun onClose(source: FeedlyCategoriesDialog, button: Int): Boolean {
+                    if (button == DialogInterface.BUTTON_POSITIVE) {
+                        refresh(false)
+                    }
+                    return true
                 }
-                return true
-            }
-        }).show()
+            }).show(it, CATEGORIES_DIALOG_TAG)
+        }
     }
 
     companion object {
-        const val FRAGMENT_TAG_SORT = "sort"
+        private const val FRAGMENT_TAG_SORT = "sort"
+        private const val CATEGORIES_DIALOG_TAG = "categoriesDialog"
 
-        const val ONE_HOUR_MILLIS = 60 * 60 * 1000
+        private const val ONE_HOUR_MILLIS = 60 * 60 * 1000
     }
 }
