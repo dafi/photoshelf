@@ -20,6 +20,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.service.WallpaperIntentService
 import com.ternaryop.photoshelf.util.viewer.ImageViewerUtil
@@ -33,7 +34,7 @@ import java.net.URL
 import java.util.Locale
 
 const val DIMENSIONS_POST_DELAY_MILLIS = 3000L
-const val FILE_PROVIDER_SHARE_AUTHORITY = "com.ternaryop.photoshelf.fileprovider"
+const val FILE_PROVIDER_SHARE_AUTHORITY = "${BuildConfig.APPLICATION_ID}.fileprovider"
 
 private const val SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf"
 
