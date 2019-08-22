@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
-import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
 import com.ternaryop.photoshelf.util.notification.notify
@@ -20,7 +19,6 @@ import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.date.yearsBetweenDates
-import io.reactivex.Single
 import java.io.File
 import java.net.URL
 import java.util.Calendar
@@ -28,13 +26,15 @@ import java.util.Locale
 
 private const val CAKE_IMAGE_SEPARATOR_HEIGHT = 10
 
-fun notifyBirthday(context: Context, blogName: String? = null): Single<BirthdayResult> {
-    val now = Calendar.getInstance(Locale.US)
-    return ApiManager.birthdayService().findByDate(
-        FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth, blogName = blogName).toQueryMap())
-        .map { it.response }
-        .doOnSuccess { birthdayResult -> birthdayResult.birthdays?.notifyTodayBirthdays(context, now.year) }
-        .doOnError { it.notify(context, "Error") }
+suspend fun notifyBirthday(context: Context, blogName: String? = null) {
+    try {
+        val now = Calendar.getInstance(Locale.US)
+        val birthdayResult = ApiManager.birthdayService().findByDate(
+            FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth, blogName = blogName).toQueryMap()).response
+        birthdayResult.birthdays?.notifyTodayBirthdays(context, now.year)
+    } catch (t: Throwable) {
+        t.notify(context, "Error")
+    }
 }
 
 fun createBirthdayImageFile(cakeImage: Bitmap, birthday: Birthday, cacheDir: File): File {

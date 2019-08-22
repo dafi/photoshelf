@@ -2,11 +2,10 @@ package com.ternaryop.photoshelf.importer
 
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.util.notification.ProgressNotification
 import com.ternaryop.photoshelf.util.notification.BIRTHDAY_CHANNEL_ID
+import com.ternaryop.photoshelf.util.notification.ProgressNotification
 import com.ternaryop.photoshelf.util.notification.createBirthdayChannel
 import com.ternaryop.photoshelf.util.notification.notify
-import io.reactivex.disposables.Disposable
 
 private const val NOTIFICATION_ID_IMPORT_BIRTHDAY = 2
 
@@ -15,7 +14,7 @@ private const val NOTIFICATION_ID_IMPORT_BIRTHDAY = 2
  * Import/Export functions notifying the status to user
  */
 
-fun Importer.notifyImportBirthdaysFromWeb(): Disposable? {
+suspend fun Importer.notifyImportBirthdaysFromWeb() {
     // ensure channel exists
     createBirthdayChannel(context)
     val progressNotification = ProgressNotification(context,
@@ -24,13 +23,15 @@ fun Importer.notifyImportBirthdaysFromWeb(): Disposable? {
         NOTIFICATION_ID_IMPORT_BIRTHDAY,
         R.drawable.stat_notify_import_export)
 
-    return importMissingBirthdaysFromWeb()
-        .doOnNext { info ->
+    try {
+        val info = importMissingBirthdaysFromWeb { info ->
             progressNotification
                 .setProgress(info.max, info.progress, false)
                 .notify(info.items.size, R.plurals.item_found)
         }
-        .takeLast(1)
-        .subscribe({ info -> progressNotification.notifyFinish(info.items.size, R.plurals.imported_items) }
-        ) { it.notify(context, "Import") }
+        progressNotification.notifyFinish(info.items.size, R.plurals.imported_items)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        t.notify(context, "Import")
+    }
 }

@@ -5,9 +5,8 @@ import android.content.ContextWrapper
 import androidx.preference.PreferenceManager
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.android.TumblrManager
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AppSupport(context: Context) : ContextWrapper(context) {
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -53,14 +52,8 @@ class AppSupport(context: Context) : ContextWrapper(context) {
         preferences.edit().putStringSet(PREF_BLOG_NAMES, blogNames).apply()
     }
 
-    fun fetchBlogNames(context: Context): Single<List<String>> {
-        val blogList = blogList
-        return if (blogList != null) {
-            Single.fromCallable { blogList }
-        } else Single
-                .fromCallable { setupBlogs(TumblrManager.getInstance(context).blogList) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+    suspend fun fetchBlogNames(context: Context): List<String> = withContext(Dispatchers.IO) {
+        blogList ?: setupBlogs(TumblrManager.getInstance(context).blogList)
     }
 
     private fun setupBlogs(blogs: Array<Blog>): List<String> {

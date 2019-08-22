@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.service
 
-import android.app.IntentService
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -12,7 +11,6 @@ import com.ternaryop.photoshelf.EXTRA_LIST1
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
-import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.birthday.createBirthdayImageFile
 import com.ternaryop.photoshelf.birthday.createBirthdayPost
@@ -21,9 +19,8 @@ import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
-import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import java.io.IOException
 import java.util.ArrayList
@@ -34,7 +31,7 @@ import java.util.Locale
  * Created by dave on 01/03/14.
  * Intent used to add, retrieve or update birthdays
  */
-class BirthdayIntentService : IntentService("birthdayIntent") {
+class BirthdayIntentService : AbsIntentService("birthdayIntent") {
 
     private val birthdayBitmap: Bitmap
         @Throws(IOException::class)
@@ -47,24 +44,29 @@ class BirthdayIntentService : IntentService("birthdayIntent") {
         }
     }
 
-    private fun broadcastBirthdaysByDate(intent: Intent): Disposable? {
+    private fun broadcastBirthdaysByDate(intent: Intent) {
         val birthday = intent.getSerializableExtra(EXTRA_BIRTHDAY_DATE) as Calendar? ?: Calendar.getInstance(Locale.US)
         val blogName = intent.getStringExtra(EXTRA_BLOG_NAME)
 
-        return ApiManager.birthdayService().findByDate(
-            FindParams(
-                month = birthday.month + 1,
-                dayOfMonth = birthday.dayOfMonth,
-                pickImages = true,
-                blogName = blogName).toQueryMap())
-            .map { it.response }
-            .subscribeOn(Schedulers.io())
-            .doFinally { if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
-                EventBus.getDefault().post(BirthdayEvent()) }
-            .subscribe(Consumer<BirthdayResult> {
-                if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java))
-                    EventBus.getDefault().post(BirthdayEvent(it))
-            })
+        runBlocking(Dispatchers.IO) {
+            try {
+                val birthdayResult = ApiManager.birthdayService().findByDate(
+                    FindParams(
+                        month = birthday.month + 1,
+                        dayOfMonth = birthday.dayOfMonth,
+                        pickImages = true,
+                        blogName = blogName).toQueryMap())
+                    .response
+                if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java)) {
+                    EventBus.getDefault().post(BirthdayEvent(birthdayResult))
+                }
+            } catch (t: Throwable) {
+            }
+            if (EventBus.getDefault().hasSubscriberForEvent(BirthdayEvent::class.java)) {
+                EventBus.getDefault().post(BirthdayEvent())
+            }
+        }
+
     }
 
     @Suppress("UNCHECKED_CAST")

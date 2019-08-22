@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.adapter.tagnavigator
 import android.widget.Filter
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.TagInfo
+import kotlinx.coroutines.runBlocking
 
 interface TagNavigatorFilterListener {
     fun onComplete(filter: TagNavigatorFilter, items: List<TagInfo>)
@@ -31,11 +32,11 @@ class TagNavigatorFilter(
         pattern = constraint?.trim() ?: return filterResults
 
         try {
-            val response = postService
-                .findTags(blogName, pattern.toString())
-                .blockingGet()
-            filterResults.values = response.response.tags
-            filterResults.count = response.response.tags.size
+            runBlocking {
+                val response = postService.findTags(blogName, pattern.toString())
+                filterResults.values = response.response.tags
+                filterResults.count = response.response.tags.size
+            }
         } catch (t: Throwable) {
             error = t
         }

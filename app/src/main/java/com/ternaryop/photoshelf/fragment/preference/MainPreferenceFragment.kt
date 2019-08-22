@@ -21,8 +21,11 @@ import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.dropbox.DropboxManager
 import com.ternaryop.utils.security.PermissionUtil
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
 private const val DROPBOX_SERVICE_NAME = "Dropbox"
@@ -37,25 +40,29 @@ private const val KEY_THUMBNAIL_WIDTH = "thumbnail_width"
 private const val DROPBOX_RESULT = 2
 private const val REQUEST_FILE_PERMISSION = 1
 
-class MainPreferenceFragment : AppPreferenceFragment() {
+class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
 
     private lateinit var appSupport: AppSupport
     private lateinit var dropboxManager: DropboxManager
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
 
     private val supportActionBar: ActionBar?
-        get() = (context!! as AppCompatActivity).supportActionBar
+        get() = (requireContext() as AppCompatActivity).supportActionBar
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_main, rootKey)
 
-        appSupport = AppSupport(context!!)
-        dropboxManager = DropboxManager.getInstance(context!!)
+        appSupport = AppSupport(requireContext())
+        dropboxManager = DropboxManager.getInstance(requireContext())
+        job = Job()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         toggleTumblrLoginTitle()
         toggleDropboxLoginTitle()
-        PermissionUtil.askPermission(activity!!,
+        PermissionUtil.askPermission(requireActivity(),
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             REQUEST_FILE_PERMISSION,
             AlertDialog.Builder(activity).setMessage(R.string.import_permission_rationale))
@@ -68,6 +75,11 @@ class MainPreferenceFragment : AppPreferenceFragment() {
         onSharedPreferenceChanged(preferenceManager.sharedPreferences, AppSupport.PREF_EXPORT_DAYS_PERIOD)
 
         setupVersionInfo(preferenceScreen)
+    }
+
+    override fun onDestroy() {
+        job.cancel()
+        super.onDestroy()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -108,14 +120,16 @@ class MainPreferenceFragment : AppPreferenceFragment() {
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
         when (preference?.key) {
             KEY_TUMBLR_LOGIN -> {
-                if (TumblrManager.isLogged(context!!)) {
+                if (TumblrManager.isLogged(requireContext())) {
                     logout()
                 } else {
-                    TumblrManager
-                        .login(context!!)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({}, { it.showErrorDialog(context!!) })
+                    launch(Dispatchers.IO) {
+                        try {
+                            TumblrManager.login(requireContext())
+                        } catch (t : Throwable) {
+                            t.showErrorDialog(requireContext())
+                        }
+                    }
                 }
                 return true
             }
@@ -128,7 +142,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
                     dropboxManager.unlink()
                     preference.title = getString(R.string.login_title, DROPBOX_SERVICE_NAME)
                 } else {
-                    DropboxManager.getInstance(context!!)
+                    DropboxManager.getInstance(requireContext())
                         .startOAuth2AuthenticationForResult(this, DROPBOX_RESULT)
                 }
                 return true
@@ -139,12 +153,12 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
     private fun logout() {
         val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
-            TumblrManager.logout(context!!)
+            TumblrManager.logout(requireContext())
             appSupport.clearBlogList()
             toggleTumblrLoginTitle()
         }
 
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext())
                 .setMessage(getString(R.string.are_you_sure))
                 .setPositiveButton(android.R.string.yes, dialogClickListener)
                 .setNegativeButton(android.R.string.no, null)
@@ -155,7 +169,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
         // copied from https://github.com/UweTrottmann/SeriesGuide/
         // try to open app info where user can clear app cache folders
         val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:" + context!!.packageName)
+        intent.data = Uri.parse("package:" + requireContext().packageName)
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
@@ -168,7 +182,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
         preferenceScreen.findPreference<Preference>(KEY_VERSION)?.apply {
             title = getString(R.string.version_title, getString(R.string.app_name))
             summary = try {
-                val packageInfo = context!!.packageManager.getPackageInfo(context!!.packageName, 0)
+                val packageInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
                 val versionName = packageInfo.versionName
                 val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
                 "$versionName build $versionCode"
@@ -186,7 +200,7 @@ class MainPreferenceFragment : AppPreferenceFragment() {
 
     private fun toggleTumblrLoginTitle() {
         findPreference<Preference>(KEY_TUMBLR_LOGIN)?.apply {
-            title = if (TumblrManager.isLogged(context!!)) {
+            title = if (TumblrManager.isLogged(requireContext())) {
                 getString(R.string.logout_title, TUMBLR_SERVICE_NAME)
             } else {
                 getString(R.string.login_title, TUMBLR_SERVICE_NAME)

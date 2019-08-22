@@ -4,20 +4,17 @@ import android.content.Context
 import androidx.annotation.PluralsRes
 import androidx.core.content.ContextCompat
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.saveDraft
 import com.ternaryop.tumblr.schedulePost
 import com.ternaryop.utils.recyclerview.ColorItemDecoration
-import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 interface OnPostActionListener {
@@ -48,75 +45,69 @@ class PostActionExecutor(private val context: Context,
 
     val colorItemDecoration = ColorItemDecoration()
 
-    fun saveAsDraft(postList: List<TumblrPost>): Single<List<PostActionResult>> {
+    suspend fun saveAsDraft(postList: List<TumblrPost>) {
         postAction = SAVE_AS_DRAFT
-        return executePostAction(postList, Consumer {
+        executePostAction(postList) {
             TumblrManager.getInstance(context).saveDraft(blogName, it.postId)
             DBHelper.getInstance(context).tumblrPostCacheDAO.insertItem(it, TumblrPostCache.CACHE_TYPE_DRAFT)
-        })
+        }
     }
 
-    fun delete(postList: List<TumblrPost>): Single<List<PostActionResult>> {
+    suspend fun delete(postList: List<TumblrPost>) {
         postAction = DELETE
-        return executePostAction(postList, Consumer {
+        executePostAction(postList) {
             TumblrManager.getInstance(context).deletePost(blogName, it.postId)
-            ApiManager.postService()
-                .deletePost(it.postId)
-                .subscribe()
-        })
+            ApiManager.postService().deletePost(it.postId)
+        }
     }
 
-    fun publish(postList: List<TumblrPost>): Single<List<PostActionResult>> {
+    suspend fun publish(postList: List<TumblrPost>) {
         postAction = PUBLISH
-        return executePostAction(postList, Consumer {
+        executePostAction(postList) {
             TumblrManager.getInstance(context).publishPost(blogName, it.postId)
-        })
+        }
     }
 
-    fun schedule(post: TumblrPost, scheduleTimestamp: Calendar): Single<List<PostActionResult>> {
+    suspend fun schedule(post: TumblrPost, scheduleTimestamp: Calendar) {
         postAction = SCHEDULE
         this.scheduleTimestamp = scheduleTimestamp
-        return executePostAction(listOf(post), Consumer {
+        executePostAction(listOf(post)) {
             TumblrManager.getInstance(context).schedulePost(blogName, it, scheduleTimestamp.timeInMillis)
-        })
+        }
     }
 
-    fun edit(post: TumblrPhotoPost,
-        title: String, tags: String, selectedBlogName: String): Single<List<PostActionResult>> {
+    suspend fun edit(post: TumblrPhotoPost,
+        title: String, tags: String, selectedBlogName: String) {
         postAction = EDIT
-        return executePostAction(listOf(post), Consumer {
+        executePostAction(listOf(post)) {
+            println("dafi: PostActionExecutor.edit() I expect 'IO' - ${Thread.currentThread().name}")
             val newValues = mutableMapOf(
                 "id" to post.postId.toString(),
                 "caption" to title,
                 "tags" to tags
             )
             TumblrManager.getInstance(context).editPost(selectedBlogName, newValues)
-            ApiManager.postService()
-                .editTags(post.postId, TumblrPost.tagsFromString(tags))
-                .subscribe {
-                    post.tagsFromString(tags)
-                    post.caption = title
-                }
-        })
+            ApiManager.postService().editTags(post.postId, TumblrPost.tagsFromString(tags))
+            post.tagsFromString(tags)
+            post.caption = title
+        }
     }
 
-    private fun executePostAction(postList: List<TumblrPost>,
-        consumer: Consumer<TumblrPost>): Single<List<PostActionResult>> {
-        return Observable
-            .fromIterable(postList)
-            .map { post ->
-                try {
-                    consumer.accept(post)
-                    PostActionResult(post)
-                } catch (e: Throwable) {
-                    PostActionResult(post, e)
-                }
+    private suspend fun executePostAction(
+        postList: List<TumblrPost>,
+        consumer: suspend (TumblrPost) -> Unit) {
+        val resultList = postList.map { post ->
+            val result = try {
+                withContext(Dispatchers.IO) { consumer(post) }
+                PostActionResult(post)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                PostActionResult(post, e)
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext { result -> listener.onNext(this, result) }
-            .toList()
-            .doOnSuccess { resultList -> listener.onComplete(this, resultList) }
+            listener.onNext(this@PostActionExecutor, result)
+            result
+        }
+        listener.onComplete(this@PostActionExecutor, resultList)
     }
 
     companion object {

@@ -28,7 +28,7 @@ fun Collection<FeedlyContentDelegate>.titles(): Collection<String> {
 /**
  * update lastPublishTimestamp and the tag fields
  */
-fun Collection<FeedlyContentDelegate>.update(tagPairList: Map<String, Long>): Collection<FeedlyContentDelegate> {
+fun Collection<FeedlyContentDelegate>.updateLastPublishTimestamp(tagPairList: Map<String, Long>): Collection<FeedlyContentDelegate> {
     for (fc in this) {
         updateLastPublishTimestamp(fc, tagPairList)
     }

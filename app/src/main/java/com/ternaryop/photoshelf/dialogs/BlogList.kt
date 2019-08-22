@@ -6,9 +6,6 @@ import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.utils.dialog.showErrorDialog
-import io.reactivex.SingleObserver
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 
 /**
  * Created by dave on 24/02/18.
@@ -38,28 +35,20 @@ class BlogList(val appSupport: AppSupport,
         }
     }
 
-    fun fetchBlogNames(dialog: AlertDialog, compositeDisposable: CompositeDisposable) {
+    suspend fun fetchBlogNames(dialog: AlertDialog) {
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled = false
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
 
         appSupport.clearBlogList()
-        appSupport.fetchBlogNames(appSupport)
-            .subscribe(object : SingleObserver<List<String>> {
-                override fun onSubscribe(d: Disposable) {
-                    compositeDisposable.add(d)
-                }
-
-                override fun onSuccess(blogNames: List<String>) {
-                    fillList(blogNames)
-                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled = true
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
-                }
-
-                override fun onError(t: Throwable) {
-                    dialog.dismiss()
-                    t.showErrorDialog(appSupport)
-                }
-            })
+        try {
+            val blogNames = appSupport.fetchBlogNames(appSupport)
+            fillList(blogNames)
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled = true
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
+        } catch (t: Throwable) {
+            dialog.dismiss()
+            t.showErrorDialog(appSupport)
+        }
     }
 
     abstract class OnBlogItemSelectedListener : AdapterView.OnItemSelectedListener {

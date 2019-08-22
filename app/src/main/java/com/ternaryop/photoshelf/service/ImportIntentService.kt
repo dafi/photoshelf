@@ -6,14 +6,15 @@ import android.content.Intent
 import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
 import com.ternaryop.photoshelf.db.Importer
 import com.ternaryop.photoshelf.importer.notifyImportBirthdaysFromWeb
+import kotlinx.coroutines.runBlocking
 
 /**
  * An [IntentService] subclass for handling import/export actions
  */
-class ImportIntentService : IntentService("ImportIntentService") {
+class ImportIntentService : AbsIntentService("ImportIntentService") {
     override fun onHandleIntent(intent: Intent?) {
         when (intent?.action) {
-            ACTION_IMPORT_BIRTHDAYS_FROM_WEB -> Importer(this).notifyImportBirthdaysFromWeb()
+            ACTION_IMPORT_BIRTHDAYS_FROM_WEB -> runBlocking { Importer(applicationContext).notifyImportBirthdaysFromWeb() }
         }
     }
 

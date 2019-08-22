@@ -37,6 +37,7 @@ import com.ternaryop.tumblr.android.browseImageBySize
 import com.ternaryop.tumblr.android.finishActivity
 import com.ternaryop.tumblr.android.viewPost
 import com.ternaryop.utils.dialog.showErrorDialog
+import kotlinx.coroutines.launch
 
 abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener, OnScrollPostFetcher.PostFetcher,
     OnPhotoBrowseClickMultiChoice, TumblrPostDialog.PostListener, SearchView.OnQueryTextListener, ActionMode.Callback {
@@ -115,14 +116,19 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
 
     private fun showConfirmDialog(postAction: Int, postsList: List<PhotoShelfPost>) {
         val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
-            when (postAction) {
-                PUBLISH -> postActionExecutor.publish(postsList)
-                DELETE -> postActionExecutor.delete(postsList)
-                SAVE_AS_DRAFT -> postActionExecutor.saveAsDraft(postsList)
-                else -> throw AssertionError("PostAction $postAction not supported")
+            launch {
+                try {
+                    when (postAction) {
+                        PUBLISH -> postActionExecutor.publish(postsList)
+                        DELETE -> postActionExecutor.delete(postsList)
+                        SAVE_AS_DRAFT -> postActionExecutor.saveAsDraft(postsList)
+                        else -> throw AssertionError("PostAction $postAction not supported")
+                    }
+                } catch (t: Throwable) {
+                    t.showErrorDialog(requireContext())
+                }
+
             }
-                .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({}, {})
         }
 
         val message = resources.getQuantityString(PostActionExecutor.getConfirmStringId(postAction),
@@ -318,10 +324,13 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
-        val d = postActionExecutor.edit(post, dialog.titleHolder.htmlTitle, dialog.tagsHolder.tags, selectedBlogName)
-                .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({ }, { t -> t.showErrorDialog(context!!) })
-        compositeDisposable.add(d)
+        launch {
+            try {
+                postActionExecutor.edit(post, dialog.titleHolder.htmlTitle, dialog.tagsHolder.tags, selectedBlogName)
+            } catch (t: Throwable) {
+                t.showErrorDialog(requireContext())
+            }
+        }
     }
 
     private fun showEditDialog(item: TumblrPhotoPost, mode: ActionMode?) {

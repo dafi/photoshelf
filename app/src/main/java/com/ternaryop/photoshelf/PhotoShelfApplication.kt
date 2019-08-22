@@ -8,8 +8,6 @@ import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.util.okhttp3.OkHttpUtil
 import com.ternaryop.utils.dropbox.DropboxManager
-import com.ternaryop.utils.reactivex.UndeliverableErrorHandler
-import io.reactivex.plugins.RxJavaPlugins
 
 /**
  * Created by dave on 17/04/15.
@@ -19,7 +17,6 @@ class PhotoShelfApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        RxJavaPlugins.setErrorHandler(UndeliverableErrorHandler())
         TumblrManager.setup(
             getString(R.string.TUMBLR_CONSUMER_KEY),
             getString(R.string.TUMBLR_CONSUMER_SECRET),

@@ -6,7 +6,6 @@ import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.api.birthday.ListResult
-import io.reactivex.Single
 
 class BirthdayShowFlags {
     private var flags = SHOW_ALL
@@ -39,20 +38,20 @@ class BirthdayShowFlags {
         }
     }
 
-    fun find(pattern: String, month: Int, offset: Int, limit: Int): Single<Response<BirthdayResult>> {
+    suspend fun find(pattern: String, month: Int, offset: Int, limit: Int): Response<BirthdayResult> {
         val params = FindParams(name = pattern, month = month + 1, offset = offset, limit = limit).toQueryMap()
         return when {
-                isShowIgnored -> birthdayService.findIgnored(params).flatMap { wrapBirthdayResult(it) }
+                isShowIgnored -> wrapBirthdayResult(birthdayService.findIgnored(params))
                 isShowInSameDay -> birthdayService.findSameDay(params)
-                isShowMissing -> birthdayService.findMissingNames(params).flatMap { wrapBirthdayResult(it) }
+                isShowMissing -> wrapBirthdayResult((birthdayService.findMissingNames(params)))
                 isWithoutPost -> birthdayService.findOrphans(params)
                 else -> birthdayService.findByDate(params)
         }
     }
 
-    private fun wrapBirthdayResult(response: Response<ListResult>): Single<Response<BirthdayResult>> {
+    private fun wrapBirthdayResult(response: Response<ListResult>): Response<BirthdayResult> {
         val listResult = response.response.names
-        return Single.just(Response(BirthdayResult(0, listResult.map { Birthday(it, nullDate) })))
+        return Response(BirthdayResult(0, listResult.map { Birthday(it, nullDate) }))
     }
 
     companion object {

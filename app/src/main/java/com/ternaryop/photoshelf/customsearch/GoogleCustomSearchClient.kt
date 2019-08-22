@@ -1,11 +1,9 @@
 package com.ternaryop.photoshelf.customsearch
 
 import com.google.gson.GsonBuilder
-import io.reactivex.Single
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -22,7 +20,7 @@ private const val API_PREFIX = "https://www.googleapis.com/"
 
 interface GoogleCustomSearchService {
     @GET("customsearch/v1")
-    fun runCustomSearch(@Query("q") q: String, @Query("fields") fields: String): Single<CustomSearchResult>
+    suspend fun runCustomSearch(@Query("q") q: String, @Query("fields") fields: String): CustomSearchResult
 }
 
 object GoogleCustomSearchClient {
@@ -36,7 +34,7 @@ object GoogleCustomSearchClient {
         this.okHttpClient = okHttpClient
     }
 
-    fun getCorrectedQuery(q: String): Single<CustomSearchResult> {
+    suspend fun getCorrectedQuery(q: String): CustomSearchResult {
         return service().runCustomSearch(q, arrayOf("spelling").joinToString(","))
     }
 
@@ -62,7 +60,6 @@ object GoogleCustomSearchClient {
         Retrofit.Builder()
             .baseUrl(API_PREFIX)
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(builder.build())
             .build()
     }

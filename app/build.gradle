@@ -10,14 +10,15 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
     implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:${rootProject.ext.androidXSwiperefreshlayoutLibVersion}"
+    implementation "androidx.lifecycle:lifecycle-extensions:${rootProject.ext.androidXLifecycleExtensions}"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.androidxLifecycleViewmodelKtx}"
 
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
     implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    implementation "io.reactivex.rxjava2:rxjava:${rootProject.ext.rxjavaLibVersion}"
-    implementation "io.reactivex.rxjava2:rxandroid:${rootProject.ext.rxandroidLibVersion}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.kotlinxCoroutinesAndroid}"
 
     implementation "com.dropbox.core:dropbox-core-sdk:${rootProject.ext.dropboxCoreLibVersion}"
 
@@ -25,7 +26,6 @@ dependencies {
 
     implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
     implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofitLibVersion}"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:${rootProject.ext.retrofitAdapterRrxjavaLibVersion}"
     implementation "com.squareup.retrofit2:converter-gson:${rootProject.ext.retrofitConverterGsonLibVersion}"
     implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp3LoggingInterceptorLibVersion}"
     implementation "com.squareup.okio:okio:${rootProject.ext.okio}"
@@ -33,9 +33,9 @@ dependencies {
     implementation "com.google.code.gson:gson:${rootProject.ext.gsonLibVersion}"
 
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
-    implementation "com.ternaryop.photoshelf:domselector:${rootProject.ext.ternaryOpDomSelectorLibVersion}"
-    implementation "com.ternaryop:feedly:${rootProject.ext.ternaryOpFeedlyLibVersion}"
-    implementation "com.ternaryop:tumblr:${rootProject.ext.ternaryOpTumblrLibVersion}"
+    implementation "com.ternaryop.photoshelf:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
+    implementation "com.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
+    implementation "com.ternaryop:tumblr-coroutines:${rootProject.ext.ternaryOpTumblrCoroutinesLibVersion}"
 
     testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
     androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"

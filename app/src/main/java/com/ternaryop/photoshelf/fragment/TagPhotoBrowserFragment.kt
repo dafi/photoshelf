@@ -4,34 +4,27 @@ import android.app.Activity
 import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
-import android.text.format.DateUtils.SECOND_IN_MILLIS
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
 import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.TagCursorAdapter
-import com.ternaryop.photoshelf.api.ApiManager
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
-import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.tumblr.android.TumblrManager
-import com.ternaryop.tumblr.getPhotoPosts
-import io.reactivex.Observable
-import io.reactivex.SingleObserver
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 
 class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionListener {
     private var postTag: String? = null
     private var allowSearch: Boolean = false
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
+    private lateinit var viewModel: TagPhotoBrowserViewModel
 
     override val actionModeMenuId: Int
         get() = R.menu.tag_browser_context
@@ -49,10 +42,18 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener(null)
 
+        viewModel = ViewModelProviders.of(this).get(TagPhotoBrowserViewModel::class.java)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is TagPhotoBrowserResult.FindTags -> onFindTagsModelResult(result)
+                is TagPhotoBrowserResult.Photos -> onPhotosModelResult(result)
+            }
+        })
+
         if (blogName != null) {
             postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) onQueryTextSubmit(tag) }
         }
-
     }
 
     override fun onAttach(context: Context) {
@@ -98,33 +99,8 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         params["notes_info"] = "true"
         params["offset"] = postFetcher.offset.toString()
 
-        Observable
-            .just(params)
-            .doFinally { postFetcher.isScrolling = false }
-            .flatMap<TumblrPhotoPost> { params1 ->
-                Observable.fromIterable<TumblrPhotoPost>(TumblrManager.getInstance(context!!)
-                    .getPhotoPosts(blogName!!, params1))
-            }
-            .map { tumblrPost -> PhotoShelfPost(tumblrPost, tumblrPost.timestamp * SECOND_IN_MILLIS) }
-            .toList()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .compose(photoShelfSwipe.applySwipe())
-            .subscribe(object : SingleObserver<List<PhotoShelfPost>> {
-                override fun onSubscribe(d: Disposable) {
-                    compositeDisposable.add(d)
-                }
-
-                override fun onSuccess(photoList: List<PhotoShelfPost>) {
-                    postFetcher.incrementReadPostCount(photoList.size)
-                    photoAdapter.addAll(photoList)
-                    refreshUI()
-                }
-
-                override fun onError(t: Throwable) {
-                    showSnackbar(makeSnake(recyclerView, t))
-                }
-            })
+        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+        viewModel.photos(blogName!!, params)
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
@@ -133,15 +109,8 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         if (pattern.isEmpty()) {
             return true
         }
-        val d = ApiManager.postService()
-            .findTags(blogName!!, pattern)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { response ->
-                val adapter = searchView!!.suggestionsAdapter as TagCursorAdapter
-                adapter.swapCursor(adapter.createCursor(pattern, response.response.tags))
-        }
-        compositeDisposable.add(d)
+
+        viewModel.findTags(blogName!!, pattern)
         return true
     }
 
@@ -167,6 +136,38 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         // do nothing if tags are equal otherwise a new TagBrowser on same tag is launched
         if (!postTag!!.equals(clickedTag, ignoreCase = true)) {
             super.onTagClick(position, clickedTag)
+        }
+    }
+
+    private fun onFindTagsModelResult(result: TagPhotoBrowserResult.FindTags) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                result.command.data?.also { tags ->
+                    val adapter = searchView!!.suggestionsAdapter as TagCursorAdapter
+                    adapter.swapCursor(adapter.createCursor(tags.pattern, tags.tags))
+                }
+            }
+            Status.ERROR -> { }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onPhotosModelResult(result: TagPhotoBrowserResult.Photos) {
+        postFetcher.isScrolling = false
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.data?.also { photoList ->
+                    postFetcher.incrementReadPostCount(photoList.size)
+                    photoAdapter.addAll(photoList)
+                    refreshUI()
+                }
+            }
+            Status.ERROR -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.error?.also { showSnackbar(makeSnake(recyclerView, it)) }
+            }
+            Status.PROGRESS -> { }
         }
     }
 }

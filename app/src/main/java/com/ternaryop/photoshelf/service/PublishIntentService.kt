@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.service
 
-import android.app.IntentService
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,16 +18,15 @@ import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftPhotoPost
 import com.ternaryop.tumblr.publishPhotoPost
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import java.net.URI
 
 /**
  * Created by dave on 01/03/14.
  * Contains all methods used to publish posts
  */
-class PublishIntentService : IntentService("publishIntent") {
+class PublishIntentService : AbsIntentService("publishIntent") {
 
     override fun onHandleIntent(intent: Intent?) {
         intent ?: return
@@ -66,19 +64,20 @@ class PublishIntentService : IntentService("publishIntent") {
         }
     }
 
-    private fun addBirthdateFromTags(intent: Intent): Disposable? {
-        val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: return null
-        val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return null
+    private fun addBirthdateFromTags(intent: Intent) {
+        val postTags = intent.getStringExtra(EXTRA_POST_TAGS) ?: return
+        val name = TumblrPost.tagsFromString(postTags).firstOrNull() ?: return
 
-        return ApiManager.birthdayService().getByName(name, true)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map { it.response }
-            .subscribe({ nameResult ->
+        runBlocking(Dispatchers.IO) {
+            try {
+                val nameResult = ApiManager.birthdayService().getByName(name, true).response
                 if (nameResult.isNew) {
-                    notifyBirthdayAdded(this, name, nameResult.birthday.birthdate)
+                    notifyBirthdayAdded(applicationContext, name, nameResult.birthday.birthdate)
                 }
-            }, { it.notify(this, name, getString(R.string.birthday_add_error_ticker)) })
+            } catch (t: Throwable) {
+                t.notify(applicationContext, name, getString(R.string.birthday_add_error_ticker))
+            }
+        }
     }
 
     class RetryPublishNotificationBroadcastReceiver : BroadcastReceiver() {

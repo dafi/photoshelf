@@ -11,13 +11,18 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.R
-import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 
-abstract class AbsPhotoShelfFragment : Fragment() {
+abstract class AbsPhotoShelfFragment : Fragment(), CoroutineScope {
     protected lateinit var fragmentActivityStatus: FragmentActivityStatus
     protected var actionMode: ActionMode? = null
 
-    protected lateinit var compositeDisposable: CompositeDisposable
+    protected lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
 
     val blogName: String?
         get() = fragmentActivityStatus.appSupport.selectedBlogName
@@ -30,17 +35,17 @@ abstract class AbsPhotoShelfFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        compositeDisposable = CompositeDisposable()
+        job = Job()
     }
 
     override fun onDestroy() {
         snackbar?.dismiss()
-        compositeDisposable.clear()
+        job.cancel()
         super.onDestroy()
     }
 
     override fun onDetach() {
-        compositeDisposable.clear()
+        job.cancel()
         super.onDetach()
     }
 

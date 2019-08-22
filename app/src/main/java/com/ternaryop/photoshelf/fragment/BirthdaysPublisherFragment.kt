@@ -225,6 +225,7 @@ class BirthdaysPublisherFragment
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    @Suppress("unused")
     fun onBirthdayEvent(event: BirthdayEvent) {
         if (event.birthdayResult == null) {
             swipeLayout.setRefreshingAndWaitingResult(false)

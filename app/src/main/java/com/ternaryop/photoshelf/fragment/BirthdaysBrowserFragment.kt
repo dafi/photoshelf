@@ -16,6 +16,8 @@ import android.widget.ArrayAdapter
 import android.widget.SearchView
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
@@ -23,22 +25,17 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayAdapter
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
+import com.ternaryop.util.coroutine.DebouncingQueryTextListener
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
-import com.ternaryop.utils.date.toIsoFormat
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.dialog.showErrorDialog
-import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import java.text.DateFormatSymbols
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 const val DEBOUNCE_TIMEOUT_MILLIS = 600L
 
@@ -49,6 +46,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     private val singleSelectionMenuIds = intArrayOf(R.id.item_edit)
     private val actionModeMenuId: Int
         get() = R.menu.birthdays_context
+    private lateinit var viewModel: BirthdaysBrowserViewModel
 
     enum class ItemAction {
         MARK_AS_IGNORED,
@@ -68,6 +66,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel = ViewModelProviders.of(this).get(BirthdaysBrowserViewModel::class.java)
+
         adapter = BirthdayAdapter(activity!!, fragmentActivityStatus.appSupport.selectedBlogName!!)
         adapter.onClickListener = this
         adapter.onLongClickListener = this
@@ -85,34 +85,54 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         val searchView = view.findViewById<SearchView>(R.id.searchView1)
 
         // Set up the query listener that executes the search
-        val d = Observable.create(ObservableOnSubscribe<String> { subscriber ->
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextChange(query: String): Boolean {
-                    subscriber.onNext(query)
-                    return false
-                }
-
-                override fun onQueryTextSubmit(query: String): Boolean = false
-            })
+        searchView.setOnQueryTextListener(DebouncingQueryTextListener(DEBOUNCE_TIMEOUT_MILLIS) { pattern ->
+            adapter.pattern = pattern
+            println("dafi: BirthdaysBrowserFragment.DebouncingQueryTextListener() - $pattern")
+            viewModel.find(BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING, adapter.pattern, 0, MAX_BIRTHDAY_COUNT)
         })
-            .debounce(DEBOUNCE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .flatMapSingle { pattern ->
-                adapter.pattern = pattern
-                adapter.find(0, MAX_BIRTHDAY_COUNT)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is BirthdaysBrowserModelResult.Find -> when (result.actionId) {
+                    BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING -> onQueryByTyping(result)
+                    BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY -> onResubmitQuery(result)
+                }
+                is BirthdaysBrowserModelResult.MarkAsIgnored -> onMarkAsIgnored(result)
+                is BirthdaysBrowserModelResult.UpdateByName -> onUpdateByName(result)
+                is BirthdaysBrowserModelResult.DeleteBirthdays -> onDeleteBirthdays(result)
             }
-            .doFinally { onScrollPostFetcher.isScrolling = false }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ response ->
-                val birthdays = response.response.birthdays!!
-                resetSearch()
-                onScrollPostFetcher.incrementReadPostCount(birthdays.size)
-                adapter.addAll(birthdays)
-            }) { t -> t.showErrorDialog(context!!) }
-        compositeDisposable.add(d)
+        })
 
         setupActionBar()
         setHasOptionsMenu(true)
+    }
+
+    private fun onQueryByTyping(result: BirthdaysBrowserModelResult.Find) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                result.command.data?.birthdays?.also { birthdays ->
+                    resetSearch()
+                    onScrollPostFetcher.incrementReadPostCount(birthdays.size)
+                    adapter.addAll(birthdays)
+                }
+            }
+            Status.ERROR -> result.command.error?.also { it.showErrorDialog(context!!) }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onResubmitQuery(result: BirthdaysBrowserModelResult.Find) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                result.command.data?.birthdays?.also { birthdays ->
+                    adapter.addAll(birthdays)
+                    onScrollPostFetcher.incrementReadPostCount(birthdays.size)
+                    scrollToFirstTodayBirthday()
+                }
+            }
+            Status.ERROR -> { }
+            Status.PROGRESS -> { }
+        }
     }
 
     override fun setRetainInstance(retain: Boolean) {
@@ -174,18 +194,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
             birthday.birthdate = c
 
-            ApiManager.birthdayService()
-                .updateByName(birthday.name, birthday.birthdate.toIsoFormat())
-                .toSingle { birthday }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { d -> compositeDisposable.add(d) }
-                .subscribe({
-                    val pos = adapter.findPosition(it)
-                    if (pos >= 0) {
-                        adapter.notifyItemChanged(pos)
-                    }
-                }, { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() })
+            viewModel.updateByName(birthday)
             mode.finish()
         }, c.year, c.month, c.dayOfMonth).show()
     }
@@ -219,44 +228,44 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     private fun markAsIgnored(list: List<Birthday>, mode: ActionMode) {
-        val d = Observable
-            .fromIterable(list)
-            .flatMapSingle { bday ->
-                ApiManager.birthdayService().markAsIgnored(bday.name).toSingle {
-                    bday.birthdate = nullDate
-                    bday
-                }
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                val pos = adapter.findPosition(it)
-                if (pos >= 0) {
-                    adapter.notifyItemChanged(pos)
-                }
-            }, { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() })
-        compositeDisposable.add(d)
-
+        viewModel.markAsIgnored(list)
         mode.finish()
+    }
+
+    private fun onMarkAsIgnored(result: BirthdaysBrowserModelResult.MarkAsIgnored) {
+        println("dafi: BirthdaysBrowserFragment.onMarkAsIgnored() - $result")
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { adapter.updateItems(it) }
+            Status.ERROR -> result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onUpdateByName(result: BirthdaysBrowserModelResult.UpdateByName) {
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { adapter.updateItems(listOf(it)) }
+            Status.ERROR -> result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+            Status.PROGRESS -> { }
+        }
     }
 
     private fun deleteBirthdays(list: List<Birthday>, mode: ActionMode) {
-        val d = Observable
-            .fromIterable(list)
-            .flatMapSingle { bday -> ApiManager.birthdayService().deleteByName(bday.name).toSingle { bday } }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                val pos = adapter.findPosition(it)
-                if (pos >= 0) {
-                    adapter.removeAt(pos)
-                    adapter.notifyItemRemoved(pos)
-                }
-            }, { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() })
-        compositeDisposable.add(d)
-
+        viewModel.deleteBirthdays(list)
         mode.finish()
     }
+
+    private fun onDeleteBirthdays(result: BirthdaysBrowserModelResult.DeleteBirthdays) {
+        println("dafi: BirthdaysBrowserFragment.onDeleteBirthdays() - $result")
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { adapter.removeItems(it) }
+            Status.ERROR -> {
+                result.command.data?.also { adapter.removeItems(it) }
+                result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+            }
+            Status.PROGRESS -> { }
+        }
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.birthdays_browser, menu)
@@ -305,7 +314,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         supportActionBar?.subtitle = subTitle
         item.isChecked = isChecked
 
-        adapter.showFlags.setFlag(showFlag, isChecked)
+        viewModel.showFlags.setFlag(showFlag, isChecked)
         resetSearch()
         resubmitQuery()
         return true
@@ -327,7 +336,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             supportActionBar?.setDisplayShowTitleEnabled(true)
         } else {
             // check if view is already added (eg when the overflow menu is opened)
-            if (adapter.showFlags.isOn(BirthdayShowFlags.SHOW_ALL)
+            if (viewModel.showFlags.isOn(BirthdayShowFlags.SHOW_ALL)
                 && fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1) {
                 fragmentActivityStatus.drawerToolbar.addView(toolbarSpinner)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
@@ -370,17 +379,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     private fun resubmitQuery() {
-        val d = adapter.find(onScrollPostFetcher.offset, MAX_BIRTHDAY_COUNT)
-            .doFinally { onScrollPostFetcher.isScrolling = false }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { response ->
-                val birthdays = response.response.birthdays!!
-                adapter.addAll(birthdays)
-                onScrollPostFetcher.incrementReadPostCount(birthdays.size)
-                scrollToFirstTodayBirthday()
-            }
-        compositeDisposable.add(d)
+        viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, onScrollPostFetcher.offset, MAX_BIRTHDAY_COUNT)
     }
 
     private fun scrollToPosition(position: Int) {
@@ -389,13 +388,13 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     fun changeMonth(month: Int) {
-        adapter.month = month
+        viewModel.month = month
         resetSearch()
         resubmitQuery()
     }
 
     private fun scrollToFirstTodayBirthday() {
-        if (!adapter.showFlags.isOn(BirthdayShowFlags.SHOW_ALL)) {
+        if (!viewModel.showFlags.isOn(BirthdayShowFlags.SHOW_ALL)) {
             return
         }
         val dayPos = adapter.findDayPosition(Calendar.getInstance().dayOfMonth)
@@ -446,7 +445,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             actionMode?.menu?.findItem(itemId)?.isVisible = singleSelection
         }
 
-        if (adapter.showFlags.isShowMissing) {
+        if (viewModel.showFlags.isShowMissing) {
             actionMode?.menu?.let { menu ->
                 for (i in 0 until menu.size()) {
                     val itemId = menu.getItem(i).itemId

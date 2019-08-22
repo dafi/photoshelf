@@ -2,20 +2,21 @@ package com.ternaryop.photoshelf.fragment
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.preference.PreferenceManager
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.api.ApiManager
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.ternaryop.photoshelf.lifecycle.Status
 import java.text.DecimalFormat
 
 class HomeFragment : AbsPhotoShelfFragment() {
+    private lateinit var viewModel: HomeViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -24,6 +25,14 @@ class HomeFragment : AbsPhotoShelfFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel = ViewModelProviders.of(this).get(HomeViewModel::class.java)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is HomeModelResult.Stats -> onStats(result)
+            }
+        })
         refresh()
     }
 
@@ -49,16 +58,22 @@ class HomeFragment : AbsPhotoShelfFragment() {
             fillStatsUI(loadStats(preferences))
             return
         }
-        val d = ApiManager.postService().getStats(currentBlog)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ response ->
-                val statsMap = response.response.stats
-                saveStats(preferences, statsMap)
-                preferences.edit().putLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis()).apply()
-                fillStatsUI(statsMap)
-            }, { it.printStackTrace() })
-        compositeDisposable.add(d)
+        viewModel.loadStats(currentBlog)
+    }
+
+    private fun onStats(result: HomeModelResult.Stats) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                 result.command.data?.stats?.also { statsMap ->
+                    val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
+                    saveStats(preferences, statsMap)
+                    preferences.edit().putLong(PREF_LAST_STATS_REFRESH, System.currentTimeMillis()).apply()
+                    fillStatsUI(statsMap)
+                }
+            }
+            Status.ERROR -> { }
+            Status.PROGRESS -> { }
+        }
     }
 
     private fun loadStats(preferences: SharedPreferences): Map<String, Long> {

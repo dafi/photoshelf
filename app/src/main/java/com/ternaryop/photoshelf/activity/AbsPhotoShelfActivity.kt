@@ -9,12 +9,19 @@ import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 
-abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStatus {
+abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStatus, CoroutineScope {
     open val blogName: String
         get() = appSupport.selectedBlogName!!
 
     override val appSupport: AppSupport by lazy { AppSupport(this) }
+    protected lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
 
     override val isDrawerMenuOpen: Boolean
         get() = false
@@ -31,6 +38,8 @@ abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        job = Job()
         setContentView(contentViewLayoutId)
         setupActionBar()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -39,6 +48,11 @@ abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStat
         if (fragment != null) {
             supportFragmentManager.beginTransaction().add(R.id.content_frame, fragment).commit()
         }
+    }
+
+    override fun onDestroy() {
+        job.cancel()
+        super.onDestroy()
     }
 
     /**

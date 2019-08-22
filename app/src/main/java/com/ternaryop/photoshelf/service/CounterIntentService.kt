@@ -13,6 +13,8 @@ import com.ternaryop.tumblr.draftCount
 import com.ternaryop.tumblr.queueCount
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import java.util.Calendar
 
@@ -56,11 +58,10 @@ class CounterIntentService : IntentService("counterIntent") {
         return 0
     }
 
-    private fun birthdayCount(): Int {
+    private fun birthdayCount(): Int = runBlocking(Dispatchers.IO) {
         val now = Calendar.getInstance()
-        return ApiManager.birthdayService().findByDate(
+        ApiManager.birthdayService().findByDate(
             FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
-            .blockingGet()
             .response.total.toInt()
     }
 

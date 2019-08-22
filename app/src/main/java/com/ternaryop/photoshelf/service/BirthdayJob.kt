@@ -6,8 +6,7 @@ import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.birthday.notifyBirthday
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 object BirthdayJob : Job {
@@ -21,12 +20,10 @@ object BirthdayJob : Job {
     }
 
     private fun notifyBirthday(jobService: AbsJobService, blogName: String, params: JobParameters?) {
-        jobService.compositeDisposable.add(
+        jobService.launch {
             notifyBirthday(jobService, blogName)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doFinally { jobService.jobFinished(params, false) }
-            .subscribe())
+            jobService.jobFinished(params, false)
+        }
     }
 
     private fun hasAlreadyNotifiedToday(context: Context): Boolean {

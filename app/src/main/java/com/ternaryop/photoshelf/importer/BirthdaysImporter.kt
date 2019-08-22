@@ -1,10 +1,9 @@
 package com.ternaryop.photoshelf.importer
 
+import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.api.birthday.FindParams
 import com.ternaryop.photoshelf.db.Importer
-import com.ternaryop.photoshelf.api.ApiManager
-import io.reactivex.Observable
 
 /**
  * Created by dave on 24/03/18.
@@ -12,23 +11,20 @@ import io.reactivex.Observable
  */
 typealias StringProgressInfo = Importer.SimpleImportProgressInfo<String>
 
-fun Importer.importMissingBirthdaysFromWeb(): Observable<StringProgressInfo> {
+suspend fun Importer.importMissingBirthdaysFromWeb(progress: (StringProgressInfo) -> Unit): StringProgressInfo {
     val params = FindParams(offset = 0, limit = MAX_BIRTHDAY_COUNT).toQueryMap()
     val info = Importer.SimpleImportProgressInfo<String>()
 
-    return ApiManager.birthdayService().findMissingNames(params)
-        .flatMapObservable {
-            info.max = it.response.names.size
-            info.list.addAll(it.response.names)
-            Observable.fromIterable(it.response.names)
+    val missing = ApiManager.birthdayService().findMissingNames(params).response
+    info.max = missing.names.size
+    info.list.addAll(missing.names)
+    missing.names.forEach { name ->
+        val nameResult = ApiManager.birthdayService().getByName(name, true).response
+        if (nameResult.isNew) {
+            info.items.add(nameResult.birthday.name)
         }
-        .flatMapSingle { name -> ApiManager.birthdayService().getByName(name, true) }
-        .doOnNext { response ->
-            val nameResult  = response.response
-            if (nameResult.isNew) {
-                info.items.add(nameResult.birthday.name)
-            }
-            ++info.progress
-        }
-        .map { info }
+        ++info.progress
+        progress(info)
+    }
+    return info
 }

@@ -25,8 +25,11 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.service.WallpaperIntentService
 import com.ternaryop.photoshelf.util.viewer.ImageViewerUtil
 import com.ternaryop.tumblr.TumblrPhotoPost
+import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.intent.ShareChooserParams
 import com.ternaryop.utils.text.fromHtml
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
@@ -179,12 +182,18 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
     }
 
     private fun startShareImage() {
-        val destFile = ImageViewerUtil.buildSharePath(this, imageUrl, "images")
-        val shareChooserParams = ShareChooserParams(
-            FileProvider.getUriForFile(this, FILE_PROVIDER_SHARE_AUTHORITY, destFile),
-            getString(R.string.share_image_title),
-            intent.extras?.getString(IMAGE_TITLE)?.fromHtml()?.toString() ?: "")
-        ImageViewerUtil.shareImage(this, URL(imageUrl), shareChooserParams)
+        try {
+            val destFile = ImageViewerUtil.buildSharePath(this, imageUrl, "images")
+            val shareChooserParams = ShareChooserParams(
+                FileProvider.getUriForFile(this, FILE_PROVIDER_SHARE_AUTHORITY, destFile),
+                getString(R.string.share_image_title),
+                intent.extras?.getString(IMAGE_TITLE)?.fromHtml()?.toString() ?: "")
+            launch(Dispatchers.IO) {
+                ImageViewerUtil.shareImage(this@ImageViewerActivity, URL(imageUrl), shareChooserParams)
+            }
+        } catch (t: Throwable) {
+            t.showErrorDialog(this)
+        }
     }
 
     private fun toggleDetails() {

@@ -1,33 +1,31 @@
 package com.ternaryop.photoshelf.dialogs
 
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ternaryop.feedly.Category
-import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.CheckBoxItem
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyCategoryAdapter
+import com.ternaryop.photoshelf.fragment.feedly.FeedlyModelResult
 import com.ternaryop.photoshelf.fragment.feedly.FeedlyPrefs
+import com.ternaryop.photoshelf.fragment.feedly.FeedlyViewModel
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.utils.dialog.showErrorDialog
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.dialog_feedly_categories.cancelButton
 import kotlinx.android.synthetic.main.dialog_feedly_categories.category_list
 import kotlinx.android.synthetic.main.dialog_feedly_categories.ok_button
 
 class FeedlyCategoriesDialog(
-    private val feedlyClient: FeedlyClient,
     private val onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>) : DialogFragment() {
     private var categoryAdapter: FeedlyCategoryAdapter? = null
     private lateinit var feedlyPrefs: FeedlyPrefs
-    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater
@@ -39,23 +37,32 @@ class FeedlyCategoriesDialog(
 
         setupUI()
 
-        context?.also { context ->
-            feedlyPrefs = FeedlyPrefs(context)
+        feedlyPrefs = FeedlyPrefs(requireContext())
+        val viewModel = ViewModelProviders.of(this)
+            .get(FeedlyViewModel::class.java)
 
-            compositeDisposable.add(feedlyClient.getCategories()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ categories ->
-                    categoryAdapter = fillAdapter(context, categories)
-                    setupList()
-                },
-                    { it.showErrorDialog(context)}))
-        }
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is FeedlyModelResult.Categories ->  onCategories(result)
+            }
+        })
+
+        viewModel.loadCategories()
     }
 
-    override fun onStop() {
-        super.onStop()
-        compositeDisposable.clear()
+    private fun onCategories(result: FeedlyModelResult.Categories) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                result.command.data?.also { data ->
+                    categoryAdapter = fillAdapter(data)
+                    setupList()
+                }
+            }
+            Status.ERROR -> {
+                result.command.error?.also { it.showErrorDialog(requireContext()) }
+            }
+            Status.PROGRESS -> { }
+        }
     }
 
     private fun setupUI() {
@@ -78,7 +85,7 @@ class FeedlyCategoriesDialog(
         }
     }
 
-    private fun fillAdapter(context: Context, categories: List<Category>): FeedlyCategoryAdapter {
+    private fun fillAdapter(categories: List<Category>): FeedlyCategoryAdapter {
         val selected = feedlyPrefs.selectedCategoriesId
         val checkboxList = categories
             .map { CheckBoxItem(selected.contains(it.id), it) }
@@ -89,7 +96,7 @@ class FeedlyCategoriesDialog(
                     lhs.item.label.compareTo(rhs.item.label, true)
                 }
             })
-        return FeedlyCategoryAdapter(context, checkboxList)
+        return FeedlyCategoryAdapter(requireContext(), checkboxList)
     }
 
     private fun setupList() {
@@ -101,10 +108,8 @@ class FeedlyCategoriesDialog(
     }
 
     companion object {
-        fun newInstance(
-            feedlyClient: FeedlyClient,
-            onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>): FeedlyCategoriesDialog {
-            return FeedlyCategoriesDialog(feedlyClient, onCloseDialogListener)
+        fun newInstance(onCloseDialogListener: OnCloseDialogListener<FeedlyCategoriesDialog>): FeedlyCategoriesDialog {
+            return FeedlyCategoriesDialog(onCloseDialogListener)
         }
     }
 }

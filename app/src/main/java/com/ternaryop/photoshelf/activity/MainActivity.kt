@@ -35,25 +35,30 @@ import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import kotlin.coroutines.CoroutineContext
 
 class MainActivity : DrawerActionBarActivity(),
-    FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
+    FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback, CoroutineScope {
     override lateinit var appSupport: AppSupport
     private lateinit var blogList: Spinner
     val blogName: String?
         get() = appSupport.selectedBlogName
-    protected lateinit var compositeDisposable: CompositeDisposable
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        compositeDisposable = CompositeDisposable()
+        job = Job()
         appSupport = AppSupport(this)
         rebuildDrawerMenu()
 
@@ -67,7 +72,7 @@ class MainActivity : DrawerActionBarActivity(),
     }
 
     override fun onDestroy() {
-        compositeDisposable.clear()
+        job.cancel()
         super.onDestroy()
     }
 
@@ -149,10 +154,9 @@ class MainActivity : DrawerActionBarActivity(),
 
         if (!TumblrManager.isLogged(this)) {
             // if we are returning from authentication then enable the UI
-            compositeDisposable.add(TumblrManager.handleOpenURI(this, intent.data)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ handled ->
+            launch {
+                try {
+                    val handled = withContext(Dispatchers.IO) {TumblrManager.handleOpenURI(applicationContext, intent.data) }
                     // show the preference only if we aren't in the middle of URI handling and not already logged in
                     if (handled) {
                         tumblrAuthenticated()
@@ -160,8 +164,10 @@ class MainActivity : DrawerActionBarActivity(),
                     } else {
                         showSettings()
                     }
-                }, { tumblrAuthenticationError(it) })
-            )
+                } catch (t: Throwable) {
+                    tumblrAuthenticationError(t)
+                }
+            }
         }
     }
 
@@ -182,6 +188,7 @@ class MainActivity : DrawerActionBarActivity(),
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    @Suppress("unused")
     fun onCounterEvent(event: CounterEvent) {
         val value = if (event.count > 0) event.count.toString() else null
 
@@ -197,11 +204,14 @@ class MainActivity : DrawerActionBarActivity(),
 
     private fun enableUI(enabled: Boolean) {
         if (enabled) {
-            compositeDisposable.add(appSupport.fetchBlogNames(this)
-                .subscribe(
-                    { fillBlogList(it) },
-                    { it.showErrorDialog(applicationContext)}
-                ))
+            launch {
+                try {
+                    val blogSetNames = appSupport.fetchBlogNames(applicationContext)
+                    fillBlogList(blogSetNames)
+                } catch (t: Throwable) {
+                    t.showErrorDialog(applicationContext)
+                }
+            }
         }
         drawerToggle.isDrawerIndicatorEnabled = enabled
         adapter.isSelectionEnabled = enabled
@@ -214,11 +224,14 @@ class MainActivity : DrawerActionBarActivity(),
             Toast.LENGTH_LONG)
             .show()
         // after authentication cache blog names
-        compositeDisposable.add(appSupport.fetchBlogNames(this)
-            .subscribe(
-                { enableUI(true) },
-                { it.showErrorDialog(applicationContext) }
-            ))
+        launch {
+            try {
+                appSupport.fetchBlogNames(applicationContext)
+                enableUI(true)
+            } catch (t: Throwable) {
+                t.showErrorDialog(applicationContext)
+            }
+        }
     }
 
     private fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)

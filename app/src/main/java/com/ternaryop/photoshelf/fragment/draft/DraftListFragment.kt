@@ -14,14 +14,14 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.ternaryop.photoshelf.DraftPostHelper
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoSortSwitcher.Companion.LAST_PUBLISHED_TAG
-import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.db.DBHelper
 import com.ternaryop.photoshelf.db.TumblrPostCache
 import com.ternaryop.photoshelf.db.TumblrPostCacheDAO
@@ -32,6 +32,7 @@ import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog.Companion.EXTRA_SELEC
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.AbsPostsListFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
@@ -46,10 +47,7 @@ import com.ternaryop.utils.date.second
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.widget.ProgressHighlightViewLayout
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.BiFunction
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 
@@ -59,8 +57,9 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
 
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
-    private lateinit var draftPostHelper: DraftPostHelper
     lateinit var draftCache: TumblrPostCacheDAO
+
+    private lateinit var viewModel: DraftListViewModel
 
     private val currentTextView: TextView
         get() = progressHighlightViewLayout.currentView as TextView
@@ -87,7 +86,14 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         photoAdapter.setOnPhotoBrowseClick(this)
         loadSettings()
 
-        draftPostHelper = DraftPostHelper(context!!, blogName!!)
+        viewModel = ViewModelProviders.of(this).get(DraftListViewModel::class.java)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is DraftListModelResult.FetchPosts -> onFetchPosts(result)
+            }
+        })
+
         draftCache = DBHelper.getInstance(context!!).tumblrPostCacheDAO
 
         refreshCache()
@@ -137,37 +143,14 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             return
         }
         onRefreshStarted()
-
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
-        currentTextView.text = context!!.resources.getString(R.string.start_import_title)
-        val lastTimestamp = preferences.getLong(PREF_DRAFT_LAST_TIMESTAMP, -1)
-        compositeDisposable.add(
-            ApiManager.postService().getLastPublishedTimestamp(blogName!!, lastTimestamp)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map { it.response }
-            .subscribe({ last ->
-                currentTextView.text = context!!.resources.getQuantityString(
-                    R.plurals.posts_read_count,
-                    last.importCount,
-                    last.importCount)
-                progressHighlightViewLayout.incrementProgress()
-                preferences.edit().putLong(PREF_DRAFT_LAST_TIMESTAMP, last.lastPublishTimestamp).apply()
-                // delete from cache the published posts
-                last.publishedIdList?.let { draftCache.delete(it, TumblrPostCache.CACHE_TYPE_DRAFT, blogName!!) }
-                fetchPosts(postFetcher)
-            })
-            { t ->
-                onRefreshCompleted()
-                t.showErrorDialog(context!!)
-            }
-        )
+        viewModel.fetchPosts(blogName!!)
     }
 
     private fun onRefreshStarted() {
         photoAdapter.clear()
         progressHighlightViewLayout.visibility = View.VISIBLE
         progressHighlightViewLayout.startProgress()
+        currentTextView.text = requireContext().resources.getString(R.string.start_import_title)
         swipeLayout.setRefreshingAndWaitingResult(true)
     }
 
@@ -178,53 +161,36 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     }
 
     override fun fetchPosts(listener: OnScrollPostFetcher) {
-        val maxTimestamp = draftCache.findMostRecentTimestamp(blogName!!, TumblrPostCache.CACHE_TYPE_DRAFT)
-        compositeDisposable.add(
-            Single
-                .zip<List<TumblrPost>, List<TumblrPost>, List<TumblrPost>>(
-                    draftPostHelper.getNewerDraftPosts(maxTimestamp).subscribeOn(Schedulers.io()),
-                    draftPostHelper.queuePosts.subscribeOn(Schedulers.io()),
-                    BiFunction<List<TumblrPost>, List<TumblrPost>, List<TumblrPost>>
-                    { newerDraftPosts, queuePosts -> this.getCachedPhotoPosts(newerDraftPosts, queuePosts) }
-                )
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess { progressHighlightViewLayout.incrementProgress() }
-                .observeOn(Schedulers.newThread())
-                .flatMap { draftPosts ->
-                    val tagsForDraftPosts = draftPostHelper.groupPostByTag(draftPosts)
-                    val tagsForQueuePosts = draftPostHelper.groupPostByTag(queuedPosts)
-                    draftPostHelper
-                        .getTagLastPublishedMap(tagsForDraftPosts.keys)
-                        .map { lastPublished ->
-                            draftPostHelper.getPhotoShelfPosts(
-                                tagsForDraftPosts,
-                                tagsForQueuePosts,
-                                lastPublished)
-                        }
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { disposable -> compositeDisposable.add(disposable) }
-                .doFinally {
-                    onRefreshCompleted()
-                    refreshUI()
-                }
-                .subscribe({ posts ->
-                    photoAdapter.addAll(posts)
-                    photoAdapter.sort()
-                }) { t -> t.showErrorDialog(context!!) }
-        )
     }
 
-    private fun getCachedPhotoPosts(newerDraftPosts: List<TumblrPost>, queuePosts: List<TumblrPost>): List<TumblrPost> {
-        // save queue for future use
-        this.queuedPosts = queuePosts
-
-        // update the cache with new draft posts
-        draftCache.write(newerDraftPosts, TumblrPostCache.CACHE_TYPE_DRAFT)
-        // delete from the cache any post moved from draft to scheduled
-        draftCache.delete(queuePosts, TumblrPostCache.CACHE_TYPE_DRAFT)
-        // return the updated/cleaned up cache
-        return draftCache.read(blogName!!, TumblrPostCache.CACHE_TYPE_DRAFT)
+    private fun onFetchPosts(result: DraftListModelResult.FetchPosts) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                onRefreshCompleted()
+                result.command.data?.also { data ->
+                    this.queuedPosts = data.queuePosts
+                    photoAdapter.addAll(data.newerDraftPosts)
+                    photoAdapter.sort()
+                    refreshUI()
+                }
+            }
+            Status.ERROR -> {
+                onRefreshCompleted()
+                refreshUI()
+                result.command.error?.also { it.showErrorDialog(requireContext()) }
+            }
+            Status.PROGRESS -> {
+                result.command.progressData?.also { progressData ->
+                    if (progressData.step == DraftListModelResult.PROGRESS_STEP_IMPORTED_POSTS) {
+                        currentTextView.text = requireContext().resources.getQuantityString(
+                            R.plurals.posts_read_count,
+                            progressData.itemCount,
+                            progressData.itemCount)
+                    }
+                    progressHighlightViewLayout.incrementProgress()
+                }
+            }
+        }
     }
 
     private fun showScheduleDialog(item: PhotoShelfPost) {
@@ -236,13 +202,14 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                     if (button == DialogInterface.BUTTON_NEGATIVE) {
                         return true
                     }
-                    val d = postActionExecutor
-                        .schedule(item, source.scheduleDateTime)
-                        .doFinally { source.dismiss() }
-                        .subscribe(
-                            { },
-                            { t -> t.showErrorDialog(context!!) })
-                    compositeDisposable.add(d)
+                    launch {
+                        try {
+                            postActionExecutor.schedule(item, source.scheduleDateTime)
+                        } catch (t: Throwable) {
+                            t.showErrorDialog(requireContext())
+                        }
+                        source.dismiss()
+                    }
                     return false
                 }
             }).show()
@@ -348,7 +315,6 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         const val PREF_DRAFT_SORT_TYPE = "draft_sort_type"
         const val PREF_DRAFT_SORT_ASCENDING = "draft_sort_ascending"
-        const val PREF_DRAFT_LAST_TIMESTAMP = "draft_last_timeStamp"
     }
 }
 

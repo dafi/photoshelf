@@ -14,46 +14,34 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.GsonBuilder
-import com.ternaryop.feedly.AccessToken
-import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.FeedlyRateLimit
-import com.ternaryop.feedly.SimpleFeedlyContent
-import com.ternaryop.feedly.StreamContent
-import com.ternaryop.feedly.StreamContentFindParam
 import com.ternaryop.feedly.TokenExpiredException
-import com.ternaryop.photoshelf.BuildConfig
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImagePickerActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentAdapter
-import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.OnFeedlyContentClick
-import com.ternaryop.photoshelf.adapter.feedly.titles
-import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
-import com.ternaryop.photoshelf.adapter.feedly.update
-import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.dialogs.FeedlyCategoriesDialog
 import com.ternaryop.photoshelf.dialogs.OnCloseDialogListener
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
-import io.reactivex.Completable
-import io.reactivex.Single
-import io.reactivex.SingleObserver
-import io.reactivex.disposables.Disposable
-import java.io.InputStreamReader
+import java.util.Locale
+
+private const val FRAGMENT_TAG_SORT = "sort"
 
 class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     private lateinit var adapter: FeedlyContentAdapter
     private lateinit var recyclerView: RecyclerView
-    private lateinit var feedlyClient: FeedlyClient
     private lateinit var preferences: FeedlyPrefs
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
+    private lateinit var viewModel: FeedlyViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -67,7 +55,10 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         setHasOptionsMenu(true)
 
         photoShelfSwipe = view.findViewById(R.id.swipe_container)
-        photoShelfSwipe.setOnRefreshListener { refresh(true) }
+        photoShelfSwipe.setOnRefreshListener {
+            photoShelfSwipe.setRefreshingAndWaitingResult(true)
+            viewModel.refreshContent(blogName!!,getDeleteIdList(true))
+        }
     }
 
     private fun initRecyclerView(rootView: View) {
@@ -86,90 +77,84 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         adapter.sortSwitcher.setType(preferences.getSortType())
         adapter.clickListener = this
 
-        feedlyClient = FeedlyClient(
-            preferences.accessToken ?: getString(R.string.FEEDLY_ACCESS_TOKEN),
-            getString(R.string.FEEDLY_USER_ID),
-            getString(R.string.FEEDLY_REFRESH_TOKEN))
+        viewModel = ViewModelProviders.of(this)
+            .get(FeedlyViewModel::class.java)
 
-        refresh(false)
-    }
-
-    private fun refresh(deleteItemsIfAllowed: Boolean) {
-        // do not start another refresh if the current one is running
-        if (photoShelfSwipe.isWaitingResult) {
-            return
-        }
-        getFeedlyContentDelegate(deleteItemsIfAllowed)
-            .compose(photoShelfSwipe.applySwipe())
-            .subscribe(object : FeedlyObserver<List<FeedlyContentDelegate>>() {
-                override fun onSuccess(posts: List<FeedlyContentDelegate>) {
-                    setItems(posts)
-                }
-            })
-    }
-
-    private fun getFeedlyContentDelegate(deleteItemsIfAllowed: Boolean): Single<List<FeedlyContentDelegate>> {
-        return readStreamContent(deleteItemsIfAllowed)
-            .map { filterCategories(it) }
-            .map { it.toContentDelegate() }
-            .flatMap { list ->
-                ApiManager.postService()
-                    .getMapLastPublishedTimestampTag(blogName!!, titlesRequestBody(list.titles()))
-                    .map {
-                        list.update(it.response.pairs)
-                        list
-                    }
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is FeedlyModelResult.Content -> onContent(result)
+                is FeedlyModelResult.MarkSaved -> onMarkSaved(result)
+                is FeedlyModelResult.AccessTokenRefresh -> onAccessTokenRefreshed(result)
             }
+        })
+
+        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+        viewModel.refreshContent(blogName!!, getDeleteIdList(false))
     }
 
-    private fun filterCategories(streamContent: StreamContent): List<SimpleFeedlyContent> {
-        val selectedCategories = preferences.selectedCategoriesId
-
-        if (selectedCategories.isEmpty()) {
-            return streamContent.items
-        }
-        return streamContent.items.filter { sc ->
-            sc.categories?.any { cat -> selectedCategories.any { cat.id == it } } ?: true
-        }
-    }
-
-    private fun readStreamContent(deleteItemsIfAllowed: Boolean): Single<StreamContent> {
-        return if (BuildConfig.DEBUG) {
-            fakeCall()
-        } else {
-            deleteItems(deleteItemsIfAllowed).andThen(Single.defer { getNewerSavedContent() })
+    private fun onContent(result: FeedlyModelResult.Content) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                setItems(result)
+            }
+            Status.ERROR -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.error?.also { showSnackbar(makeSnake(recyclerView, it)) }
+            }
+            Status.PROGRESS -> { }
         }
     }
 
-    private fun setItems(items: List<FeedlyContentDelegate>) {
+    private fun onAccessTokenRefreshed(result: FeedlyModelResult.AccessTokenRefresh) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                // start a new refresh so the swipe refreshing is set to true
+                photoShelfSwipe.setRefreshingAndWaitingResult(true)
+                viewModel.refreshContent(blogName!!, getDeleteIdList(true))
+            }
+            Status.ERROR -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.error?.also { showSnackbar(makeSnake(recyclerView, it)) }
+            }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onMarkSaved(result: FeedlyModelResult.MarkSaved) {
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.data?.also { data ->
+                    if (!data.checked) {
+                        adapter.moveToBottom(data.positionList[0])
+                    }
+                }
+            }
+            Status.ERROR -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.error?.also { showSnackbar(makeSnake(recyclerView, it)) }
+            }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun setItems(result: FeedlyModelResult.Content) {
+        result.command.data ?: return
+
         adapter.clear()
-        adapter.addAll(items)
+        adapter.addAll(result.command.data)
         adapter.sort()
         scrollToPosition(0)
 
         refreshUI()
     }
 
-    private fun deleteItems(deleteItemsIfAllowed: Boolean): Completable {
+    private fun getDeleteIdList(deleteItemsIfAllowed: Boolean): List<String>? {
         if (deleteItemsIfAllowed && preferences.deleteOnRefresh) {
-            val idList = adapter.uncheckedItems.map { it.id }
-            return feedlyClient.markSaved(idList, false)
+            return adapter.uncheckedItems.map { it.id }
         }
-        return Completable.complete()
-    }
-
-    private fun getNewerSavedContent(): Single<StreamContent> {
-        val ms = System.currentTimeMillis() - preferences.newerThanHours * ONE_HOUR_MILLIS
-        val params = StreamContentFindParam(preferences.maxFetchItemCount, ms)
-        return feedlyClient.getStreamContents(feedlyClient.globalSavedTag, params.toQueryMap())
-    }
-
-    private fun fakeCall(): Single<StreamContent> {
-        return Single.fromCallable {
-            context!!.assets.open("sample/feedly.json").use { stream ->
-                GsonBuilder().create().fromJson(InputStreamReader(stream), StreamContent::class.java)
-            }
-        }
+        return null
     }
 
     override fun refreshUI() {
@@ -212,7 +197,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_refresh -> {
-                refresh(true)
+                photoShelfSwipe.setRefreshingAndWaitingResult(true)
+                viewModel.refreshContent(blogName!!, getDeleteIdList(true))
                 return true
             }
             R.id.action_api_usage -> {
@@ -220,7 +206,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                 return true
             }
             R.id.action_refresh_token -> {
-                refreshToken()
+                photoShelfSwipe.setRefreshingAndWaitingResult(true)
+                viewModel.refreshToken()
                 return true
             }
             R.id.action_settings -> {
@@ -237,22 +224,6 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             }
             else -> return super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun refreshToken() {
-        feedlyClient.refreshAccessToken(
-            getString(R.string.FEEDLY_CLIENT_ID),
-            getString(R.string.FEEDLY_CLIENT_SECRET))
-            .compose(photoShelfSwipe.applySwipe())
-            .subscribe(object : FeedlyObserver<AccessToken>() {
-                override fun onSuccess(accessToken: AccessToken) {
-                    preferences.accessToken = accessToken.accessToken
-                    feedlyClient.accessToken = preferences.accessToken ?: accessToken.accessToken
-                    // hide swipe otherwise refresh() exists immediately
-                    photoShelfSwipe.setRefreshingAndWaitingResult(false)
-                    refresh(true)
-                }
-            })
     }
 
     private fun scrollToPosition(position: Int) {
@@ -317,14 +288,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             }
             return
         }
-        val d = feedlyClient.markSaved(listOf(adapter.getItem(position).id), checked)
-            .compose(photoShelfSwipe.applyCompletableSwipe())
-            .subscribe({
-                if (!checked) {
-                    adapter.moveToBottom(position)
-                }
-            }) { t -> showSnackbar(makeSnake(recyclerView, t)) }
-        compositeDisposable.add(d)
+        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+        viewModel.markSaved(MarkSavedData(listOf(adapter.getItem(position).id), checked, listOf(position)))
     }
 
     override fun makeSnake(view: View, t: Throwable): Snackbar {
@@ -332,20 +297,13 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             val snackbar = Snackbar.make(recyclerView, R.string.token_expired, Snackbar.LENGTH_INDEFINITE)
             snackbar
                 .setActionTextColor(ContextCompat.getColor(context!!, R.color.snack_error_color))
-                .setAction(resources.getString(R.string.refresh).toLowerCase()) { refreshToken() }
+                .setAction(resources.getString(R.string.refresh).toLowerCase(Locale.getDefault())) {
+                    photoShelfSwipe.setRefreshingAndWaitingResult(true)
+                    viewModel.refreshToken()
+                }
             return snackbar
         }
         return super.makeSnake(view, t)
-    }
-
-    internal abstract inner class FeedlyObserver<T> : SingleObserver<T> {
-        override fun onSubscribe(d: Disposable) {
-            compositeDisposable.add(d)
-        }
-
-        override fun onError(t: Throwable) {
-            showSnackbar(makeSnake(recyclerView, t))
-        }
     }
 
     fun sortBy(sortType: Int) {
@@ -358,21 +316,15 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     private fun selectCategories() {
         fragmentManager?.also {
-            FeedlyCategoriesDialog.newInstance(feedlyClient, object : OnCloseDialogListener<FeedlyCategoriesDialog> {
+            FeedlyCategoriesDialog.newInstance(object : OnCloseDialogListener<FeedlyCategoriesDialog> {
                 override fun onClose(source: FeedlyCategoriesDialog, button: Int): Boolean {
                     if (button == DialogInterface.BUTTON_POSITIVE) {
-                        refresh(false)
+                        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+                        viewModel.refreshContent(blogName!!, getDeleteIdList(false))
                     }
                     return true
                 }
-            }).show(it, CATEGORIES_DIALOG_TAG)
+            }).show(it, "dialog")
         }
-    }
-
-    companion object {
-        private const val FRAGMENT_TAG_SORT = "sort"
-        private const val CATEGORIES_DIALOG_TAG = "categoriesDialog"
-
-        private const val ONE_HOUR_MILLIS = 60 * 60 * 1000
     }
 }

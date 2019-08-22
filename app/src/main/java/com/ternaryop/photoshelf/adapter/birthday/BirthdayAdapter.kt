@@ -7,11 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
-import com.ternaryop.photoshelf.api.Response
 import com.ternaryop.photoshelf.api.birthday.Birthday
-import com.ternaryop.photoshelf.api.birthday.BirthdayResult
 import com.ternaryop.utils.date.dayOfMonth
-import io.reactivex.Single
 import java.util.Calendar
 
 val nullDate : Calendar by lazy {
@@ -32,11 +29,8 @@ class BirthdayAdapter(private val context: Context, var blogName: String)
         field = value.trim()
     }
 
-    var month: Int = 0
     private val items = mutableListOf<Birthday>()
     val selection = SelectionArrayViewHolder(this)
-
-    val showFlags = BirthdayShowFlags()
 
     var onClickListener: View.OnClickListener? = null
     var onLongClickListener: View.OnLongClickListener? = null
@@ -96,8 +90,23 @@ class BirthdayAdapter(private val context: Context, var blogName: String)
         }
     }
 
-    fun find(offset: Int, limit: Int): Single<Response<BirthdayResult>> {
-        return showFlags.find(pattern, month - 1, offset, limit)
+    fun updateItems(list: List<Birthday>) {
+        list.forEach { birthday ->
+            val pos = findPosition(birthday)
+            if (pos >= 0) {
+                notifyItemChanged(pos)
+            }
+        }
+    }
+
+    fun removeItems(list: List<Birthday>) {
+        list.forEach { birthday ->
+            val pos = findPosition(birthday)
+            if (pos >= 0) {
+                removeAt(pos)
+                notifyItemRemoved(pos)
+            }
+        }
     }
 
     companion object {

@@ -18,54 +18,98 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.mru.MRUHolder
 import com.ternaryop.photoshelf.adapter.mru.OnMRUListener
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorArrayAdapter
 import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorFilter
-import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.toHtml
-import io.reactivex.Single
-import io.reactivex.SingleObserver
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.Serializable
+import kotlin.coroutines.CoroutineContext
 
 fun EditText.moveCaretToEnd() = setSelection(length())
 
-class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
+class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener, CoroutineScope {
 
     private lateinit var blogList: BlogList
     private lateinit var appSupport: AppSupport
 
-    private lateinit var compositeDisposable: CompositeDisposable
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
 
     lateinit var data: PostDialogData
 
     lateinit var tagsHolder: TagsHolder
     lateinit var titleHolder: TitleHolder
-    lateinit var mruHolder: MRUHolder
+    private lateinit var mruHolder: MRUHolder
+
+    private lateinit var viewModel: PostViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appSupport = AppSupport(requireContext())
 
-        compositeDisposable = CompositeDisposable()
+        job = Job()
+        viewModel = ViewModelProviders.of(this).get(PostViewModel::class.java)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is TumblrPostModelResult.TitleParsed ->  onTilteParsed(result)
+                is TumblrPostModelResult.MisspelledInfo -> onMisspelledInfo(result)
+            }
+        })
+
+    }
+
+    private fun onTilteParsed(result: TumblrPostModelResult.TitleParsed) {
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { data ->
+                titleHolder.htmlTitle = data.html
+                fillTags(data.tags)
+            }
+            Status.ERROR -> result.command.error?.also { error ->
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.parsing_error)
+                    .setMessage(error.localizedMessage)
+                    .show()
+            }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onMisspelledInfo(result: TumblrPostModelResult.MisspelledInfo) {
+        // always enable button after success or error
+        val dialog = dialog as AlertDialog?
+        // protect against NPE because inside onDestroy the dialog is already null
+        dialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
+
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { data ->
+                tagsHolder.highlightTagName(data.first, data.second)
+            }
+            Status.ERROR -> { }
+            Status.PROGRESS -> { }
+        }
     }
 
     override fun onDestroy() {
-        compositeDisposable.clear()
+        job.cancel()
         super.onDestroy()
     }
 
@@ -88,13 +132,17 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
         val builder = AlertDialog.Builder(requireContext())
             .setView(view)
-            .setNegativeButton(R.string.cancel_title) { _, _ -> compositeDisposable.clear() }
+            .setNegativeButton(R.string.cancel_title) { _, _ -> job.cancel() }
         if (data.photoPost == null) {
             val onClickPublishListener = OnClickPublishListener()
             builder.setNeutralButton(R.string.publish_post, onClickPublishListener)
             builder.setPositiveButton(R.string.draft_title, onClickPublishListener)
             view.findViewById<View>(R.id.refreshBlogList)
-                .setOnClickListener { blogList.fetchBlogNames(dialog as AlertDialog, compositeDisposable) }
+                .setOnClickListener {
+                    launch {
+                        blogList.fetchBlogNames(dialog as AlertDialog)
+                    }
+                }
         } else {
             view.findViewById<View>(R.id.blog).visibility = View.GONE
             view.findViewById<View>(R.id.refreshBlogList).visibility = View.GONE
@@ -145,26 +193,7 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
     private fun searchMisspelledName(name: String) {
         (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-
-        MisspelledName(requireContext()).getMisspelledInfo(name)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doFinally {
-                val dialog = dialog as AlertDialog?
-                // protect against NPE because inside onDestroy the dialog is already null
-                dialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
-            }
-            .subscribe(object : SingleObserver<Pair<Int, String>> {
-                override fun onSubscribe(d: Disposable) {
-                    compositeDisposable.add(d)
-                }
-
-                override fun onSuccess(misspelledInfo: Pair<Int, String>) {
-                    tagsHolder.highlightTagName(misspelledInfo.first, misspelledInfo.second)
-                }
-
-                override fun onError(e: Throwable) {}
-            })
+        viewModel.searchMisspelledName(name)
     }
 
     override fun onStart() {
@@ -176,7 +205,9 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
 
             val blogSetNames = appSupport.blogList
             if (blogSetNames == null) {
-                blogList.fetchBlogNames(dialog, compositeDisposable)
+                launch {
+                    blogList.fetchBlogNames(dialog)
+                }
             } else {
                 blogList.fillList(blogSetNames)
                 dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled = true
@@ -188,11 +219,11 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.parse_title -> {
-                fillTagFromTitleHolder(false)
+                viewModel.parse(titleHolder.plainTitle, false)
                 true
             }
             R.id.parse_title_swap -> {
-                fillTagFromTitleHolder(true)
+                viewModel.parse(titleHolder.plainTitle, true)
                 true
             }
             R.id.source_title -> {
@@ -201,18 +232,6 @@ class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListener {
             }
             else -> false
         }
-    }
-
-    private fun fillTagFromTitleHolder(swapDayMonth: Boolean) {
-        val d = titleHolder
-            .parseAgain(swapDayMonth)
-            .subscribe({ fillTags(it.tags) }) {
-                android.app.AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.parsing_error)
-                    .setMessage(it.localizedMessage)
-                    .show()
-            }
-        compositeDisposable.add(d)
     }
 
     private inner class OnClickPublishListener : DialogInterface.OnClickListener {
@@ -378,21 +397,16 @@ class TitleHolder(private val editText: EditText,
             editText.moveCaretToEnd()
         }
 
+    val plainTitle: String
+        get() {
+            return editText.text.toString()
+        }
+
     init {
         htmlTitle = htmlSourceTitle
     }
 
     fun restoreSourceTitle() {
         htmlTitle = sourceTitle
-    }
-
-    fun parseAgain(swapDayMonth: Boolean): Single<TitleComponentsResult> {
-        return ApiManager.parserService().components(editText.text.toString(), swapDayMonth)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map {
-                htmlTitle = it.response.html
-                it.response
-            }
     }
 }

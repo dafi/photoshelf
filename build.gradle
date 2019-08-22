@@ -34,15 +34,18 @@ buildscript {
         androidXConstraintlayoutLibVersion = '2.0.0-beta2'
         androidXPreferenceLibVersion = '1.1.0-rc01'
         androidXSwiperefreshlayoutLibVersion = '1.1.0-alpha02'
+        androidXLifecycleExtensions = '2.0.0'
+        androidxLifecycleViewmodelKtx = '2.2.0-alpha03'
+
         flexboxLibVersion = '1.1.0'
 
-        ternaryOpUtilLibVersion = '1.4.4'
-        ternaryOpDomSelectorLibVersion = '1.0.4'
-        ternaryOpFeedlyLibVersion = '1.0.1'
-        ternaryOpTumblrLibVersion = '1.0.1'
+        kotlinxCoroutinesCore = '1.2.1'
+        kotlinxCoroutinesAndroid = '1.2.1'
 
-        rxjavaLibVersion = '2.2.11'
-        rxandroidLibVersion = '2.1.1'
+        ternaryOpUtilLibVersion = '1.4.4'
+        ternaryOpDomSelectorCoroutinesLibVersion = '1.0.0'
+        ternaryOpFeedlyCoroutinesLibVersion = '1.0.0'
+        ternaryOpTumblrCoroutinesLibVersion = '1.0.0'
 
         dropboxCoreLibVersion = '3.1.1'
 
@@ -50,7 +53,6 @@ buildscript {
         picassoLibVersion = '2.71828'
         retrofitLibVersion = '2.6.1'
         gsonLibVersion = '2.8.5'
-        retrofitAdapterRrxjavaLibVersion = '2.6.1'
         retrofitConverterGsonLibVersion = '2.6.1'
         okhttp3LoggingInterceptorLibVersion = '4.1.0'
         okio = '2.3.0'

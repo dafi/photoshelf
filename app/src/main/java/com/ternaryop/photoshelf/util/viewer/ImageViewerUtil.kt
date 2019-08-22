@@ -11,10 +11,7 @@ import androidx.annotation.StringRes
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.intent.ShareChooserParams
 import com.ternaryop.utils.intent.ShareUtils
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.coroutineScope
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
@@ -42,17 +39,13 @@ object ImageViewerUtil {
         Toast.makeText(context, resultMessage, Toast.LENGTH_SHORT).show()
     }
 
-    fun shareImage(context: Context, imageUrl: URL, shareChooserParams: ShareChooserParams): Disposable? {
+    suspend fun shareImage(context: Context, imageUrl: URL, shareChooserParams: ShareChooserParams) {
         try {
-            return downloadImageUrl(context.contentResolver, imageUrl, shareChooserParams.destFileUri)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ ShareUtils.showShareChooser(context, shareChooserParams) }
-                ) { throwable -> throwable.showErrorDialog(context) }
+            downloadImageUrl(context.contentResolver, imageUrl, shareChooserParams.destFileUri)
+            ShareUtils.showShareChooser(context, shareChooserParams)
         } catch (e: Exception) {
             e.showErrorDialog(context)
         }
-        return null
     }
 
     fun buildSharePath(context: Context, url: String, subDirectory: String): File {
@@ -60,11 +53,9 @@ object ImageViewerUtil {
         return File(cacheDir, buildFileName(url))
     }
 
-    private fun downloadImageUrl(contentResolver: ContentResolver, imageUrl: URL, uri: Uri): Completable {
-        return Completable.fromAction {
-            val connection = imageUrl.openConnection() as HttpURLConnection
-            connection.inputStream.use { stream -> contentResolver.openOutputStream(uri)?.use { os -> stream.copyTo(os) } }
-        }
+    private suspend fun downloadImageUrl(contentResolver: ContentResolver, imageUrl: URL, uri: Uri) = coroutineScope {
+        val connection = imageUrl.openConnection() as HttpURLConnection
+        connection.inputStream.use { stream -> contentResolver.openOutputStream(uri)?.use { os -> stream.copyTo(os) } }
     }
 
     fun buildFileName(imageUrl: String, fileName: String? = null): String {

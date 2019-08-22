@@ -20,6 +20,8 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.RecyclerView
@@ -35,17 +37,11 @@ import com.ternaryop.photoshelf.api.extractor.ImageGallery
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
-import com.ternaryop.photoshelf.domselector.DomSelectorManager
-import com.ternaryop.photoshelf.domselector.DomSelectors
-import com.ternaryop.photoshelf.domselector.util.readImageGallery
-import com.ternaryop.photoshelf.domselector.util.retrieveImageUrl
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.utils.dialog.DialogUtils
 import com.ternaryop.utils.dialog.showErrorDialog
-import com.ternaryop.utils.reactivex.ProgressIndicatorObservable
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.ProgressHighlightViewLayout
-import io.reactivex.Observable
-import java.io.File
 
 const val MAX_DETAIL_LINES = 3
 
@@ -54,10 +50,10 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
     private lateinit var progressbar: ProgressBar
 
-    private lateinit var domSelectors: DomSelectors
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private lateinit var selectedItemsViewContainer: SelectedItemsViewContainer
     private lateinit var imageGallery: ImageGallery
+    private lateinit var viewModel: ImagePickerViewModel
 
     // Search on fragment arguments
     private val textWithUrl: String?
@@ -95,10 +91,61 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        domSelectors = DomSelectorManager.selectors(requireContext())
+
+        viewModel = ViewModelProviders.of(this).get(ImagePickerViewModel::class.java)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is ImagePickerModelResult.Gallery -> onGalleryModelResult(result)
+                is ImagePickerModelResult.ImageList -> onImageListModelResult(result)
+                is ImagePickerModelResult.Image -> onImageModelResult(result)
+            }
+        })
 
         setHasOptionsMenu(true)
         setupUI(view, requireContext())
+    }
+
+    private fun onGalleryModelResult(result: ImagePickerModelResult.Gallery) {
+        when (result.command.status) {
+            Status.SUCCESS -> onGalleryRetrieved(result.command.data?.gallery)
+            Status.ERROR -> showError(result.command.error, false)
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onImageListModelResult(result: ImagePickerModelResult.ImageList) {
+        when (result.command.status) {
+            Status.SUCCESS -> onRetrievedImageList(result.command.data?.map { it.second })
+            Status.ERROR -> showError(result.command.error, true)
+            Status.PROGRESS -> progressbar.incrementProgressBy(1)
+        }
+    }
+
+    private fun onImageModelResult(result: ImagePickerModelResult.Image) {
+        when (result.command.status) {
+            Status.SUCCESS -> onRetrievedSingleImage(result.command.data)
+            Status.ERROR -> showError(result.command.error, true)
+            Status.PROGRESS -> progressbar.incrementProgressBy(1)
+        }
+    }
+
+    private fun showError(error: Throwable?, showAlert: Boolean) {
+        progressbar.visibility = View.GONE
+        if (showAlert) {
+            DialogUtils.showSimpleMessageDialog(requireContext(), R.string.url_not_found, error?.localizedMessage ?: "")
+        } else {
+            showSnackbar(makeSnack(gridView, error?.localizedMessage ?: "") { refreshUI() })
+        }
+    }
+
+    private fun onRetrievedSingleImage(uri: ImageInfoUriPair?) {
+        progressbar.visibility = View.GONE
+        uri ?: return
+        // cache retrieved value
+        val url = uri.second.toString()
+        uri.first.imageUrl = url
+        ImageViewerActivity.startImageViewer(requireContext(), url)
     }
 
     private fun setupUI(view: View, context: Context) {
@@ -153,7 +200,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        compositeDisposable.clear()
+        job.cancel()
     }
 
     private fun openUrl(textWithUrl: String?) {
@@ -171,16 +218,8 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                 .setMessage(getString(R.string.url_not_found_description, textWithUrl))
                 .show()
         } else {
-            readImageGallery(url)
+            viewModel.readImageGallery(url)
         }
-    }
-
-    private fun readImageGallery(url: String) {
-        val d = domSelectors.readImageGallery(url)
-                .doFinally { progressHighlightViewLayout.stopProgress() }
-                .subscribe({ this.onGalleryRetrieved(it.response.gallery) }
-                ) { t -> showSnackbar(makeSnack(gridView, t.localizedMessage ?: "") { refreshUI() }) }
-        compositeDisposable.add(d)
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -203,12 +242,14 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.showDialog -> {
-                retrieveImages()
+                showProgressbar(imagePickerAdapter.selectedItems.size)
+                viewModel.imageList(imagePickerAdapter.selectedItems)
                 mode.finish()
                 true
             }
             R.id.create_from_file -> {
-                retrieveImages(requireContext().cacheDir)
+                showProgressbar(imagePickerAdapter.selectedItems.size)
+                viewModel.imageList(imagePickerAdapter.selectedItems, requireContext().cacheDir)
                 mode.finish()
                 true
             }
@@ -227,16 +268,10 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         selectedItemsViewContainer.updateList(emptyList())
     }
 
-    private fun retrieveImages(destDirectory: File? = null) {
-        val d = retrieveUrlWithProgressIndicator(imagePickerAdapter.selectedItems, destDirectory)
-                .toList()
-                .subscribe({ this.onImagesRetrieved(it) }
-                ) { throwable ->
-                    DialogUtils.showSimpleMessageDialog(requireContext(), R.string.url_not_found, throwable.localizedMessage ?: "") }
-        compositeDisposable.add(d)
-    }
+    private fun onRetrievedImageList(imageUriList: List<Uri>?) {
+        progressbar.visibility = View.GONE
 
-    private fun onImagesRetrieved(imageUriList: List<Uri>) {
+        imageUriList ?: return
         try {
             fragmentManager?.also {
                 TumblrPostDialog.newInstance(PostDialogData(imageGallery.parsableTitle,
@@ -248,7 +283,11 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         }
     }
 
-    private fun onGalleryRetrieved(imageGallery: ImageGallery) {
+    private fun onGalleryRetrieved(imageGallery: ImageGallery?) {
+        progressHighlightViewLayout.stopProgress()
+
+        imageGallery ?: return
+
         this.imageGallery = imageGallery
         showDetails(Snackbar.LENGTH_LONG)
         val imageInfoList = imageGallery.imageInfoList
@@ -263,17 +302,8 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         val imageInfo = imagePickerAdapter.getItem(position)
         val imageUrl = imageInfo.imageUrl
         if (imageUrl == null) {
-            val d = retrieveUrlWithProgressIndicator(listOf(imageInfo))
-                    .take(1)
-                    .subscribe({ uri ->
-                        // cache retrieved value
-                        val url = uri.toString()
-                        imageInfo.imageUrl = url
-                        ImageViewerActivity.startImageViewer(requireContext(), url)
-                    }
-                    ) { throwable -> DialogUtils.showSimpleMessageDialog(requireContext(),
-                        R.string.url_not_found, throwable.localizedMessage ?: "") }
-            compositeDisposable.add(d)
+            showProgressbar(1)
+            viewModel.image(imageInfo)
         } else {
             ImageViewerActivity.startImageViewer(requireContext(), imageUrl)
         }
@@ -337,10 +367,10 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         snackbar.show()
     }
 
-    private fun retrieveUrlWithProgressIndicator(list: List<ImageInfo>, destDirectory: File? = null): Observable<Uri> {
-        return domSelectors
-            .retrieveImageUrl(list, destDirectory)
-            .compose(ProgressIndicatorObservable.apply(progressbar, list.size))
+    private fun showProgressbar(max: Int) {
+        progressbar.progress = 0
+        progressbar.max = max
+        progressbar.visibility = View.VISIBLE
     }
 }
 
