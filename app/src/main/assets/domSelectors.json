@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -242,7 +242,7 @@
       },
       "gallery": {
         "title": "h1.post-title",
-        "container": "#gallery-2 a img"
+        "container": "#gallery-1 a img, #gallery-2 a img"
       }
     },
     {
