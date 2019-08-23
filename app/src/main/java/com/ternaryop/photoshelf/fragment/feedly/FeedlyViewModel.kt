@@ -10,8 +10,6 @@ import com.ternaryop.feedly.SimpleFeedlyContent
 import com.ternaryop.feedly.StreamContent
 import com.ternaryop.feedly.StreamContentFindParam
 import com.ternaryop.photoshelf.BuildConfig
-import com.ternaryop.photoshelf.PhotoShelfApplication
-import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.feedly.FeedlyContentDelegate
 import com.ternaryop.photoshelf.adapter.feedly.titles
 import com.ternaryop.photoshelf.adapter.feedly.toContentDelegate
@@ -28,10 +26,7 @@ private const val ONE_HOUR_MILLIS = 60 * 60 * 1000
 
 class FeedlyViewModel(application: Application) : PhotoShelfViewModel<FeedlyModelResult>(application) {
     private val preferences = FeedlyPrefs(application)
-    private val feedlyClient = FeedlyClient(
-    preferences.accessToken ?: application.getString(R.string.FEEDLY_ACCESS_TOKEN),
-        application.getString(R.string.FEEDLY_USER_ID),
-        application.getString(R.string.FEEDLY_REFRESH_TOKEN))
+    private val feedlyClient = FeedlyClient(preferences.accessToken ?: "")
 
     fun refreshContent(blogName: String, idListToDelete: List<String>?) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -57,9 +52,7 @@ class FeedlyViewModel(application: Application) : PhotoShelfViewModel<FeedlyMode
     fun refreshToken() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val token = feedlyClient.refreshAccessToken(
-                    getApplication<PhotoShelfApplication>().getString(R.string.FEEDLY_CLIENT_ID),
-                    getApplication<PhotoShelfApplication>().getString(R.string.FEEDLY_CLIENT_SECRET))
+                val token = feedlyClient.refreshAccessToken()
 
                 preferences.accessToken = token.accessToken
                 feedlyClient.accessToken = token.accessToken
@@ -116,7 +109,7 @@ class FeedlyViewModel(application: Application) : PhotoShelfViewModel<FeedlyMode
     }
 
     private fun fakeCall(): StreamContent {
-        return getApplication<PhotoShelfApplication>().assets.open("sample/feedly.json").use { stream ->
+        return getApplication<Application>().assets.open("sample/feedly.json").use { stream ->
             GsonBuilder().create().fromJson(InputStreamReader(stream), StreamContent::class.java)
         }
     }
