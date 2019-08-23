@@ -47,6 +47,7 @@ import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.disposables.Disposable
 import java.io.InputStreamReader
+import java.util.Locale
 
 class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     private lateinit var adapter: FeedlyContentAdapter
@@ -86,10 +87,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         adapter.sortSwitcher.setType(preferences.getSortType())
         adapter.clickListener = this
 
-        feedlyClient = FeedlyClient(
-            preferences.accessToken ?: getString(R.string.FEEDLY_ACCESS_TOKEN),
-            getString(R.string.FEEDLY_USER_ID),
-            getString(R.string.FEEDLY_REFRESH_TOKEN))
+        feedlyClient = FeedlyClient(preferences.accessToken ?: "")
 
         refresh(false)
     }
@@ -240,9 +238,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
     }
 
     private fun refreshToken() {
-        feedlyClient.refreshAccessToken(
-            getString(R.string.FEEDLY_CLIENT_ID),
-            getString(R.string.FEEDLY_CLIENT_SECRET))
+        feedlyClient.refreshAccessToken()
             .compose(photoShelfSwipe.applySwipe())
             .subscribe(object : FeedlyObserver<AccessToken>() {
                 override fun onSuccess(accessToken: AccessToken) {
@@ -332,7 +328,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             val snackbar = Snackbar.make(recyclerView, R.string.token_expired, Snackbar.LENGTH_INDEFINITE)
             snackbar
                 .setActionTextColor(ContextCompat.getColor(context!!, R.color.snack_error_color))
-                .setAction(resources.getString(R.string.refresh).toLowerCase()) { refreshToken() }
+                .setAction(resources.getString(R.string.refresh).toLowerCase(Locale.getDefault())) { refreshToken() }
             return snackbar
         }
         return super.makeSnake(view, t)

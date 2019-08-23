@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf
 
 import android.app.Application
 import com.ternaryop.feedly.FeedlyClient
+import com.ternaryop.feedly.FeedlyClientInfo
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.tumblr.android.TumblrManager
@@ -29,7 +30,11 @@ class PhotoShelfApplication : Application() {
         ApiManager
             .setup(AppSupport(this)
             .photoShelfApikey, BuildConfig.PHOTOSHELF_API_PREFIX, okHttpClient)
-        FeedlyClient.setup(okHttpClient)
+        FeedlyClient.setup(FeedlyClientInfo(
+            getString(R.string.FEEDLY_USER_ID),
+            getString(R.string.FEEDLY_REFRESH_TOKEN),
+            getString(R.string.FEEDLY_CLIENT_ID),
+            getString(R.string.FEEDLY_CLIENT_SECRET)), okHttpClient)
         GoogleCustomSearchClient.setup(
             getString(R.string.GOOGLE_CSE_APIKEY),
             getString(R.string.GOOGLE_CSE_CX),
