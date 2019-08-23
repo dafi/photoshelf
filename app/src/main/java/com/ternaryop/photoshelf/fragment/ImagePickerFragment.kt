@@ -225,6 +225,8 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         imagePickerAdapter.showButtons = false
         imagePickerAdapter.selection.clear()
         selectedItemsViewContainer.updateList(emptyList())
+        // the constraintLayout shows the progressbar so we hide it
+        progressbar.visibility = GONE
     }
 
     private fun retrieveImages(destDirectory: File? = null) {
