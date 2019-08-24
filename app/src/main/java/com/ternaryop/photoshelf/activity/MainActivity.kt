@@ -8,6 +8,7 @@ import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.bundleOf
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
@@ -130,7 +131,9 @@ class MainActivity : DrawerActionBarActivity(),
         // Tags
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
+            arguments = appSupport.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }))
+
         // Extras
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment::class.java))
@@ -138,10 +141,8 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", FeedlyListFragment::class.java))
 
-        val arguments = Bundle()
-        arguments.putString(EXTRA_URL, getString(R.string.test_page_url))
         adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
-            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = arguments))
+            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))))
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))

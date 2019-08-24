@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
@@ -14,7 +15,8 @@ import com.ternaryop.photoshelf.api.post.TagInfo
 import kotlinx.android.synthetic.main.fragment_list_tags.searchView1
 import kotlinx.android.synthetic.main.fragment_list_tags.tag_list
 
-class TagListFragment : AbsPhotoShelfFragment(), TagNavigatorListener {
+class TagListFragment : Fragment(), TagNavigatorListener {
+    private var blogName = ""
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_list_tags, container, false)
@@ -22,10 +24,13 @@ class TagListFragment : AbsPhotoShelfFragment(), TagNavigatorListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        blogName = checkNotNull(arguments?.getString(ARG_BLOG_NAME)) { "Invalid blog name" }
+
         val adapter = TagNavigatorAdapter(
-            context!!,
+            requireContext(),
             emptyList(),
-            blogName!!,
+            blogName,
             this)
 
         tag_list.adapter = adapter
@@ -48,6 +53,10 @@ class TagListFragment : AbsPhotoShelfFragment(), TagNavigatorListener {
     }
 
     override fun onClick(item: TagInfo) {
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, item.tag, false)
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(requireContext(), blogName, item.tag, false)
+    }
+
+    companion object {
+        const val ARG_BLOG_NAME = "blogName"
     }
 }
