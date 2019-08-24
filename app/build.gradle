@@ -10,6 +10,7 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
     implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:${rootProject.ext.androidXSwiperefreshlayoutLibVersion}"
+    implementation "androidx.core:core-ktx:${rootProject.ext.androidXCoreKtx}"
     implementation "androidx.lifecycle:lifecycle-extensions:${rootProject.ext.androidXLifecycleExtensions}"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.androidxLifecycleViewmodelKtx}"
 

@@ -34,13 +34,14 @@ buildscript {
         androidXConstraintlayoutLibVersion = '2.0.0-beta2'
         androidXPreferenceLibVersion = '1.1.0-rc01'
         androidXSwiperefreshlayoutLibVersion = '1.1.0-alpha02'
+        androidXCoreKtx = '1.0.2'
         androidXLifecycleExtensions = '2.0.0'
         androidxLifecycleViewmodelKtx = '2.2.0-alpha03'
 
         flexboxLibVersion = '1.1.0'
 
-        kotlinxCoroutinesCore = '1.2.1'
-        kotlinxCoroutinesAndroid = '1.2.1'
+        kotlinxCoroutinesCore = '1.3.0'
+        kotlinxCoroutinesAndroid = '1.3.0'
 
         ternaryOpUtilLibVersion = '1.4.4'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.0'
