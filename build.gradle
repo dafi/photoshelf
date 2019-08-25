@@ -43,7 +43,7 @@ buildscript {
         kotlinxCoroutinesCore = '1.3.0'
         kotlinxCoroutinesAndroid = '1.3.0'
 
-        ternaryOpUtilLibVersion = '1.4.4'
+        ternaryOpUtilLibVersion = '1.4.5'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.0'
         ternaryOpFeedlyCoroutinesLibVersion = '1.0.1'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.0'

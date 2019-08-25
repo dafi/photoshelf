@@ -131,8 +131,11 @@ class MainActivity : DrawerActionBarActivity(),
         // Tags
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment::class.java))
+
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
-            arguments = appSupport.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }))
+            argumentsBuilder = {
+                appSupport.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }
+            }))
 
         // Extras
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
