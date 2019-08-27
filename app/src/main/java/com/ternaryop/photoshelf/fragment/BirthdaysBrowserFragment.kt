@@ -87,7 +87,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         // Set up the query listener that executes the search
         searchView.setOnQueryTextListener(DebouncingQueryTextListener(DEBOUNCE_TIMEOUT_MILLIS) { pattern ->
             adapter.pattern = pattern
-            println("dafi: BirthdaysBrowserFragment.DebouncingQueryTextListener() - $pattern")
             viewModel.find(BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING, adapter.pattern, 0, MAX_BIRTHDAY_COUNT)
         })
 
@@ -233,7 +232,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     private fun onMarkAsIgnored(result: BirthdaysBrowserModelResult.MarkAsIgnored) {
-        println("dafi: BirthdaysBrowserFragment.onMarkAsIgnored() - $result")
         when (result.command.status) {
             Status.SUCCESS -> result.command.data?.also { adapter.updateItems(it) }
             Status.ERROR -> result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
@@ -255,7 +253,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     }
 
     private fun onDeleteBirthdays(result: BirthdaysBrowserModelResult.DeleteBirthdays) {
-        println("dafi: BirthdaysBrowserFragment.onDeleteBirthdays() - $result")
         when (result.command.status) {
             Status.SUCCESS -> result.command.data?.also { adapter.removeItems(it) }
             Status.ERROR -> {

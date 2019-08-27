@@ -80,7 +80,6 @@ class PostActionExecutor(private val context: Context,
         title: String, tags: String, selectedBlogName: String) {
         postAction = EDIT
         executePostAction(listOf(post)) {
-            println("dafi: PostActionExecutor.edit() I expect 'IO' - ${Thread.currentThread().name}")
             val newValues = mutableMapOf(
                 "id" to post.postId.toString(),
                 "caption" to title,
