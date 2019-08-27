@@ -80,8 +80,10 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        val isMenuVisible = !fragmentActivityStatus.isDrawerMenuOpen
-        menu.setGroupVisible(R.id.menu_photo_action_bar, isMenuVisible)
+        menu.getItem(0)?.groupId?.also {
+            val isMenuVisible = !fragmentActivityStatus.isDrawerMenuOpen
+            menu.setGroupVisible(R.id.menu_photo_action_bar, isMenuVisible)
+        }
         setupSearchView(menu)
         super.onPrepareOptionsMenu(menu)
     }
