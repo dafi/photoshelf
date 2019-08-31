@@ -41,6 +41,7 @@
         style="@style/Theme.PhotoShelf.ProgressBar.Horizontal"
         android:id="@+id/progressbar"
         android:layout_width="match_parent"
+        android:visibility="gone"
         android:layout_height="@dimen/webview_progressbar_height"
         android:maxHeight="@dimen/webview_progressbar_height"
         android:minHeight="@dimen/webview_progressbar_height"

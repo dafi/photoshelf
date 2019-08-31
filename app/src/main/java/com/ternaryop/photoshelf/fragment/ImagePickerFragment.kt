@@ -12,6 +12,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.AnticipateOvershootInterpolator
@@ -131,7 +132,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun showError(error: Throwable?, showAlert: Boolean) {
-        progressbar.visibility = View.GONE
+        progressbar.visibility = GONE
         if (showAlert) {
             DialogUtils.showSimpleMessageDialog(requireContext(), R.string.url_not_found, error?.localizedMessage ?: "")
         } else {
@@ -140,7 +141,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     }
 
     private fun onRetrievedSingleImage(uri: ImageInfoUriPair?) {
-        progressbar.visibility = View.GONE
+        progressbar.visibility = GONE
         uri ?: return
         // cache retrieved value
         val url = uri.second.toString()
@@ -183,10 +184,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
                 override fun onOverflowClick(position: Int, view: View) {}
             })
 
-        // if visibility is set (to GONE) on layout file the constraintLayout restores it to GONE after any view modification
-        // this means the progress bar is not visible while progress goes on
         progressbar = view.findViewById(R.id.progressbar)
-        progressbar.visibility = GONE
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -244,13 +242,13 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
             R.id.showDialog -> {
                 showProgressbar(imagePickerAdapter.selectedItems.size)
                 viewModel.imageList(imagePickerAdapter.selectedItems)
-                mode.finish()
+                finish(mode)
                 true
             }
             R.id.create_from_file -> {
                 showProgressbar(imagePickerAdapter.selectedItems.size)
                 viewModel.imageList(imagePickerAdapter.selectedItems, requireContext().cacheDir)
-                mode.finish()
+                finish(mode)
                 true
             }
             R.id.show_selected_items -> {
@@ -266,12 +264,18 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         imagePickerAdapter.showButtons = false
         imagePickerAdapter.selection.clear()
         selectedItemsViewContainer.updateList(emptyList())
-        // the constraintLayout shows the progressbar so we hide it
-        progressbar.visibility = GONE
+    }
+
+    private fun finish(mode: ActionMode) {
+        mode.finish()
+        // if visibility is set (to GONE) on layout file the constraintLayout restores it to GONE after any view modification
+        // this means the progress bar is not visible while progress goes on
+        // The workaround consists to make the progressbar visible when the actionMode is 'finished' programmatically
+        progressbar.visibility = VISIBLE
     }
 
     private fun onRetrievedImageList(imageUriList: List<Uri>?) {
-        progressbar.visibility = View.GONE
+        progressbar.visibility = GONE
 
         imageUriList ?: return
         try {
@@ -372,7 +376,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private fun showProgressbar(max: Int) {
         progressbar.progress = 0
         progressbar.max = max
-        progressbar.visibility = View.VISIBLE
+        progressbar.visibility = VISIBLE
     }
 }
 
