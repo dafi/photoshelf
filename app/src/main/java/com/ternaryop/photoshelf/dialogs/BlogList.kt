@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.dialogs
 
+import android.content.Context
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
@@ -11,9 +12,12 @@ import com.ternaryop.utils.dialog.showErrorDialog
  * Created by dave on 24/02/18.
  * Wrap the spinner containing the blog list
  */
-class BlogList(val appSupport: AppSupport,
-    val spinner: Spinner,
-    onBlogItemSelectedListener: BlogList.OnBlogItemSelectedListener) {
+class BlogList(
+    val context: Context,
+    private val spinner: Spinner,
+    onBlogItemSelectedListener: OnBlogItemSelectedListener) {
+
+    private val appSupport = AppSupport(context)
     val selectedBlogName: String
         get() = spinner.selectedItem as String
 
@@ -21,7 +25,7 @@ class BlogList(val appSupport: AppSupport,
         spinner.onItemSelectedListener = onBlogItemSelectedListener
     }
 
-    fun fillList(blogNames: List<String>) {
+    private fun fillList(blogNames: List<String>) {
         val adapter = ArrayAdapter(appSupport, android.R.layout.simple_spinner_item, blogNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
@@ -33,6 +37,22 @@ class BlogList(val appSupport: AppSupport,
                 spinner.setSelection(position)
             }
         }
+    }
+
+    suspend fun loadList(dialog: AlertDialog) {
+        val blogSetNames = appSupport.blogList
+        if (blogSetNames == null) {
+            fetchBlogNames(dialog)
+        } else {
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled = false
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
+
+            fillList(blogSetNames)
+
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled = true
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
+        }
+
     }
 
     suspend fun fetchBlogNames(dialog: AlertDialog) {
@@ -49,6 +69,10 @@ class BlogList(val appSupport: AppSupport,
             dialog.dismiss()
             t.showErrorDialog(appSupport)
         }
+    }
+
+    fun saveBlogName() {
+        appSupport.selectedBlogName = selectedBlogName
     }
 
     abstract class OnBlogItemSelectedListener : AdapterView.OnItemSelectedListener {

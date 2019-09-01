@@ -36,9 +36,10 @@ import com.ternaryop.photoshelf.adapter.ImagePickerAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.api.extractor.ImageGallery
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
+import com.ternaryop.photoshelf.dialogs.NewTumblrPostDialog
 import com.ternaryop.photoshelf.dialogs.PostDialogData
-import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.lifecycle.Status
+import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.utils.dialog.DialogUtils
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
@@ -46,7 +47,7 @@ import com.ternaryop.widget.ProgressHighlightViewLayout
 
 const val MAX_DETAIL_LINES = 3
 
-class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
+class ImagePickerFragment : AbsPhotoShelfFragment(), NewTumblrPostDialog.OnPublishPostListener, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private lateinit var gridView: RecyclerView
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
     private lateinit var progressbar: ProgressBar
@@ -152,7 +153,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
     private fun setupUI(view: View, context: Context) {
         progressHighlightViewLayout = view.findViewById(android.R.id.empty)
         progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context, R.anim.fade_loop)
-        progressHighlightViewLayout.visibility = View.VISIBLE
+        progressHighlightViewLayout.visibility = VISIBLE
 
         imagePickerAdapter = ImagePickerAdapter(context)
         imagePickerAdapter.setOnPhotoBrowseClick(this)
@@ -279,10 +280,14 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
 
         imageUriList ?: return
         try {
-            fragmentManager?.also {
-                TumblrPostDialog.newInstance(PostDialogData(imageGallery.parsableTitle,
-                    imageGallery.titleParsed.html, imageGallery.titleParsed.tags, imageUriList), null)
-                    .show(it, "dialog")
+            fragmentManager?.also { fm ->
+                NewTumblrPostDialog.newInstance(PostDialogData(
+                    blogName!!,
+                    imageGallery.parsableTitle,
+                    imageGallery.titleParsed.html,
+                    imageGallery.titleParsed.tags),
+                    imageUriList.map { it.toString() }, this)
+                    .show(fm, "dialog")
             }
         } catch (e: Exception) {
             e.showErrorDialog(requireContext())
@@ -377,6 +382,19 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), OnPhotoBrowseClickMultiChoi
         progressbar.progress = 0
         progressbar.max = max
         progressbar.visibility = VISIBLE
+    }
+
+    override fun onPublish(
+        dialog: NewTumblrPostDialog,
+        data: NewTumblrPostDialog.PublishData) {
+        for (url in data.urls) {
+            PublishIntentService.startActionIntent(requireContext(),
+                url,
+                data.blogName,
+                data.postTitle,
+                data.postTags,
+                data.isPublish)
+        }
     }
 }
 

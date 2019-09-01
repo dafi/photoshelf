@@ -20,8 +20,8 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoAdapter
+import com.ternaryop.photoshelf.dialogs.EditTumblrPostDialog
 import com.ternaryop.photoshelf.dialogs.PostDialogData
-import com.ternaryop.photoshelf.dialogs.TumblrPostDialog
 import com.ternaryop.photoshelf.util.post.OnPostActionListener
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
@@ -39,8 +39,14 @@ import com.ternaryop.tumblr.android.viewPost
 import com.ternaryop.utils.dialog.showErrorDialog
 import kotlinx.coroutines.launch
 
-abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListener, OnScrollPostFetcher.PostFetcher,
-    OnPhotoBrowseClickMultiChoice, TumblrPostDialog.PostListener, SearchView.OnQueryTextListener, ActionMode.Callback {
+abstract class AbsPostsListFragment :
+    AbsPhotoShelfFragment(),
+    OnPostActionListener,
+    OnScrollPostFetcher.PostFetcher,
+    OnPhotoBrowseClickMultiChoice,
+    EditTumblrPostDialog.OnEditPostListener,
+    SearchView.OnQueryTextListener,
+    ActionMode.Callback {
 
     protected lateinit var photoAdapter: PhotoAdapter
     protected lateinit var recyclerView: RecyclerView
@@ -325,10 +331,12 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
         }
     }
 
-    override fun onEdit(dialog: TumblrPostDialog, post: TumblrPhotoPost, selectedBlogName: String) {
+    override fun onEdit(dialog: EditTumblrPostDialog, editData: EditTumblrPostDialog.EditData) {
         launch {
             try {
-                postActionExecutor.edit(post, dialog.titleHolder.htmlTitle, dialog.tagsHolder.tags, selectedBlogName)
+                with (editData) {
+                    postActionExecutor.edit(photoPost, htmlTitle, tags, photoPost.blogName)
+                }
             } catch (t: Throwable) {
                 t.showErrorDialog(requireContext())
             }
@@ -338,7 +346,8 @@ abstract class AbsPostsListFragment : AbsPhotoShelfFragment(), OnPostActionListe
     private fun showEditDialog(item: TumblrPhotoPost, mode: ActionMode?) {
         fragmentManager?.also {
             actionMode = mode
-            TumblrPostDialog.newInstance(PostDialogData(item), this).show(it, "dialog")
+            val data = PostDialogData(item.blogName, item.caption, item.caption, item.tags)
+            EditTumblrPostDialog.newInstance(data, item, this).show(it, "dialog")
         }
     }
 
