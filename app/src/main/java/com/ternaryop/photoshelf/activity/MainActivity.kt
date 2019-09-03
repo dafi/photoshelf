@@ -2,40 +2,24 @@
 package com.ternaryop.photoshelf.activity
 
 import android.os.Bundle
-import android.view.View
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.Spinner
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
+import androidx.navigation.findNavController
+import androidx.navigation.ui.navigateUp
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.EXTRA_URL
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter
 import com.ternaryop.photoshelf.event.CounterEvent
-import com.ternaryop.photoshelf.fragment.BestOfFragment
-import com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment
-import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
-import com.ternaryop.photoshelf.fragment.HomeFragment
-import com.ternaryop.photoshelf.fragment.ImagePickerFragment
-import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment
-import com.ternaryop.photoshelf.fragment.ScheduledListFragment
 import com.ternaryop.photoshelf.fragment.TagListFragment
-import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment
-import com.ternaryop.photoshelf.fragment.draft.DraftListFragment
-import com.ternaryop.photoshelf.fragment.feedly.FeedlyListFragment
-import com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment
 import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.service.CounterIntentService
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
-import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
-import com.ternaryop.utils.drawer.adapter.DrawerAdapter
-import com.ternaryop.utils.drawer.adapter.DrawerItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,25 +30,42 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import kotlin.coroutines.CoroutineContext
 
-class MainActivity : DrawerActionBarActivity(),
+class MainActivity : AbsDrawerActionBarActivity(),
     FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback, CoroutineScope {
     override lateinit var appSupport: AppSupport
-    private lateinit var blogList: Spinner
+//    private lateinit var blogList: Spinner
     val blogName: String?
         get() = appSupport.selectedBlogName
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
+    override val topLevelDestinationIds: Set<Int>
+        get() = setOf(
+            R.id.home,
+            R.id.nav_draft,
+            R.id.nav_schedule,
+            R.id.nav_published,
+            R.id.nav_browse_images_by_tags,
+            R.id.nav_browse_tags,
+            R.id.nav_birthdays_browse,
+            R.id.nav_birthdays_today,
+            R.id.nav_bestof,
+            R.id.nav_feedly,
+            R.id.nav_test_page,
+            R.id.nav_settings
+        )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         job = Job()
         appSupport = AppSupport(this)
-        rebuildDrawerMenu()
 
-        blogList = findViewById(R.id.blogs_spinner)
-        blogList.onItemSelectedListener = BlogItemSelectedListener()
+        navView.setNavigationItemSelectedListener(this)
+
+//        blogList = findViewById(R.id.blogs_spinner)
+//        blogList.onItemSelectedListener = BlogItemSelectedListener()
         val logged = TumblrManager.isLogged(this)
         if (savedInstanceState == null) {
             onAppStarted(logged)
@@ -101,56 +102,23 @@ class MainActivity : DrawerActionBarActivity(),
         get() = R.layout.activity_main
 
     private fun showHome() {
-        selectClickedItem(0)
-        openDrawer()
+//        selectClickedItem(0)
+//        openDrawer()
     }
 
     private fun handleShortcutAction(): Boolean {
-        when (intent.action) {
-            SHORTCUT_ACTION_DRAFT -> selectClickedItem(DRAWER_ITEM_DRAFT)
-            SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
-            SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
-            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY)
-            else -> return false
-        }
+//        when (intent.action) {
+//            SHORTCUT_ACTION_DRAFT -> selectClickedItem(DRAWER_ITEM_DRAFT)
+//            SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
+//            SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
+//            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY)
+//            else -> return false
+//        }
         return true
     }
 
     private fun showSettings() {
-        selectClickedItem(adapter.count - 1)
-    }
-
-    override fun initDrawerAdapter(): DrawerAdapter {
-        val adapter = DrawerAdapter(this)
-
-        adapter.add(DrawerItem(DRAWER_ITEM_HOME, getString(R.string.home), HomeFragment::class.java))
-
-        adapter.add(DrawerItem(DRAWER_ITEM_DRAFT, getString(R.string.draft_title), DraftListFragment::class.java, true))
-        adapter.add(DrawerItem(DRAWER_ITEM_SCHEDULE, getString(R.string.schedule_title), ScheduledListFragment::class.java, true))
-        adapter.add(DrawerItem(DRAWER_ITEM_PUBLISHED_POST, getString(R.string.published_post), PublishedPostsListFragment::class.java))
-        // Tags
-        adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
-        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment::class.java))
-
-        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
-            argumentsBuilder = {
-                appSupport.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }
-            }))
-
-        // Extras
-        adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
-        adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdaysPublisherFragment::class.java, true))
-        adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", FeedlyListFragment::class.java))
-
-        adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
-            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))))
-        // Settings
-        adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
-        adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))
-
-        return adapter
+//        selectClickedItem(adapter.count - 1)
     }
 
     override fun onResume() {
@@ -175,15 +143,15 @@ class MainActivity : DrawerActionBarActivity(),
         }
     }
 
-    private inner class BlogItemSelectedListener : OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-            val blogName = blogList.selectedItem as String
-            appSupport.selectedBlogName = blogName
-            refreshCounters(blogName)
-        }
-
-        override fun onNothingSelected(parent: AdapterView<*>?) {}
-    }
+//    private inner class BlogItemSelectedListener : OnItemSelectedListener {
+//        override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+//            val blogName = blogList.selectedItem as String
+//            appSupport.selectedBlogName = blogName
+//            refreshCounters(blogName)
+//        }
+//
+//        override fun onNothingSelected(parent: AdapterView<*>?) {}
+//    }
 
     fun refreshCounters(blogName: String) {
         CounterIntentService.fetchCounter(this, blogName, CounterEvent.BIRTHDAY)
@@ -194,32 +162,32 @@ class MainActivity : DrawerActionBarActivity(),
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onCounterEvent(event: CounterEvent) {
-        val value = if (event.count > 0) event.count.toString() else null
-
-        when (event.type) {
-            CounterEvent.BIRTHDAY -> adapter.getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY)?.badge = value
-            CounterEvent.DRAFT -> adapter.getItemById(DRAWER_ITEM_DRAFT)?.badge = value
-            CounterEvent.SCHEDULE -> adapter.getItemById(DRAWER_ITEM_SCHEDULE)?.badge = value
-            CounterEvent.NONE -> {
-            }
-        }
-        adapter.notifyDataSetChanged()
+//        val value = if (event.count > 0) event.count.toString() else null
+//
+//        when (event.type) {
+//            CounterEvent.BIRTHDAY -> adapter.getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY)?.badge = value
+//            CounterEvent.DRAFT -> adapter.getItemById(DRAWER_ITEM_DRAFT)?.badge = value
+//            CounterEvent.SCHEDULE -> adapter.getItemById(DRAWER_ITEM_SCHEDULE)?.badge = value
+//            CounterEvent.NONE -> {
+//            }
+//        }
+//        adapter.notifyDataSetChanged()
     }
 
     private fun enableUI(enabled: Boolean) {
-        if (enabled) {
-            launch {
-                try {
-                    val blogSetNames = appSupport.fetchBlogNames(applicationContext)
-                    fillBlogList(blogSetNames)
-                } catch (t: Throwable) {
-                    t.showErrorDialog(applicationContext)
-                }
-            }
-        }
-        drawerToggle.isDrawerIndicatorEnabled = enabled
-        adapter.isSelectionEnabled = enabled
-        adapter.notifyDataSetChanged()
+//        if (enabled) {
+//            launch {
+//                try {
+//                    val blogSetNames = appSupport.fetchBlogNames(applicationContext)
+//                    fillBlogList(blogSetNames)
+//                } catch (t: Throwable) {
+//                    t.showErrorDialog(applicationContext)
+//                }
+//            }
+//        }
+//        drawerToggle.isDrawerIndicatorEnabled = enabled
+//        adapter.isSelectionEnabled = enabled
+//        adapter.notifyDataSetChanged()
     }
 
     private fun tumblrAuthenticated() {
@@ -240,41 +208,47 @@ class MainActivity : DrawerActionBarActivity(),
 
     private fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)
 
-    override fun onDrawerItemSelected(drawerItem: DrawerItem) {
-        try {
-            val fragment = drawerItem.instantiateFragment(applicationContext, supportFragmentManager)
-            supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
-        } catch (e: Exception) {
-            e.showErrorDialog(application)
-            e.printStackTrace()
-        }
-    }
-
-    private fun fillBlogList(blogNames: List<String>) {
-        val adapter = BlogSpinnerAdapter(this, blogNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        blogList.adapter = adapter
-
-        val selectedName = appSupport.selectedBlogName
-        if (selectedName != null) {
-            val position = adapter.getPosition(selectedName)
-            if (position >= 0) {
-                blogList.setSelection(position)
-            }
-        }
-    }
-
-    override val isDrawerMenuOpen: Boolean
-        get() = this.isDrawerOpen
+//    private fun fillBlogList(blogNames: List<String>) {
+//        val adapter = BlogSpinnerAdapter(this, blogNames)
+//        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+//        blogList.adapter = adapter
+//
+//        val selectedName = appSupport.selectedBlogName
+//        if (selectedName != null) {
+//            val position = adapter.getPosition(selectedName)
+//            if (position >= 0) {
+//                blogList.setSelection(position)
+//            }
+//        }
+//    }
 
     override val drawerToolbar: Toolbar
         get() = toolbar
 
     override val toolbar: Toolbar
-        get() = findViewById<View>(R.id.drawer_toolbar) as Toolbar
+        get() = findViewById(R.id.toolbar)
 
     override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat?, pref: PreferenceScreen?): Boolean {
         PreferenceCategorySelector.openScreen(caller, pref)
+        return true
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    override fun onDrawerItemSelected(menuItem: MenuItem) : Boolean {
+        val bundle = when(menuItem.itemId) {
+            R.id.nav_browse_tags -> appSupport.selectedBlogName?.let {
+                bundleOf(TagListFragment.ARG_BLOG_NAME to it)
+            }
+            R.id.nav_test_page -> bundleOf(
+                EXTRA_URL to resources.getString(R.string.test_page_url))
+            else -> null
+        }
+
+        navController.navigate(menuItem.itemId, bundle)
         return true
     }
 

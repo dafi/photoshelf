@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.ternaryop.photoshelf.fragment.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_draft"
+        android:name="com.ternaryop.photoshelf.fragment.draft.DraftListFragment"
+        android:label="@string/menu_draft"
+        tools:layout="@layout/fragment_photo_list" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_schedule"
+        android:name="com.ternaryop.photoshelf.fragment.ScheduledListFragment"
+        android:label="@string/menu_schedule"
+        tools:layout="@layout/fragment_photo_list" />
+
+    <fragment
+        android:id="@+id/nav_published"
+        android:name="com.ternaryop.photoshelf.fragment.PublishedPostsListFragment"
+        android:label="@string/menu_published"
+        tools:layout="@layout/fragment_photo_list" />
+
+    <fragment
+        android:id="@+id/nav_browse_images_by_tags"
+        android:name="com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment"
+        android:label="@string/menu_browse_images_by_tags"
+        tools:layout="@layout/fragment_tag_browse_photo_list" />
+
+    <fragment
+        android:id="@+id/nav_browse_tags"
+        android:name="com.ternaryop.photoshelf.fragment.TagListFragment"
+        android:label="@string/menu_browse_tags"
+        tools:layout="@layout/fragment_list_tags" />
+
+    <fragment
+        android:id="@+id/nav_birthdays_browse"
+        android:name="com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment"
+        android:label="@string/menu_birthdays_browse"
+        tools:layout="@layout/fragment_birthdays_by_name" />
+
+    <fragment
+        android:id="@+id/nav_birthdays_today"
+        android:name="com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment"
+        android:label="@string/menu_birthdays_today"
+        tools:layout="@layout/fragment_birthdays_publisher" />
+
+    <fragment
+        android:id="@+id/nav_bestof"
+        android:name="com.ternaryop.photoshelf.fragment.BestOfFragment"
+        android:label="@string/menu_bestof"
+        tools:layout="@layout/fragment_best_of" />
+
+    <fragment
+        android:id="@+id/nav_feedly"
+        android:name="com.ternaryop.photoshelf.fragment.feedly.FeedlyListFragment"
+        android:label="@string/menu_feedly"
+        tools:layout="@layout/fragment_feedly_list" />
+
+    <fragment
+        android:id="@+id/nav_test_page"
+        android:name="com.ternaryop.photoshelf.fragment.ImagePickerFragment"
+        android:label="@string/menu_test_page"
+        tools:layout="@layout/fragment_image_picker" />
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment"
+        android:label="@string/menu_settings"
+         />
+</navigation>

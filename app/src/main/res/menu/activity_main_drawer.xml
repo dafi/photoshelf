@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_draft"
+            android:title="@string/menu_draft"
+            app:actionLayout="@layout/drawer_badge" />
+        <item
+            android:id="@+id/nav_schedule"
+            android:title="@string/menu_schedule"
+            app:actionLayout="@layout/drawer_badge" />
+        <item
+            android:id="@+id/nav_published"
+            android:title="@string/menu_published"
+            app:actionLayout="@layout/drawer_badge" />
+    </group>
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_browse_images_by_tags"
+            android:title="@string/menu_browse_images_by_tags" />
+        <item
+            android:id="@+id/nav_browse_tags"
+            android:title="@string/menu_browse_tags" />
+    </group>
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_birthdays_browse"
+            android:title="@string/menu_birthdays_browse" />
+        <item
+            android:id="@+id/nav_birthdays_today"
+            android:title="@string/menu_birthdays_today" />
+        <item
+            android:id="@+id/nav_bestof"
+            android:title="@string/menu_bestof" />
+        <item
+            android:id="@+id/nav_feedly"
+            android:title="@string/menu_feedly" />
+        <item
+            android:id="@+id/nav_test_page"
+            android:title="@string/menu_test_page" />
+    </group>
+
+    <item android:title="@string/menu_settings">
+        <menu>
+            <item
+                android:checkable="true"
+                android:id="@+id/nav_settings"
+                android:title="@string/menu_settings" />
+        </menu>
+    </item>
+</menu>

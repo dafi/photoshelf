@@ -45,7 +45,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.saved_content_list, container, false)
+        return inflater.inflate(R.layout.fragment_feedly_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

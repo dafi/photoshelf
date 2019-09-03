@@ -24,14 +24,14 @@
         <item name="textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall</item>
         <item name="android:textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall</item>
 
-        <item name="topColorDrawerRowBackgroundSelector">@drawable/drawer_row_bg_selector</item>
-        <item name="topColorDrawerRowTextSelector">@color/drawer_row_text_selector</item>
-        <item name="topColorDrawerCounterBackgroundSelector">@drawable/drawer_counter_bg_selector</item>
-        <item name="topColorDrawerCounterTextSelector">@color/drawer_counter_text_selector</item>
-        <item name="topDrawerToolbarPopupTheme">@style/Theme.PhotoShelf.Toolbar</item>
+<!--        <item name="topColorDrawerRowBackgroundSelector">@drawable/drawer_row_bg_selector</item>-->
+<!--        <item name="topColorDrawerRowTextSelector">@color/drawer_row_text_selector</item>-->
+<!--        <item name="topColorDrawerCounterBackgroundSelector">@drawable/drawer_counter_bg_selector</item>-->
+<!--        <item name="topColorDrawerCounterTextSelector">@color/drawer_counter_text_selector</item>-->
+<!--        <item name="topDrawerToolbarPopupTheme">@style/Theme.PhotoShelf.Toolbar</item>-->
 
-        <item name="topColorDrawerBackgroundDivider">@color/drawer_divider_bg</item>
-        <item name="topColorDrawerBackgroundFrame">@color/drawer_frame_bg</item>
+<!--        <item name="topColorDrawerBackgroundDivider">@color/drawer_divider_bg</item>-->
+<!--        <item name="topColorDrawerBackgroundFrame">@color/drawer_frame_bg</item>-->
 
         <item name="alertDialogTheme">@style/Theme.PhotoShelf.Dialog</item>
 

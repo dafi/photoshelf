@@ -4,4 +4,9 @@
     <dimen name="grid_layout_thumb_width">170dp</dimen>
     <dimen name="grid_layout_thumb_height">170dp</dimen>
     <dimen name="image_picker_grid_width">120dp</dimen>
+
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">176dp</dimen>
 </resources>
