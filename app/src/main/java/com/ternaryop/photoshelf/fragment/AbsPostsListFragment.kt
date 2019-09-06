@@ -11,12 +11,16 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.bundleOf
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
+import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
+import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
-import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoAdapter
@@ -176,7 +180,14 @@ abstract class AbsPostsListFragment :
     }
 
     override fun onTagClick(position: Int, clickedTag: String) {
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, clickedTag, false)
+        val bundle = bundleOf(
+            EXTRA_BLOG_NAME to blogName!!,
+            EXTRA_BROWSE_TAG to clickedTag,
+            EXTRA_ALLOW_SEARCH to false
+        )
+        findNavController(this).navigate(R.id.nav_browse_images_by_tags, bundle)
+
+//        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, clickedTag, false)
     }
 
     override fun onThumbnailImageClick(position: Int) {

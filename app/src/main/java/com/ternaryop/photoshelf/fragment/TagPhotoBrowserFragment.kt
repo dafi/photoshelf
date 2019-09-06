@@ -58,7 +58,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val bundle = (context as Activity?)?.intent?.extras
+        val bundle = (context as Activity?)?.intent?.extras ?: arguments
         if (bundle == null) {
             allowSearch = true
         } else {
