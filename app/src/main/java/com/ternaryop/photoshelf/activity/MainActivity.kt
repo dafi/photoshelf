@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.preference.PreferenceFragmentCompat
@@ -248,7 +249,12 @@ class MainActivity : AbsDrawerActionBarActivity(),
             else -> null
         }
 
-        navController.navigate(menuItem.itemId, bundle)
+        // pressing back from top level destination closes the app instead of returning to home
+        val navOptions = NavOptions
+            .Builder()
+            .setPopUpTo(R.id.nav_home, true)
+            .build()
+        navController.navigate(menuItem.itemId, bundle, navOptions)
         return true
     }
 
