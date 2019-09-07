@@ -10,41 +10,35 @@ import com.ternaryop.photoshelf.fragment.draft.DraftListModelResult.Companion.PR
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.photoshelf.lifecycle.ProgressData
-import com.ternaryop.tumblr.TumblrPost
 import kotlinx.coroutines.launch
 
 class DraftListViewModel(application: Application) : PhotoShelfViewModel<DraftListModelResult>(application) {
     private val draftPostHelper = DraftPostHelper(application)
-    private var posts: List<PhotoShelfPost>? = null
-    private var queuedPosts: List<TumblrPost>? = null
+    private var draftQueuePosts: DraftQueuePosts<PhotoShelfPost>? = null
 
     fun fetchPosts(blogName: String, refresh: Boolean) {
         draftPostHelper.blogName = blogName
 
         if (refresh) {
-            posts = null
-            queuedPosts = null
+            draftQueuePosts = null
         }
 
         viewModelScope.launch {
             try {
-                if (posts == null) {
+                if (draftQueuePosts == null) {
                     val latestTimestampResult = draftPostHelper.getLastPublishedTimestamp(blogName)
                     draftPostHelper.refreshCache(blogName, latestTimestampResult)
                     postResult(DraftListModelResult.FetchPosts(Command.progress(
                         ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount))))
 
-                    val (cachedDraftPosts, q) = draftPostHelper.getDraftQueuePosts()
+                    val (cachedDraftPosts, queuedPosts) = draftPostHelper.getDraftQueuePosts()
 
                     postResult(DraftListModelResult.FetchPosts(Command.progress(ProgressData(PROGRESS_STEP_READ_DRAFT_POSTS, 0))))
-                    posts = draftPostHelper.getPhotoShelfPosts(cachedDraftPosts, q)
-                    queuedPosts = q
+                    draftQueuePosts = DraftQueuePosts(
+                        draftPostHelper.getPhotoShelfPosts(cachedDraftPosts, queuedPosts),
+                        queuedPosts)
                 }
-                posts?.also { p ->
-                    queuedPosts?.also { q ->
-                        postResult(DraftListModelResult.FetchPosts(Command.success(DraftQueuePosts(p, q))))
-                    }
-                }
+                draftQueuePosts?.also { postResult(DraftListModelResult.FetchPosts(Command.success(it))) }
             } catch (t: Throwable) {
                 postResult(DraftListModelResult.FetchPosts(Command.error(t)))
             }
