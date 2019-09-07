@@ -10,28 +10,41 @@ import com.ternaryop.photoshelf.fragment.draft.DraftListModelResult.Companion.PR
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.photoshelf.lifecycle.ProgressData
+import com.ternaryop.tumblr.TumblrPost
 import kotlinx.coroutines.launch
 
 class DraftListViewModel(application: Application) : PhotoShelfViewModel<DraftListModelResult>(application) {
     private val draftPostHelper = DraftPostHelper(application)
+    private var posts: List<PhotoShelfPost>? = null
+    private var queuedPosts: List<TumblrPost>? = null
 
-    fun fetchPosts(blogName: String) {
+    fun fetchPosts(blogName: String, refresh: Boolean) {
         draftPostHelper.blogName = blogName
+
+        if (refresh) {
+            posts = null
+            queuedPosts = null
+        }
 
         viewModelScope.launch {
             try {
-                val latestTimestampResult = draftPostHelper.getLastPublishedTimestamp(blogName)
-                draftPostHelper.refreshCache(blogName, latestTimestampResult)
-                postResult(DraftListModelResult.FetchPosts(Command.progress(
-                    ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount))))
+                if (posts == null) {
+                    val latestTimestampResult = draftPostHelper.getLastPublishedTimestamp(blogName)
+                    draftPostHelper.refreshCache(blogName, latestTimestampResult)
+                    postResult(DraftListModelResult.FetchPosts(Command.progress(
+                        ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount))))
 
-                val (cachedDraftPosts, queuedPosts) = draftPostHelper.getDraftQueuePosts()
+                    val (cachedDraftPosts, q) = draftPostHelper.getDraftQueuePosts()
 
-                postResult(DraftListModelResult.FetchPosts(Command.progress(ProgressData(PROGRESS_STEP_READ_DRAFT_POSTS, 0))))
-
-                val posts = draftPostHelper.getPhotoShelfPosts(cachedDraftPosts, queuedPosts)
-
-                postResult(DraftListModelResult.FetchPosts(Command.success(DraftQueuePosts(posts, queuedPosts))))
+                    postResult(DraftListModelResult.FetchPosts(Command.progress(ProgressData(PROGRESS_STEP_READ_DRAFT_POSTS, 0))))
+                    posts = draftPostHelper.getPhotoShelfPosts(cachedDraftPosts, q)
+                    queuedPosts = q
+                }
+                posts?.also { p ->
+                    queuedPosts?.also { q ->
+                        postResult(DraftListModelResult.FetchPosts(Command.success(DraftQueuePosts(p, q))))
+                    }
+                }
             } catch (t: Throwable) {
                 postResult(DraftListModelResult.FetchPosts(Command.error(t)))
             }

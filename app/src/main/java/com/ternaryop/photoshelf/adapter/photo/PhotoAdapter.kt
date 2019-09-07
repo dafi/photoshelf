@@ -114,7 +114,8 @@ class PhotoAdapter(private val context: Context)
 
     fun getPosition(post: PhotoShelfPost) = visiblePosts.indexOf(post)
 
-    fun addAll(collection: Collection<PhotoShelfPost>) {
+    fun setPosts(collection: Collection<PhotoShelfPost>) {
+        allPosts.clear()
         allPosts.addAll(collection)
         notifyDataSetChanged()
     }

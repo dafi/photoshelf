@@ -1,18 +1,31 @@
 package com.ternaryop.photoshelf.fragment
 
-import android.text.format.DateUtils
+import android.os.Bundle
+import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
-import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.tumblr.android.TumblrManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class PublishedPostsListFragment : ScheduledListFragment() {
     override val actionModeMenuId: Int
         get() = R.menu.published_context
+
+    private lateinit var viewModel: PublishedPostsListViewModel
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel = ViewModelProviders.of(this).get(PublishedPostsListViewModel::class.java)
+
+        viewModel.result.observe(this, Observer { result ->
+            when (result) {
+                is PublishedPostsResult.Published -> onFetchPosts(result)
+            }
+        })
+
+    }
 
     override fun fetchPosts(listener: OnScrollPostFetcher) {
         refreshUI()
@@ -23,22 +36,26 @@ class PublishedPostsListFragment : ScheduledListFragment() {
         params["notes_info"] = "true"
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        launch {
-            try {
-                val photoList = withContext(Dispatchers.IO) {
-                    TumblrManager.getInstance(context!!).getPublicPosts(blogName!!, params).map {
-                        PhotoShelfPost(it as TumblrPhotoPost, it.timestamp * DateUtils.SECOND_IN_MILLIS)
-                    }
+        viewModel.published(blogName!!, params, false)
+    }
+
+    private fun onFetchPosts(result: PublishedPostsResult.Published) {
+        postFetcher.isScrolling = false
+        when (result.command.status) {
+            Status.SUCCESS -> {
+                result.command.data?.also { fetched ->
+                    photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                    postFetcher.incrementReadPostCount(fetched.lastFetchCount)
+                    photoAdapter.setPosts(fetched.list)
+                    refreshUI()
                 }
-                photoShelfSwipe.setRefreshingAndWaitingResult(false)
-                postFetcher.incrementReadPostCount(photoList.size)
-                photoAdapter.addAll(photoList)
-                refreshUI()
-            } catch (t: Throwable) {
-                photoShelfSwipe.setRefreshingAndWaitingResult(false)
-                showSnackbar(makeSnake(recyclerView, t))
             }
-            postFetcher.isScrolling = false
+            Status.ERROR -> {
+                photoShelfSwipe.setRefreshingAndWaitingResult(false)
+                result.command.error?.also { showSnackbar(makeSnake(recyclerView, it)) }
+            }
+            Status.PROGRESS -> {
+            }
         }
     }
 }

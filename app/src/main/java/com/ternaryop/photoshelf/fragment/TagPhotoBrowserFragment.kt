@@ -157,9 +157,9 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         when (result.command.status) {
             Status.SUCCESS -> {
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
-                result.command.data?.also { photoList ->
-                    postFetcher.incrementReadPostCount(photoList.size)
-                    photoAdapter.addAll(photoList)
+                result.command.data?.also { fetched ->
+                    postFetcher.incrementReadPostCount(fetched.lastFetchCount)
+                    photoAdapter.setPosts(fetched.list)
                     refreshUI()
                 }
             }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 class TagPhotoBrowserViewModel(application: Application) : PhotoShelfViewModel<TagPhotoBrowserResult>(application) {
     private val tumblr = TumblrManager.getInstance(application)
     private val controlledRunner = ControlledRunner<Response<TagInfoListResult>>()
+    private var photoList: MutableList<PhotoShelfPost>? = null
 
     fun findTags(blogName: String, pattern: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -38,10 +39,16 @@ class TagPhotoBrowserViewModel(application: Application) : PhotoShelfViewModel<T
     fun photos(blogName: String, params: Map<String, String>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                if (photoList == null) {
+                    photoList = mutableListOf()
+                }
                 val list = tumblr.getPhotoPosts(blogName, params).map { tumblrPost ->
                     PhotoShelfPost(tumblrPost, tumblrPost.timestamp * DateUtils.SECOND_IN_MILLIS)
                 }
-                postResult(TagPhotoBrowserResult.Photos(Command.success(list)))
+                photoList?.apply {
+                    addAll(list)
+                    postResult(TagPhotoBrowserResult.Photos(Command.success(FetchedPosts(this, list.size))))
+                }
             } catch (t: Throwable) {
                 postResult(TagPhotoBrowserResult.Photos(Command.error(t)))
             }
@@ -51,5 +58,5 @@ class TagPhotoBrowserViewModel(application: Application) : PhotoShelfViewModel<T
 
 sealed class TagPhotoBrowserResult {
     data class FindTags(val command: Command<TagInfoListResult>) : TagPhotoBrowserResult()
-    data class Photos(val command: Command<List<PhotoShelfPost>>) : TagPhotoBrowserResult()
+    data class Photos(val command: Command<FetchedPosts>) : TagPhotoBrowserResult()
 }

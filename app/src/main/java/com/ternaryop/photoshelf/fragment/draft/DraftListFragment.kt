@@ -96,7 +96,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         draftCache = DBHelper.getInstance(context!!).tumblrPostCacheDAO
 
-        refreshCache()
+        refreshCache(false)
     }
 
     override fun onAttachFragment(childFragment: Fragment) {
@@ -137,13 +137,13 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         }
     }
 
-    fun refreshCache() {
+    fun refreshCache(refresh: Boolean) {
         // do not start another refresh if the current one is running
         if (swipeLayout.isWaitingResult) {
             return
         }
         onRefreshStarted()
-        viewModel.fetchPosts(blogName!!)
+        viewModel.fetchPosts(blogName!!, refresh)
     }
 
     private fun onRefreshStarted() {
@@ -169,7 +169,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
                 onRefreshCompleted()
                 result.command.data?.also { data ->
                     this.queuedPosts = data.queuePosts
-                    photoAdapter.addAll(data.newerDraftPosts)
+                    photoAdapter.setPosts(data.newerDraftPosts)
                     photoAdapter.sort()
                     refreshUI()
                 }
@@ -247,7 +247,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     }
 
     override fun onRefresh() {
-        refreshCache()
+        refreshCache(true)
     }
 
     override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {

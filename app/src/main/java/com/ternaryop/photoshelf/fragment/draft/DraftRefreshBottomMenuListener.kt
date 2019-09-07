@@ -20,10 +20,10 @@ class DraftRefreshBottomMenuListener(
         when (item.itemId) {
             R.id.clear_draft_cache -> {
                 draftListFragment.draftCache.clearCache(TumblrPostCache.CACHE_TYPE_DRAFT)
-                draftListFragment.refreshCache()
+                draftListFragment.refreshCache(true)
             }
             R.id.reload_draft -> {
-                draftListFragment.refreshCache()
+                draftListFragment.refreshCache(true)
             }
         }
     }
