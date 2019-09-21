@@ -20,11 +20,17 @@ typealias ImageInfoUriPair = Pair<ImageInfo, Uri>
 
 class ImagePickerViewModel(application: Application) : PhotoShelfViewModel<ImagePickerModelResult>(application) {
     private val domSelectors = DomSelectorManager.selectors(application)
+    private var galleryResult: ImageGalleryResult? = null
 
     fun readImageGallery(url: String) {
+        if (galleryResult?.gallery?.url == url) {
+            postResult(ImagePickerModelResult.Gallery(Command.success(galleryResult)))
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                postResult(ImagePickerModelResult.Gallery(Command.success(domSelectors.readImageGallery(url).response)))
+                galleryResult = domSelectors.readImageGallery(url).response
+                postResult(ImagePickerModelResult.Gallery(Command.success(galleryResult)))
             } catch (t: Throwable) {
                 postResult(ImagePickerModelResult.Gallery(Command.error(t)))
             }

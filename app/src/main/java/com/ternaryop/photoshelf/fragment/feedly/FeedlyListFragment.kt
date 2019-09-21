@@ -31,6 +31,7 @@ import com.ternaryop.photoshelf.dialogs.OnCloseDialogListener
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.lifecycle.Status
+import com.ternaryop.photoshelf.util.post.moveToBottom
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import java.util.Locale
 
@@ -57,7 +58,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener {
             photoShelfSwipe.setRefreshingAndWaitingResult(true)
-            viewModel.refreshContent(blogName!!,getDeleteIdList(true))
+            viewModel.contentList.clear()
+            viewModel.content(blogName!!, getDeleteIdList(true))
         }
     }
 
@@ -80,7 +82,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         viewModel = ViewModelProviders.of(this)
             .get(FeedlyViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is FeedlyModelResult.Content -> onContent(result)
                 is FeedlyModelResult.MarkSaved -> onMarkSaved(result)
@@ -89,7 +91,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         })
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        viewModel.refreshContent(blogName!!, getDeleteIdList(false))
+        viewModel.content(blogName!!, null)
     }
 
     private fun onContent(result: FeedlyModelResult.Content) {
@@ -111,7 +113,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
             Status.SUCCESS -> {
                 // start a new refresh so the swipe refreshing is set to true
                 photoShelfSwipe.setRefreshingAndWaitingResult(true)
-                viewModel.refreshContent(blogName!!, getDeleteIdList(true))
+                viewModel.contentList.clear()
+                viewModel.content(blogName!!, getDeleteIdList(true))
             }
             Status.ERROR -> {
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
@@ -128,6 +131,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                 result.command.data?.also { data ->
                     if (!data.checked) {
                         adapter.moveToBottom(data.positionList[0])
+                        viewModel.contentList.moveToBottom(data.positionList[0])
                     }
                 }
             }
@@ -143,7 +147,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         result.command.data ?: return
 
         adapter.clear()
-        adapter.addAll(result.command.data)
+        adapter.addAll(result.command.data.list)
         adapter.sort()
         scrollToPosition(0)
 
@@ -198,7 +202,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         when (item.itemId) {
             R.id.action_refresh -> {
                 photoShelfSwipe.setRefreshingAndWaitingResult(true)
-                viewModel.refreshContent(blogName!!, getDeleteIdList(true))
+                viewModel.contentList.clear()
+                viewModel.content(blogName!!, getDeleteIdList(true))
                 return true
             }
             R.id.action_api_usage -> {
@@ -285,6 +290,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         if (preferences.deleteOnRefresh) {
             if (!checked) {
                 adapter.moveToBottom(position)
+                viewModel.contentList.moveToBottom(position)
             }
             return
         }
@@ -320,7 +326,8 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
                 override fun onClose(source: FeedlyCategoriesDialog, button: Int): Boolean {
                     if (button == DialogInterface.BUTTON_POSITIVE) {
                         photoShelfSwipe.setRefreshingAndWaitingResult(true)
-                        viewModel.refreshContent(blogName!!, getDeleteIdList(false))
+                        viewModel.contentList.clear()
+                        viewModel.content(blogName!!, getDeleteIdList(false))
                     }
                     return true
                 }

@@ -9,6 +9,9 @@ import com.ternaryop.photoshelf.api.Response
 import com.ternaryop.photoshelf.api.post.TagInfoListResult
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
+import com.ternaryop.photoshelf.util.post.FetchedData
+import com.ternaryop.photoshelf.util.post.PageFetcher
+import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getPhotoPosts
 import com.ternaryop.util.coroutine.ControlledRunner
@@ -19,7 +22,7 @@ import kotlinx.coroutines.launch
 class TagPhotoBrowserViewModel(application: Application) : PhotoShelfViewModel<TagPhotoBrowserResult>(application) {
     private val tumblr = TumblrManager.getInstance(application)
     private val controlledRunner = ControlledRunner<Response<TagInfoListResult>>()
-    private var photoList: MutableList<PhotoShelfPost>? = null
+    val pageFetcher = PageFetcher<PhotoShelfPost>(Tumblr.MAX_POST_PER_REQUEST)
 
     fun findTags(blogName: String, pattern: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -36,27 +39,19 @@ class TagPhotoBrowserViewModel(application: Application) : PhotoShelfViewModel<T
         }
     }
 
-    fun photos(blogName: String, params: Map<String, String>) {
+    fun photos(blogName: String, params: Map<String, String>, fetchCache: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                if (photoList == null) {
-                    photoList = mutableListOf()
-                }
-                val list = tumblr.getPhotoPosts(blogName, params).map { tumblrPost ->
+            val command = pageFetcher.fetch(fetchCache) {
+                tumblr.getPhotoPosts(blogName, params).map { tumblrPost ->
                     PhotoShelfPost(tumblrPost, tumblrPost.timestamp * DateUtils.SECOND_IN_MILLIS)
                 }
-                photoList?.apply {
-                    addAll(list)
-                    postResult(TagPhotoBrowserResult.Photos(Command.success(FetchedPosts(this, list.size))))
-                }
-            } catch (t: Throwable) {
-                postResult(TagPhotoBrowserResult.Photos(Command.error(t)))
             }
+            postResult(TagPhotoBrowserResult.Photos(command))
         }
     }
 }
 
 sealed class TagPhotoBrowserResult {
     data class FindTags(val command: Command<TagInfoListResult>) : TagPhotoBrowserResult()
-    data class Photos(val command: Command<FetchedPosts>) : TagPhotoBrowserResult()
+    data class Photos(val command: Command<FetchedData<PhotoShelfPost>>) : TagPhotoBrowserResult()
 }

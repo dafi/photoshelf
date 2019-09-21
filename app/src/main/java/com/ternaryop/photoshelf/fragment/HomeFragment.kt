@@ -28,7 +28,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
 
         viewModel = ViewModelProviders.of(this).get(HomeViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is HomeModelResult.Stats -> onStats(result)
             }

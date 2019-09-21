@@ -11,23 +11,18 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
-import androidx.core.os.bundleOf
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
-import com.ternaryop.photoshelf.EXTRA_BLOG_NAME
-import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.activity.ImageViewerActivity
+import com.ternaryop.photoshelf.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.photo.PhotoAdapter
 import com.ternaryop.photoshelf.dialogs.EditTumblrPostDialog
 import com.ternaryop.photoshelf.dialogs.PostDialogData
 import com.ternaryop.photoshelf.util.post.OnPostActionListener
-import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.PUBLISH
@@ -35,7 +30,6 @@ import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.SAVE_AS_D
 import com.ternaryop.photoshelf.util.post.PostActionResult
 import com.ternaryop.photoshelf.util.post.errorList
 import com.ternaryop.photoshelf.util.post.showErrorDialog
-import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.android.browseImageBySize
 import com.ternaryop.tumblr.android.finishActivity
@@ -46,7 +40,6 @@ import kotlinx.coroutines.launch
 abstract class AbsPostsListFragment :
     AbsPhotoShelfFragment(),
     OnPostActionListener,
-    OnScrollPostFetcher.PostFetcher,
     OnPhotoBrowseClickMultiChoice,
     EditTumblrPostDialog.OnEditPostListener,
     SearchView.OnQueryTextListener,
@@ -55,8 +48,6 @@ abstract class AbsPostsListFragment :
     protected lateinit var photoAdapter: PhotoAdapter
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
-
-    protected lateinit var postFetcher: OnScrollPostFetcher
 
     open val singleSelectionMenuIds: IntArray by lazy {
         intArrayOf(R.id.post_schedule, R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
@@ -77,14 +68,11 @@ abstract class AbsPostsListFragment :
         photoAdapter = PhotoAdapter(context!!)
         postActionExecutor = PostActionExecutor(context!!, blogName!!, this)
 
-        postFetcher = OnScrollPostFetcher(this, Tumblr.MAX_POST_PER_REQUEST)
-
         recyclerView = view.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context!!)
         recyclerView.adapter = photoAdapter
         recyclerView.addItemDecoration(postActionExecutor.colorItemDecoration)
-        recyclerView.addOnScrollListener(postFetcher)
 
         setHasOptionsMenu(true)
     }
@@ -155,17 +143,7 @@ abstract class AbsPostsListFragment :
     }
 
     override fun refreshUI() {
-        supportActionBar?.subtitle = if (postFetcher.hasMorePosts) {
-            getString(R.string.post_count_1_of_x,
-                photoAdapter.itemCount,
-                postFetcher.totalPosts)
-        } else {
-            photoAdapter.notifyCountChanged()
-            resources.getQuantityString(
-                R.plurals.posts_count,
-                photoAdapter.itemCount,
-                photoAdapter.itemCount)
-        }
+        updateTitleBar()
 
         // use post() to resolve the following error:
         // Cannot call this method in a scroll callback.
@@ -179,15 +157,16 @@ abstract class AbsPostsListFragment :
         }
     }
 
-    override fun onTagClick(position: Int, clickedTag: String) {
-        val bundle = bundleOf(
-            EXTRA_BLOG_NAME to blogName!!,
-            EXTRA_BROWSE_TAG to clickedTag,
-            EXTRA_ALLOW_SEARCH to false
-        )
-        findNavController(this).navigate(R.id.nav_browse_images_by_tags, bundle)
+    protected open fun updateTitleBar() {
+        photoAdapter.notifyCountChanged()
+        supportActionBar?.subtitle = resources.getQuantityString(
+            R.plurals.posts_count,
+            photoAdapter.itemCount,
+            photoAdapter.itemCount)
+    }
 
-//        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, clickedTag, false)
+    override fun onTagClick(position: Int, clickedTag: String) {
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, clickedTag, false)
     }
 
     override fun onThumbnailImageClick(position: Int) {
@@ -297,12 +276,6 @@ abstract class AbsPostsListFragment :
         return true
     }
 
-    protected fun resetAndReloadPhotoPosts() {
-        postFetcher.reset()
-        photoAdapter.clear()
-        fetchPosts(postFetcher)
-    }
-
     override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {
         refreshUI()
         val errorList = resultList.errorList()
@@ -337,10 +310,13 @@ abstract class AbsPostsListFragment :
             SAVE_AS_DRAFT, DELETE, PUBLISH -> {
                 if (!result.hasError() && result.post is PhotoShelfPost) {
                     photoAdapter.remove(result.post)
+                    removeFromCache(result.post)
                 }
             }
         }
     }
+
+    abstract fun removeFromCache(post: PhotoShelfPost)
 
     override fun onEdit(dialog: EditTumblrPostDialog, editData: EditTumblrPostDialog.EditData) {
         launch {

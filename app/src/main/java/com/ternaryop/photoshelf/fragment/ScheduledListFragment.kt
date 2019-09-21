@@ -8,33 +8,29 @@ import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.lifecycle.Status
-import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
-import com.ternaryop.photoshelf.view.PhotoShelfSwipe
+import com.ternaryop.photoshelf.util.post.PageFetcher
 
-open class ScheduledListFragment : AbsPostsListFragment() {
-    protected lateinit var photoShelfSwipe: PhotoShelfSwipe
+open class ScheduledListFragment : AbsPagingPostsListFragment() {
+    private lateinit var viewModel: ScheduledListViewModel
 
     override val actionModeMenuId: Int
         get() = R.menu.scheduled_context
 
-    private lateinit var viewModel: ScheduledListViewModel
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        photoAdapter.counterType = CounterEvent.SCHEDULE
+
         viewModel = ViewModelProviders.of(this).get(ScheduledListViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is ScheduledListResult.Scheduled -> onFetchPosts(result)
             }
         })
-
-        photoAdapter.counterType = CounterEvent.SCHEDULE
-        photoShelfSwipe = view.findViewById(R.id.swipe_container)
-        photoShelfSwipe.setOnRefreshListener { resetAndReloadPhotoPosts() }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -43,28 +39,30 @@ open class ScheduledListFragment : AbsPostsListFragment() {
         photoAdapter.setOnPhotoBrowseClick(this)
 
         if (blogName != null) {
-            resetAndReloadPhotoPosts()
+            fetchPosts(true)
         }
     }
 
-    override fun fetchPosts(listener: OnScrollPostFetcher) {
+    override val pageFetcher: PageFetcher<PhotoShelfPost>
+        get() = viewModel.pageFetcher
+
+    override fun fetchPosts(fetchCache: Boolean) {
         refreshUI()
-        val params = HashMap<String, String>()
-        params["offset"] = postFetcher.offset.toString()
+        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+
+        val params = mapOf(
+            "offset" to pageFetcher.pagingInfo.offset.toString())
 
         // we assume all returned items are photos, (we handle only photos)
         // if other posts type are returned, the getQueue() list size may be greater than photo list size
-        photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        viewModel.scheduled(blogName!!, params, false)
+        viewModel.scheduled(blogName!!, params, fetchCache)
     }
 
     private fun onFetchPosts(result: ScheduledListResult.Scheduled) {
-        postFetcher.isScrolling = false
         when (result.command.status) {
             Status.SUCCESS -> {
                 result.command.data?.also { fetched ->
                     photoShelfSwipe.setRefreshingAndWaitingResult(false)
-                    postFetcher.incrementReadPostCount(fetched.lastFetchCount)
                     photoAdapter.setPosts(fetched.list)
                     refreshUI()
                 }
@@ -87,7 +85,7 @@ open class ScheduledListFragment : AbsPostsListFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_refresh -> {
-                resetAndReloadPhotoPosts()
+                clearThenReloadPosts()
                 true
             }
             else -> super.onOptionsItemSelected(item)

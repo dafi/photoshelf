@@ -6,9 +6,12 @@ import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
-import com.ternaryop.photoshelf.api.birthday.BirthdayResult
+import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
+import com.ternaryop.photoshelf.util.post.FetchedData
+import com.ternaryop.photoshelf.util.post.PageFetcher
+import com.ternaryop.photoshelf.util.post.removeItems
 import com.ternaryop.utils.date.toIsoFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,15 +19,14 @@ import kotlinx.coroutines.launch
 class BirthdaysBrowserViewModel(application: Application) : PhotoShelfViewModel<BirthdaysBrowserModelResult>(application) {
     val showFlags = BirthdayShowFlags()
     var month: Int = 0
+    val pageFetcher = PageFetcher<Birthday>(MAX_BIRTHDAY_COUNT)
 
-    fun find(actionId: BirthdaysBrowserModelResult.ActionId, pattern: String, offset: Int, limit: Int) {
+    fun find(actionId: BirthdaysBrowserModelResult.ActionId, pattern: String, fetchCache: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                postResult(BirthdaysBrowserModelResult.Find(actionId,
-                    Command.success(showFlags.find(pattern, month - 1, offset, limit).response)))
-            } catch (t: Throwable) {
-                postResult(BirthdaysBrowserModelResult.Find(actionId, Command.error(t)))
+            val command = pageFetcher.fetch(fetchCache) { pi ->
+                showFlags.find(pattern, month - 1, pi.offset, pageFetcher.limitCount).response.birthdays
             }
+            postResult(BirthdaysBrowserModelResult.Find(actionId, command))
         }
     }
 
@@ -51,7 +53,12 @@ class BirthdaysBrowserViewModel(application: Application) : PhotoShelfViewModel<
     fun deleteBirthdays(list: List<Birthday>) {
         processList(list,
             { birthday -> ApiManager.birthdayService().deleteByName(birthday.name) },
-            { command -> postResult(BirthdaysBrowserModelResult.DeleteBirthdays(command)) })
+            { command ->
+                // data contains all successful processed items
+                // no matter if the command is Error or Success
+                command.data?.also { pageFetcher.removeItems(it) }
+                postResult(BirthdaysBrowserModelResult.DeleteBirthdays(command))
+            })
     }
 
     private fun processList(list: List<Birthday>,
@@ -73,7 +80,7 @@ class BirthdaysBrowserViewModel(application: Application) : PhotoShelfViewModel<
 }
 
 sealed class BirthdaysBrowserModelResult {
-    data class Find(val actionId: ActionId, val command: Command<BirthdayResult>) : BirthdaysBrowserModelResult()
+    data class Find(val actionId: ActionId, val command: Command<FetchedData<Birthday>>) : BirthdaysBrowserModelResult()
     data class MarkAsIgnored(val command: Command<List<Birthday>>) : BirthdaysBrowserModelResult()
     data class UpdateByName(val command: Command<Birthday>) : BirthdaysBrowserModelResult()
     data class DeleteBirthdays(val command: Command<List<Birthday>>) : BirthdaysBrowserModelResult()

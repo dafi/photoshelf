@@ -44,9 +44,11 @@ abstract class AbsPhotoShelfActivity : AppCompatActivity(), FragmentActivityStat
         setupActionBar()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val fragment = createFragment()
-        if (fragment != null) {
-            supportFragmentManager.beginTransaction().add(R.id.content_frame, fragment).commit()
+        // create the fragment only if it doesn't already exist
+        if (savedInstanceState == null) {
+            createFragment()?.let { fragment ->
+                supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
+            }
         }
     }
 

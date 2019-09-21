@@ -59,13 +59,12 @@ abstract class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListe
         job = Job()
         viewModel = ViewModelProviders.of(this).get(PostViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(requireActivity(), Observer { result ->
             when (result) {
                 is TumblrPostModelResult.TitleParsed ->  onTitleParsed(result)
                 is TumblrPostModelResult.MisspelledInfo -> onMisspelledInfo(result)
             }
         })
-
     }
 
     private fun onTitleParsed(result: TumblrPostModelResult.TitleParsed) {

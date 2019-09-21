@@ -18,6 +18,8 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.titlesRequestBody
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
+import com.ternaryop.photoshelf.util.post.CachedListFetcher
+import com.ternaryop.photoshelf.util.post.FetchedData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.InputStreamReader
@@ -27,12 +29,16 @@ private const val ONE_HOUR_MILLIS = 60 * 60 * 1000
 class FeedlyViewModel(application: Application) : PhotoShelfViewModel<FeedlyModelResult>(application) {
     private val preferences = FeedlyPrefs(application)
     private val feedlyClient = FeedlyClient(preferences.accessToken ?: "")
+    val contentList = CachedListFetcher<FeedlyContentDelegate>()
 
-    fun refreshContent(blogName: String, idListToDelete: List<String>?) {
+    fun content(blogName: String, idListToDelete: List<String>?) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val list = getFeedlyContentDelegate(blogName, idListToDelete)
-                postResult(FeedlyModelResult.Content(Command.success(list)))
+                idListToDelete?.also { feedlyClient.markSaved(it, false) }
+                val command = contentList.fetch {
+                    getFeedlyContentDelegate(blogName)
+                }
+                postResult(FeedlyModelResult.Content(command))
             } catch (t: Throwable) {
                 postResult(FeedlyModelResult.Content(Command.error(t)))
             }
@@ -74,8 +80,8 @@ class FeedlyViewModel(application: Application) : PhotoShelfViewModel<FeedlyMode
         }
     }
 
-    private suspend fun getFeedlyContentDelegate(blogName: String, idListToDelete: List<String>?): List<FeedlyContentDelegate> {
-        val list = filterCategories(readStreamContent(idListToDelete)).toContentDelegate()
+    private suspend fun getFeedlyContentDelegate(blogName: String): List<FeedlyContentDelegate> {
+        val list = filterCategories(readStreamContent()).toContentDelegate()
         val map = ApiManager.postService().getMapLastPublishedTimestampTag(blogName, titlesRequestBody(list.titles()))
         list.updateLastPublishTimestamp(map.response.pairs)
 
@@ -93,11 +99,10 @@ class FeedlyViewModel(application: Application) : PhotoShelfViewModel<FeedlyMode
         }
     }
 
-    private suspend fun readStreamContent(idListToDelete: List<String>?): StreamContent {
+    private suspend fun readStreamContent(): StreamContent {
         return if (BuildConfig.DEBUG) {
             fakeCall()
         } else {
-            idListToDelete?.also { feedlyClient.markSaved(it, false) }
             getNewerSavedContent()
         }
     }
@@ -120,7 +125,7 @@ data class MarkSavedData(val idList: List<String>, val checked: Boolean, val pos
 
 sealed class FeedlyModelResult {
     data class AccessTokenRefresh(val command: Command<AccessToken>) : FeedlyModelResult()
-    data class Content(val command: Command<List<FeedlyContentDelegate>>) : FeedlyModelResult()
+    data class Content(val command: Command<FetchedData<FeedlyContentDelegate>>) : FeedlyModelResult()
     data class MarkSaved(val command: Command<MarkSavedData>) : FeedlyModelResult()
     data class Categories(val command: Command<List<Category>>) : FeedlyModelResult()
 }

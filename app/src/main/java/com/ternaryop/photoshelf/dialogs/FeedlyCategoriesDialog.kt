@@ -41,7 +41,7 @@ class FeedlyCategoriesDialog(
         val viewModel = ViewModelProviders.of(this)
             .get(FeedlyViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is FeedlyModelResult.Categories ->  onCategories(result)
             }

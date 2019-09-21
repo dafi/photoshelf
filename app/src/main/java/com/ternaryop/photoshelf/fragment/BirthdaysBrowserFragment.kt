@@ -26,9 +26,8 @@ import com.ternaryop.photoshelf.adapter.birthday.BirthdayAdapter
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
 import com.ternaryop.photoshelf.api.birthday.Birthday
-import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.lifecycle.Status
-import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
+import com.ternaryop.photoshelf.util.post.OnPagingScrollListener
 import com.ternaryop.util.coroutine.DebouncingQueryTextListener
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
@@ -37,9 +36,12 @@ import com.ternaryop.utils.dialog.showErrorDialog
 import java.text.DateFormatSymbols
 import java.util.Calendar
 
-const val DEBOUNCE_TIMEOUT_MILLIS = 600L
+private const val PARAM_LAST_PATTERN = "lastPattern"
+private const val PARAM_SELECTED_OPTIONS_ITEM_ID = "selectedOptionItemId"
+private const val DEBOUNCE_TIMEOUT_MILLIS = 600L
 
 class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
+    OnPagingScrollListener.OnScrollListener,
     View.OnClickListener, View.OnLongClickListener {
     private lateinit var toolbarSpinner: Spinner
     private var currentSelectedItemId = R.id.action_show_all
@@ -53,7 +55,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         DELETE
     }
 
-    private lateinit var onScrollPostFetcher: OnScrollPostFetcher
     private lateinit var adapter: BirthdayAdapter
     private lateinit var recyclerView: RecyclerView
 
@@ -68,29 +69,35 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
         viewModel = ViewModelProviders.of(this).get(BirthdaysBrowserViewModel::class.java)
 
-        adapter = BirthdayAdapter(activity!!, fragmentActivityStatus.appSupport.selectedBlogName!!)
+        adapter = BirthdayAdapter(requireContext(), fragmentActivityStatus.appSupport.selectedBlogName!!)
         adapter.onClickListener = this
         adapter.onLongClickListener = this
         recyclerView = view.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
-        onScrollPostFetcher = OnScrollPostFetcher(object : OnScrollPostFetcher.PostFetcher {
-            override fun fetchPosts(listener: OnScrollPostFetcher) = resubmitQuery()
-        }, MAX_BIRTHDAY_COUNT)
-
-        recyclerView.addOnScrollListener(onScrollPostFetcher)
+        recyclerView.addOnScrollListener(OnPagingScrollListener(this))
 
         val searchView = view.findViewById<SearchView>(R.id.searchView1)
 
         // Set up the query listener that executes the search
         searchView.setOnQueryTextListener(DebouncingQueryTextListener(DEBOUNCE_TIMEOUT_MILLIS) { pattern ->
-            adapter.pattern = pattern
-            viewModel.find(BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING, adapter.pattern, 0, MAX_BIRTHDAY_COUNT)
+            // this is called after rotation so we ensure the find runs only when the pattern changes
+            if (adapter.pattern != pattern) {
+                adapter.pattern = pattern
+                viewModel.pageFetcher.clear()
+                viewModel.find(BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING, adapter.pattern, false)
+            }
         })
 
-        viewModel.result.observe(this, Observer { result ->
+        savedInstanceState?.apply {
+            getString(PARAM_LAST_PATTERN)?.also { adapter.pattern = it }
+            currentSelectedItemId = getInt(PARAM_SELECTED_OPTIONS_ITEM_ID)
+            viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, true)
+        }
+
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is BirthdaysBrowserModelResult.Find -> when (result.actionId) {
                     BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING -> onQueryByTyping(result)
@@ -106,16 +113,30 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         setHasOptionsMenu(true)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(PARAM_LAST_PATTERN, adapter.pattern)
+        outState.putInt(PARAM_SELECTED_OPTIONS_ITEM_ID, currentSelectedItemId)
+    }
+
+    override fun onScrolled(
+        onPagingScrollListener: OnPagingScrollListener,
+        firstVisibleItem: Int,
+        visibleItemCount: Int,
+        totalItemCount: Int) {
+        if (viewModel.pageFetcher.changedScrollPosition(firstVisibleItem, visibleItemCount, totalItemCount)) {
+            viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, false)
+        }
+    }
+
     private fun onQueryByTyping(result: BirthdaysBrowserModelResult.Find) {
         when (result.command.status) {
             Status.SUCCESS -> {
-                result.command.data?.birthdays?.also { birthdays ->
-                    resetSearch()
-                    onScrollPostFetcher.incrementReadPostCount(birthdays.size)
-                    adapter.addAll(birthdays)
+                result.command.data?.also { fetched ->
+                    adapter.setBirthdays(fetched.list)
                 }
             }
-            Status.ERROR -> result.command.error?.also { it.showErrorDialog(context!!) }
+            Status.ERROR -> result.command.error?.also { it.showErrorDialog(requireContext()) }
             Status.PROGRESS -> { }
         }
     }
@@ -123,9 +144,8 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
     private fun onResubmitQuery(result: BirthdaysBrowserModelResult.Find) {
         when (result.command.status) {
             Status.SUCCESS -> {
-                result.command.data?.birthdays?.also { birthdays ->
-                    adapter.addAll(birthdays)
-                    onScrollPostFetcher.incrementReadPostCount(birthdays.size)
+                result.command.data?.also { fetched ->
+                    adapter.setBirthdays(fetched.list)
                     scrollToFirstTodayBirthday()
                 }
             }
@@ -186,7 +206,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             birthday.birthdate
         }
 
-        DatePickerDialog(context!!, DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDay ->
+        DatePickerDialog(requireContext(), DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDay ->
             c.year = pickedYear
             c.month = pickedMonth
             c.dayOfMonth = pickedDay
@@ -219,7 +239,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
                 birthdays[0].name)
         }
 
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext())
             .setMessage(message)
             .setPositiveButton(android.R.string.yes, dialogClickListener)
             .setNegativeButton(android.R.string.no, dialogClickListener)
@@ -263,7 +283,6 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         }
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.birthdays_browser, menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -274,47 +293,52 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         if (currentSelectedItemId == item.itemId) {
             return true
         }
-        val isChecked = !item.isChecked
-        val showFlag: Int
-
         currentSelectedItemId = item.itemId
-        val subTitle: CharSequence?
-        when (item.itemId) {
-            R.id.action_show_all -> {
-                setSpinnerVisibility(true)
-                showFlag = BirthdayShowFlags.SHOW_ALL
-                subTitle = null
-            }
-            R.id.action_show_ignored -> {
-                setSpinnerVisibility(false)
-                subTitle = item.title
-                showFlag = BirthdayShowFlags.SHOW_IGNORED
-            }
-            R.id.action_show_birthdays_in_same_day -> {
-                setSpinnerVisibility(false)
-                subTitle = item.title
-                showFlag = BirthdayShowFlags.SHOW_IN_SAME_DAY
-            }
-            R.id.action_show_birthdays_missing -> {
-                setSpinnerVisibility(false)
-                subTitle = item.title
-                showFlag = BirthdayShowFlags.SHOW_MISSING
-            }
-            R.id.action_show_birthdays_without_posts -> {
-                setSpinnerVisibility(false)
-                subTitle = item.title
-                showFlag = BirthdayShowFlags.SHOW_WITHOUT_POSTS
-            }
+        val isChecked = !item.isChecked
+
+        updateSubTitle(item)
+        item.isChecked = isChecked
+
+        val showFlag = when (item.itemId) {
+            R.id.action_show_all -> BirthdayShowFlags.SHOW_ALL
+            R.id.action_show_ignored -> BirthdayShowFlags.SHOW_IGNORED
+            R.id.action_show_birthdays_in_same_day -> BirthdayShowFlags.SHOW_IN_SAME_DAY
+            R.id.action_show_birthdays_missing -> BirthdayShowFlags.SHOW_MISSING
+            R.id.action_show_birthdays_without_posts -> BirthdayShowFlags.SHOW_WITHOUT_POSTS
             else -> return super.onOptionsItemSelected(item)
         }
 
-        supportActionBar?.subtitle = subTitle
-        item.isChecked = isChecked
-
         viewModel.showFlags.setFlag(showFlag, isChecked)
-        resetSearch()
-        resubmitQuery()
+        viewModel.pageFetcher.clear()
+        viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, false)
+
         return true
+    }
+
+    private fun updateSubTitle(item: MenuItem) {
+        supportActionBar?.subtitle = when (item.itemId) {
+            R.id.action_show_all -> {
+                setSpinnerVisibility(true)
+                null
+            }
+            R.id.action_show_ignored -> {
+                setSpinnerVisibility(false)
+                item.title
+            }
+            R.id.action_show_birthdays_in_same_day -> {
+                setSpinnerVisibility(false)
+                item.title
+            }
+            R.id.action_show_birthdays_missing -> {
+                setSpinnerVisibility(false)
+                item.title
+            }
+            R.id.action_show_birthdays_without_posts -> {
+                setSpinnerVisibility(false)
+                item.title
+            }
+            else -> null
+        }
     }
 
     private fun setSpinnerVisibility(visible: Boolean) {
@@ -338,7 +362,10 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
                 fragmentActivityStatus.drawerToolbar.addView(toolbarSpinner)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
             }
-            menu.findItem(currentSelectedItemId).isChecked = true
+            menu.findItem(currentSelectedItemId).apply {
+                isChecked = true
+                updateSubTitle(this)
+            }
         }
         super.onPrepareOptionsMenu(menu)
     }
@@ -370,24 +397,18 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
         }
     }
 
-    private fun resetSearch() {
-        adapter.clear()
-        onScrollPostFetcher.reset()
-    }
-
-    private fun resubmitQuery() {
-        viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, onScrollPostFetcher.offset, MAX_BIRTHDAY_COUNT)
-    }
-
     private fun scrollToPosition(position: Int) {
         // offset set to 0 put the item to the top
         (recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
     }
 
     fun changeMonth(month: Int) {
+        if (viewModel.month == month) {
+            return
+        }
         viewModel.month = month
-        resetSearch()
-        resubmitQuery()
+        viewModel.pageFetcher.clear()
+        viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, false)
     }
 
     private fun scrollToFirstTodayBirthday() {
@@ -413,7 +434,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
     override fun onLongClick(v: View): Boolean {
         if (actionMode == null) {
-            actionMode = activity!!.startActionMode(this)
+            actionMode = requireActivity().startActionMode(this)
         }
         updateSelection(v.tag as Int)
         return true
@@ -454,7 +475,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
 
     private fun browsePhotos(position: Int) {
         val tag = adapter.getItem(position).name
-        TagPhotoBrowserActivity.startPhotoBrowserActivity(activity!!, blogName!!, tag, false)
+        TagPhotoBrowserActivity.startPhotoBrowserActivity(requireActivity(), blogName!!, tag, false)
     }
 
     companion object {

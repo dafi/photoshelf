@@ -56,6 +56,12 @@ class BirthdayAdapter(private val context: Context, var blogName: String)
         notifyDataSetChanged()
     }
 
+    fun setBirthdays(collection: Collection<Birthday>) {
+        items.clear()
+        items.addAll(collection)
+        notifyDataSetChanged()
+    }
+
     fun clear() {
         items.clear()
         notifyDataSetChanged()

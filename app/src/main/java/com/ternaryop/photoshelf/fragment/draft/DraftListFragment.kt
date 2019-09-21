@@ -33,7 +33,6 @@ import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.AbsPostsListFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.lifecycle.Status
-import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.EDIT
@@ -88,7 +87,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         viewModel = ViewModelProviders.of(this).get(DraftListViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is DraftListModelResult.FetchPosts -> onFetchPosts(result)
             }
@@ -96,7 +95,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         draftCache = DBHelper.getInstance(context!!).tumblrPostCacheDAO
 
-        refreshCache(false)
+        fetchPosts(true)
     }
 
     override fun onAttachFragment(childFragment: Fragment) {
@@ -137,17 +136,20 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         }
     }
 
-    fun refreshCache(refresh: Boolean) {
+    fun fetchPosts(fetchCache: Boolean) {
         // do not start another refresh if the current one is running
         if (swipeLayout.isWaitingResult) {
             return
         }
+        if (!fetchCache) {
+            viewModel.clearCache()
+            photoAdapter.clear()
+        }
         onRefreshStarted()
-        viewModel.fetchPosts(blogName!!, refresh)
+        viewModel.fetchPosts(blogName!!)
     }
 
     private fun onRefreshStarted() {
-        photoAdapter.clear()
         progressHighlightViewLayout.visibility = View.VISIBLE
         progressHighlightViewLayout.startProgress()
         currentTextView.text = requireContext().resources.getString(R.string.start_import_title)
@@ -158,9 +160,6 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         swipeLayout.setRefreshingAndWaitingResult(false)
         progressHighlightViewLayout.stopProgress()
         progressHighlightViewLayout.visibility = View.GONE
-    }
-
-    override fun fetchPosts(listener: OnScrollPostFetcher) {
     }
 
     private fun onFetchPosts(result: DraftListModelResult.FetchPosts) {
@@ -247,7 +246,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
     }
 
     override fun onRefresh() {
-        refreshCache(true)
+        fetchPosts(false)
     }
 
     override fun onComplete(executor: PostActionExecutor, resultList: List<PostActionResult>) {
@@ -269,6 +268,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
             photoAdapter.removeAndRecalcGroups(item, scheduledDateTime)
         }
         draftCache.deleteItem(item)
+        removeFromCache(item)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -304,6 +304,10 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
         photoAdapter.notifyDataSetChanged()
         scrollToPosition(0)
         saveSettings()
+    }
+
+    override fun removeFromCache(post: PhotoShelfPost) {
+        viewModel.removeFromCache(post)
     }
 
     companion object {

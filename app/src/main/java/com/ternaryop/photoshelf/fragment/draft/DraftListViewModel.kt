@@ -16,33 +16,42 @@ class DraftListViewModel(application: Application) : PhotoShelfViewModel<DraftLi
     private val draftPostHelper = DraftPostHelper(application)
     private var draftQueuePosts: DraftQueuePosts<PhotoShelfPost>? = null
 
-    fun fetchPosts(blogName: String, refresh: Boolean) {
-        draftPostHelper.blogName = blogName
-
-        if (refresh) {
-            draftQueuePosts = null
+    fun fetchPosts(blogName: String) {
+        if (draftQueuePosts != null && draftPostHelper.blogName == blogName) {
+            postResult(DraftListModelResult.FetchPosts(Command.success(draftQueuePosts)))
+            return
         }
+        draftPostHelper.blogName = blogName
 
         viewModelScope.launch {
             try {
-                if (draftQueuePosts == null) {
-                    val latestTimestampResult = draftPostHelper.getLastPublishedTimestamp(blogName)
-                    draftPostHelper.refreshCache(blogName, latestTimestampResult)
-                    postResult(DraftListModelResult.FetchPosts(Command.progress(
-                        ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount))))
-
-                    val (cachedDraftPosts, queuedPosts) = draftPostHelper.getDraftQueuePosts()
-
-                    postResult(DraftListModelResult.FetchPosts(Command.progress(ProgressData(PROGRESS_STEP_READ_DRAFT_POSTS, 0))))
-                    draftQueuePosts = DraftQueuePosts(
-                        draftPostHelper.getPhotoShelfPosts(cachedDraftPosts, queuedPosts),
-                        queuedPosts)
-                }
-                draftQueuePosts?.also { postResult(DraftListModelResult.FetchPosts(Command.success(it))) }
+                draftQueuePosts = fetchDraftQueuePosts()
+                postResult(DraftListModelResult.FetchPosts(Command.success(draftQueuePosts)))
             } catch (t: Throwable) {
                 postResult(DraftListModelResult.FetchPosts(Command.error(t)))
             }
         }
+    }
+
+    private suspend fun fetchDraftQueuePosts(): DraftQueuePosts<PhotoShelfPost> {
+        val latestTimestampResult = draftPostHelper.getLastPublishedTimestamp()
+        draftPostHelper.refreshCache(latestTimestampResult)
+        postResult(DraftListModelResult.FetchPosts(Command.progress(
+            ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount))))
+
+        val draftQueuePosts = draftPostHelper.getDraftQueuePosts()
+
+        postResult(DraftListModelResult.FetchPosts(Command.progress(ProgressData(PROGRESS_STEP_READ_DRAFT_POSTS, 0))))
+
+        return draftQueuePosts.toPhotoShelfPosts(draftPostHelper.blogName)
+    }
+
+    fun clearCache() {
+        draftQueuePosts = null
+    }
+
+    fun removeFromCache(post: PhotoShelfPost) {
+        draftQueuePosts?.newerDraftPosts?.remove(post)
     }
 }
 

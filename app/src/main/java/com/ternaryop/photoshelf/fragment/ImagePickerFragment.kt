@@ -96,7 +96,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), NewTumblrPostDialog.OnPubli
 
         viewModel = ViewModelProviders.of(this).get(ImagePickerViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is ImagePickerModelResult.Gallery -> onGalleryModelResult(result)
                 is ImagePickerModelResult.ImageList -> onImageListModelResult(result)

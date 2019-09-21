@@ -14,8 +14,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:${rootProject.ext.androidXLifecycleExtensions}"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.androidxLifecycleViewmodelKtx}"
 
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.0.0'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.0.0'
+    implementation "androidx.navigation:navigation-fragment-ktx:${rootProject.ext.androidxNavigationFragment}"
+    implementation "androidx.navigation:navigation-ui-ktx:${rootProject.ext.androidxNavigationUiKtx}"
 
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
     implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"

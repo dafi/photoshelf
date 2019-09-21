@@ -15,15 +15,14 @@ import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
 import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.TagCursorAdapter
 import com.ternaryop.photoshelf.lifecycle.Status
-import com.ternaryop.photoshelf.util.post.OnScrollPostFetcher
-import com.ternaryop.photoshelf.view.PhotoShelfSwipe
+import com.ternaryop.photoshelf.util.post.PageFetcher
 
-class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionListener {
+class TagPhotoBrowserFragment : AbsPagingPostsListFragment(), SearchView.OnSuggestionListener {
     private var postTag: String? = null
     private var allowSearch: Boolean = false
-    private lateinit var photoShelfSwipe: PhotoShelfSwipe
     private lateinit var viewModel: TagPhotoBrowserViewModel
 
     override val actionModeMenuId: Int
@@ -36,15 +35,14 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        photoAdapter.setOnPhotoBrowseClick(this)
+
         photoAdapter.setEmptyView(view.findViewById(android.R.id.empty))
 
-        photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener(null)
 
         viewModel = ViewModelProviders.of(this).get(TagPhotoBrowserViewModel::class.java)
 
-        viewModel.result.observe(this, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is TagPhotoBrowserResult.FindTags -> onFindTagsModelResult(result)
                 is TagPhotoBrowserResult.Photos -> onPhotosModelResult(result)
@@ -52,7 +50,7 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         })
 
         if (blogName != null) {
-            postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) onQueryTextSubmit(tag) }
+            postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) fetchPosts(true) }
         }
     }
 
@@ -91,16 +89,21 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
         return searchView!!
     }
 
-    override fun fetchPosts(listener: OnScrollPostFetcher) {
+    override val pageFetcher: PageFetcher<PhotoShelfPost>
+        get() = viewModel.pageFetcher
+
+    override fun fetchPosts(fetchCache: Boolean) {
+
         refreshUI()
+
 
         val params = HashMap<String, String>()
         params["tag"] = postTag!!
         params["notes_info"] = "true"
-        params["offset"] = postFetcher.offset.toString()
+        params["offset"] = pageFetcher.pagingInfo.offset.toString()
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        viewModel.photos(blogName!!, params)
+        viewModel.photos(blogName!!, params, fetchCache)
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
@@ -116,10 +119,10 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
 
     override fun onQueryTextSubmit(query: String): Boolean {
         postTag = query
-        postFetcher.reset()
+        pageFetcher.clear()
         photoAdapter.clear()
         photoAdapter.notifyDataSetChanged()
-        fetchPosts(postFetcher)
+        fetchPosts(false)
         return false
     }
 
@@ -153,12 +156,10 @@ class TagPhotoBrowserFragment : AbsPostsListFragment(), SearchView.OnSuggestionL
     }
 
     private fun onPhotosModelResult(result: TagPhotoBrowserResult.Photos) {
-        postFetcher.isScrolling = false
         when (result.command.status) {
             Status.SUCCESS -> {
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
                 result.command.data?.also { fetched ->
-                    postFetcher.incrementReadPostCount(fetched.lastFetchCount)
                     photoAdapter.setPosts(fetched.list)
                     refreshUI()
                 }
