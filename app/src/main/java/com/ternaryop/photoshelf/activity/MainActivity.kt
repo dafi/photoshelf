@@ -3,6 +3,9 @@ package com.ternaryop.photoshelf.activity
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
@@ -14,6 +17,7 @@ import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.AppSupport
 import com.ternaryop.photoshelf.EXTRA_URL
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
 import com.ternaryop.photoshelf.fragment.TagListFragment
@@ -34,7 +38,7 @@ import kotlin.coroutines.CoroutineContext
 class MainActivity : AbsDrawerActionBarActivity(),
     FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback, CoroutineScope {
     override lateinit var appSupport: AppSupport
-//    private lateinit var blogList: Spinner
+    private lateinit var blogList: Spinner
     val blogName: String?
         get() = appSupport.selectedBlogName
     private lateinit var job: Job
@@ -65,8 +69,8 @@ class MainActivity : AbsDrawerActionBarActivity(),
 
         navView.setNavigationItemSelectedListener(this)
 
-//        blogList = findViewById(R.id.blogs_spinner)
-//        blogList.onItemSelectedListener = BlogItemSelectedListener()
+        blogList = navView.getHeaderView(0).findViewById(R.id.blogs_spinner)
+        blogList.onItemSelectedListener = BlogItemSelectedListener()
         val logged = TumblrManager.isLogged(this)
         if (savedInstanceState == null) {
             onAppStarted(logged)
@@ -144,15 +148,15 @@ class MainActivity : AbsDrawerActionBarActivity(),
         }
     }
 
-//    private inner class BlogItemSelectedListener : OnItemSelectedListener {
-//        override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-//            val blogName = blogList.selectedItem as String
-//            appSupport.selectedBlogName = blogName
-//            refreshCounters(blogName)
-//        }
-//
-//        override fun onNothingSelected(parent: AdapterView<*>?) {}
-//    }
+    private inner class BlogItemSelectedListener : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+            val blogName = blogList.selectedItem as String
+            appSupport.selectedBlogName = blogName
+            refreshCounters(blogName)
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>?) {}
+    }
 
     fun refreshCounters(blogName: String) {
         CounterIntentService.fetchCounter(this, blogName, CounterEvent.BIRTHDAY)
@@ -176,16 +180,16 @@ class MainActivity : AbsDrawerActionBarActivity(),
     }
 
     private fun enableUI(enabled: Boolean) {
-//        if (enabled) {
-//            launch {
-//                try {
-//                    val blogSetNames = appSupport.fetchBlogNames(applicationContext)
-//                    fillBlogList(blogSetNames)
-//                } catch (t: Throwable) {
-//                    t.showErrorDialog(applicationContext)
-//                }
-//            }
-//        }
+        if (enabled) {
+            launch {
+                try {
+                    val blogSetNames = appSupport.fetchBlogNames(applicationContext)
+                    fillBlogList(blogSetNames)
+                } catch (t: Throwable) {
+                    t.showErrorDialog(applicationContext)
+                }
+            }
+        }
 //        drawerToggle.isDrawerIndicatorEnabled = enabled
 //        adapter.isSelectionEnabled = enabled
 //        adapter.notifyDataSetChanged()
@@ -209,19 +213,19 @@ class MainActivity : AbsDrawerActionBarActivity(),
 
     private fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)
 
-//    private fun fillBlogList(blogNames: List<String>) {
-//        val adapter = BlogSpinnerAdapter(this, blogNames)
-//        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//        blogList.adapter = adapter
-//
-//        val selectedName = appSupport.selectedBlogName
-//        if (selectedName != null) {
-//            val position = adapter.getPosition(selectedName)
-//            if (position >= 0) {
-//                blogList.setSelection(position)
-//            }
-//        }
-//    }
+    private fun fillBlogList(blogNames: List<String>) {
+        val adapter = BlogSpinnerAdapter(this, blogNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        blogList.adapter = adapter
+
+        val selectedName = appSupport.selectedBlogName
+        if (selectedName != null) {
+            val position = adapter.getPosition(selectedName)
+            if (position >= 0) {
+                blogList.setSelection(position)
+            }
+        }
+    }
 
     override val drawerToolbar: Toolbar
         get() = toolbar
