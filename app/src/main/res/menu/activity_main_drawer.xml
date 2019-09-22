@@ -18,8 +18,7 @@
             app:actionLayout="@layout/drawer_badge" />
         <item
             android:id="@+id/nav_published"
-            android:title="@string/menu_published"
-            app:actionLayout="@layout/drawer_badge" />
+            android:title="@string/menu_published" />
     </group>
 
     <group android:checkableBehavior="single">
@@ -37,7 +36,8 @@
             android:title="@string/menu_birthdays_browse" />
         <item
             android:id="@+id/nav_birthdays_today"
-            android:title="@string/menu_birthdays_today" />
+            android:title="@string/menu_birthdays_today"
+            app:actionLayout="@layout/drawer_badge" />
         <item
             android:id="@+id/nav_bestof"
             android:title="@string/menu_bestof" />
@@ -52,8 +52,8 @@
     <item android:title="@string/menu_settings">
         <menu>
             <item
-                android:checkable="true"
                 android:id="@+id/nav_settings"
+                android:checkable="true"
                 android:title="@string/menu_settings" />
         </menu>
     </item>

@@ -107,23 +107,23 @@ class MainActivity : AbsDrawerActionBarActivity(),
         get() = R.layout.activity_main
 
     private fun showHome() {
-//        selectClickedItem(0)
-//        openDrawer()
+//        selectClickedItem(R.id.home)
+        openDrawer()
     }
 
     private fun handleShortcutAction(): Boolean {
-//        when (intent.action) {
-//            SHORTCUT_ACTION_DRAFT -> selectClickedItem(DRAWER_ITEM_DRAFT)
-//            SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
-//            SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
-//            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY)
-//            else -> return false
-//        }
+        when (intent.action) {
+            SHORTCUT_ACTION_DRAFT -> selectClickedItem(R.id.nav_draft)
+            SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(R.id.nav_schedule)
+            SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(R.id.nav_published)
+            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(R.id.nav_feedly)
+            else -> return false
+        }
         return true
     }
 
     private fun showSettings() {
-//        selectClickedItem(adapter.count - 1)
+        selectClickedItem(R.id.nav_settings)
     }
 
     override fun onResume() {
@@ -167,16 +167,15 @@ class MainActivity : AbsDrawerActionBarActivity(),
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onCounterEvent(event: CounterEvent) {
-//        val value = if (event.count > 0) event.count.toString() else null
-//
-//        when (event.type) {
-//            CounterEvent.BIRTHDAY -> adapter.getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY)?.badge = value
-//            CounterEvent.DRAFT -> adapter.getItemById(DRAWER_ITEM_DRAFT)?.badge = value
-//            CounterEvent.SCHEDULE -> adapter.getItemById(DRAWER_ITEM_SCHEDULE)?.badge = value
-//            CounterEvent.NONE -> {
-//            }
-//        }
-//        adapter.notifyDataSetChanged()
+        val value = if (event.count > 0) event.count.toString() else null
+
+        when (event.type) {
+            CounterEvent.BIRTHDAY -> setBadgeText(R.id.nav_birthdays_today, value)
+            CounterEvent.DRAFT -> setBadgeText(R.id.nav_draft, value)
+            CounterEvent.SCHEDULE -> setBadgeText(R.id.nav_schedule, value)
+            CounterEvent.NONE -> {
+            }
+        }
     }
 
     private fun enableUI(enabled: Boolean) {
@@ -190,7 +189,7 @@ class MainActivity : AbsDrawerActionBarActivity(),
                 }
             }
         }
-//        drawerToggle.isDrawerIndicatorEnabled = enabled
+        drawerToggle.isDrawerIndicatorEnabled = enabled
 //        adapter.isSelectionEnabled = enabled
 //        adapter.notifyDataSetChanged()
     }
@@ -263,19 +262,6 @@ class MainActivity : AbsDrawerActionBarActivity(),
     }
 
     companion object {
-        private const val DRAWER_ITEM_HOME = 0
-        private const val DRAWER_ITEM_DRAFT = 1
-        private const val DRAWER_ITEM_SCHEDULE = 2
-        private const val DRAWER_ITEM_PUBLISHED_POST = 3
-        private const val DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS = 4
-        private const val DRAWER_ITEM_BROWSE_TAGS = 5
-        private const val DRAWER_ITEM_BIRTHDAYS_BROWSER = 6
-        private const val DRAWER_ITEM_BIRTHDAYS_TODAY = 7
-        private const val DRAWER_ITEM_BEST_OF = 8
-        private const val DRAWER_ITEM_TEST_PAGE = 9
-        private const val DRAWER_ITEM_SETTINGS = 10
-        private const val DRAWER_ITEM_FEEDLY = 11
-
         const val SHORTCUT_ACTION_DRAFT = "com.ternaryop.photoshelf.shortcut.draft"
         const val SHORTCUT_ACTION_SCHEDULED = "com.ternaryop.photoshelf.shortcut.scheduled"
         const val SHORTCUT_ACTION_PUBLISHED = "com.ternaryop.photoshelf.shortcut.published"

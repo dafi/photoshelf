@@ -4,6 +4,9 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -22,7 +25,6 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
     DrawerLayout.DrawerListener {
     lateinit var drawerToggle: ActionBarDrawerToggle
         private set
-
     // nav drawer title
     private lateinit var drawerTitle: CharSequence
     // used to store app title
@@ -32,20 +34,19 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
     // used to update subtitle only if the drawer closed without change selected menu
     private var selectedMenuChanged: Boolean = false
     protected abstract val activityLayoutResId: Int
-
     abstract val toolbar: Toolbar
     abstract val topLevelDestinationIds: Set<Int>
-
     protected lateinit var appBarConfiguration: AppBarConfiguration
     protected lateinit var navController: NavController
     protected lateinit var navView: NavigationView
+
+    private var lastSelectedBadgeActionView: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(activityLayoutResId)
 
         setupActionBar()
-
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         navView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
@@ -109,7 +110,7 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
     /**
      * Select clicked menu item
      * If the item differs from the current one then call onDrawerItemSelected()
-     * @param item The selected item
+     * @param menuItem The selected item
      * @return true to display the item as the selected item
      */
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
@@ -123,15 +124,25 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
 
         supportActionBar?.subtitle = null
 
+        selectedBadge(menuItem)
+
         closeDrawer()
         return onDrawerItemSelected(menuItem)
+    }
+
+    protected open fun selectedBadge(menuItem: MenuItem) {
+        lastSelectedBadgeActionView?.also {
+            it.isSelected = false
+        }
+        lastSelectedBadgeActionView = menuItem.actionView
+        lastSelectedBadgeActionView?.isSelected = true
     }
 
     /**
      * The drawer item selected
      * @param menuItem the selected item
      */
-    abstract fun onDrawerItemSelected(menuItem: MenuItem) : Boolean
+    abstract fun onDrawerItemSelected(menuItem: MenuItem): Boolean
 
     override fun setTitle(title: CharSequence?) {
         this.appTitle = title
@@ -143,6 +154,21 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
         setSupportActionBar(toolbar)
 
         return toolbar
+    }
+
+    fun selectClickedItem(itemId: Int) {
+       onNavigationItemSelected(navView.menu.findItem(itemId))
+    }
+
+    fun setBadgeText(itemId: Int, text: String?) {
+        navView.menu.findItem(itemId).actionView?.also { actionView ->
+            if (text.isNullOrBlank()) {
+                actionView.visibility = GONE
+            } else {
+                actionView.findViewById<TextView>(R.id.badge)?.text = text
+                actionView.visibility = VISIBLE
+            }
+        }
     }
 
     fun openDrawer() = appBarConfiguration.drawerLayout?.openDrawer(GravityCompat.START)

@@ -83,7 +83,4 @@
     <color name="tag_navigator_item_text">#ffffff</color>
 
     <color name="dialog_background">#ffffff</color>
-
-    <color name="menu_text_color_selected">#ff0000</color>
-    <color name="menu_text_color">#ffff00</color>
 </resources>

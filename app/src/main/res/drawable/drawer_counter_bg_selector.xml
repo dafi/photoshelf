@@ -3,5 +3,7 @@
     <!-- The row containing the counter is selected -->
     <item android:state_activated="true" android:drawable="@drawable/drawer_item_counter_bg_selected" />
     <!-- The row containing the counter is normal (ie not selected, not focused, ...) -->
+    <item android:state_selected="true" android:drawable="@color/drawer_item_counter_selected_bg" />
+    <!-- The row containing the counter is normal (ie not selected, not focused, ...) -->
     <item android:drawable="@drawable/drawer_item_counter_bg_default" />
 </selector>
