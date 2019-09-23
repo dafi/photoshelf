@@ -35,7 +35,6 @@ abstract class AbsPhotoShelfFragment : Fragment(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        job = Job()
     }
 
     override fun onDestroy() {
@@ -52,6 +51,8 @@ abstract class AbsPhotoShelfFragment : Fragment(), CoroutineScope {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
+        // the job could be cancelled so we create it here instead of on onCreate
+        job = Job()
         // all Activities must adhere to FragmentActivityStatus
         fragmentActivityStatus = context as FragmentActivityStatus
     }
