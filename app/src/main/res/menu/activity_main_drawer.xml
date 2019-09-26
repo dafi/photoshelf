@@ -21,7 +21,8 @@
             android:title="@string/menu_published" />
     </group>
 
-    <group android:checkableBehavior="single">
+    <!-- The separator is visible only when group has an id -->
+    <group android:checkableBehavior="single" android:id="@+id/drawer_group_browser">
         <item
             android:id="@+id/nav_browse_images_by_tags"
             android:title="@string/menu_browse_images_by_tags" />
@@ -30,7 +31,7 @@
             android:title="@string/menu_browse_tags" />
     </group>
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="single" android:id="@+id/drawer_group_stuff">
         <item
             android:id="@+id/nav_birthdays_browse"
             android:title="@string/menu_birthdays_browse" />
@@ -49,12 +50,10 @@
             android:title="@string/menu_test_page" />
     </group>
 
-    <item android:title="@string/menu_settings">
-        <menu>
+    <group android:checkableBehavior="single" android:id="@+id/drawer_group_settings">
             <item
                 android:id="@+id/nav_settings"
                 android:checkable="true"
                 android:title="@string/menu_settings" />
-        </menu>
-    </item>
+    </group>
 </menu>
