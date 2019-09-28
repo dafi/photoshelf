@@ -47,7 +47,7 @@ class MainActivity : AbsDrawerActionBarActivity(),
 
     override val topLevelDestinationIds: Set<Int>
         get() = setOf(
-            R.id.home,
+            R.id.nav_home,
             R.id.nav_draft,
             R.id.nav_schedule,
             R.id.nav_published,
@@ -189,7 +189,8 @@ class MainActivity : AbsDrawerActionBarActivity(),
                 }
             }
         }
-        drawerToggle.isDrawerIndicatorEnabled = enabled
+        isDrawerIndicatorEnabled = enabled
+//        drawerToggle.isDrawerIndicatorEnabled = enabled
 //        adapter.isSelectionEnabled = enabled
 //        adapter.notifyDataSetChanged()
     }

@@ -12,6 +12,7 @@ import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -184,7 +185,7 @@ abstract class AbsPostsListFragment :
                 popExit = R.anim.bottom_down
             }
         }
-//        findNavController().navigate(R.id.action_global_photo_browser_dest, bundle, options)
+        findNavController().navigate(R.id.action_global_photo_browser_dest, bundle, options)
 //        TagPhotoBrowserActivity.startPhotoBrowserActivity(context!!, blogName!!, clickedTag, false)
     }
 

@@ -16,19 +16,30 @@
         android:name="com.ternaryop.photoshelf.fragment.draft.DraftListFragment"
         android:label="@string/menu_draft"
         tools:layout="@layout/fragment_photo_list" >
+        <action
+            android:id="@+id/action_nav_draft_to_photo_browser_dest2"
+            app:destination="@id/photo_browser_dest" />
     </fragment>
 
     <fragment
         android:id="@+id/nav_schedule"
         android:name="com.ternaryop.photoshelf.fragment.ScheduledListFragment"
         android:label="@string/menu_schedule"
-        tools:layout="@layout/fragment_photo_list" />
+        tools:layout="@layout/fragment_photo_list" >
+        <action
+            android:id="@+id/action_nav_schedule_to_photo_browser_dest3"
+            app:destination="@id/photo_browser_dest" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_published"
         android:name="com.ternaryop.photoshelf.fragment.PublishedPostsListFragment"
         android:label="@string/menu_published"
-        tools:layout="@layout/fragment_photo_list" />
+        tools:layout="@layout/fragment_photo_list" >
+        <action
+            android:id="@+id/action_nav_published_to_photo_browser_dest"
+            app:destination="@id/photo_browser_dest" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_browse_images_by_tags"
@@ -77,4 +88,13 @@
         android:name="com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment"
         android:label="@string/menu_settings"
          />
+
+    <fragment
+        android:id="@+id/photo_browser_dest"
+        android:name="com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment"
+        android:label="@string/menu_browse_images_by_tags"
+        />
+    <action
+        android:id="@+id/action_global_photo_browser_dest"
+        app:destination="@id/photo_browser_dest" />
 </navigation>

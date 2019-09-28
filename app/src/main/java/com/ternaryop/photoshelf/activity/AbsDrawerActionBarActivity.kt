@@ -1,13 +1,11 @@
 package com.ternaryop.photoshelf.activity
 
-import android.content.res.Configuration
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.TextView
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -15,6 +13,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
@@ -23,12 +22,12 @@ import com.ternaryop.photoshelf.R
 abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
     NavigationView.OnNavigationItemSelectedListener,
     DrawerLayout.DrawerListener {
-    lateinit var drawerToggle: ActionBarDrawerToggle
-        private set
+//    lateinit var drawerToggle: ActionBarDrawerToggle
+//        private set
     // nav drawer title
-    private lateinit var drawerTitle: CharSequence
+//    private lateinit var drawerTitle: CharSequence
     // used to store app title
-    private var appTitle: CharSequence? = null
+//    private var appTitle: CharSequence? = null
     private var subtitle: CharSequence? = null
     private var lastClickedMenuId = -1
     // used to update subtitle only if the drawer closed without change selected menu
@@ -41,6 +40,8 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
     protected lateinit var navView: NavigationView
 
     private var lastSelectedBadgeActionView: View? = null
+
+    protected var isDrawerIndicatorEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,43 +58,45 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        drawerTitle = title
-        appTitle = drawerTitle
-
-        drawerToggle = ActionBarDrawerToggle(
-            this,
-            drawerLayout,
-            R.string.drawer_open,
-            R.string.drawer_close)
+//        drawerTitle = title
+//        appTitle = drawerTitle
+//
+//        drawerToggle = ActionBarDrawerToggle(
+//            this,
+//            drawerLayout,
+//            R.string.drawer_open,
+//            R.string.drawer_close)
         drawerLayout.addDrawerListener(this)
     }
 
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        drawerToggle.syncState()
-    }
+//    override fun onPostCreate(savedInstanceState: Bundle?) {
+//        super.onPostCreate(savedInstanceState)
+//        // Sync the toggle state after onRestoreInstanceState has occurred.
+//        drawerToggle.syncState()
+//    }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        // Pass any configuration change to the drawer toggle
-        drawerToggle.onConfigurationChanged(newConfig)
-    }
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+//        // Pass any configuration change to the drawer toggle
+//        drawerToggle.onConfigurationChanged(newConfig)
+//    }
 
     override fun onDrawerSlide(view: View, v: Float) {}
 
     override fun onDrawerOpened(view: View) {
         selectedMenuChanged = false
-        supportActionBar!!.title = drawerTitle
+//        supportActionBar!!.title = drawerTitle
         // save current subtitle
-        subtitle = supportActionBar!!.subtitle
-        supportActionBar!!.subtitle = null
+        supportActionBar?.also { supportActionBar ->
+            subtitle = supportActionBar.subtitle
+            supportActionBar.subtitle = null
+        }
         invalidateOptionsMenu()
     }
 
     override fun onDrawerClosed(view: View) {
-        supportActionBar?.let { supportActionBar ->
-            supportActionBar.title = appTitle
+        supportActionBar?.also { supportActionBar ->
+//            supportActionBar.title = appTitle
             if (!selectedMenuChanged) {
                 supportActionBar.subtitle = subtitle
             }
@@ -104,7 +107,11 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
     override fun onDrawerStateChanged(i: Int) {}
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
+        if (!isDrawerIndicatorEnabled) {
+            return true
+        }
+        return item.onNavDestinationSelected(findNavController(R.id.nav_host_fragment))
+            || super.onOptionsItemSelected(item)
     }
 
     /**
@@ -144,10 +151,10 @@ abstract class AbsDrawerActionBarActivity : AppCompatActivity(),
      */
     abstract fun onDrawerItemSelected(menuItem: MenuItem): Boolean
 
-    override fun setTitle(title: CharSequence?) {
-        this.appTitle = title
-        supportActionBar?.title = title
-    }
+//    override fun setTitle(title: CharSequence?) {
+//        this.appTitle = title
+//        supportActionBar?.title = title
+//    }
 
     protected fun setupActionBar(): Toolbar {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
