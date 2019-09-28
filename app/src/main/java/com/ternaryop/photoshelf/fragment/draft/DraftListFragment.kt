@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,6 +31,7 @@ import com.ternaryop.photoshelf.dialogs.TagNavigatorDialog.Companion.EXTRA_SELEC
 import com.ternaryop.photoshelf.event.CounterEvent
 import com.ternaryop.photoshelf.fragment.AbsPostsListFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.PostActionExecutor
 import com.ternaryop.photoshelf.util.post.PostActionExecutor.Companion.DELETE
@@ -87,7 +87,7 @@ class DraftListFragment : AbsPostsListFragment(), SwipeRefreshLayout.OnRefreshLi
 
         viewModel = ViewModelProviders.of(this).get(DraftListViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is DraftListModelResult.FetchPosts -> onFetchPosts(result)
             }

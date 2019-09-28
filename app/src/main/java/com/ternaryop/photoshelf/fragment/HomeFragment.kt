@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.R
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import java.text.DecimalFormat
 
@@ -28,7 +28,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
 
         viewModel = ViewModelProviders.of(this).get(HomeViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is HomeModelResult.Stats -> onStats(result)
             }

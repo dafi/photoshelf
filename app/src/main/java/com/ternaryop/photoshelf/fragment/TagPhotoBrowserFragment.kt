@@ -10,13 +10,13 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.EXTRA_ALLOW_SEARCH
 import com.ternaryop.photoshelf.EXTRA_BROWSE_TAG
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.adapter.TagCursorAdapter
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.PageFetcher
 
@@ -42,7 +42,7 @@ class TagPhotoBrowserFragment : AbsPagingPostsListFragment(), SearchView.OnSugge
 
         viewModel = ViewModelProviders.of(this).get(TagPhotoBrowserViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is TagPhotoBrowserResult.FindTags -> onFindTagsModelResult(result)
                 is TagPhotoBrowserResult.Photos -> onPhotosModelResult(result)

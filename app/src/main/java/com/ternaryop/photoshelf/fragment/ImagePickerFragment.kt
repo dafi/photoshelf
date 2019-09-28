@@ -21,7 +21,6 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
@@ -38,6 +37,7 @@ import com.ternaryop.photoshelf.api.extractor.ImageGallery
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.dialogs.NewTumblrPostDialog
 import com.ternaryop.photoshelf.dialogs.PostDialogData
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.service.PublishIntentService
 import com.ternaryop.utils.dialog.DialogUtils
@@ -96,7 +96,7 @@ class ImagePickerFragment : AbsPhotoShelfFragment(), NewTumblrPostDialog.OnPubli
 
         viewModel = ViewModelProviders.of(this).get(ImagePickerViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is ImagePickerModelResult.Gallery -> onGalleryModelResult(result)
                 is ImagePickerModelResult.ImageList -> onImageListModelResult(result)

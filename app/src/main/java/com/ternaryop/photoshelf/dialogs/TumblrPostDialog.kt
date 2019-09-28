@@ -14,7 +14,6 @@ import android.widget.MultiAutoCompleteTextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.mru.MRUHolder
@@ -24,6 +23,7 @@ import com.ternaryop.photoshelf.adapter.tagnavigator.TagNavigatorFilter
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_ALREADY_EXISTS
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_MISSPELLED
 import com.ternaryop.photoshelf.dialogs.MisspelledName.Companion.NAME_NOT_FOUND
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.text.fromHtml
@@ -59,7 +59,7 @@ abstract class TumblrPostDialog : DialogFragment(), Toolbar.OnMenuItemClickListe
         job = Job()
         viewModel = ViewModelProviders.of(this).get(PostViewModel::class.java)
 
-        viewModel.result.observe(requireActivity(), Observer { result ->
+        viewModel.result.observe(requireActivity(), EventObserver { result ->
             when (result) {
                 is TumblrPostModelResult.TitleParsed ->  onTitleParsed(result)
                 is TumblrPostModelResult.MisspelledInfo -> onMisspelledInfo(result)

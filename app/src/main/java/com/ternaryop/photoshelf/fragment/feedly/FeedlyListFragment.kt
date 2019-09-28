@@ -14,7 +14,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,6 +29,7 @@ import com.ternaryop.photoshelf.dialogs.FeedlyCategoriesDialog
 import com.ternaryop.photoshelf.dialogs.OnCloseDialogListener
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.moveToBottom
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
@@ -82,7 +82,7 @@ class FeedlyListFragment : AbsPhotoShelfFragment(), OnFeedlyContentClick {
         viewModel = ViewModelProviders.of(this)
             .get(FeedlyViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is FeedlyModelResult.Content -> onContent(result)
                 is FeedlyModelResult.MarkSaved -> onMarkSaved(result)

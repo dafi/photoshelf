@@ -3,14 +3,15 @@ package com.ternaryop.photoshelf.lifecycle
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 
 open class PhotoShelfViewModel<VM>(application: Application) : AndroidViewModel(application) {
-    private val _result = SingleLiveEvent<VM>()
+    private val _result = MutableLiveData<Event<VM>>()
 
-    val result: LiveData<VM>
+    val result: LiveData<Event<VM>>
         get() = _result
 
-    fun postResult(result: VM) = _result.postValue(result)
+    fun postResult(result: VM) = _result.postValue(Event(result))
 }
 
 enum class Status {

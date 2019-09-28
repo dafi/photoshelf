@@ -2,10 +2,10 @@ package com.ternaryop.photoshelf.fragment
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.PageFetcher
 
@@ -19,7 +19,7 @@ class PublishedPostsListFragment : ScheduledListFragment() {
 
         viewModel = ViewModelProviders.of(this).get(PublishedPostsListViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is PublishedPostsResult.Published -> onFetchPosts(result)
             }

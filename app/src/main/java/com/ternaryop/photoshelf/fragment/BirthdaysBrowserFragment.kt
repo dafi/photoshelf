@@ -16,7 +16,6 @@ import android.widget.ArrayAdapter
 import android.widget.SearchView
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +25,7 @@ import com.ternaryop.photoshelf.adapter.birthday.BirthdayAdapter
 import com.ternaryop.photoshelf.adapter.birthday.BirthdayShowFlags
 import com.ternaryop.photoshelf.adapter.birthday.nullDate
 import com.ternaryop.photoshelf.api.birthday.Birthday
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.util.post.OnPagingScrollListener
 import com.ternaryop.util.coroutine.DebouncingQueryTextListener
@@ -97,7 +97,7 @@ class BirthdaysBrowserFragment : AbsPhotoShelfFragment(), ActionMode.Callback,
             viewModel.find(BirthdaysBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, true)
         }
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is BirthdaysBrowserModelResult.Find -> when (result.actionId) {
                     BirthdaysBrowserModelResult.ActionId.QUERY_BY_TYPING -> onQueryByTyping(result)

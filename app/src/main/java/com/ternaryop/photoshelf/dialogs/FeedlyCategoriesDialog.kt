@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ternaryop.feedly.Category
@@ -16,6 +15,7 @@ import com.ternaryop.photoshelf.adapter.feedly.FeedlyCategoryAdapter
 import com.ternaryop.photoshelf.fragment.feedly.FeedlyModelResult
 import com.ternaryop.photoshelf.fragment.feedly.FeedlyPrefs
 import com.ternaryop.photoshelf.fragment.feedly.FeedlyViewModel
+import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.utils.dialog.showErrorDialog
 import kotlinx.android.synthetic.main.dialog_feedly_categories.cancelButton
@@ -41,7 +41,7 @@ class FeedlyCategoriesDialog(
         val viewModel = ViewModelProviders.of(this)
             .get(FeedlyViewModel::class.java)
 
-        viewModel.result.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is FeedlyModelResult.Categories ->  onCategories(result)
             }
