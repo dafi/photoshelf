@@ -107,8 +107,12 @@ class MainActivity : AbsDrawerActionBarActivity(),
         get() = R.layout.activity_main
 
     private fun showHome() {
-//        selectClickedItem(R.id.home)
+        selectClickedItem(R.id.nav_home)
         openDrawer()
+    }
+
+    private fun showSettings() {
+        selectClickedItem(R.id.nav_settings)
     }
 
     private fun handleShortcutAction(): Boolean {
@@ -120,10 +124,6 @@ class MainActivity : AbsDrawerActionBarActivity(),
             else -> return false
         }
         return true
-    }
-
-    private fun showSettings() {
-        selectClickedItem(R.id.nav_settings)
     }
 
     override fun onResume() {
