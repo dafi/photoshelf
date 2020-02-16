@@ -4,6 +4,8 @@ import android.content.Context
 import android.text.format.DateUtils
 import android.text.format.DateUtils.SECOND_IN_MILLIS
 import com.ternaryop.feedly.FeedlyContent
+import com.ternaryop.photoshelf.api.post.LastPublishedTag
+import com.ternaryop.photoshelf.api.post.LastPublishedTitle
 import com.ternaryop.photoshelf.feedly.R
 import com.ternaryop.utils.date.APPEND_DATE_FOR_PAST_AND_PRESENT
 import com.ternaryop.utils.date.formatPublishDaysAgo
@@ -15,35 +17,30 @@ import java.net.URISyntaxException
  */
 fun Collection<FeedlyContent>.toContentDelegate() = map { FeedlyContentDelegate(it) }
 
-fun Collection<FeedlyContentDelegate>.titles(): Collection<String> {
-    val titles = HashSet<String>(size)
-    for (fc in this) {
+fun Collection<FeedlyContentDelegate>.titles(): Collection<LastPublishedTitle> =
+    this.map {
         // replace any no no-break space with whitespace
         // see http://www.regular-expressions.info/unicode.html for \p{Zs}
-        titles.add(fc.title.replace("""\p{Zs}""".toRegex(), " "))
+        LastPublishedTitle(it.id, it.title.replace("""\p{Zs}""".toRegex(), " "))
     }
-    return titles
-}
 
 /**
  * update lastPublishTimestamp and the tag fields
  */
 fun Collection<FeedlyContentDelegate>.updateLastPublishTimestamp(
-    tagPairList: Map<String, Long>
+    tagList: List<LastPublishedTag>
 ): Collection<FeedlyContentDelegate> {
+    val tagMap = tagList.map { it.titleId to it }.toMap()
     for (fc in this) {
-        updateLastPublishTimestamp(fc, tagPairList)
+        updateLastPublishTimestamp(fc, tagMap)
     }
     return this
 }
 
-private fun updateLastPublishTimestamp(fc: FeedlyContentDelegate, tagPairList: Map<String, Long>) {
-    val title = fc.title
-    for ((tag, time) in tagPairList) {
-        if (tag.regionMatches(0, title, 0, tag.length, ignoreCase = true)) {
-            fc.lastPublishTimestamp = time
-            fc.tag = tag
-        }
+private fun updateLastPublishTimestamp(fc: FeedlyContentDelegate, tagMap: Map<String, LastPublishedTag>) {
+    tagMap[fc.id]?.also {
+        fc.lastPublishTimestamp = it.publishTimestamp
+        fc.tag = it.tag
     }
 }
 

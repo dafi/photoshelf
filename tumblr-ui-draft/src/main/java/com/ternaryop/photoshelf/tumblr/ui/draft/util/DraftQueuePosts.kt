@@ -2,7 +2,9 @@ package com.ternaryop.photoshelf.tumblr.ui.draft.util
 
 import android.text.format.DateUtils
 import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.api.post.titlesRequestBody
+import com.ternaryop.photoshelf.api.post.LastPublishedTitle
+import com.ternaryop.photoshelf.api.post.LastPublishedTitleHolder
+import com.ternaryop.photoshelf.api.post.LatestTagResult
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.TumblrPost
@@ -12,7 +14,7 @@ data class DraftQueuePosts<T : TumblrPost>(val newerDraftPosts: MutableList<T>, 
     suspend fun toPhotoShelfPosts(blogName: String): DraftQueuePosts<PhotoShelfPost> {
         val tagsForDraftPosts = groupPostByTag(newerDraftPosts)
         val tagsForQueuePosts = groupPostByTag(queuePosts)
-        val lastPublished = getTagLastPublishedMap(blogName, tagsForDraftPosts.keys)
+        val lastPublished = getLatestTagResult(blogName, tagsForDraftPosts.keys)
         val list = mutableListOf<PhotoShelfPost>()
 
         for ((tag, posts) in tagsForDraftPosts) {
@@ -39,10 +41,11 @@ data class DraftQueuePosts<T : TumblrPost>(val newerDraftPosts: MutableList<T>, 
             .groupBy { it.tags[0].toLowerCase(Locale.US) }
     }
 
-    private suspend fun getTagLastPublishedMap(blogName: String, tags: Set<String>): Map<String, Long> {
+    private suspend fun getLatestTagResult(blogName: String, tags: Set<String>): LatestTagResult {
+        val titleList = tags.map { LastPublishedTitle("0", it) }
         return ApiManager.postService()
-            .getMapLastPublishedTimestampTag(blogName, titlesRequestBody(tags))
-            .response.pairs
+            .getLastPublishedTag(blogName, LastPublishedTitleHolder(titleList))
+            .response
     }
 
     private fun getNextScheduledPublishTimeByTag(tag: String, queuedPosts: Map<String, List<TumblrPost>>): Long {
@@ -52,8 +55,8 @@ data class DraftQueuePosts<T : TumblrPost>(val newerDraftPosts: MutableList<T>, 
         return list[0].scheduledPublishTime * DateUtils.SECOND_IN_MILLIS
     }
 
-    private fun getLastPublishedTimestampByTag(tag: String, lastPublished: Map<String, Long>): Long {
-        val lastPublishedTimestamp = lastPublished[tag] ?: return java.lang.Long.MAX_VALUE
+    private fun getLastPublishedTimestampByTag(tag: String, lastPublished: LatestTagResult): Long {
+        val lastPublishedTimestamp = lastPublished.findByTag(tag)?.publishTimestamp ?: return java.lang.Long.MAX_VALUE
 
         return lastPublishedTimestamp * DateUtils.SECOND_IN_MILLIS
     }

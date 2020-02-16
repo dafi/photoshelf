@@ -48,6 +48,7 @@ buildscript {
 
         ternaryOpUtilLibVersion = '1.4.8'
         ternaryOpDrawerLibVersion = '1.0.0'
+        ternaryOpApiCoroutinesLibVersion = '1.1.0'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.1'
         ternaryOpFeedlyCoroutinesLibVersion = '1.0.2'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.2'

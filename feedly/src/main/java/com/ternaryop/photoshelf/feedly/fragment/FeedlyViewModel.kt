@@ -8,7 +8,7 @@ import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.SimpleFeedlyContent
 import com.ternaryop.feedly.StreamContent
 import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.api.post.titlesRequestBody
+import com.ternaryop.photoshelf.api.post.LastPublishedTitleHolder
 import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentDelegate
 import com.ternaryop.photoshelf.feedly.adapter.titles
 import com.ternaryop.photoshelf.feedly.adapter.toContentDelegate
@@ -71,8 +71,8 @@ class FeedlyViewModel(
 
     private suspend fun getFeedlyContentDelegate(blogName: String): List<FeedlyContentDelegate> {
         val list = filterCategories(contentReader.read(feedlyClient)).toContentDelegate()
-        val map = ApiManager.postService().getMapLastPublishedTimestampTag(blogName, titlesRequestBody(list.titles()))
-        list.updateLastPublishTimestamp(map.response.pairs)
+        val map = ApiManager.postService().getLastPublishedTag(blogName, LastPublishedTitleHolder(list.titles()))
+        list.updateLastPublishTimestamp(map.response.tags)
 
         return list
     }
