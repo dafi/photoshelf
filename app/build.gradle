@@ -1,64 +1,34 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply from: "$rootProject.projectDir/shared-dependencies.gradle"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
-    implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXRecyclerviewLibVersion}"
-    implementation "androidx.cardview:cardview:${rootProject.ext.androidXCardViewLibVersion}"
-    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
-    implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:${rootProject.ext.androidXSwiperefreshlayoutLibVersion}"
-
-    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
-    implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    implementation "io.reactivex.rxjava2:rxjava:${rootProject.ext.rxjavaLibVersion}"
-    implementation "io.reactivex.rxjava2:rxandroid:${rootProject.ext.rxandroidLibVersion}"
-
     implementation "com.dropbox.core:dropbox-core-sdk:${rootProject.ext.dropboxCoreLibVersion}"
 
-    implementation "org.greenrobot:eventbus:${rootProject.ext.eventbusLibVersion}"
+    implementation "com.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
+    implementation "com.ternaryop.photoshelf:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
+    implementation "com.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
 
-    implementation "com.squareup.picasso:picasso:${rootProject.ext.picassoLibVersion}"
-    implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofitLibVersion}"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:${rootProject.ext.retrofitAdapterRrxjavaLibVersion}"
-    implementation "com.squareup.retrofit2:converter-gson:${rootProject.ext.retrofitConverterGsonLibVersion}"
-    implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp3LoggingInterceptorLibVersion}"
-    implementation "com.squareup.okio:okio:${rootProject.ext.okio}"
-
-    implementation "com.google.code.gson:gson:${rootProject.ext.gsonLibVersion}"
-
-    implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
-    implementation "com.ternaryop.photoshelf:domselector:${rootProject.ext.ternaryOpDomSelectorLibVersion}"
-    implementation "com.ternaryop:feedly:${rootProject.ext.ternaryOpFeedlyLibVersion}"
-    implementation "com.ternaryop:tumblr:${rootProject.ext.ternaryOpTumblrLibVersion}"
-
-    testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
-    androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
-    androidTestImplementation "androidx.test:rules:${rootProject.ext.androidXRulesLibVersion}"
-    androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.androidXEspressoCoreLibVersion}"
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    implementation project(path: ':core')
+    implementation project(path: ':db')
+    implementation project(path: ':home')
+    implementation project(path: ':birthday')
+    implementation project(path: ':tumblr-dialog')
+    implementation project(path: ':tag-navigator')
+    implementation project(path: ':tag-photo-browser')
+    implementation project(path: ':imageviewer')
+    implementation project(path: ':imagepicker')
+    implementation project(path: ':feedly')
+    implementation project(path: ':tumblr-ui-core')
+    implementation project(path: ':tumblr-ui-draft')
+    implementation project(path: ':tumblr-ui-schedule')
+    implementation project(path: ':tumblr-ui-publish')
 }
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
 
     signingConfigs {
         release {
@@ -79,10 +49,19 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
-        versionCode versionCodeByTask()
+        versionCode 1
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // default value for android emulator
         buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.2.2:8080/image/\""
+
+        resConfigs "en"
+    }
+
+    // see https://developer.android.com/studio/build/optimize-your-build#use_static_build_properties
+    applicationVariants.all { variant ->
+        if (variant.buildType.name == "release") {
+            variant.outputs.each { output -> output.versionCodeOverride = versionCodeByTask() }
+        }
     }
 
     lintOptions {
@@ -91,7 +70,12 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://visualdiffer.com/image/\""
+
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"https://visualdiffer.com/image/\""
         }
         debug {
             applicationIdSuffix ".debug"
@@ -100,16 +84,25 @@ android {
             initWith debug
             // used with genymotion
             buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.3.2:8080/image/\""
+
+            // Otherwise compilation fails while importing the modules
+            matchingFallbacks = ['debug']
         }
         debugRealDeviceLocal {
             // use from real devices to access to local network
             initWith debug
             buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.0.2:8080/image/\""
+
+            // Otherwise compilation fails while importing the modules
+            matchingFallbacks = ['debug']
         }
         debugRealDeviceProd {
             // use from real devices to access to production env
             initWith debug
-            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"http://visualdiffer.com/image/\""
+            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"https://visualdiffer.com/image/\""
+
+            // Otherwise compilation fails while importing the modules
+            matchingFallbacks = ['debug']
         }
     }
 

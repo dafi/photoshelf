@@ -14,7 +14,8 @@ class ProgressNotification(
     @StringRes titleId: Int,
     notificationChannelId: String,
     private val notificationId: Int,
-    iconId: Int) {
+    iconId: Int
+) {
     var builder: NotificationCompat.Builder = NotificationCompat.Builder(context, notificationChannelId)
         .setContentText("")
         .setContentTitle(context.getString(titleId))

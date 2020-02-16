@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">post-dialog</string>
+    <string name="scheduled_time_is_in_the_past_continue_title">Scheduled time is in the past, continue?</string>
+    <string name="schedule_title">Schedule</string>
+    <string name="post_tags_hint">Tags</string>
+    <string name="draft_title">Draft</string>
+    <string name="source_title">Source Title</string>
+    <string name="parse_title">Parse Title</string>
+    <string name="parse_title_swap">Parse Swap Day</string>
+    <string name="blog_list">Blog List</string>
+    <string name="thumbnails">Thumbnails</string>
+    <string name="parsing_error">Parsing error</string>
+    <plurals name="post_image">
+        <item quantity="one">Post Image</item>
+        <item quantity="other">Post %1$d Images</item>
+    </plurals>
+</resources>

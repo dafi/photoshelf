@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">tag-navigator</string>
+    <string name="tag_with_post_count">%1$s (%2$d)</string>
+    <string name="tag_navigator_distinct_title">Distinct Tags</string>
+    <string name="sort_by_count">Sort by Count</string>
+    <string name="sort_by_name">Sort by Name</string>
+    <string name="content_description_empty_list">Empty List</string>
+</resources>

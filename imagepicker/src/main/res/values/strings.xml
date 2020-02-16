@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">ImagePicker</string>
+    <string name="image_picker_activity_title">Pick Images</string>
+    <string name="url_not_found">URL not found</string>
+    <string name="url_not_found_description">Unable to find an URL in the text \'%1$s\'</string>
+    <string name="upload_error_ticker">PhotoShelf upload error</string>
+    <string name="extracting_images">Extracting images</string>
+    <string name="retry">Retry</string>
+    <string name="create_from_file_title">Create from File</string>
+    <string name="go_title">go</string>
+    <plurals name="download_url_with_count">
+        <item quantity="one">Download URL</item>
+        <item quantity="other">Download URL, bytes read %1$d</item>
+    </plurals>
+    <plurals name="image_found">
+        <item quantity="one">Found %1$d image</item>
+        <item quantity="other">Found %1$d images</item>
+    </plurals>
+</resources>

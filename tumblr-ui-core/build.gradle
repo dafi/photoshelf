@@ -1,0 +1,12 @@
+apply from: "$rootProject.projectDir/shared-android-library.gradle"
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
+
+    implementation "io.coil-kt:coil:${rootProject.ext.coilLibVersion}"
+
+    implementation project(path: ':core')
+    implementation project(path: ':tumblr-dialog')
+}

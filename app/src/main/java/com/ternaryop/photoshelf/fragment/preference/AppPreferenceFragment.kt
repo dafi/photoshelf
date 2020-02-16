@@ -15,7 +15,7 @@ abstract class AppPreferenceFragment : PreferenceFragmentCompat(), SharedPrefere
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Set the default white background in the view so as to avoid transparency
-        view.setBackgroundColor(ContextCompat.getColor(context!!, android.R.color.white))
+        view.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.white))
     }
 
     override fun onResume() {
@@ -27,5 +27,4 @@ abstract class AppPreferenceFragment : PreferenceFragmentCompat(), SharedPrefere
         preferenceManager.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
         super.onPause()
     }
-
 }

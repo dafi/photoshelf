@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="image_picker_grid_width">120dp</dimen>
+</resources>

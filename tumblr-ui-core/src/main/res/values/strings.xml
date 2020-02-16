@@ -1,0 +1,32 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">post-ui-core</string>
+    <string name="select_posts">Select Posts</string>
+    <string name="post_count_1_of_x" tools:ignore="PluralsCandidate">%1$d/%2$d posts</string>
+    <string name="uploaded_at_time">Uploaded at %1$s</string>
+    <string name="menu_header_show_image">Image for %1s</string>
+    <string name="content_description_item_menu">Item Menu</string>
+    <plurals name="note_title">
+        <item quantity="one">%1$d note</item>
+        <item quantity="other">%1$d notes</item>
+    </plurals>
+    <plurals name="posts_count">
+        <item quantity="one">One post</item>
+        <item quantity="other">%1$d posts</item>
+    </plurals>
+    <plurals name="general_posts_error">
+        <item quantity="one">Unable to process the post (%1$s)</item>
+        <item quantity="other">Unable to process %2$d posts (%1$s)</item>
+    </plurals>
+    <plurals name="save_to_draft_confirm">
+        <item quantity="one">Save to draft \'%2$s\', are you sure?</item>
+        <item quantity="other">Save to draft %1$d posts, are you sure?</item>
+    </plurals>
+    <plurals name="delete_post_confirm">
+        <item quantity="one">Delete \'%2$s\', are you sure?</item>
+        <item quantity="other">Delete %1$d posts, are you sure?</item>
+    </plurals>
+    <plurals name="publish_post_confirm">
+        <item quantity="one">Publish \'%2$s\', are you sure?</item>
+        <item quantity="other">Publish %1$d posts, are you sure?</item>
+    </plurals>
+</resources>

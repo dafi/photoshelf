@@ -12,7 +12,7 @@ fun DropboxManager.copyFile(exportPath: String) {
         FileInputStream(exportFile).use { stream ->
             // Autorename = true and Mode = OVERWRITE allow to overwrite
             // the file if it exists or create it if doesn't
-            client!!
+            checkNotNull(client)
                 .files()
                 .uploadBuilder(dropboxPath(exportFile))
                 .withAutorename(true)

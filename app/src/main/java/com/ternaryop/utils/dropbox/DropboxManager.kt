@@ -76,7 +76,7 @@ class DropboxManager private constructor(context: Context, val clientIdentifier:
         private var instance: DropboxManager? = null
         private var clientIdentifier = ""
 
-        val Version = DbxSdkVersion.Version!!
+        val Version = DbxSdkVersion.Version ?: "N/A"
 
         private var appKey = ""
 
@@ -87,14 +87,20 @@ class DropboxManager private constructor(context: Context, val clientIdentifier:
         }
 
         fun getInstance(context: Context): DropboxManager {
-            if (instance == null) {
-                synchronized(DropboxManager::class.java) {
-                    if (instance == null) {
-                        instance = DropboxManager(context, clientIdentifier)
-                    }
-                }
+            val currentInstance = instance
+
+            if (currentInstance != null) {
+                return currentInstance
             }
-            return instance!!
+
+            return synchronized(DropboxManager::class.java) {
+                var newInstance = instance
+                if (newInstance == null) {
+                    newInstance = DropboxManager(context, clientIdentifier)
+                    instance = newInstance
+                }
+                newInstance
+            }
         }
     }
 }

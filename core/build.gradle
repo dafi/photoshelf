@@ -1,0 +1,9 @@
+apply from: "$rootProject.projectDir/shared-android-library.gradle"
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
+
+    implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp3LoggingInterceptorLibVersion}"
+}

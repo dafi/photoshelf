@@ -1,16 +1,16 @@
 package com.ternaryop.photoshelf.service
 
 import android.app.job.JobParameters
-import com.ternaryop.photoshelf.AppSupport
+import androidx.preference.PreferenceManager
+import com.ternaryop.photoshelf.core.prefs.isAutomaticExportEnabled
 import com.ternaryop.photoshelf.importer.BatchExporter
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object ExportJob : Job {
     override fun runJob(jobService: AbsJobService, params: JobParameters?): Boolean {
-        val appSupport = AppSupport(jobService)
-        if (!appSupport.isAutomaticExportEnabled) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(jobService)
+        if (!prefs.isAutomaticExportEnabled) {
             return false
         }
         export(jobService, params)
@@ -18,13 +18,14 @@ object ExportJob : Job {
     }
 
     private fun export(jobService: AbsJobService, params: JobParameters?) {
-        val appSupport = AppSupport(jobService)
-        val d = Completable
-            .fromCallable { BatchExporter(appSupport).export() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doFinally { jobService.jobFinished(params, false) }
-            .subscribe({}, { it.printStackTrace() })
-        jobService.compositeDisposable.add(d)
+        jobService.launch(Dispatchers.IO) {
+            try {
+                BatchExporter(jobService).export()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            } finally {
+                jobService.jobFinished(params, false)
+            }
+        }
     }
 }

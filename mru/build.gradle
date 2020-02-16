@@ -1,0 +1,7 @@
+apply from: "$rootProject.projectDir/shared-android-library.gradle"
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(path: ':core')
+}

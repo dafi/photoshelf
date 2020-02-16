@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+    These attributes are defined inside material components but instead of importing the library
+    we (re)define here so the linter doesn't warn with the error "?attr/colorOnSurface" not found
+    -->
+    <attr name="colorOnSurface" format="reference|color" />
+    <attr name="colorSurface" format="reference|color" />
+</resources>

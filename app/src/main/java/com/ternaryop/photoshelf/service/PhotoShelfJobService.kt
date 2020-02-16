@@ -5,6 +5,7 @@ import android.app.job.JobParameters
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
+import com.ternaryop.photoshelf.birthday.service.BirthdayJob
 import java.util.concurrent.TimeUnit
 
 class PhotoShelfJobService : AbsJobService() {

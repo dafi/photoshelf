@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">core</string>
+    <string name="post_title_hint">Title</string>
+    <string name="refresh">Refresh</string>
+    <string name="publish_post">Publish</string>
+    <string name="menu_show_image">Show Image</string>
+    <string name="select_images">Select Images</string>
+    <string name="edit_post_title">Edit</string>
+    <string name="delete_post">Delete</string>
+    <string name="search_tag">Search Tag</string>
+    <string name="all">All</string>
+    <string name="select_items">Select items</string>
+    <string name="content_description_blog_avatar">Blog Avatar</string>
+    <string name="details">Details</string>
+    <string name="show_post">Show Post</string>
+    <string name="select_all">Select All</string>
+    <string name="save_draft_post">Save as Draft</string>
+    <string name="enter_tag_hint">Enter tag to search</string>
+    <string name="generic_error">Error</string>
+    <string name="sort_by">Sort By</string>
+    <plurals name="delete_items_confirm">
+        <item quantity="one">Delete \'%2$s\', are you sure?</item>
+        <item quantity="other">Delete %1$d items, are you sure?</item>
+    </plurals>
+    <plurals name="update_items_confirm">
+        <item quantity="one">Update \'%2$s\', are you sure?</item>
+        <item quantity="other">Update %1$d items, are you sure?</item>
+    </plurals>
+    <plurals name="selected_items">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="selected_items_total">
+        <item quantity="one">%1$d of %2$d selected</item>
+        <item quantity="other">%1$d of %2$d selected</item>
+    </plurals>
+</resources>

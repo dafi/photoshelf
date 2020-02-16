@@ -1,101 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <string name="app_name">Photo Shelf</string>
-    <string name="post_tags_hint">Tags</string>
-    <string name="post_title_hint">Title</string>
-    <string name="url_not_found">URL not found</string>
-    <string name="url_not_found_description">Unable to find an URL in the text \'%1$s\'</string>
-    <string name="parsing_error">Parsing error</string>
-    <string name="draft_title">Draft</string>
     <string name="cancel_title">Cancel</string>
-    <string name="go_title">go</string>
-    <string name="refresh">Refresh</string>
-    <string name="reading_draft_posts">Reading draft posts&#8230;</string>
-    <string name="finding_last_published_posts">Finding last published posts&#8230;</string>
-    <string name="schedule_post">Schedule</string>
     <string name="schedule_title">Schedule</string>
-    <string name="schedule_dialog_title">Schedule: %1$s</string>
-    <string name="publish_post">Publish</string>
-    <string name="menu_show_image">Show Image</string>
-    <string name="menu_header_show_image">Image for %1s</string>
     <string name="test_page_title">Test Page</string>
     <string name="birthdays_browser_title">Birthdays Browser</string>
-    <string name="image_picker_activity_title">Pick Images</string>
     <string name="login_title">%1$s Login</string>
     <string name="logout_title">%1$s Logout</string>
     <string name="authentication_success_title">Authentication success, caching blogs</string>
-    <string name="save_draft_post">Save as Draft</string>
-    <string name="select_images">Select Images</string>
-    <string name="select_posts">Select Posts</string>
-    <string name="settings">Settings</string>
     <string name="edit_post_title">Edit</string>
-    <string name="parse_title">Parse Title</string>
-    <string name="delete_post">Delete</string>
-    <string name="search_tag">Search Tag</string>
     <string name="browse_images_by_tags_title">Images Browser</string>
     <string name="browse_tags_title">Tags Browser</string>
     <string name="import_title_parser_title">Import Title Parsers (current version %1$d)</string>
     <string name="import_missing_birthdays_from_web_title">Import Missing Birthdays from Web</string>
-    <string name="start_import_title">Start Import&#8230;</string>
-    <string name="enter_tag_hint">Enter tag to search</string>
-    <string name="tag_with_post_count">%1$s (%2$d)</string>
-    <string name="generic_error">Error</string>
     <string name="importSuccess">Data imported successfully</string>
-    <string name="birthday_notification_title">Birthdays list</string>
-    <string name="birthday_years_old" tools:ignore="PluralsCandidate">%1$s is %2$d years old</string>
     <string name="pref_service_login_title">Services Access</string>
     <string name="pref_import_category_title">Import and Export</string>
     <string name="pref_schedule_title">Schedule</string>
     <string name="import_config_from_file">Import config from file</string>
     <string name="pref_domselector_title">DomSelector</string>
-    <string name="set_wallpaper_title">Set Wallpaper</string>
-    <string name="wallpaper_changed_title">Wallpaper changed</string>
-    <string name="share_image_title">Share Image</string>
     <string name="scheduled_time_is_in_the_past_continue_title">Scheduled time is in the past, continue?</string>
     <string name="pref_clear_cache">Clear Cache</string>
     <string name="clear_image_cache_title">Clear Image Cache</string>
     <string name="pref_birthdays_title">Birthdays</string>
-    <string name="create_from_file_title">Create from File</string>
-    <string name="sending_cake_title">Sending cake to %1$s&#8230;</string>
-    <string name="select_all">Select All</string>
     <string name="pref_import_screen_title">Filters and Birthdays</string>
+    <string name="pref_post_editor">Post Editor</string>
+    <string name="pref_edit_post_max_tags_mru_items">Max MRU Tags</string>
+    <string name="pref_edit_post_max_highlighted_tags_mru_items">Max Highlighted Tags</string>
 
     <plurals name="post_image">
         <item quantity="one">Post Image</item>
         <item quantity="other">Post %1$d Images</item>
-    </plurals>
-    <plurals name="posts_read_count">
-        <item quantity="one">%1$d post read&#8230;</item>
-        <item quantity="other">%1$d posts read&#8230;</item>
-    </plurals>
-    <plurals name="selected_items">
-        <item quantity="one">%1$d selected</item>
-        <item quantity="other">%1$d selected</item>
-    </plurals>
-    <plurals name="selected_items_total">
-        <item quantity="one">%1$d of %2$d selected</item>
-        <item quantity="other">%1$d of %2$d selected</item>
-    </plurals>
-    <plurals name="posts_count">
-        <item quantity="one">One post</item>
-        <item quantity="other">%1$d posts</item>
-    </plurals>
-    <plurals name="save_to_draft_confirm">
-        <item quantity="one">Save to draft \'%2$s\', are you sure?</item>
-        <item quantity="other">Save to draft %1$d posts, are you sure?</item>
-    </plurals>
-    <plurals name="delete_post_confirm">
-        <item quantity="one">Delete \'%2$s\', are you sure?</item>
-        <item quantity="other">Delete %1$d posts, are you sure?</item>
-    </plurals>
-    <plurals name="publish_post_confirm">
-        <item quantity="one">Publish \'%2$s\', are you sure?</item>
-        <item quantity="other">Publish %1$d posts, are you sure?</item>
-    </plurals>
-    <plurals name="birthday_title">
-        <item quantity="one">Today one birthday</item>
-        <item quantity="other">Today %1$d birthdays</item>
     </plurals>
     <plurals name="minute_title">
         <item quantity="one">One minute</item>
@@ -109,30 +45,6 @@
         <item quantity="one">next in one day</item>
         <item quantity="other">next in %1$d days</item>
     </plurals>
-    <plurals name="general_posts_error">
-        <item quantity="one">Unable to process the post (%1$s)</item>
-        <item quantity="other">Unable to process %2$d posts (%1$s)</item>
-    </plurals>
-    <plurals name="delete_items_confirm">
-        <item quantity="one">Delete \'%2$s\', are you sure?</item>
-        <item quantity="other">Delete %1$d items, are you sure?</item>
-    </plurals>
-    <plurals name="update_items_confirm">
-        <item quantity="one">Update \'%2$s\', are you sure?</item>
-        <item quantity="other">Update %1$d items, are you sure?</item>
-    </plurals>
-    <plurals name="note_title">
-        <item quantity="one">%1$d note</item>
-        <item quantity="other">%1$d notes</item>
-    </plurals>
-    <plurals name="image_found">
-        <item quantity="one">Found %1$d image</item>
-        <item quantity="other">Found %1$d images</item>
-    </plurals>
-    <plurals name="download_url_with_count">
-        <item quantity="one">Download URL</item>
-        <item quantity="other">Download URL, bytes read %1$d</item>
-    </plurals>
     <plurals name="imported_items">
         <item quantity="one">Imported one item</item>
         <item quantity="other">Imported %1$d items</item>
@@ -141,91 +53,28 @@
         <item quantity="one">Found %1$d item</item>
         <item quantity="other">Found %1$d items</item>
     </plurals>
-    <plurals name="tags_in_posts">
-        <item quantity="one">%1$d tag in %2$d posts</item>
-        <item quantity="other">%1$d tags in %2$d posts</item>
-    </plurals>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="pref_developer">Developer</string>
     <string name="version_title">%1$s version</string>
     <string name="birthdays_today_title">Today birthdays</string>
-    <string name="post_count_1_of_x" tools:ignore="PluralsCandidate">%1$d/%2$d posts</string>
-    <string name="upload_error_ticker">PhotoShelf upload error</string>
-    <string name="uploaded_at_time">Uploaded at %1$s</string>
     <string name="published_post">Published</string>
     <string name="automatic_export">Automatic export</string>
-    <string name="name_with_age">%1$s (age %2$s)</string>
-    <string name="name_with_date_age">%1$s: %2$s (%3$s)</string>
     <string name="best_of">Best Of</string>
-    <string name="copy_url_title">Copy URL</string>
-    <string name="download_title">Download</string>
-    <string name="url_copied_to_clipboard_title">URL copied to clipboard</string>
-    <string name="image_url_description">Image url</string>
-    <string name="new_birthday_ticker">Add birthday for %1$s</string>
-    <string name="birthday_add_error_ticker">Birthday add error</string>
-    <string name="birthday_publish_error_ticker">Unable to send cake to %1$s (%2$s)</string>
     <string name="home">Home</string>
-    <string name="total_posts">Total posts</string>
-    <string name="total_records">Total records</string>
-    <string name="total_unique_tags">Total unique tags</string>
-    <string name="total_unique_first_tags">Total unique first tags</string>
-    <string name="birthdays_count">Birthdays count</string>
-    <string name="missing_birthdays_count">Missing birthdays count</string>
-    <string name="select_items">Select items</string>
-    <string name="all">All</string>
-    <string name="mark_as_ignored">Mark as ignored</string>
-    <string name="show_ignored_birthdays">Ignored Birthdays</string>
-    <string name="content_description_item_menu">Item Menu</string>
-    <string name="content_description_empty_list">Empty List</string>
-    <string name="content_description_blog_avatar">Blog Avatar</string>
-    <string name="source_title">Source Title</string>
-    <string name="show_birthdays_in_same_day">Birthdays In Same Day</string>
     <string name="are_you_sure">Are you sure?</string>
-    <string name="show_birthdays_missing">Missing Birthdays</string>
     <string name="pref_thumbnail_width">Thumbnail Image Width</string>
     <string name="largest_image">Largest</string>
     <string name="pref_export_days_period">Export period</string>
-    <string name="details">Details</string>
     <string name="app_name_share_label">A Photo Shelf</string>
     <string name="never_run">Never run</string>
-    <string name="extracting_images">Extracting images</string>
-    <string name="sort_by">Sort By</string>
     <string name="tag_name">Tag Name</string>
-    <string name="sort_tag_name_a_z">Tag Name (A to Z)</string>
-    <string name="sort_tag_name_z_a">Tag Name (Z to A)</string>
-    <string name="sort_last_published_tag">Last Published Tag</string>
-    <string name="sort_upload_time_date_newest">Upload Time (newest first)</string>
-    <string name="sort_upload_time_date_oldest">Upload Time (oldest first)</string>
-    <string name="navigate_tags">Navigate Tags</string>
     <string name="close">Close</string>
-    <string name="tag_navigator_distinct_title">Distinct Tags</string>
-    <string name="reload">Reload</string>
-    <string name="clear_cache">Clear Cache</string>
-    <string name="sort_by_count">Sort by Count</string>
-    <string name="sort_by_name">Sort by Name</string>
     <string name="schedule_minutes_time_span_default">Default Schedule Span Minutes</string>
-    <string name="birthdays_found">Birthdays found</string>
-    <string name="show_post">Show Post</string>
-    <string name="birthdays_without_posts">Birthdays Without Posts</string>
     <string name="import_permission_rationale">Import and Export need access to files, do you grant permission?</string>
-    <string name="parse_title_swap">Parse Swap Day</string>
-    <string name="api_usage">API Usage</string>
-    <string name="max_fetch_items_count">Max Fetch Items Count</string>
-    <string name="newer_than_hours">Newer Than (hours)</string>
-    <string name="feedly_api_calls_count">API Calls count %1$d</string>
-    <string name="feedly_api_reset_limit">Reset Limit %1$s</string>
-    <string name="delete_on_refresh">Delete on Refresh</string>
-    <string name="title_name">Title</string>
-    <string name="saved_time">Saved Time</string>
-    <string name="never_published">Never Published</string>
-    <string name="refresh_token">Refresh Token</string>
-    <string name="token_expired">Token Expired</string>
     <string name="recently_used_tags">Recently Used Tags</string>
     <string name="feedly_title">Feedly</string>
-    <string name="retry">Retry</string>
     <string name="photoshelf_apikey">PhotoShelf Api key</string>
-    <string name="feedly_filter_categories">Filter Categories</string>
 
 </resources>

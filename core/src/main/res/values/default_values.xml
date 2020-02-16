@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="integer" name="schedule_minutes_time_span_default">180</item>
+    <item type="integer" name="export_days_period_default">7</item>
+</resources>

@@ -72,12 +72,30 @@
             android:title="@string/clear_image_cache_title"/>
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="pref_key_post_editor"
+        android:title="@string/pref_post_editor">
+        <com.ternaryop.preference.IntegerEditTextPreference
+            android:defaultValue="@integer/post_editor_max_mru_items"
+            android:inputType="number"
+            android:key="postEditor_maxTagsMruItems"
+            android:maxLength="2"
+            android:selectAllOnFocus="true"
+            android:title="@string/pref_edit_post_max_tags_mru_items" />
+        <com.ternaryop.preference.IntegerEditTextPreference
+            android:defaultValue="@integer/post_editor_max_highlighted_items"
+            android:inputType="number"
+            android:key="postEditor_maxHighlightedTagsMruItems"
+            android:maxLength="2"
+            android:selectAllOnFocus="true"
+            android:title="@string/pref_edit_post_max_highlighted_tags_mru_items" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="pref_key_thumbnail_width"
         android:title="@string/pref_thumbnail_width">
         <ListPreference
             android:title="@string/pref_thumbnail_width"
             android:key="thumbnail_width"
-            android:defaultValue="@string/thumbnail_width_value_default"
+            android:defaultValue="@integer/thumbnail_width_value_default"
             android:entries="@array/list_thumbnail_width_entries_default"
             android:entryValues="@array/list_thumbnail_width_values_default"/>
     </PreferenceCategory>

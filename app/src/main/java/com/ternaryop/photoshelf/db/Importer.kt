@@ -3,14 +3,12 @@ package com.ternaryop.photoshelf.db
 import android.content.Context
 import android.widget.Toast
 import com.ternaryop.photoshelf.R
-import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getFollowers
 import com.ternaryop.utils.dropbox.DropboxManager
 import com.ternaryop.utils.dropbox.copyFile
-import io.reactivex.ObservableTransformer
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -32,11 +30,11 @@ class Importer constructor(val context: Context) {
 
     private fun copyFileToContext(fullPath: String, contextFileName: String) {
         context.openFileOutput(contextFileName, 0).use { out ->
-            File(fullPath).forEachBlock { buffer, bytesRead -> out.write(buffer, 0, bytesRead)}
+            File(fullPath).forEachBlock { buffer, bytesRead -> out.write(buffer, 0, bytesRead) }
         }
     }
 
-    fun syncExportTotalUsersToCSV(exportPath: String, blogName: String) {
+    suspend fun syncExportTotalUsersToCSV(exportPath: String, blogName: String) = withContext(Dispatchers.IO) {
         // do not overwrite the entire file but append to the existing one
         PrintWriter(BufferedWriter(FileWriter(exportPath, true))).use { pw ->
             val time = ISO_8601_DATE.format(Calendar.getInstance().timeInMillis)
@@ -53,8 +51,10 @@ class Importer constructor(val context: Context) {
         var items: MutableList<T>
     }
 
-    class SimpleImportProgressInfo<T>(override var max: Int = 0, val list: MutableList<T> = mutableListOf())
-        : ImportProgressInfo<T> {
+    class SimpleImportProgressInfo<T>(
+        override var max: Int = 0,
+        val list: MutableList<T> = mutableListOf()
+    ) : ImportProgressInfo<T> {
         override var progress: Int = 0
         override var items: MutableList<T> = mutableListOf()
 
@@ -68,13 +68,5 @@ class Importer constructor(val context: Context) {
         private const val TOTAL_USERS_FILE_NAME = "totalUsers.csv"
 
         private val ISO_8601_DATE = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-
-        fun schedulers(): ObservableTransformer<List<TumblrPost>, List<TumblrPost>> {
-            return ObservableTransformer { upstream ->
-                upstream
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-            }
-        }
     }
 }

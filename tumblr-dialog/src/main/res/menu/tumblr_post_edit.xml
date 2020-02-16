@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/edit"
+        android:title="@string/edit_post_title"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/draft"
+        android:title="@string/draft_title"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/source_title"
+        android:title="@string/source_title" />
+    <item
+        android:id="@+id/parse_title"
+        android:title="@string/parse_title" />
+    <item
+        android:id="@+id/parse_title_swap"
+        android:title="@string/parse_title_swap" />
+    <item
+        android:id="@+id/publish"
+        android:title="@string/publish_post"
+        android:visible="false" />
+    <group
+        android:id="@+id/grp1"
+        android:checkableBehavior="all">
+        <item
+            android:id="@+id/toggle_blog_list"
+            android:checked="false"
+            android:title="@string/blog_list"
+            android:visible="false" />
+        <item
+            android:id="@+id/toggle_thumbnails"
+            android:checked="true"
+            android:title="@string/thumbnails"
+            android:visible="true" />
+    </group>
+
+</menu>

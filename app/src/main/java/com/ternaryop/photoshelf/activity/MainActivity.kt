@@ -1,6 +1,7 @@
 @file:Suppress("MaxLineLength")
 package com.ternaryop.photoshelf.activity
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -8,67 +9,76 @@ import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.bundleOf
+import androidx.fragment.app.FragmentFactory
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
-import com.ternaryop.photoshelf.AppSupport
-import com.ternaryop.photoshelf.EXTRA_URL
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.adapter.BlogSpinnerAdapter
-import com.ternaryop.photoshelf.event.CounterEvent
+import com.ternaryop.photoshelf.birthday.browser.fragment.BirthdayBrowserFragment
+import com.ternaryop.photoshelf.birthday.publisher.fragment.BirthdayPublisherFragment
+import com.ternaryop.photoshelf.core.prefs.selectedBlogName
+import com.ternaryop.photoshelf.feedly.fragment.FeedlyListFragment
 import com.ternaryop.photoshelf.fragment.BestOfFragment
-import com.ternaryop.photoshelf.fragment.BirthdaysBrowserFragment
-import com.ternaryop.photoshelf.fragment.BirthdaysPublisherFragment
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
-import com.ternaryop.photoshelf.fragment.HomeFragment
-import com.ternaryop.photoshelf.fragment.ImagePickerFragment
-import com.ternaryop.photoshelf.fragment.PublishedPostsListFragment
-import com.ternaryop.photoshelf.fragment.ScheduledListFragment
-import com.ternaryop.photoshelf.fragment.TagListFragment
-import com.ternaryop.photoshelf.fragment.TagPhotoBrowserFragment
-import com.ternaryop.photoshelf.fragment.draft.DraftListFragment
-import com.ternaryop.photoshelf.fragment.feedly.FeedlyListFragment
 import com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment
 import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
-import com.ternaryop.photoshelf.service.CounterIntentService
+import com.ternaryop.photoshelf.home.fragment.HomeFragment
+import com.ternaryop.photoshelf.imagepicker.fragment.EXTRA_URL
+import com.ternaryop.photoshelf.imagepicker.fragment.ImagePickerFragment
+import com.ternaryop.photoshelf.lifecycle.EventObserver
+import com.ternaryop.photoshelf.lifecycle.Status
+import com.ternaryop.photoshelf.tagnavigator.fragment.TagListFragment
+import com.ternaryop.photoshelf.tagphotobrowser.fragment.TagPhotoBrowserFragment
+import com.ternaryop.photoshelf.tumblr.dialog.blog.BlogSpinnerAdapter
+import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
+import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
+import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : DrawerActionBarActivity(),
     FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
-    override lateinit var appSupport: AppSupport
     private lateinit var blogList: Spinner
-    val blogName: String?
-        get() = appSupport.selectedBlogName
-    protected lateinit var compositeDisposable: CompositeDisposable
+    private lateinit var prefs: SharedPreferences
+
+    private val viewModel: MainActivityViewModel by viewModel()
+    private val fragmentFactory: FragmentFactory by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportFragmentManager.fragmentFactory = fragmentFactory
         super.onCreate(savedInstanceState)
 
-        compositeDisposable = CompositeDisposable()
-        appSupport = AppSupport(this)
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
         rebuildDrawerMenu()
 
         blogList = findViewById(R.id.blogs_spinner)
         blogList.onItemSelectedListener = BlogItemSelectedListener()
+
+        viewModel.result.observe(this, EventObserver { result ->
+            when (result) {
+                is MainActivityModelResult.BirthdaysCount ->
+                    onUpdateCount(DRAWER_ITEM_BIRTHDAYS_TODAY, result.command.data ?: 0)
+                is MainActivityModelResult.DraftCount ->
+                    onUpdateCount(DRAWER_ITEM_DRAFT, result.command.data ?: 0)
+                is MainActivityModelResult.ScheduledCount ->
+                    onUpdateCount(DRAWER_ITEM_SCHEDULE, result.command.data ?: 0)
+                is MainActivityModelResult.BlogNames -> onBlogNames(result)
+                is MainActivityModelResult.TumblrAuthenticated -> onTumblrAuthenticated(result)
+            }
+        })
+
         val logged = TumblrManager.isLogged(this)
         if (savedInstanceState == null) {
             onAppStarted(logged)
         }
         enableUI(logged)
-    }
-
-    override fun onDestroy() {
-        compositeDisposable.clear()
-        super.onDestroy()
     }
 
     private fun onAppStarted(logged: Boolean) {
@@ -79,16 +89,6 @@ class MainActivity : DrawerActionBarActivity(),
         } else {
             showSettings()
         }
-    }
-
-    public override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-    }
-
-    public override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
     }
 
     override val activityLayoutResId: Int
@@ -125,18 +125,21 @@ class MainActivity : DrawerActionBarActivity(),
         // Tags
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java))
+
+        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
+            argumentsBuilder = {
+                prefs.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }
+            }))
+
         // Extras
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
-        adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdaysBrowserFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdaysPublisherFragment::class.java, true))
+        adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdayBrowserFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdayPublisherFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", FeedlyListFragment::class.java))
 
-        val arguments = Bundle()
-        arguments.putString(EXTRA_URL, getString(R.string.test_page_url))
         adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
-            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = arguments))
+            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))))
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))
@@ -147,61 +150,55 @@ class MainActivity : DrawerActionBarActivity(),
     override fun onResume() {
         super.onResume()
 
-        if (!TumblrManager.isLogged(this)) {
-            // if we are returning from authentication then enable the UI
-            compositeDisposable.add(TumblrManager.handleOpenURI(this, intent.data)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ handled ->
-                    // show the preference only if we aren't in the middle of URI handling and not already logged in
-                    if (handled) {
-                        tumblrAuthenticated()
-                        showHome()
-                    } else {
-                        showSettings()
-                    }
-                }, { tumblrAuthenticationError(it) })
-            )
-        }
+        viewModel.handleCallbackTumblrUri(intent.data)
     }
 
     private inner class BlogItemSelectedListener : OnItemSelectedListener {
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
             val blogName = blogList.selectedItem as String
-            appSupport.selectedBlogName = blogName
-            refreshCounters(blogName)
-        }
-
-        override fun onNothingSelected(parent: AdapterView<*>?) {}
-    }
-
-    fun refreshCounters(blogName: String) {
-        CounterIntentService.fetchCounter(this, blogName, CounterEvent.BIRTHDAY)
-        CounterIntentService.fetchCounter(this, blogName, CounterEvent.DRAFT)
-        CounterIntentService.fetchCounter(this, blogName, CounterEvent.SCHEDULE)
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onCounterEvent(event: CounterEvent) {
-        val value = if (event.count > 0) event.count.toString() else null
-
-        when (event.type) {
-            CounterEvent.BIRTHDAY -> adapter.getItemById(DRAWER_ITEM_BIRTHDAYS_TODAY)?.badge = value
-            CounterEvent.DRAFT -> adapter.getItemById(DRAWER_ITEM_DRAFT)?.badge = value
-            CounterEvent.SCHEDULE -> adapter.getItemById(DRAWER_ITEM_SCHEDULE)?.badge = value
-            CounterEvent.NONE -> {
+            if (blogName != prefs.selectedBlogName) {
+                prefs.selectedBlogName = blogName
+                viewModel.clearCounters()
             }
+            viewModel.birthdaysCount()
+            viewModel.draftCount(blogName)
+            viewModel.scheduledCount(blogName)
         }
+
+        override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+    }
+
+    private fun onUpdateCount(itemId: Int, count: Int) {
+        adapter.getItemById(itemId)?.badge = if (count > 0) count.toString() else null
         adapter.notifyDataSetChanged()
+    }
+
+    private fun onBlogNames(result: MainActivityModelResult.BlogNames) {
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { blogNames -> fillBlogList(blogNames) }
+            Status.ERROR -> result.command.error?.also { it.showErrorDialog(this) }
+            Status.PROGRESS -> { }
+        }
+    }
+
+    private fun onTumblrAuthenticated(result: MainActivityModelResult.TumblrAuthenticated) {
+        when (result.command.status) {
+            Status.SUCCESS -> result.command.data?.also { handled ->
+                if (handled) {
+                    tumblrAuthenticated()
+                    showHome()
+                } else {
+                    showSettings()
+                }
+            }
+            Status.ERROR -> result.command.error?.also { it.showErrorDialog(this) }
+            Status.PROGRESS -> { }
+        }
     }
 
     private fun enableUI(enabled: Boolean) {
         if (enabled) {
-            compositeDisposable.add(appSupport.fetchBlogNames(this)
-                .subscribe(
-                    { fillBlogList(it) },
-                    { it.showErrorDialog(applicationContext)}
-                ))
+            viewModel.fetchBlogNames()
         }
         drawerToggle.isDrawerIndicatorEnabled = enabled
         adapter.isSelectionEnabled = enabled
@@ -213,15 +210,8 @@ class MainActivity : DrawerActionBarActivity(),
             getString(R.string.authentication_success_title),
             Toast.LENGTH_LONG)
             .show()
-        // after authentication cache blog names
-        compositeDisposable.add(appSupport.fetchBlogNames(this)
-            .subscribe(
-                { enableUI(true) },
-                { it.showErrorDialog(applicationContext) }
-            ))
+        enableUI(true)
     }
-
-    private fun tumblrAuthenticationError(error: Throwable) = error.showErrorDialog(this)
 
     override fun onDrawerItemSelected(drawerItem: DrawerItem) {
         try {
@@ -238,7 +228,7 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         blogList.adapter = adapter
 
-        val selectedName = appSupport.selectedBlogName
+        val selectedName = prefs.selectedBlogName
         if (selectedName != null) {
             val position = adapter.getPosition(selectedName)
             if (position >= 0) {

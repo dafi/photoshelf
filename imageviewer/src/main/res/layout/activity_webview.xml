@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/webview_progressbar"
+        style="@style/Theme.PhotoShelf.ProgressBar.Horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/webview_progressbar_height"
+        android:maxHeight="@dimen/webview_progressbar_height"
+        android:minHeight="@dimen/webview_progressbar_height"
+        android:visibility="gone" />
+
+    <WebView
+        android:id="@+id/webview_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/webview_progressbar" />
+
+    <TextView
+        android:id="@+id/details_text"
+        android:layout_width="fill_parent"
+        android:layout_height="32dp"
+        android:layout_alignParentBottom="true"
+        android:background="#90000000"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textColor="@android:color/white"
+        android:visibility="gone" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/drawer_toolbar"
+        style="?topDrawerToolbarPopupTheme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:minHeight="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_imageviewer_back" />
+
+</RelativeLayout>

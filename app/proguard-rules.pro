@@ -1,17 +1,30 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /opt/devel/android/adt-bundle-mac-x86_64-20131030/sdk/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Preserve the value defined inside the service's metadata
+-keep public class com.ternaryop.photoshelf.imagepicker.OnPublishAddBirthdate
 
-# Add any project specific keep options here:
+# serialize/deserialize to/from sqlite
+-keep class com.ternaryop.tumblr.TumblrPost
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Used inside FragmentContainerView
+# https://issuetracker.google.com/issues/142601969
+-keepnames class com.ternaryop.photoshelf.birthday.publisher.fragment.BirthdayPublisherFragment
+
+# https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md
+# Keep data classes created by Retrofit otherwise they will return null
+
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+  }
+
+-keep,allowobfuscation @interface com.google.gson.annotations.SerializedName
+
+-keepclassmembers class com.ternaryop.photoshelf.api.** {
+  !transient <fields>;
+}
+
+-keepclassmembers class com.ternaryop.photoshelf.domselector.* {
+  !transient <fields>;
+}
+
+-keepclassmembers class com.ternaryop.feedly.* {
+  !transient <fields>;
+}

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ImageViewer</string>
+    <string name="wallpaper_changed_title">Wallpaper changed</string>
+    <string name="image_url_description">Image url</string>
+    <string name="url_copied_to_clipboard_title">URL copied to clipboard</string>
+    <string name="share_image_title">Share Image</string>
+    <string name="set_wallpaper_title">Set Wallpaper</string>
+    <string name="copy_url_title">Copy URL</string>
+    <string name="download_title">Download</string>
+</resources>

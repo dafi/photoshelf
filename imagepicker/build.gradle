@@ -1,0 +1,14 @@
+apply from: "$rootProject.projectDir/shared-android-library.gradle"
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
+
+    implementation "io.coil-kt:coil:${rootProject.ext.coilLibVersion}"
+
+    implementation "com.ternaryop.photoshelf:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
+
+    implementation project(path: ':core')
+    implementation project(path: ':tumblr-dialog')
+}

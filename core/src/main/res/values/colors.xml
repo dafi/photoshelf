@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Some devices override the @android:color/transparent so we define our version -->
+    <color name="transparent">#00000000</color>
+
+    <color name="drawer_frame_bg">#f1f1f2</color>
+    <color name="drawer_divider_bg">#e5e5e5</color>
+
+    <color name="drawer_item_text">#555</color>
+    <color name="drawer_item_bg">@color/transparent</color>
+
+    <color name="drawer_item_selected_text">#ffffff</color>
+    <color name="drawer_item_selected_bg">#3949ab</color>
+
+    <color name="drawer_item_counter_text">#ffffff</color>
+    <color name="drawer_item_counter_bg">#626262</color>
+
+    <color name="drawer_item_counter_selected_text">#000</color>
+    <color name="drawer_item_counter_selected_bg">#ffffff</color>
+
+    <color name="primary">#3f51b5</color>
+    <color name="primary_dark">#1a237e</color>
+
+    <color name="post_odd_text_color">#444444</color>
+    <color name="post_odd_background_color">#aaaaaa</color>
+    <color name="post_even_text_color">#444444</color>
+    <color name="post_even_background_color">#cccccc</color>
+    <color name="post_future_text_color">#ffffff</color>
+    <color name="post_future_background_color">#719E89</color>
+    <color name="post_never_text_color">#444444</color>
+    <color name="post_never_background_color">#D8D16E</color>
+
+    <color name="post_normal_text_color">#444444</color>
+    <color name="post_normal_background_color">#ffffff</color>
+
+    <color name="autocomplete_actionbar_bg">#1a237e</color>
+    <color name="autocomplete_actionbar_popup_bg">#536dfe</color>
+
+    <color name="actionbar_bg">#1a237e</color>
+    <color name="actionbar_text">#ffffff</color>
+    <color name="actionbar_popup_bg">#536dfe</color>
+    <color name="actionbar_popup_text">#fff</color>
+    <color name="actionbar_divider_bg">#fff</color>
+
+    <color name="actionmode_bg">#536dfe</color>
+    <color name="actionmode_popup_bg">#1a237e</color>
+    <color name="actionmode_popup_text">#ffffff</color>
+
+    <color name="progressbar_bg">#c5cae9</color>
+    <color name="progressbar_progress_bg">#8c9eff</color>
+
+    <color name="dialog_popup_text">#000000</color>
+
+    <color name="animation_delete_bg">#f44336</color>
+
+    <array name="progress_swipe_colors">
+        <item>@color/actionbar_bg</item>
+        <item>@color/progressbar_bg</item>
+        <item>@color/progressbar_progress_bg</item>
+        <item>@color/actionbar_popup_bg</item>
+    </array>
+
+    <color name="dialog_background">#ffffff</color>
+
+    <color name="actionbar_navigate">#ffffff</color>
+    <color name="actionbar_overflow">#000000</color>
+</resources>

@@ -23,8 +23,9 @@ constructor(fis: FileInputStream, private val builder: CSVBuilder<T>) : Iterator
     }
 
     override fun next(): T {
+        val currentLine = checkNotNull(line)
         try {
-            val fields = line!!.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val fields = currentLine.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             val result = builder.parseCSVFields(fields)
             line = bufferedReader.readLine()
             return result

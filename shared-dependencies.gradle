@@ -1,0 +1,27 @@
+dependencies {
+    implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
+    implementation "androidx.core:core-ktx:${rootProject.ext.androidXCoreKtx}"
+    implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXRecyclerviewLibVersion}"
+    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
+    implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:${rootProject.ext.androidXSwiperefreshlayoutLibVersion}"
+    implementation "androidx.lifecycle:lifecycle-extensions:${rootProject.ext.androidXLifecycleExtensions}"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.androidXLifecycleViewmodelKtx}"
+    implementation "androidx.lifecycle:lifecycle-common-java8:${rootProject.ext.androidXLifecycleCommonJava8}"
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.kotlinxCoroutinesAndroid}"
+
+    implementation "org.koin:koin-androidx-scope:${rootProject.ext.koin}"
+    implementation "org.koin:koin-androidx-viewmodel:${rootProject.ext.koin}"
+
+    implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
+    implementation "com.ternaryop:tumblr-coroutines:${rootProject.ext.ternaryOpTumblrCoroutinesLibVersion}"
+
+    testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
+    androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
+    androidTestImplementation "androidx.test:rules:${rootProject.ext.androidXRulesLibVersion}"
+    androidTestImplementation "androidx.test.ext:junit:${rootProject.ext.androidxTestExtJunit}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.2.0"
+}

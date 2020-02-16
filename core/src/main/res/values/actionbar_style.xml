@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PhotoShelf"
+           parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
+
+        <item name="colorSurface">@color/actionbar_navigate</item>
+        <item name="colorOnSurface">@color/actionbar_overflow</item>
+
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <!-- Used for the buttons -->
+        <item name="colorAccent">@color/primary</item>
+
+        <item name="actionModeBackground">@color/actionmode_bg</item>
+        <item name="actionBarPopupTheme">@style/Theme.PhotoShelf.ActionMode.PopupMenu</item>
+
+        <item name="popupMenuStyle">@style/Theme.PhotoShelf.ContextPopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/Theme.PhotoShelf.ContextPopupMenuStyle</item>
+
+        <item name="textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceLarge</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceLarge</item>
+
+        <item name="textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall</item>
+
+        <item name="topColorDrawerRowBackgroundSelector">@drawable/drawer_row_bg_selector</item>
+        <item name="topColorDrawerRowTextSelector">@color/drawer_row_text_selector</item>
+        <item name="topColorDrawerCounterBackgroundSelector">@drawable/drawer_counter_bg_selector</item>
+        <item name="topColorDrawerCounterTextSelector">@color/drawer_counter_text_selector</item>
+        <item name="topDrawerToolbarPopupTheme">@style/Theme.PhotoShelf.Toolbar</item>
+
+        <item name="topColorDrawerBackgroundDivider">@color/drawer_divider_bg</item>
+        <item name="topColorDrawerBackgroundFrame">@color/drawer_frame_bg</item>
+
+        <item name="alertDialogTheme">@style/Theme.PhotoShelf.Dialog</item>
+
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+
+        <!-- Used for the buttons -->
+        <item name="colorAccent">@color/primary</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.ContextPopupMenuStyle" parent="@style/Widget.AppCompat.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/bug_fix</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceSmall" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">
+        <item name="android:textColor">@color/actionbar_popup_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.ContextPopupMenuStyle.TextAppearanceLarge" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Large">
+        <item name="android:textColor">@color/actionbar_popup_text</item>
+    </style>
+
+    <!-- Popup Menu Background Color styles -->
+    <style name="Theme.PhotoShelf.ActionBar.PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:background">@color/actionbar_popup_bg</item>
+        <item name="android:textColorPrimary">@color/actionbar_text</item>
+        <item name="colorAccent">@color/actionbar_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Spinner.DropDownNav" parent="Widget.AppCompat.Spinner.DropDown">
+        <item name="android:popupBackground">@drawable/bug_fix</item>
+        <item name="android:divider">@color/actionbar_divider_bg</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+    <!-- AutoComplete list items -->
+    <style name="Theme.PhotoShelf.SearchView.AutoCompleteTextView" parent="@android:style/Widget.Holo.Light.DropDownItem">
+        <item name="android:textColor">@color/actionbar_text</item>
+        <item name="android:background">@drawable/ab_selector_autocomplete</item>
+        <item name="android:divider">@color/actionbar_divider_bg</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+    <!-- ActionMode styles -->
+    <!-- The overflow menu shown when action mode is visible -->
+    <style name="Theme.PhotoShelf.ActionMode.PopupMenu" parent="Widget.AppCompat.Light.ActionMode.Inverse">
+        <item name="android:background">@color/actionmode_popup_bg</item>
+        <item name="android:textColor">@color/actionmode_popup_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="popupTheme">@style/Theme.PhotoShelf.Toolbar.PopupMenu</item>
+        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Toolbar.PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:background">@color/actionbar_popup_bg</item>
+        <item name="android:textColorPrimary">@color/actionbar_text</item>
+        <item name="colorAccent">@color/actionbar_text</item>
+    </style>
+
+    <!-- Used to style the overflow menu shown is dialogFragment's toolbar -->
+    <style name="Theme.PhotoShelf.Dialog"
+           parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall</item>
+
+        <item name="textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge</item>
+
+        <!-- Not yet used but can be used to customize the autocomplete editText color -->
+        <!--<item name="android:autoCompleteTextViewStyle">@style/Theme.PhotoShelf.Dialog.AutoCompleteTextView</item>-->
+
+        <!-- It's necessary to style the autocomplete dropdown -->
+        <item name="android:dropDownItemStyle">@style/Theme.PhotoShelf.Dialog.Widget.DropDownItem</item>
+        <!-- Used for the buttons -->
+        <item name="colorAccent">@color/primary</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceSmall" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">
+        <item name="android:textColor">@color/dialog_popup_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.ContextPopupMenuStyle.TextAppearanceLarge" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Large">
+        <item name="android:textColor">@color/dialog_popup_text</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.AutoCompleteTextView" parent="@style/Widget.AppCompat.Light.AutoCompleteTextView">
+        <item name="android:textColor">#00FF00</item>
+    </style>
+
+    <style name="Theme.PhotoShelf.Dialog.Widget.DropDownItem" parent="@style/Widget.AppCompat.Light.DropDownItem.Spinner">
+        <item name="android:textColor">@color/dialog_popup_text</item>
+    </style>
+
+</resources>

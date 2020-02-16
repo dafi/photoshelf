@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="integer" name="post_editor_max_mru_items">20</item>
+    <item type="integer" name="post_editor_max_highlighted_items">2</item>
+</resources>
