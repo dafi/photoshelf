@@ -63,7 +63,7 @@ buildscript {
         okhttp3LoggingInterceptorLibVersion = '4.3.1'
         okio = '2.4.3'
 
-        junitLibVersion = '4.12'
+        junitLibVersion = '4.13'
         androidXRulesLibVersion = '1.2.0'
         androidXEspressoCoreLibVersion = '3.2.0'
         androidxTestExtJunit = '1.1.1'
@@ -80,7 +80,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.27.0"
-        classpath "gradle.plugin.project:plugin:0.3.0"
+        classpath "gradle.plugin.project:plugin:1.0.0"
     }
 }
 
@@ -94,6 +94,13 @@ allprojects {
 }
 
 apply plugin: "com.jraska.module.graph.assertion"
+
+allprojects {
+    // JUnit 4.13 causes "Unresolved reference" so it's necessary to change resolution strategy
+    configurations.all {
+        resolutionStrategy.force "junit:junit:$junitLibVersion"
+    }
+}
 
 subprojects {
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
