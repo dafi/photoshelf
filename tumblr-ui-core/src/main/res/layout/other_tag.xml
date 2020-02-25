@@ -7,7 +7,7 @@
                                         android:paddingStart="1dp"
                                         android:paddingEnd="4dp"
                                         android:textSize="14sp"
-                                        top:clickedColor="@color/link_text_color_clicked"
-                                        top:clickedBackground="@color/link_text_color_clicked_bg"
+                                        top:topClickedColor="@color/link_text_color_clicked"
+                                        top:topClickedBackground="@color/link_text_color_clicked_bg"
                                         app:layout_alignSelf="baseline">
 </com.ternaryop.widget.ClickableTextView>

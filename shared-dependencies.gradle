@@ -17,6 +17,7 @@ dependencies {
     implementation "org.koin:koin-androidx-viewmodel:${rootProject.ext.koin}"
 
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
+    implementation "com.ternaryop:widget:${rootProject.ext.ternaryOpWidgetLibVersion}"
     implementation "com.ternaryop:tumblr-coroutines:${rootProject.ext.ternaryOpTumblrCoroutinesLibVersion}"
 
     testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"

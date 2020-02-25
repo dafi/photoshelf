@@ -9,7 +9,7 @@
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:colorScheme="@array/progress_swipe_colors">
+        app:topColorScheme="@array/progress_swipe_colors">
 
         <!-- use paddingBottom and clipToPadding to leave space between last item and bottom -->
         <androidx.recyclerview.widget.RecyclerView

@@ -15,7 +15,7 @@
         android:layout_height="0dp"
         android:scaleType="centerCrop"
         android:src="@drawable/stub"
-        top:checkedColorFilter="#77888888" />
+        top:topCheckedColorFilter="#77888888" />
 
 </LinearLayout>
 

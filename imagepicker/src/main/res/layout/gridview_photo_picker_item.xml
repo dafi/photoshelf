@@ -22,7 +22,7 @@
             android:scaleType="centerCrop"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            top:checkedColorFilter="#77888888"
+            top:topCheckedColorFilter="#77888888"
             android:src="@drawable/stub"/>
 
         <ImageView

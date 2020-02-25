@@ -56,7 +56,7 @@
         android:textColor="#de000000"
         android:textSize="14sp"
         android:visibility="gone"
-        app:clickedColor="@android:color/white"
-        app:clickedBackground="@android:color/holo_green_dark"
+        app:topClickedColor="@android:color/white"
+        app:topClickedBackground="@android:color/holo_green_dark"
         android:paddingTop="4dp"/>
 </com.ternaryop.widget.CheckableRelativeLayout>

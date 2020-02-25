@@ -9,7 +9,7 @@
     android:id="@+id/swipe_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:colorScheme="@array/progress_swipe_colors">
+    app:topColorScheme="@array/progress_swipe_colors">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gridview"
