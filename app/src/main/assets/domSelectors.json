@@ -229,7 +229,8 @@
     {
       "urlPattern": "gotceleb",
       "image": {
-        "pageChain": [
+        "css": "gallery-1",
+        "pageChain_no_longer_used": [
           {
             "pageSel": "a[href*=full-image]",
             "selAttr":"href"
