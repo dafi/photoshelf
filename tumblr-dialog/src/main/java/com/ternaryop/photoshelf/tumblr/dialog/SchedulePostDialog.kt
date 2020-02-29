@@ -92,8 +92,8 @@ class SchedulePostDialog : DialogFragment(), View.OnClickListener,
         if (scheduleDateTime.timeInMillis <= System.currentTimeMillis()) {
             AlertDialog.Builder(requireContext())
                 .setMessage(R.string.scheduled_time_is_in_the_past_continue_title)
-                .setPositiveButton(android.R.string.yes) { _, _ -> schedulePost() }
-                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.ok) { _, _ -> schedulePost() }
+                .setNegativeButton(android.R.string.cancel, null)
                 .show()
         } else {
             schedulePost()

@@ -11,7 +11,7 @@ import com.ternaryop.photoshelf.core.prefs.exportDaysPeriod
 import com.ternaryop.photoshelf.core.prefs.lastFollowersUpdateTime
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
 import com.ternaryop.photoshelf.domselector.DomSelectorManager
-import com.ternaryop.photoshelf.service.ImportIntentService
+import com.ternaryop.photoshelf.service.ImportService
 import com.ternaryop.utils.date.daysSinceNow
 import com.ternaryop.utils.dialog.showErrorDialog
 
@@ -39,7 +39,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         return when (preference?.key) {
             KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA -> {
                 preferenceScreen.sharedPreferences.selectedBlogName?.also {
-                    ImportIntentService.startImportBirthdaysFromWeb(requireContext(), it)
+                    ImportService.startImportBirthdaysFromWeb(requireContext(), it)
                 }
                 true
             }

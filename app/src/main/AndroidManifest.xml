@@ -68,14 +68,6 @@
             android:parentActivityName=".activity.MainActivity">
         </activity>
 
-        <service android:name=".imagepicker.service.PublishIntentService">
-            <meta-data
-                android:name="com.ternaryop.photoshelf.imagepicker.service.onPublishClassName"
-                android:value="com.ternaryop.photoshelf.imagepicker.OnPublishAddBirthdate"/>
-        </service>
-        <service android:name="com.ternaryop.photoshelf.birthday.service.BirthdayIntentService"/>
-        <service android:name=".imageviewer.service.WallpaperIntentService"/>
-        <service android:name=".service.ImportIntentService"/>
         <service android:name=".service.PhotoShelfJobService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>
 
@@ -92,7 +84,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".imagepicker.service.PublishIntentService$RetryPublishNotificationBroadcastReceiver"
+            android:name=".imagepicker.service.RetryPublishNotificationBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.ternaryop.photoshelf.publish.retry"/>

@@ -162,8 +162,8 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
 
         AlertDialog.Builder(requireContext())
                 .setMessage(getString(R.string.are_you_sure))
-                .setPositiveButton(android.R.string.yes, dialogClickListener)
-                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.ok, dialogClickListener)
+                .setNegativeButton(android.R.string.cancel, null)
                 .show()
     }
 

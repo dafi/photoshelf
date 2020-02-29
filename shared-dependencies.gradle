@@ -8,6 +8,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:${rootProject.ext.androidXLifecycleExtensions}"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.androidXLifecycleViewmodelKtx}"
     implementation "androidx.lifecycle:lifecycle-common-java8:${rootProject.ext.androidXLifecycleCommonJava8}"
+    implementation "androidx.work:work-runtime-ktx:${rootProject.ext.androidXWorkLibVersion}"
+
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"

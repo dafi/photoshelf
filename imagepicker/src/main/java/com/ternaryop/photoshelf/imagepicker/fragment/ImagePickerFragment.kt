@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.ActionMode
 import android.view.LayoutInflater
@@ -28,7 +27,8 @@ import com.ternaryop.photoshelf.api.extractor.ImageGallery
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.imagepicker.R
 import com.ternaryop.photoshelf.imagepicker.adapter.ImagePickerAdapter
-import com.ternaryop.photoshelf.imagepicker.service.PublishIntentService
+import com.ternaryop.photoshelf.imagepicker.service.OnPublish
+import com.ternaryop.photoshelf.imagepicker.service.PostPublisherService
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorData
@@ -49,7 +49,8 @@ const val EXTRA_URL = "com.ternaryop.photoshelf.extra.URL"
 
 class ImagePickerFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter,
-    private val tumblrPostDialog: TumblrPostDialog
+    private val tumblrPostDialog: TumblrPostDialog,
+    private val publishClassName: Class<out OnPublish>
 ) : AbsPhotoShelfFragment(),
     OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
     private lateinit var gridView: RecyclerView
@@ -395,14 +396,10 @@ class ImagePickerFragment(
     private fun onPublish(resultData: NewPostEditorResult) {
         resultData
             .urls
-            .map { Uri.parse(it) }
             .forEach { url ->
-                PublishIntentService.startActionIntent(requireContext(),
-                    url,
-                    resultData.blogName,
-                    resultData.htmlTitle,
-                    resultData.tags,
-                    resultData.isPublish)
+                PostPublisherService.startPublish(
+                    requireContext(),
+                    resultData.toPostPublisherData(url, publishClassName.name))
             }
     }
 }

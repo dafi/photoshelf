@@ -2,7 +2,6 @@ package com.ternaryop.photoshelf.tumblr.dialog.editor.fragment
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -233,7 +232,6 @@ class PostEditorFragment : Fragment() {
         if (firstTag.isEmpty()) {
             return
         }
-        val handler = Handler()
-        Thread(Runnable { handler.post { viewModel.searchMisspelledName(firstTag) } }).start()
+        viewModel.searchMisspelledName(firstTag)
     }
 }

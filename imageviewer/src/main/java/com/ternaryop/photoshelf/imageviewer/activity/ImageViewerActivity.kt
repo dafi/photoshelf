@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -26,7 +27,7 @@ import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.activity.ImageViewerData
 import com.ternaryop.photoshelf.imageviewer.R
-import com.ternaryop.photoshelf.imageviewer.service.WallpaperIntentService
+import com.ternaryop.photoshelf.imageviewer.service.WallpaperService
 import com.ternaryop.photoshelf.imageviewer.util.ImageViewerUtil
 import com.ternaryop.photoshelf.util.menu.enableAll
 import com.ternaryop.utils.dialog.showErrorDialog
@@ -129,7 +130,8 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
         runOnUiThread {
             detailsText.visibility = View.VISIBLE
             detailsText.text = String.format(Locale.US, "%s (%1dx%2d)", imageHostUrl, w, h)
-            Handler().postDelayed({ detailsText.visibility = View.GONE }, DIMENSIONS_POST_DELAY_MILLIS)
+            Handler(Looper.getMainLooper())
+                .postDelayed({ detailsText.visibility = View.GONE }, DIMENSIONS_POST_DELAY_MILLIS)
         }
     }
 
@@ -146,7 +148,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_image_viewer_wallpaper -> {
-                WallpaperIntentService.startChangeWallpaperIntent(this, Uri.parse(imageViewerData.imageUrl))
+                WallpaperService.startChange(this, imageViewerData.imageUrl)
                 return true
             }
             R.id.action_image_viewer_share -> {

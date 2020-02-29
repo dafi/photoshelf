@@ -240,8 +240,8 @@ class BirthdayBrowserFragment(
 
         AlertDialog.Builder(requireContext())
             .setMessage(message)
-            .setPositiveButton(android.R.string.yes, dialogClickListener)
-            .setNegativeButton(android.R.string.no, dialogClickListener)
+            .setPositiveButton(android.R.string.ok, dialogClickListener)
+            .setNegativeButton(android.R.string.cancel, dialogClickListener)
             .show()
     }
 

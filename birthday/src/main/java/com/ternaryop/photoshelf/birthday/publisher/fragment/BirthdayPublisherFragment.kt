@@ -21,7 +21,7 @@ import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.birthday.R
 import com.ternaryop.photoshelf.birthday.publisher.adapter.BirthdayPhotoAdapter
-import com.ternaryop.photoshelf.birthday.service.BirthdayIntentService
+import com.ternaryop.photoshelf.birthday.service.BirthdayPublisherService
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
@@ -127,7 +127,7 @@ class BirthdayPublisherFragment(
             selectedBirthdays.add(pair)
         }
 
-        BirthdayIntentService.startPublishBirthdayIntent(
+        BirthdayPublisherService.startPublish(
             requireContext(), selectedBirthdays, requireBlogName, publishAsDraft)
         Toast.makeText(requireContext(),
             getString(R.string.sending_cake_title, TextUtils.join(", ", names)),
