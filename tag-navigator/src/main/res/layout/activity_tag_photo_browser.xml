@@ -20,7 +20,7 @@
                 android:id="@+id/drawer_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                style="?topDrawerToolbarPopupTheme"
+                style="@style/Theme.PhotoShelf.Toolbar"
                 app:layout_scrollFlags="scroll|enterAlways"/>
 
         </com.google.android.material.appbar.AppBarLayout>

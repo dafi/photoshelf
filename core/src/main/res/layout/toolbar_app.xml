@@ -2,7 +2,7 @@
     android:id="@+id/drawer_toolbar"
     android:layout_width="match_parent"
     android:layout_height="?actionBarSize"
-    style="?topDrawerToolbarPopupTheme">
+    style="@style/Theme.PhotoShelf.Toolbar">
 
     <!-- theme and popupTheme attributes look Toolbar like 'DarkActionBar' (dark content, light overflow menu) -->
 </androidx.appcompat.widget.Toolbar>
