@@ -1,11 +1,16 @@
 package com.ternaryop.photoshelf.imageviewer.util
 
+import android.annotation.TargetApi
 import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.annotation.StringRes
 import com.ternaryop.utils.dialog.showErrorDialog
@@ -24,14 +29,39 @@ import java.net.URL
  * Errors and successes are shown using UI elements (eg. dialogs and toasts)
  */
 object ImageViewerUtil {
-    fun download(context: Context, url: String, fileUri: Uri) {
-        try {
-            val request = DownloadManager.Request(Uri.parse(url))
-                .setDestinationUri(fileUri)
-            (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
-        } catch (e: Exception) {
-            e.showErrorDialog(context)
+    /**
+     * Download [url] and save the content into the Pictures directory inside the [relativePath].
+     * [relativePath] can contain subdirectories and must contain the file name
+     */
+    suspend fun download(context: Context, url: String, relativePath: File) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            downloadQ(context, url, relativePath)
+        } else {
+            downloadLegacy(context, url, relativePath)
         }
+    }
+
+    private fun downloadLegacy(context: Context, url: String, relativePath: File) {
+        val fileUri = Uri.fromFile(File(getPicturesDirectory(checkNotNull(relativePath.parentFile)), relativePath.name))
+        val request = DownloadManager.Request(Uri.parse(url))
+            .setDestinationUri(fileUri)
+        (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    private suspend fun downloadQ(context: Context, url: String, relativePath: File) = withContext(Dispatchers.IO) {
+        val pictureRelativePath = File(Environment.DIRECTORY_PICTURES, relativePath.path)
+        val values = ContentValues().apply {
+            put(MediaStore.Images.ImageColumns.DISPLAY_NAME, pictureRelativePath.name)
+            put(MediaStore.Images.ImageColumns.IS_PENDING, 1)
+            put(MediaStore.Images.ImageColumns.RELATIVE_PATH, pictureRelativePath.parent)
+        }
+        val resolver = context.contentResolver
+        val destUri = checkNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
+        downloadImageUrl(context.contentResolver, URL(url), destUri)
+        values.clear()
+        values.put(MediaStore.Downloads.IS_PENDING, 0)
+        resolver.update(destUri, values, null, null)
     }
 
     fun copyToClipboard(context: Context, text: String, label: String, @StringRes resultMessage: Int) {
@@ -77,5 +107,15 @@ object ImageViewerUtil {
         return if (index != -1) {
             fileName + imageUrl.substring(index)
         } else fileName
+    }
+
+    private fun getPicturesDirectory(relativePath: File): File {
+        val fullDirPath = File(Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_PICTURES),
+            relativePath.path)
+        if (!fullDirPath.exists()) {
+            fullDirPath.mkdirs()
+        }
+        return fullDirPath
     }
 }

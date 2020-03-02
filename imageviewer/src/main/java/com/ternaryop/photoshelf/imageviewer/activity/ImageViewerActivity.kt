@@ -7,9 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.view.Menu
@@ -45,15 +43,6 @@ const val DIMENSIONS_POST_DELAY_MILLIS = 3000L
 const val FILE_PROVIDER_SHARE_AUTHORITY = "com.ternaryop.photoshelf.imagepicker.viewer.fileProviderShareAuthority"
 
 private const val SUBDIRECTORY_PICTURES = "TernaryOpPhotoShelf"
-
-private fun getPicturesDirectory(): File {
-    val fullDirPath = File(Environment.getExternalStoragePublicDirectory(
-        Environment.DIRECTORY_PICTURES), SUBDIRECTORY_PICTURES)
-    if (!fullDirPath.exists()) {
-        fullDirPath.mkdirs()
-    }
-    return fullDirPath
-}
 
 @SuppressLint("SetJavaScriptEnabled")
 class ImageViewerActivity : AbsPhotoShelfActivity() {
@@ -174,7 +163,14 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
 
     private fun startDownload() {
         val fileName = ImageViewerUtil.buildFileName(imageViewerData.imageUrl, imageViewerData.tag)
-        ImageViewerUtil.download(this, imageViewerData.imageUrl, Uri.fromFile(File(getPicturesDirectory(), fileName)))
+        launch {
+            try {
+                val relativePath = File(SUBDIRECTORY_PICTURES, fileName)
+                ImageViewerUtil.download(this@ImageViewerActivity, imageViewerData.imageUrl, relativePath)
+            } catch (t: Throwable) {
+                t.showErrorDialog(this@ImageViewerActivity)
+            }
+        }
     }
 
     private fun startShareImage() {
