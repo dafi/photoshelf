@@ -31,6 +31,7 @@ import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
+import com.ternaryop.photoshelf.util.near
 import com.ternaryop.photoshelf.util.post.moveToBottom
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.photoshelf.view.snackbar.SnackbarHolder
@@ -40,6 +41,8 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 private const val FRAGMENT_TAG_SORT = "sort"
 private const val FRAGMENT_TAG_CATEGORIES = "categories"
 private const val FRAGMENT_TAG_SETTINGS = "settings"
+
+private const val PICKER_FETCH_ITEM_COUNT = 3
 
 class FeedlyListFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
@@ -259,6 +262,8 @@ class FeedlyListFragment(
     override fun onTitleClick(position: Int) {
         val url = adapter.getItem(position).run { canonicalUrl ?: originId }
         imageViewerActivityStarter.startImagePicker(requireContext(), url)
+        val urls = adapter.allContents.near(position, PICKER_FETCH_ITEM_COUNT).map { it.canonicalUrl ?: it.originId }
+        imageViewerActivityStarter.startImagePickerPrefetch(urls)
     }
 
     override fun onTagClick(position: Int) {

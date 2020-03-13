@@ -18,6 +18,7 @@ class ImageViewerData(
 
 interface ImageViewerActivityStarter {
     fun startImagePicker(context: Context, url: String)
+    fun startImagePickerPrefetch(urls: List<String>)
     fun startTagPhotoBrowser(context: Context, data: TagPhotoBrowserData)
     fun startTagPhotoBrowserForResult(fragment: Fragment, requestCode: Int, data: TagPhotoBrowserData)
     fun startImageViewer(context: Context, data: ImageViewerData)

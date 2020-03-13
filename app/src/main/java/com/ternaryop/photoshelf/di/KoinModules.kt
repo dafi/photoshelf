@@ -18,6 +18,7 @@ import com.ternaryop.photoshelf.feedly.reader.AssetManagerStreamContentReader
 import com.ternaryop.photoshelf.fragment.AppFragmentFactory
 import com.ternaryop.photoshelf.home.fragment.HomeViewModel
 import com.ternaryop.photoshelf.imagepicker.fragment.ImagePickerViewModel
+import com.ternaryop.photoshelf.imagepicker.repository.ImageGalleryRepository
 import com.ternaryop.photoshelf.misspelled.MisspelledName
 import com.ternaryop.photoshelf.misspelled.impl.MisspelledNameImpl
 import com.ternaryop.photoshelf.repository.tumblr.TumblrRepository
@@ -39,6 +40,7 @@ import org.koin.dsl.module
 val repositoryModule = module {
     single { BirthdayRepository() }
     single { TumblrRepository(get()) }
+    single { ImageGalleryRepository(get()) }
 }
 
 val uiModule = module {
@@ -48,7 +50,7 @@ val uiModule = module {
     viewModel { BirthdayPublisherViewModel(get()) }
     viewModel { PostViewModel(get(), get()) }
     viewModel { FeedlyViewModel(get(), get()) }
-    viewModel { ImagePickerViewModel(get()) }
+    viewModel { ImagePickerViewModel(get(), get()) }
     viewModel { PublishedPostsListViewModel(get()) }
     viewModel { BirthdayBrowserViewModel(get()) }
     viewModel { TagPhotoBrowserViewModel(get()) }
@@ -58,7 +60,7 @@ val uiModule = module {
 val factoryModule = module {
     single<TumblrPostDialog> { TumblrPostDialogImpl() }
     single<FragmentFactory> { AppFragmentFactory(get(), get()) }
-    single<ImageViewerActivityStarter> { ImageViewerActivityStarterImpl() }
+    single<ImageViewerActivityStarter> { ImageViewerActivityStarterImpl(get()) }
     single<MisspelledName> { MisspelledNameImpl(DBHelper.getInstance(get()).tagMatcherDAO) }
     factory<PostActionExecutor> {
         PostActionExecutorImpl(TumblrManager.getInstance(get()),
