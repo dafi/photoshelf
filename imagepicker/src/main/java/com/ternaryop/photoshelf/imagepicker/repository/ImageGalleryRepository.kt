@@ -8,6 +8,7 @@ import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.domselector.DomSelectorManager
 import com.ternaryop.photoshelf.domselector.util.readImageGallery
 import com.ternaryop.photoshelf.domselector.util.retrieveImageUri
+import com.ternaryop.util.crypto.CryptoUtil.md5
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,17 +43,24 @@ class ImageGalleryRepository(private val context: Context) {
         val file = cacheFile(url)
         val currentTimeMillis = System.currentTimeMillis()
 
-        return if (!hasExpired(file, currentTimeMillis, expireTimespan)) {
-            FileInputStream(file).use { gson.fromJson(InputStreamReader(it), ImageGalleryResult::class.java) }
-        } else {
+        return try {
+            if (hasExpired(file, currentTimeMillis, expireTimespan)) {
+                null
+            } else {
+                FileInputStream(file).use { gson.fromJson(InputStreamReader(it), ImageGalleryResult::class.java) }
+            }
+        } catch (ignored: Throwable) {
             null
         }
     }
 
     private fun writeCache(url: String, imageGalleryResult: ImageGalleryResult): ImageGalleryResult {
-        val file = cacheFile(url)
+        try {
+            val file = cacheFile(url)
 
-        FileWriter(file).use { it.write(gson.toJson(imageGalleryResult)) }
+            FileWriter(file).use { it.write(gson.toJson(imageGalleryResult)) }
+        } catch (ignored: Throwable) {
+        }
         return imageGalleryResult
     }
 
@@ -70,11 +78,13 @@ class ImageGalleryRepository(private val context: Context) {
     }
 
     private suspend fun fetch(url: String, currentTimeMillis: Long, expireTimespan: Long) {
-        val file = cacheFile(url)
+        try {
+            val file = cacheFile(url)
 
-        if (hasExpired(file, currentTimeMillis, expireTimespan)) {
-            val imageGalleryResult = domSelectors.readImageGallery(url).response
-            writeCache(url, imageGalleryResult)
+            if (hasExpired(file, currentTimeMillis, expireTimespan)) {
+                domSelectors.readImageGallery(url).response.let { writeCache(url, it) }
+            }
+        } catch (ignored: Throwable) {
         }
     }
 
@@ -82,5 +92,5 @@ class ImageGalleryRepository(private val context: Context) {
         return !file.exists() || (currentTime - file.lastModified()) > expireTimespan
     }
 
-    private fun cacheFile(url: String) = File(cacheDir, url.hashCode().toString())
+    private fun cacheFile(url: String) = File(cacheDir, md5(url))
 }
