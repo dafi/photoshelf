@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -229,12 +229,8 @@
     {
       "urlPattern": "gotceleb",
       "image": {
-        "css": "gallery-1",
-        "pageChain_no_longer_used": [
-          {
-            "pageSel": "a[href*=full-image]",
-            "selAttr":"href"
-          },
+        "css_no_longer_valid": "gallery-1",
+        "pageChain": [
           {
             "pageSel": "a[href*=wp-content]",
             "selAttr":"href"
