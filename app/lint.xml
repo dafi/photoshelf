@@ -10,4 +10,12 @@
         <!-- Ignore on incomplete files, they will change/be removed in the future -->
         <ignore path="**/res/layout/fragment_best_of.xml" />
     </issue>
+
+    <issue id="RtlEnabled">
+        <ignore path="**/AndroidManifest.xml" />
+    </issue>
+
+    <issue id="UnusedResources">
+        <ignore path="*.xml" />
+    </issue>
 </lint>
