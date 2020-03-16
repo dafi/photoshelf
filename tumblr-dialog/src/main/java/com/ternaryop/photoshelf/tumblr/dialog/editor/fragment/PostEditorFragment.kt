@@ -229,9 +229,6 @@ class PostEditorFragment : Fragment() {
         val firstTag = if (tags.isEmpty()) "" else tags[0]
         tumblrPostAction.tagsHolder.tags = tags.joinToString(", ")
 
-        if (firstTag.isEmpty()) {
-            return
-        }
         viewModel.searchMisspelledName(firstTag)
     }
 }

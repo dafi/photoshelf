@@ -26,7 +26,11 @@ class PostViewModel(
 
     fun searchMisspelledName(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val command = Command.execute { misspelledName.getMisspelledInfo(name) }
+            val command = if (name.isBlank()) {
+                Command.success(MisspelledName.Info.NotFound(name))
+            } else {
+                Command.execute { misspelledName.getMisspelledInfo(name) }
+            }
             postResult(TumblrPostModelResult.MisspelledInfo(command))
         }
     }
