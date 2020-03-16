@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -279,6 +279,13 @@
         "regExp": "\"images\":{.*?\"main\":\"(.*?)\",\"full\":\"(.*?)\"",
         "regExpImageUrlIndex": 2,
         "regExpThumbUrlIndex": 1
+      }
+    },
+    {
+      "urlPattern": "picpub.pw",
+      "image": {
+        "css": ".header-content-right a",
+        "selAttr":"href"
       }
     },
     {
