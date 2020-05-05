@@ -65,7 +65,7 @@
     {
       "urlPattern": "hotcelebshome.com",
       "gallery": {
-        "container": "..entry-content",
+        "container": ".entry-content",
         "isImageDirectUrl": true,
         "regExp": "<noscript><img(?:.*?)data-url=\"(.*?)\"(?:.*?)src=\"(.*?)\"(?:.*?)\/><\/noscript>",
         "regExpImageUrlIndex": 2,
