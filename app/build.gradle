@@ -7,6 +7,7 @@ dependencies {
 
     implementation "com.dropbox.core:dropbox-core-sdk:${rootProject.ext.dropboxCoreLibVersion}"
 
+    implementation "com.ternaryop:crash-reporter:${rootProject.ext.ternaryOpCrashReporterLibVersion}"
     implementation "com.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
     implementation "com.ternaryop.photoshelf:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
     implementation "com.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"

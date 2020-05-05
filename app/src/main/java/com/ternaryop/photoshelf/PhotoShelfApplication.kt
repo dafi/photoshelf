@@ -3,6 +3,9 @@ package com.ternaryop.photoshelf
 
 import android.app.Application
 import androidx.preference.PreferenceManager
+import com.ternaryop.crashreporter.CrashReporter
+import com.ternaryop.crashreporter.reporter.FileReporter
+import com.ternaryop.crashreporter.reporter.NotificationReporter
 import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.FeedlyClientInfo
 import com.ternaryop.photoshelf.api.ApiManager
@@ -11,6 +14,8 @@ import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.photoshelf.di.factoryModule
 import com.ternaryop.photoshelf.di.repositoryModule
 import com.ternaryop.photoshelf.di.uiModule
+import com.ternaryop.photoshelf.util.image.ImageLoader
+import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.util.okhttp3.OkHttpUtil
 import com.ternaryop.utils.dropbox.DropboxManager
@@ -29,6 +34,12 @@ class PhotoShelfApplication : Application() {
             androidContext(this@PhotoShelfApplication)
             modules(listOf(repositoryModule, uiModule, factoryModule))
         }
+
+        CrashReporter
+            .addReporter(FileReporter(this))
+            .addReporter(NotificationReporter { it.notify(this, "Application died") })
+
+        ImageLoader.setup(this)
 
         TumblrManager.setup(
             getString(R.string.TUMBLR_CONSUMER_KEY),
