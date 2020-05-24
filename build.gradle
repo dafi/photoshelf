@@ -31,19 +31,19 @@ buildscript {
         androidXRecyclerviewLibVersion = '1.1.0'
         androidXAnnotationLibVersion = '1.1.0'
         androidXMaterialLibVersion = '1.2.0-alpha03'
-        androidXConstraintlayoutLibVersion = '2.0.0-beta4'
-        androidXPreferenceLibVersion = '1.1.0'
+        androidXConstraintlayoutLibVersion = '2.0.0-beta6'
+        androidXPreferenceLibVersion = '1.1.1'
         androidXSwiperefreshlayoutLibVersion = '1.1.0-alpha03'
         androidXCoreKtx = '1.2.0-rc01'
         androidXLifecycleExtensions = '2.2.0'
         androidXLifecycleViewmodelKtx = androidXLifecycleExtensions
         androidXLifecycleCommonJava8 = androidXLifecycleExtensions
-        androidXWorkLibVersion = '2.3.2'
+        androidXWorkLibVersion = '2.4.0-beta01'
 
         flexboxLibVersion = '2.0.1'
 
-        kotlinxCoroutinesCore = '1.3.3'
-        kotlinxCoroutinesAndroid = '1.3.3'
+        kotlinxCoroutinesCore = '1.3.7'
+        kotlinxCoroutinesAndroid = '1.3.7'
 
         koin = '2.0.1'
 
@@ -54,16 +54,16 @@ buildscript {
         ternaryOpApiCoroutinesLibVersion = '1.1.0'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.5'
         ternaryOpFeedlyCoroutinesLibVersion = '1.0.2'
-        ternaryOpTumblrCoroutinesLibVersion = '1.0.3'
+        ternaryOpTumblrCoroutinesLibVersion = '1.0.4'
 
         dropboxCoreLibVersion = '3.1.3'
 
-        coilLibVersion = '0.9.5'
+        coilLibVersion = '0.11.0'
 
         retrofitLibVersion = '2.7.1'
         gsonLibVersion = '2.8.6'
         retrofitConverterGsonLibVersion = '2.7.1'
-        okhttp3LoggingInterceptorLibVersion = '4.4.0'
+        okhttp3LoggingInterceptorLibVersion = '4.7.2'
         okio = '2.4.3'
 
         junitLibVersion = '4.13'
@@ -83,7 +83,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.28.0"
-        classpath "gradle.plugin.project:plugin:1.0.0"
+        classpath "gradle.plugin.project:plugin:1.3.1"
     }
 }
 
