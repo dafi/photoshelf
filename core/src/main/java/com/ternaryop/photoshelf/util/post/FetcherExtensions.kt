@@ -12,7 +12,7 @@ fun <T> PageFetcher<T>.removeItem(item: T) {
 
 fun <T> CachedListFetcher<T>.moveToBottom(index: Int) {
     list?.also { list ->
-        if (index == (list.size - 1)) {
+        if (list.isEmpty() || index == (list.size - 1)) {
             return
         }
         list.add(list.removeAt(index))
