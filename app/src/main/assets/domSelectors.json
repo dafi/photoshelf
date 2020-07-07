@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -286,6 +286,15 @@
       "image": {
         "css": ".header-content-right a",
         "selAttr":"href"
+      }
+    },
+    {
+      "urlPattern": "popoholic.com",
+      "image": {
+        "css": "#main_photo img"
+      },
+      "gallery": {
+        "container": ".post a img"
       }
     },
     {
