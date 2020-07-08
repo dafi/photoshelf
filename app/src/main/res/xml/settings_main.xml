@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:key="key_root"
-                  android:title="@string/settings">
+    android:key="key_root"
+    android:title="@string/settings">
 
     <PreferenceCategory
         android:key="pref_key_login_settings"
@@ -9,46 +9,46 @@
         <Preference
             android:key="tumblr_login"
             android:persistent="false"
-            android:title="@string/login_title"/>
+            android:title="@string/login_title" />
         <Preference
             android:key="dropbox_login"
             android:persistent="false"
-            android:title="@string/login_title"/>
+            android:title="@string/login_title" />
         <EditTextPreference
             android:key="photoshelfApikey"
-            android:title="@string/photoshelf_apikey"/>
+            android:title="@string/photoshelf_apikey" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_import_export_key"
         android:title="@string/pref_import_category_title">
         <PreferenceScreen
-            android:key="import_category_key"
+            android:key="category_key_import"
             android:persistent="false"
             android:title="@string/pref_import_screen_title">
-            <CheckBoxPreference
+            <SwitchPreferenceCompat
                 android:key="automatic_export"
-                android:title="@string/automatic_export"/>
+                android:title="@string/automatic_export" />
             <PreferenceCategory
                 android:key="pref_key_export_days_period"
                 android:title="@string/pref_export_days_period">
                 <com.ternaryop.preference.IntegerEditTextPreference
-                    android:inputType="number"
-                    android:selectAllOnFocus="true"
                     android:defaultValue="@integer/export_days_period_default"
+                    android:inputType="number"
                     android:key="exportDaysPeriod"
-                    android:maxLength="2"/>
+                    android:maxLength="2"
+                    android:selectAllOnFocus="true" />
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/pref_birthdays_title">
                 <Preference
                     android:key="import_birthdays_from_wikipedia"
                     android:persistent="false"
-                    android:title="@string/import_missing_birthdays_from_web_title"/>
+                    android:title="@string/import_missing_birthdays_from_web_title" />
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/pref_domselector_title">
                 <Preference
                     android:key="import_dom_selector_config"
                     android:persistent="false"
-                    android:title="@string/import_config_from_file"/>
+                    android:title="@string/import_config_from_file" />
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
@@ -57,19 +57,33 @@
         android:title="@string/pref_schedule_title">
         <com.ternaryop.preference.IntegerEditTextPreference
             android:defaultValue="@integer/schedule_minutes_time_span_default"
-            android:key="schedule_minutes_time_span"
             android:inputType="number"
+            android:key="schedule_minutes_time_span"
             android:maxLength="6"
             android:selectAllOnFocus="true"
-            android:title="@string/schedule_minutes_time_span_default"/>
+            android:title="@string/schedule_minutes_time_span_default" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="pref_key_clear_cache"
-        android:title="@string/pref_clear_cache">
-        <Preference
-            android:key="clear_image_cache"
+        android:key="pref_key_image"
+        android:title="@string/pref_image">
+        <PreferenceScreen
+            android:key="category_key_image"
             android:persistent="false"
-            android:title="@string/clear_image_cache_title"/>
+            android:title="@string/pref_image_category">
+            <SwitchPreferenceCompat
+                android:key="use_hardware_images"
+                android:title="@string/use_hardware_images" />
+            <ListPreference
+                android:defaultValue="@integer/thumbnail_width_value_default"
+                android:entries="@array/list_thumbnail_width_entries_default"
+                android:entryValues="@array/list_thumbnail_width_values_default"
+                android:key="thumbnail_width"
+                android:title="@string/pref_thumbnail_width" />
+            <Preference
+                android:key="clear_image_cache"
+                android:persistent="false"
+                android:title="@string/clear_image_cache_title" />
+        </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_post_editor"
@@ -90,24 +104,14 @@
             android:title="@string/pref_edit_post_max_highlighted_tags_mru_items" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="pref_key_thumbnail_width"
-        android:title="@string/pref_thumbnail_width">
-        <ListPreference
-            android:title="@string/pref_thumbnail_width"
-            android:key="thumbnail_width"
-            android:defaultValue="@integer/thumbnail_width_value_default"
-            android:entries="@array/list_thumbnail_width_entries_default"
-            android:entryValues="@array/list_thumbnail_width_values_default"/>
-    </PreferenceCategory>
-    <PreferenceCategory
         android:key="pref_key_developer"
         android:title="@string/pref_developer">
         <Preference
             android:key="version"
-            android:persistent="false"/>
+            android:persistent="false" />
         <Preference
             android:key="dropbox_version"
-            android:persistent="false"/>
+            android:persistent="false" />
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

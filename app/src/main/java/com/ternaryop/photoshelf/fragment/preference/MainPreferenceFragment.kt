@@ -2,25 +2,18 @@ package com.ternaryop.photoshelf.fragment.preference
 
 import android.Manifest
 import android.app.AlertDialog
-import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
-import com.ternaryop.photoshelf.core.prefs.PREF_EXPORT_DAYS_PERIOD
-import com.ternaryop.photoshelf.core.prefs.PREF_PHOTOSHELF_APIKEY
 import com.ternaryop.photoshelf.core.prefs.clearBlogList
-import com.ternaryop.photoshelf.tumblr.ui.core.prefs.PREF_THUMBNAIL_WIDTH
-import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.PREF_SCHEDULE_MINUTES_TIME_SPAN
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.dropbox.DropboxManager
@@ -36,9 +29,11 @@ private const val DROPBOX_SERVICE_NAME = "Dropbox"
 
 private const val KEY_TUMBLR_LOGIN = "tumblr_login"
 private const val KEY_DROPBOX_LOGIN = "dropbox_login"
-private const val KEY_CLEAR_IMAGE_CACHE = "clear_image_cache"
 private const val KEY_VERSION = "version"
 private const val KEY_DROPBOX_VERSION = "dropbox_version"
+private const val KEY_SCHEDULE_MINUTES_TIME_SPAN = "schedule_minutes_time_span"
+private const val KEY_EXPORT_DAYS_PERIOD = "exportDaysPeriod"
+private const val KEY_PHOTOSHELF_APIKEY = "photoshelfApikey"
 
 private const val DROPBOX_RESULT = 2
 private const val REQUEST_FILE_PERMISSION = 1
@@ -68,12 +63,10 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
             REQUEST_FILE_PERMISSION,
             AlertDialog.Builder(activity).setMessage(R.string.import_permission_rationale))
 
-        findPreference<Preference>(PREF_SCHEDULE_MINUTES_TIME_SPAN)
-        onSharedPreferenceChanged(preferenceManager.sharedPreferences, PREF_SCHEDULE_MINUTES_TIME_SPAN)
+        findPreference<Preference>(KEY_SCHEDULE_MINUTES_TIME_SPAN)
+        onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_SCHEDULE_MINUTES_TIME_SPAN)
 
-        onSharedPreferenceChanged(preferenceManager.sharedPreferences, PREF_THUMBNAIL_WIDTH)
-
-        onSharedPreferenceChanged(preferenceManager.sharedPreferences, PREF_EXPORT_DAYS_PERIOD)
+        onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_EXPORT_DAYS_PERIOD)
 
         setupVersionInfo(preferenceScreen)
     }
@@ -86,26 +79,14 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         sharedPreferences ?: return
         when (key) {
-            PREF_SCHEDULE_MINUTES_TIME_SPAN -> onChangedScheduleMinutesTimeSpan(sharedPreferences, key)
-            PREF_THUMBNAIL_WIDTH -> onChangedThumbnailWidth(sharedPreferences, key)
-            PREF_PHOTOSHELF_APIKEY -> ApiManager.updateToken(sharedPreferences.getString(key, null) ?: "")
-        }
-    }
-
-    private fun onChangedThumbnailWidth(sharedPreferences: SharedPreferences, key: String) {
-        val value = sharedPreferences.getString(key,
-            resources.getInteger(R.integer.thumbnail_width_value_default).toString())
-        findPreference<ListPreference>(PREF_THUMBNAIL_WIDTH)?.apply {
-            val index = findIndexOfValue(value)
-            if (index > -1) {
-                summary = entries[index]
-            }
+            KEY_SCHEDULE_MINUTES_TIME_SPAN -> onChangedScheduleMinutesTimeSpan(sharedPreferences, key)
+            KEY_PHOTOSHELF_APIKEY -> ApiManager.updateToken(sharedPreferences.getString(key, null) ?: "")
         }
     }
 
     private fun onChangedScheduleMinutesTimeSpan(sharedPreferences: SharedPreferences, key: String) {
         val minutes = sharedPreferences.getInt(key, 0)
-        findPreference<Preference>(PREF_SCHEDULE_MINUTES_TIME_SPAN)
+        findPreference<Preference>(KEY_SCHEDULE_MINUTES_TIME_SPAN)
             ?.summary = resources.getQuantityString(R.plurals.minute_title, minutes, minutes)
     }
 
@@ -135,10 +116,6 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
                 }
                 return true
             }
-            KEY_CLEAR_IMAGE_CACHE -> {
-                clearImageCache()
-                return true
-            }
             KEY_DROPBOX_LOGIN -> {
                 if (dropboxManager.isLinked) {
                     dropboxManager.unlink()
@@ -165,19 +142,6 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
                 .setPositiveButton(android.R.string.ok, dialogClickListener)
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()
-    }
-
-    private fun clearImageCache() {
-        // copied from https://github.com/UweTrottmann/SeriesGuide/
-        // try to open app info where user can clear app cache folders
-        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:" + requireContext().packageName)
-        try {
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            // open all apps view
-            startActivity(Intent(android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS))
-        }
     }
 
     private fun setupVersionInfo(preferenceScreen: PreferenceScreen) {

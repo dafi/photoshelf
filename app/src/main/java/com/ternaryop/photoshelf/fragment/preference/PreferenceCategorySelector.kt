@@ -6,7 +6,8 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.ternaryop.photoshelf.R
 
-private const val CATEGORY_KEY_IMPORT = "import_category_key"
+private const val CATEGORY_KEY_IMPORT = "category_key_import"
+private const val CATEGORY_KEY_IMAGE = "category_key_image"
 
 /**
  * Created by dave on 17/03/18.
@@ -29,6 +30,7 @@ object PreferenceCategorySelector {
 
     private fun fragmentFromCategory(key: String?): Fragment? = when (key) {
         CATEGORY_KEY_IMPORT -> ImportPreferenceFragment()
+        CATEGORY_KEY_IMAGE -> ImagePreferenceFragment()
         else -> null
     }
 }

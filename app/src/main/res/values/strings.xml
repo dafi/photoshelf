@@ -76,5 +76,8 @@
     <string name="recently_used_tags">Recently Used Tags</string>
     <string name="feedly_title">Feedly</string>
     <string name="photoshelf_apikey">PhotoShelf Api key</string>
+    <string name="pref_image">Image</string>
+    <string name="use_hardware_images">Use Hardware Images</string>
+    <string name="pref_image_category">Thumbnails, Cache and more</string>
 
 </resources>
