@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.birthday.util.lastBirthdayShowTime
 import com.ternaryop.photoshelf.birthday.util.notifyBirthday
+import com.ternaryop.photoshelf.birthday.util.showBirthdaysNotification
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
 import com.ternaryop.photoshelf.service.AbsJobService
 import com.ternaryop.photoshelf.service.Job
@@ -16,7 +17,9 @@ import java.util.Calendar
 object BirthdayJob : Job {
     override fun runJob(jobService: AbsJobService, params: JobParameters?): Boolean {
         val blogName = PreferenceManager.getDefaultSharedPreferences(jobService).selectedBlogName ?: return false
-        if (hasAlreadyNotifiedToday(jobService)) {
+
+        if (!PreferenceManager.getDefaultSharedPreferences(jobService).showBirthdaysNotification ||
+            hasAlreadyNotifiedToday(jobService)) {
             return false
         }
         notifyBirthday(jobService, blogName, params)

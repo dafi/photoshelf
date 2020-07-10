@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
+import androidx.preference.SwitchPreferenceCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.core.prefs.clearBlogList
@@ -26,7 +27,6 @@ import kotlin.coroutines.CoroutineContext
 
 private const val TUMBLR_SERVICE_NAME = "Tumblr"
 private const val DROPBOX_SERVICE_NAME = "Dropbox"
-
 private const val KEY_TUMBLR_LOGIN = "tumblr_login"
 private const val KEY_DROPBOX_LOGIN = "dropbox_login"
 private const val KEY_VERSION = "version"
@@ -34,17 +34,17 @@ private const val KEY_DROPBOX_VERSION = "dropbox_version"
 private const val KEY_SCHEDULE_MINUTES_TIME_SPAN = "schedule_minutes_time_span"
 private const val KEY_EXPORT_DAYS_PERIOD = "exportDaysPeriod"
 private const val KEY_PHOTOSHELF_APIKEY = "photoshelfApikey"
-
+private const val KEY_SHOW_BIRTHDAYS_NOTIFICATION = "show_birthdays_notification"
+private const val KEY_POST_EDITOR_MAX_TAGS_MRU_ITEMS = "postEditor_maxTagsMruItems"
+private const val KEY_POST_EDITOR_MAX_HIGHLIGHTED_TAGS_MRU_ITEMS = "postEditor_maxHighlightedTagsMruItems"
 private const val DROPBOX_RESULT = 2
 private const val REQUEST_FILE_PERMISSION = 1
 
 class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
-
     private lateinit var dropboxManager: DropboxManager
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
-
     private val supportActionBar: ActionBar?
         get() = (requireContext() as AppCompatActivity).supportActionBar
 
@@ -63,11 +63,13 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
             REQUEST_FILE_PERMISSION,
             AlertDialog.Builder(activity).setMessage(R.string.import_permission_rationale))
 
-        findPreference<Preference>(KEY_SCHEDULE_MINUTES_TIME_SPAN)
-        onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_SCHEDULE_MINUTES_TIME_SPAN)
-
-        onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_EXPORT_DAYS_PERIOD)
-
+        arrayOf(
+            KEY_SCHEDULE_MINUTES_TIME_SPAN,
+            KEY_EXPORT_DAYS_PERIOD,
+            KEY_SHOW_BIRTHDAYS_NOTIFICATION,
+            KEY_POST_EDITOR_MAX_TAGS_MRU_ITEMS,
+            KEY_POST_EDITOR_MAX_HIGHLIGHTED_TAGS_MRU_ITEMS
+        ).forEach { onSharedPreferenceChanged(preferenceManager.sharedPreferences, it) }
         setupVersionInfo(preferenceScreen)
     }
 
@@ -81,7 +83,16 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
         when (key) {
             KEY_SCHEDULE_MINUTES_TIME_SPAN -> onChangedScheduleMinutesTimeSpan(sharedPreferences, key)
             KEY_PHOTOSHELF_APIKEY -> ApiManager.updateToken(sharedPreferences.getString(key, null) ?: "")
+            KEY_SHOW_BIRTHDAYS_NOTIFICATION -> onChangedShowBirthdaysNotification(sharedPreferences, key)
+            KEY_POST_EDITOR_MAX_TAGS_MRU_ITEMS,
+            KEY_POST_EDITOR_MAX_HIGHLIGHTED_TAGS_MRU_ITEMS ->
+                findPreference<Preference>(key)?.summary = sharedPreferences.getInt(key, 0).toString()
         }
+    }
+
+    private fun onChangedShowBirthdaysNotification(sharedPreferences: SharedPreferences, key: String) {
+        val findPreference = findPreference<SwitchPreferenceCompat>(KEY_SHOW_BIRTHDAYS_NOTIFICATION)
+        findPreference?.isChecked = sharedPreferences.getBoolean(key, true)
     }
 
     private fun onChangedScheduleMinutesTimeSpan(sharedPreferences: SharedPreferences, key: String) {
@@ -138,10 +149,10 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
         }
 
         AlertDialog.Builder(requireContext())
-                .setMessage(getString(R.string.are_you_sure))
-                .setPositiveButton(android.R.string.ok, dialogClickListener)
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
+            .setMessage(getString(R.string.are_you_sure))
+            .setPositiveButton(android.R.string.ok, dialogClickListener)
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun setupVersionInfo(preferenceScreen: PreferenceScreen) {
@@ -156,7 +167,6 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
                 "N/A"
             }
         }
-
         // dropbox
         preferenceScreen.findPreference<Preference>(KEY_DROPBOX_VERSION)?.apply {
             title = getString(R.string.version_title, "Dropbox")
