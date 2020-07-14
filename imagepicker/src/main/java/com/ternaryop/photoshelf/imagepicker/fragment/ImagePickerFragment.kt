@@ -36,6 +36,7 @@ import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorResult
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.ARG_RESULT
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.EXTRA_THUMBNAILS_ITEMS
+import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.utils.dialog.DialogUtils
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
@@ -56,6 +57,7 @@ class ImagePickerFragment(
     private lateinit var gridView: RecyclerView
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
     private lateinit var progressbar: ProgressBar
+    private lateinit var photoShelfSwipe: PhotoShelfSwipe
 
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private lateinit var selectedItemsViewContainer: SelectedItemsViewContainer
@@ -155,16 +157,20 @@ class ImagePickerFragment(
     }
 
     private fun setupUI(view: View, context: Context) {
+        val layoutManager = AutofitGridLayoutManager(context,
+            resources.getDimension(R.dimen.image_picker_grid_width).toInt())
+
+        // setup selectedItemsViewContainer before any other view to be sure the constraintLayout isn't modified
+        // (e.g. if progressHighlightViewLayout.visibility is changed before its setup the new value is used)
+        setupSelectedItemsViewContainer(view, context, layoutManager)
+
         progressHighlightViewLayout = view.findViewById(android.R.id.empty)
         progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context, R.anim.fade_loop)
-        progressHighlightViewLayout.visibility = VISIBLE
 
         imagePickerAdapter = ImagePickerAdapter(context)
         imagePickerAdapter.setOnPhotoBrowseClick(this)
         imagePickerAdapter.setEmptyView(progressHighlightViewLayout)
 
-        val layoutManager = AutofitGridLayoutManager(context,
-            resources.getDimension(R.dimen.image_picker_grid_width).toInt())
         gridView = view.findViewById(R.id.gridview)
         gridView.adapter = imagePickerAdapter
         gridView.setHasFixedSize(true)
@@ -172,6 +178,13 @@ class ImagePickerFragment(
         // animating the constraintLayout results in grid animations, so we disable them
         gridView.itemAnimator = null
 
+        progressbar = view.findViewById(R.id.progressbar)
+
+        photoShelfSwipe = view.findViewById(R.id.swipe_container)
+        photoShelfSwipe.setOnRefreshListener { refreshUI() }
+    }
+
+    private fun setupSelectedItemsViewContainer(view: View, context: Context, layoutManager: AutofitGridLayoutManager) {
         selectedItemsViewContainer = SelectedItemsViewContainer(
             context,
             view.findViewById(R.id.constraintlayout),
@@ -188,8 +201,6 @@ class ImagePickerFragment(
                 override fun onThumbnailImageClick(position: Int) = Unit
                 override fun onOverflowClick(position: Int, view: View) = Unit
             })
-
-        progressbar = view.findViewById(R.id.progressbar)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -211,6 +222,10 @@ class ImagePickerFragment(
             return
         }
         progressHighlightViewLayout.startProgress()
+        progressHighlightViewLayout.visibility = VISIBLE
+        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+        imagePickerAdapter.clear()
+
         val message = resources.getQuantityString(R.plurals.download_url_with_count, 1, 0)
         currentTextView.text = message
         val url = "(https?:.*)".toRegex().find(textWithUrl)?.value
@@ -239,6 +254,7 @@ class ImagePickerFragment(
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        photoShelfSwipe.isEnabled = false
         return true
     }
 
@@ -269,6 +285,7 @@ class ImagePickerFragment(
         imagePickerAdapter.showButtons = false
         imagePickerAdapter.selection.clear()
         selectedItemsViewContainer.updateList(emptyList())
+        photoShelfSwipe.isEnabled = true
     }
 
     private fun finish(mode: ActionMode) {
@@ -309,6 +326,7 @@ class ImagePickerFragment(
 
     private fun onGalleryRetrieved(imageGallery: ImageGallery?) {
         progressHighlightViewLayout.stopProgress()
+        photoShelfSwipe.setRefreshingAndWaitingResult(false)
 
         imageGallery ?: return
 

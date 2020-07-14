@@ -26,7 +26,7 @@ internal class SelectedItemsViewContainer(
         selectionListView.setHasFixedSize(true)
         selectionListView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-        constraintSet.clone(context, R.layout.fragment_image_picker)
+        constraintSet.clone(constraintLayout)
     }
 
     fun toggleVisibility() = show(!isVisible)
