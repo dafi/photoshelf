@@ -140,6 +140,9 @@ class ImagePickerFragment(
 
     private fun showError(error: Throwable?, showAlert: Boolean) {
         progressbar.visibility = GONE
+        progressHighlightViewLayout.stopProgress()
+        photoShelfSwipe.setRefreshingAndWaitingResult(false)
+
         if (showAlert) {
             DialogUtils.showSimpleMessageDialog(requireContext(), R.string.url_not_found, error?.localizedMessage ?: "")
         } else {
