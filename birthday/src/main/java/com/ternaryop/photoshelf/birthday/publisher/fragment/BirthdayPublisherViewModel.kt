@@ -27,7 +27,7 @@ class BirthdayPublisherViewModel(
         }
         viewModelScope.launch(Dispatchers.IO) {
             val command = Command.execute {
-                ApiManager.birthdayService().findByDate(
+                birthdays = ApiManager.birthdayService().findByDate(
                     FindParams(
                         month = birthday.month + 1,
                         dayOfMonth = birthday.dayOfMonth,
@@ -35,6 +35,7 @@ class BirthdayPublisherViewModel(
                         blogName = blogName).toQueryMap())
                     .response
                     .birthdays?.toMutableList()
+                birthdays
             }
             postResult(BirthdayPublisherModelResult.ListByDate(command))
         }
