@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.tumblr.dialog.EditPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorData
@@ -12,16 +11,16 @@ import com.ternaryop.photoshelf.tumblr.dialog.PostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.ARG_POST_DATA
 import com.ternaryop.photoshelf.tumblr.dialog.editor.fragment.PostEditorFragment
-import org.koin.android.ext.android.inject
+import com.ternaryop.photoshelf.fragment.appFragmentFactory
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class PostEditorActivity : AbsPhotoShelfActivity() {
-    private val fragmentFactory: FragmentFactory by inject()
-
     override val contentViewLayoutId: Int = R.layout.activity_tumblr_post
     override val contentFrameId: Int = R.id.content_frame
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        supportFragmentManager.fragmentFactory = fragmentFactory
+        supportFragmentManager.fragmentFactory = appFragmentFactory
         super.onCreate(savedInstanceState)
     }
 

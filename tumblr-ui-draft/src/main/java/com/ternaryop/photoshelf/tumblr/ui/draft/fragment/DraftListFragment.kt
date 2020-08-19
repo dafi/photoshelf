@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -37,10 +38,11 @@ import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.saveSortSettings
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class DraftListFragment(
     iav: ImageViewerActivityStarter,
     pd: TumblrPostDialog
@@ -48,9 +50,9 @@ class DraftListFragment(
     SwipeRefreshLayout.OnRefreshListener,
     OnSchedulePostListener {
     private lateinit var queuedPosts: List<TumblrPost>
-    val draftCache: DraftCache by inject()
+    @Inject lateinit var draftCache: DraftCache
 
-    private val viewModel: DraftListViewModel by viewModel()
+    private val viewModel: DraftListViewModel by viewModels()
     private lateinit var refreshHolder: RefreshHolder
 
     private val scheduleDate: ScheduleDate by lazy {

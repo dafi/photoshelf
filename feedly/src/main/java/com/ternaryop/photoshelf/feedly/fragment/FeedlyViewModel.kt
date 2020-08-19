@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.feedly.fragment
 
 import android.app.Application
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.feedly.AccessToken
 import com.ternaryop.feedly.Category
@@ -22,10 +23,10 @@ import com.ternaryop.photoshelf.util.post.FetchedData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FeedlyViewModel(
+class FeedlyViewModel @ViewModelInject constructor(
     application: Application,
     private val contentReader: StreamContentReader
-) : PhotoShelfViewModel<FeedlyModelResult>(application) {
+) : PhotoShelfViewModel<FeedlyModelResult>() {
     private val preferences = FeedlyPrefs(application)
     private val feedlyClient = FeedlyClient(preferences.accessToken ?: "")
     val contentList = CachedListFetcher<FeedlyContentDelegate>()

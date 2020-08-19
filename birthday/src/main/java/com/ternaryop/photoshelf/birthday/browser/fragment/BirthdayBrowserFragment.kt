@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter
 import android.widget.SearchView
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -35,7 +36,7 @@ import com.ternaryop.utils.date.month
 import com.ternaryop.utils.date.year
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.DateFormatSymbols
 import java.util.Calendar
 
@@ -43,6 +44,7 @@ private const val PARAM_LAST_PATTERN = "lastPattern"
 private const val PARAM_SELECTED_OPTIONS_ITEM_ID = "selectedOptionItemId"
 private const val DEBOUNCE_TIMEOUT_MILLIS = 600L
 
+@AndroidEntryPoint
 class BirthdayBrowserFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(), ActionMode.Callback,
@@ -53,7 +55,7 @@ class BirthdayBrowserFragment(
     private val singleSelectionMenuIds = intArrayOf(R.id.item_edit)
     private val actionModeMenuId: Int
         get() = R.menu.birthday_browser_context
-    private val viewModel: BirthdayBrowserViewModel by viewModel()
+    private val viewModel: BirthdayBrowserViewModel by viewModels()
 
     enum class ItemAction {
         MARK_AS_IGNORED,

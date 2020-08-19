@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.tumblr.ui.publish.fragment
 
 import android.os.Bundle
+import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
@@ -9,7 +10,6 @@ import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.tumblr.ui.publish.R
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
 import com.ternaryop.photoshelf.util.post.PageFetcher
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PublishedPostsListFragment(
     iav: ImageViewerActivityStarter,
@@ -17,7 +17,7 @@ class PublishedPostsListFragment(
 ) : ScheduledListFragment(iav, pd) {
     override val actionModeMenuId: Int
         get() = R.menu.published_context
-    private val viewModel: PublishedPostsListViewModel by viewModel()
+    private val viewModel: PublishedPostsListViewModel by viewModels()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

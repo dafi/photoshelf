@@ -8,9 +8,9 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
-import androidx.fragment.app.FragmentFactory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
@@ -31,6 +31,7 @@ import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tagnavigator.fragment.TagListFragment
 import com.ternaryop.photoshelf.tagphotobrowser.fragment.TagPhotoBrowserFragment
 import com.ternaryop.photoshelf.tumblr.dialog.blog.BlogSpinnerAdapter
+import com.ternaryop.photoshelf.fragment.appFragmentFactory
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
 import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
@@ -39,19 +40,18 @@ import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
-import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : DrawerActionBarActivity(),
     FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     private lateinit var blogList: Spinner
     private lateinit var prefs: SharedPreferences
 
-    private val viewModel: MainActivityViewModel by viewModel()
-    private val fragmentFactory: FragmentFactory by inject()
+    private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        supportFragmentManager.fragmentFactory = fragmentFactory
+        supportFragmentManager.fragmentFactory = appFragmentFactory
         super.onCreate(savedInstanceState)
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this)

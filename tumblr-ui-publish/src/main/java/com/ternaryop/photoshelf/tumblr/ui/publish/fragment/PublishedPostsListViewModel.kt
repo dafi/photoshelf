@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.tumblr.ui.publish.fragment
 
-import android.app.Application
 import android.text.format.DateUtils
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
@@ -10,12 +10,12 @@ import com.ternaryop.photoshelf.util.post.FetchedData
 import com.ternaryop.photoshelf.util.post.PageFetcher
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.tumblr.android.TumblrManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PublishedPostsListViewModel(application: Application) : PhotoShelfViewModel<PublishedPostsResult>(application) {
-    private val tumblr = TumblrManager.getInstance(application)
+class PublishedPostsListViewModel @ViewModelInject constructor(
+    private val tumblr: Tumblr
+) : PhotoShelfViewModel<PublishedPostsResult>() {
     val pageFetcher = PageFetcher<PhotoShelfPost>(Tumblr.MAX_POST_PER_REQUEST)
 
     fun published(blogName: String, params: Map<String, String>, fetchCache: Boolean) {

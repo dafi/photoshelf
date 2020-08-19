@@ -44,7 +44,7 @@ import com.ternaryop.tumblr.android.finishActivity
 import com.ternaryop.tumblr.android.viewPost
 import com.ternaryop.utils.dialog.DialogUtils
 import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
+import javax.inject.Inject
 
 private const val PHOTO_POST_ID = "photoPostId"
 
@@ -69,7 +69,7 @@ abstract class AbsPostsListFragment(
         intArrayOf(R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
     }
 
-    protected val postActionExecutor: PostActionExecutor by inject()
+    @Inject lateinit var postActionExecutor: PostActionExecutor
     private lateinit var postActionColorItemDecoration: PostActionColorItemDecoration
 
     protected abstract val actionModeMenuId: Int

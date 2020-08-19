@@ -7,10 +7,13 @@ import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.draftCount
 import com.ternaryop.tumblr.queueCount
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TumblrRepository(private val application: Application) {
+@Singleton
+class TumblrRepository @Inject constructor(private val application: Application) {
     // user should be not logged when the manager is created so we create it lazily
-    private val tumblr: Tumblr by lazy { TumblrManager.getInstance(application) }
+    val tumblr: Tumblr by lazy { TumblrManager.getInstance(application) }
     private val _draftCount = CommandMutableLiveData<Int>()
     private val _scheduledCount = CommandMutableLiveData<Int>()
     val draftCount = _draftCount.asLiveData()

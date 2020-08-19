@@ -1,3 +1,6 @@
+apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'kotlin-kapt'
+
 dependencies {
     implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
     implementation "androidx.core:core-ktx:${rootProject.ext.androidXCoreKtx}"
@@ -10,13 +13,15 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:${rootProject.ext.androidXLifecycleCommonJava8}"
     implementation "androidx.work:work-runtime-ktx:${rootProject.ext.androidXWorkLibVersion}"
 
+    implementation "com.google.dagger:hilt-android:${rootProject.ext.hiltAndroidVersion}"
+    kapt "com.google.dagger:hilt-android-compiler:${rootProject.ext.hiltAndroidCompilerVersion}"
+
+    implementation "androidx.hilt:hilt-lifecycle-viewmodel:${rootProject.ext.hiltLifecycleViewmodelVersion}"
+    kapt "androidx.hilt:hilt-compiler:${rootProject.ext.hiltCompilerVersion}"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.kotlinxCoroutinesAndroid}"
-
-    implementation "org.koin:koin-androidx-scope:${rootProject.ext.koin}"
-    implementation "org.koin:koin-androidx-viewmodel:${rootProject.ext.koin}"
 
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
     implementation "com.ternaryop:widget:${rootProject.ext.ternaryOpWidgetLibVersion}"
@@ -26,5 +31,5 @@ dependencies {
     androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
     androidTestImplementation "androidx.test:rules:${rootProject.ext.androidXRulesLibVersion}"
     androidTestImplementation "androidx.test.ext:junit:${rootProject.ext.androidxTestExtJunit}"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.2.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.androidXEspressoCoreLibVersion}"
 }

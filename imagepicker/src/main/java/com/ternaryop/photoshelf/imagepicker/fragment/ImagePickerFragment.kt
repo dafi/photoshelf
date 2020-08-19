@@ -18,6 +18,7 @@ import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -41,13 +42,14 @@ import com.ternaryop.utils.dialog.DialogUtils
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.ProgressHighlightViewLayout
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 private const val NEW_POST_REQUEST_CODE = 1
 
 // The url can contain extraneous text
 const val EXTRA_URL = "com.ternaryop.photoshelf.extra.URL"
 
+@AndroidEntryPoint
 class ImagePickerFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter,
     private val tumblrPostDialog: TumblrPostDialog,
@@ -62,7 +64,7 @@ class ImagePickerFragment(
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private lateinit var selectedItemsViewContainer: SelectedItemsViewContainer
     private lateinit var imageGallery: ImageGallery
-    private val viewModel: ImagePickerViewModel by viewModel()
+    private val viewModel: ImagePickerViewModel by viewModels()
 
     // Search on fragment arguments
     private val textWithUrl: String?

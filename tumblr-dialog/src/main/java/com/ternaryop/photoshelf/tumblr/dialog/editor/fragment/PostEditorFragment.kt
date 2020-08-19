@@ -14,6 +14,7 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,7 +40,7 @@ import com.ternaryop.photoshelf.tumblr.dialog.editor.finishActivity
 import com.ternaryop.photoshelf.tumblr.dialog.editor.viewholder.TagsHolder
 import com.ternaryop.photoshelf.tumblr.dialog.editor.viewholder.TitleHolder
 import com.ternaryop.photoshelf.util.menu.enableAll
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 private const val BLOG_VISIBLE_PREF_NAME = "postEditorIsBlogVisible"
 private const val THUMBNAIL_VISIBLE_PREF_NAME = "postEditorIsThumbnailListVisible"
@@ -49,11 +50,12 @@ fun Map<String, Any>?.getInt(preferences: SharedPreferences, key: String, defaul
     return this?.get(key) as? Int ?: preferences.getInt(key, defaultValue)
 }
 
+@AndroidEntryPoint
 class PostEditorFragment : Fragment() {
 
     private lateinit var tumblrPostAction: AbsTumblrPostEditor
     private lateinit var preferences: SharedPreferences
-    private val viewModel: PostViewModel by viewModel()
+    private val viewModel: PostViewModel by viewModels()
 
     private lateinit var blogSpinner: Spinner
     private lateinit var refreshBlogButton: ImageButton

@@ -13,8 +13,9 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
 import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
+import javax.inject.Inject
 
-class AppFragmentFactory(
+class AppFragmentFactory @Inject constructor(
     private val ivas: ImageViewerActivityStarter,
     private val pd: TumblrPostDialog
 ) : FragmentFactory() {

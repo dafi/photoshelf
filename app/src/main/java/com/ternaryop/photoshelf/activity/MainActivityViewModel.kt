@@ -1,26 +1,25 @@
 package com.ternaryop.photoshelf.activity
 
-import android.app.Application
+import android.content.SharedPreferences
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.preference.PreferenceManager
+import com.ternaryop.photoshelf.birthday.repository.BirthdayRepository
 import com.ternaryop.photoshelf.core.prefs.fetchBlogNames
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.Event
-import com.ternaryop.photoshelf.birthday.repository.BirthdayRepository
 import com.ternaryop.photoshelf.repository.tumblr.TumblrRepository
-import com.ternaryop.tumblr.android.TumblrManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivityViewModel(
-    application: Application,
+class MainActivityViewModel @ViewModelInject constructor(
+    private val sharedPreferences: SharedPreferences,
     private val birthdayRepository: BirthdayRepository,
     private val tumblrRepository: TumblrRepository
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     private val _result = MediatorLiveData<Event<MainActivityModelResult>>()
     val result: LiveData<Event<MainActivityModelResult>> = _result
@@ -51,8 +50,7 @@ class MainActivityViewModel(
     fun fetchBlogNames() {
         viewModelScope.launch {
             val command = Command.execute {
-                PreferenceManager.getDefaultSharedPreferences(getApplication())
-                    .fetchBlogNames(TumblrManager.getInstance(getApplication()))
+                sharedPreferences.fetchBlogNames(tumblrRepository.tumblr)
             }
             _result.postValue(Event(MainActivityModelResult.BlogNames(command)))
         }

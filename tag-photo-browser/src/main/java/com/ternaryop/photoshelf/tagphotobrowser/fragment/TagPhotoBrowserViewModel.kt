@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.tagphotobrowser.fragment
 
-import android.app.Application
 import android.text.format.DateUtils
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.Response
@@ -12,15 +12,15 @@ import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.util.post.FetchedData
 import com.ternaryop.photoshelf.util.post.PageFetcher
 import com.ternaryop.tumblr.Tumblr
-import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.tumblr.getPhotoPosts
 import com.ternaryop.util.coroutine.ControlledRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class TagPhotoBrowserViewModel(application: Application) : PhotoShelfViewModel<TagPhotoBrowserResult>(application) {
-    private val tumblr = TumblrManager.getInstance(application)
+class TagPhotoBrowserViewModel @ViewModelInject constructor(
+    private val tumblr: Tumblr
+) : PhotoShelfViewModel<TagPhotoBrowserResult>() {
     private val controlledRunner = ControlledRunner<Response<TagInfoListResult>>()
     val pageFetcher = PageFetcher<PhotoShelfPost>(Tumblr.MAX_POST_PER_REQUEST)
 

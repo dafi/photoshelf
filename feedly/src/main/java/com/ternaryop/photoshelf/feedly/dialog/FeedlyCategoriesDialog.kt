@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.feedly.Category
@@ -19,11 +20,12 @@ import com.ternaryop.photoshelf.feedly.fragment.FeedlyViewModel
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.utils.dialog.showErrorDialog
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class FeedlyCategoriesDialog : DialogFragment() {
     private var categoryAdapter: FeedlyCategoryAdapter? = null
-    private val viewModel: FeedlyViewModel by viewModel()
+    private val viewModel: FeedlyViewModel by viewModels()
     private lateinit var categoryList: RecyclerView
 
     @SuppressLint("InflateParams") // for dialogs passing null for root is valid, ignore the warning

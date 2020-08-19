@@ -13,9 +13,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-class ImageViewerActivityStarterImpl(
+@Singleton
+class ImageViewerActivityStarterImpl @Inject constructor(
     private val imageGalleryRepository: ImageGalleryRepository
 ) : ImageViewerActivityStarter, CoroutineScope {
     private var job = Job()

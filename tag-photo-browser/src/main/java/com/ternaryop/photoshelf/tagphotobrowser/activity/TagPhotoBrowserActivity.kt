@@ -4,27 +4,26 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
 import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
 import com.ternaryop.photoshelf.tagphotobrowser.R
 import com.ternaryop.photoshelf.tagphotobrowser.fragment.TagPhotoBrowserFragment
-import org.koin.android.ext.android.inject
+import com.ternaryop.photoshelf.fragment.appFragmentFactory
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
     private lateinit var blogName: String
 
     override val contentViewLayoutId: Int = R.layout.activity_tag_photo_browser
     override val contentFrameId: Int = R.id.content_frame
 
-    private val fragmentFactory: FragmentFactory by inject()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         val data = intent.extras?.getSerializable(EXTRA_TAG_PHOTO_BROWSER_DATA) as? TagPhotoBrowserData
         blogName = data?.blogName ?: checkNotNull(PreferenceManager.getDefaultSharedPreferences(this).selectedBlogName)
-        supportFragmentManager.fragmentFactory = fragmentFactory
+        supportFragmentManager.fragmentFactory = appFragmentFactory
 
         super.onCreate(savedInstanceState)
     }

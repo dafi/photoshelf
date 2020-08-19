@@ -9,8 +9,11 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.editor.activity.PostEditorActivity
 import com.ternaryop.tumblr.TumblrPost
 import java.util.Calendar
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TumblrPostDialogImpl : TumblrPostDialog {
+@Singleton
+class TumblrPostDialogImpl @Inject constructor() : TumblrPostDialog {
     override fun newPostEditor(newPostEditorData: NewPostEditorData, fragment: Fragment, requestCode: Int) {
         PostEditorActivity.startNewPostForResult(newPostEditorData, fragment, requestCode)
     }

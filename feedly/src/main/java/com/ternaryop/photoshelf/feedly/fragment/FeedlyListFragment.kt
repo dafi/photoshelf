@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.feedly.FeedlyRateLimit
@@ -36,7 +37,7 @@ import com.ternaryop.photoshelf.util.post.moveToBottom
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.photoshelf.view.snackbar.SnackbarHolder
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 private const val FRAGMENT_TAG_SORT = "sort"
 private const val FRAGMENT_TAG_CATEGORIES = "categories"
@@ -44,6 +45,7 @@ private const val FRAGMENT_TAG_SETTINGS = "settings"
 
 private const val PICKER_FETCH_ITEM_COUNT = 3
 
+@AndroidEntryPoint
 class FeedlyListFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(),
@@ -54,7 +56,7 @@ class FeedlyListFragment(
     private lateinit var recyclerView: RecyclerView
     private lateinit var preferences: FeedlyPrefs
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
-    private val viewModel: FeedlyViewModel by viewModel()
+    private val viewModel: FeedlyViewModel by viewModels()
 
     override val snackbarHolder: SnackbarHolder by lazy {
         FeedlySnackbarHolder(

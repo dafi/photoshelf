@@ -10,6 +10,7 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.lifecycle.EventObserver
@@ -21,18 +22,19 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPagingPostsListFragment
 import com.ternaryop.photoshelf.util.post.PageFetcher
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 private const val KEY_STATE_POST_TAG = "postTag"
 private const val KEY_STATE_ALLOW_SEARCH = "allowSearch"
 
+@AndroidEntryPoint
 class TagPhotoBrowserFragment(
     iav: ImageViewerActivityStarter,
     pd: TumblrPostDialog
 ) : AbsPagingPostsListFragment(iav, pd), SearchView.OnSuggestionListener {
     private var postTag: String? = null
     private var allowSearch: Boolean = false
-    private val viewModel: TagPhotoBrowserViewModel by viewModel()
+    private val viewModel: TagPhotoBrowserViewModel by viewModels()
 
     override val actionModeMenuId: Int
         get() = R.menu.tag_browser_context

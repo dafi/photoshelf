@@ -5,6 +5,7 @@ import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
@@ -15,13 +16,14 @@ import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.showConfirmDialog
 import com.ternaryop.photoshelf.tumblr.ui.schedule.R
 import com.ternaryop.photoshelf.util.post.PageFetcher
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 open class ScheduledListFragment(
     iav: ImageViewerActivityStarter,
     pd: TumblrPostDialog
 ) : AbsPagingPostsListFragment(iav, pd) {
-    private val viewModel: ScheduledListViewModel by viewModel()
+    private val viewModel: ScheduledListViewModel by viewModels()
     override val actionModeMenuId: Int
         get() = R.menu.scheduled_context
 

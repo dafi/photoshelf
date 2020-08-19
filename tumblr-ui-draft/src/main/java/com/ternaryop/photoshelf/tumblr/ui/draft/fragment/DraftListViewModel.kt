@@ -1,6 +1,6 @@
 package com.ternaryop.photoshelf.tumblr.ui.draft.fragment
 
-import android.app.Application
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
@@ -8,19 +8,16 @@ import com.ternaryop.photoshelf.lifecycle.ProgressData
 import com.ternaryop.photoshelf.lifecycle.ValueHolder
 import com.ternaryop.photoshelf.repository.tumblr.TumblrRepository
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
-import com.ternaryop.photoshelf.tumblr.ui.draft.DraftCache
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListModelResult.Companion.PROGRESS_STEP_IMPORTED_POSTS
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListModelResult.Companion.PROGRESS_STEP_READ_DRAFT_POSTS
 import com.ternaryop.photoshelf.tumblr.ui.draft.util.DraftPostHelper
 import com.ternaryop.photoshelf.tumblr.ui.draft.util.DraftQueuePosts
 import kotlinx.coroutines.launch
 
-class DraftListViewModel(
-    application: Application,
+class DraftListViewModel @ViewModelInject constructor(
     private val tumblrRepository: TumblrRepository,
-    draftCache: DraftCache
-) : PhotoShelfViewModel<DraftListModelResult>(application) {
-    private val draftPostHelper = DraftPostHelper(application, draftCache)
+    private val draftPostHelper: DraftPostHelper
+) : PhotoShelfViewModel<DraftListModelResult>() {
     private val draftQueuePosts = ValueHolder<DraftQueuePosts<PhotoShelfPost>>()
 
     fun fetchPosts(blogName: String) {

@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.EXTRA_POST
@@ -29,12 +30,13 @@ import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 import java.util.Locale
 
 private const val PICK_IMAGE_REQUEST_CODE = 100
 
+@AndroidEntryPoint
 class BirthdayPublisherFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(),
@@ -43,7 +45,7 @@ class BirthdayPublisherFragment(
     private lateinit var birthdayPhotoAdapter: BirthdayPhotoAdapter
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
 
-    private val viewModel: BirthdayPublisherViewModel by viewModel()
+    private val viewModel: BirthdayPublisherViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

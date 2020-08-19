@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
+import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.home.R
@@ -15,11 +16,12 @@ import com.ternaryop.photoshelf.home.prefs.loadStats
 import com.ternaryop.photoshelf.home.prefs.saveStats
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 
+@AndroidEntryPoint
 class HomeFragment : AbsPhotoShelfFragment() {
-    private val viewModel: HomeViewModel by viewModel()
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
