@@ -84,6 +84,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun onChangedExportDaysPeriod(sharedPreferences: SharedPreferences, key: String) {
         val days = sharedPreferences.exportDaysPeriod(requireContext())
         val lastFollowersUpdateTime = sharedPreferences.lastFollowersUpdateTime
