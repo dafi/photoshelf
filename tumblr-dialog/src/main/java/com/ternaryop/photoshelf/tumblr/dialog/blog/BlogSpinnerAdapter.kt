@@ -8,12 +8,13 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.SpinnerAdapter
 import android.widget.TextView
-import coil.api.load
-import coil.transform.CircleCropTransformation
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.TumblrAltSize
-import com.ternaryop.tumblr.android.coil.CoilTumblrOAuth
+import com.ternaryop.tumblr.android.TumblrManager
 
 class BlogSpinnerAdapter(
     context: Context,
@@ -35,22 +36,34 @@ class BlogSpinnerAdapter(
         getItem(position)?.also { blogName ->
             holder.title.text = blogName
 
-            holder.image.load(
-                Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH),
-                CoilTumblrOAuth.get(context)) {
-                placeholder(R.drawable.stub)
-                transformations(CircleCropTransformation())
-            }
+            Glide
+                .with(inflatedView)
+                .load(oauthGlideUrl(blogName))
+                .placeholder(R.drawable.stub)
+                .circleCrop()
+                .into(holder.image)
         }
 
         return inflatedView
     }
 
+    private fun oauthGlideUrl(blogName: String): GlideUrl {
+        val url = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
+        val signedRequest = TumblrManager.getInstance(context)
+            .consumer
+            .getSignedGetAuthRequest(url)
+
+        val headers = LazyHeaders.Builder().apply {
+            signedRequest.headers.forEach { (k, v) -> this.addHeader(k, v) }
+        }.build()
+        return GlideUrl(signedRequest.completeUrl, headers)
+    }
+
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup) =
         getView(position, convertView, parent)
 
-    private inner class ViewHolder(vi: View) {
-        internal val title = vi.findViewById<View>(R.id.title1) as TextView
-        internal val image = vi.findViewById<View>(R.id.image1) as ImageView
+    private class ViewHolder(vi: View) {
+        val title = vi.findViewById<View>(R.id.title1) as TextView
+        val image = vi.findViewById<View>(R.id.image1) as ImageView
     }
 }

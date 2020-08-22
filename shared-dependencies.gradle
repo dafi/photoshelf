@@ -23,6 +23,9 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.kotlinxCoroutinesAndroid}"
 
+    implementation "com.github.bumptech.glide:glide:${rootProject.ext.glideLibVersion}"
+    kapt "com.github.bumptech.glide:compiler:${rootProject.ext.glideLibVersion}"
+
     implementation "com.ternaryop:utils:${rootProject.ext.ternaryOpUtilLibVersion}"
     implementation "com.ternaryop:widget:${rootProject.ext.ternaryOpWidgetLibVersion}"
     implementation "com.ternaryop:tumblr-coroutines:${rootProject.ext.ternaryOpTumblrCoroutinesLibVersion}"

@@ -1,21 +1,20 @@
 package com.ternaryop.photoshelf.birthday.publisher.adapter
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
-import coil.target.ImageViewTarget
+import com.bumptech.glide.Glide
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.getClosestPhotoByWidth
 import com.ternaryop.photoshelf.birthday.R
 import com.ternaryop.tumblr.TumblrAltSize
+import com.ternaryop.util.glide.CheckableImageViewTarget
 import com.ternaryop.utils.date.yearsBetweenDates
 import com.ternaryop.widget.CheckableImageView
 import java.util.Locale
@@ -116,15 +115,10 @@ class BirthdayPhotoAdapter(
         }
 
         private fun displayImage(item: Birthday, checked: Boolean) {
-            thumbImage.load(checkNotNull(item.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)).url) {
-                placeholder(R.drawable.stub)
-                target(object : ImageViewTarget(thumbImage) {
-                    override fun onSuccess(result: Drawable) {
-                        super.onSuccess(result)
-                        thumbImage.isChecked = checked
-                    }
-                })
-            }
+            Glide
+                .with(itemView)
+                .load(checkNotNull(item.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)).url)
+                .into(CheckableImageViewTarget(thumbImage, checked))
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

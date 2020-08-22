@@ -10,7 +10,6 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.SwitchPreferenceCompat
 import com.ternaryop.photoshelf.R
-import com.ternaryop.photoshelf.util.image.ImageLoader
 
 private const val KEY_THUMBNAIL_WIDTH = "thumbnail_width"
 private const val KEY_CLEAR_IMAGE_CACHE = "clear_image_cache"
@@ -35,7 +34,6 @@ class ImagePreferenceFragment : AppPreferenceFragment() {
                 return true
             }
             KEY_USE_HARDWARE_IMAGES -> {
-                ImageLoader.setup(requireContext())
                 return true
             }
             else -> super.onPreferenceTreeClick(preference)
