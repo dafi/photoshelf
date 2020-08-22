@@ -199,7 +199,7 @@ class BirthdayPublisherFragment(
                 birthdayPhotoAdapter.itemCount)
         mode.menuInflater.inflate(R.menu.birthday_publisher_context, menu)
         birthdayPhotoAdapter.isShowButtons = true
-        birthdayPhotoAdapter.notifyDataSetChanged()
+        birthdayPhotoAdapter.notifyItemRangeChanged(0, birthdayPhotoAdapter.itemCount)
         return true
     }
 

@@ -254,7 +254,7 @@ class ImagePickerFragment(
                 imagePickerAdapter.itemCount)
         mode.menuInflater.inflate(R.menu.image_picker_context, menu)
         imagePickerAdapter.showButtons = true
-        imagePickerAdapter.notifyDataSetChanged()
+        imagePickerAdapter.notifyItemRangeChanged(0, imagePickerAdapter.itemCount)
         return true
     }
 
