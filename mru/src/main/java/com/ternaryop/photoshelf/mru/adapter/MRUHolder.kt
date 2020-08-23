@@ -48,7 +48,7 @@ class MRUHolder(
             checkNotNull(ContextCompat.getDrawable(context, R.drawable.ic_action_delete)),
             ColorDrawable(ContextCompat.getColor(context, R.color.animation_delete_bg))) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                adapter.removeAt(viewHolder.adapterPosition)
+                adapter.removeAt(viewHolder.bindingAdapterPosition)
             }
         }
 

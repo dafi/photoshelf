@@ -26,7 +26,7 @@ class MRUViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun setColors(maxTopItems: Int) {
-        if (adapterPosition < maxTopItems) {
+        if (bindingAdapterPosition < maxTopItems) {
             ruleView.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.mru_top_item_bg))
         } else {
             ruleView.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.mru_other_item_bg))

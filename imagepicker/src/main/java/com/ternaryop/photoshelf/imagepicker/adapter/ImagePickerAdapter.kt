@@ -98,7 +98,7 @@ class ImagePickerAdapter(
 
         fun setOnClickListeners(listener: View.OnClickListener) {
             showImageAction.setOnClickListener(listener)
-            showImageAction.tag = adapterPosition
+            showImageAction.tag = bindingAdapterPosition
         }
 
         fun setOnClickMultiChoiceListeners(
@@ -106,7 +106,7 @@ class ImagePickerAdapter(
             longClickListener: View.OnLongClickListener
         ) {
             if (listener != null) {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 itemView.setOnClickListener(listener)
                 itemView.setOnLongClickListener(longClickListener)
                 itemView.isLongClickable = true

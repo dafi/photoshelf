@@ -23,6 +23,6 @@ class TagNavigatorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     fun setOnClickListeners(listener: View.OnClickListener) {
         itemView.setOnClickListener(listener)
-        itemView.tag = adapterPosition
+        itemView.tag = bindingAdapterPosition
     }
 }

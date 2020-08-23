@@ -141,7 +141,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun setOnClickListeners(listener: View.OnClickListener?) {
         if (listener != null) {
             setTagsClickListener(listener)
-            val position = adapterPosition
+            val position = bindingAdapterPosition
             thumbImage.setOnClickListener(listener)
             thumbImage.tag = position
 
@@ -155,7 +155,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             itemView.setOnClickListener(listener)
             itemView.setOnLongClickListener(longClickListener)
             itemView.isLongClickable = true
-            itemView.tag = adapterPosition
+            itemView.tag = bindingAdapterPosition
         }
     }
 
@@ -168,7 +168,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun setTagsClickListener(listener: View.OnClickListener) {
-        tagsContainer.tag = adapterPosition
+        tagsContainer.tag = bindingAdapterPosition
         for (i in 0 until tagsContainer.childCount) {
             tagsContainer.getChildAt(i).setOnClickListener(listener)
         }
