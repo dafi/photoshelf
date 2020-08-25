@@ -57,8 +57,9 @@ class TagListFragment(
     }
 
     override fun onClick(item: TagInfo) {
-        imageViewerActivityStarter.startTagPhotoBrowser(requireContext(),
-            TagPhotoBrowserData(blogName, item.tag, false))
+        requireContext().startActivity(
+            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
+                TagPhotoBrowserData(blogName, item.tag, false)))
     }
 
     companion object {

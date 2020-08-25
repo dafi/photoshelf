@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.tumblr.ui.draft.fragment
 
-import android.app.Activity
-import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.view.ActionMode
 import android.view.Menu
@@ -10,7 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -20,8 +19,8 @@ import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tagnavigator.dialog.TagNavigatorDialog
 import com.ternaryop.photoshelf.tagnavigator.dialog.TagNavigatorDialog.Companion.EXTRA_SELECTED_TAG
-import com.ternaryop.photoshelf.tumblr.dialog.OnSchedulePostListener
 import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostData
+import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPostsListFragment
@@ -48,10 +47,10 @@ class DraftListFragment(
     pd: TumblrPostDialog
 ) : AbsPostsListFragment(iav, pd),
     SwipeRefreshLayout.OnRefreshListener,
-    OnSchedulePostListener {
+    FragmentResultListener {
     private lateinit var queuedPosts: List<TumblrPost>
-    @Inject lateinit var draftCache: DraftCache
-
+    @Inject
+    lateinit var draftCache: DraftCache
     private val viewModel: DraftListViewModel by viewModels()
     private lateinit var refreshHolder: RefreshHolder
 
@@ -80,10 +79,6 @@ class DraftListFragment(
             view.findViewById(R.id.swipe_container),
             this
         )
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
 
         photoAdapter.setOnPhotoBrowseClick(this)
         photoAdapter.loadSortSettings(PreferenceManager.getDefaultSharedPreferences(requireContext()))
@@ -94,18 +89,23 @@ class DraftListFragment(
             }
         })
 
+        parentFragmentManager.setFragmentResultListener(TAG_NAVIGATOR_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
+        parentFragmentManager.setFragmentResultListener(TAG_SCHEDULE_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
+
         fetchPosts(true)
     }
 
-    override fun onAttachFragment(childFragment: Fragment) {
-        super.onAttachFragment(childFragment)
-        if (childFragment !is BottomMenuSheetDialogFragment) {
-            return
-        }
-        childFragment.menuListener = when (childFragment.tag) {
-            FRAGMENT_TAG_SORT -> DraftSortBottomMenuListener(this, photoAdapter.sortSwitcher)
-            FRAGMENT_TAG_REFRESH -> DraftRefreshBottomMenuListener(this)
-            else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        childFragmentManager.addFragmentOnAttachListener { _, childFragment ->
+            if (childFragment is BottomMenuSheetDialogFragment) {
+                childFragment.menuListener = when (childFragment.tag) {
+                    FRAGMENT_TAG_SORT -> DraftSortBottomMenuListener(this, photoAdapter.sortSwitcher)
+                    FRAGMENT_TAG_REFRESH -> DraftRefreshBottomMenuListener(this)
+                    else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
+                }
+            }
         }
     }
 
@@ -125,8 +125,10 @@ class DraftListFragment(
                 return true
             }
             R.id.action_tag_navigator -> {
-                TagNavigatorDialog.newInstance(photoAdapter.tagArrayList(),
-                    this, TAG_NAVIGATOR_DIALOG_REQUEST_CODE).show(parentFragmentManager, FRAGMENT_TAG_NAVIGATOR)
+                TagNavigatorDialog.newInstance(
+                    photoAdapter.tagArrayList(),
+                    TAG_NAVIGATOR_DIALOG_REQUEST_KEY)
+                    .show(parentFragmentManager, FRAGMENT_TAG_NAVIGATOR)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -177,11 +179,11 @@ class DraftListFragment(
     }
 
     private fun showScheduleDialog(item: PhotoShelfPost) {
-        tumblrPostDialog.schedulePostDialog(item, scheduleDate.peekNext(queuedPosts), this)
+        tumblrPostDialog.schedulePostDialog(item, scheduleDate.peekNext(queuedPosts), TAG_SCHEDULE_DIALOG_REQUEST_KEY)
             .show(parentFragmentManager, TAG_SCHEDULE_DIALOG)
     }
 
-    override fun onSchedule(dialog: DialogFragment, schedulePostData: SchedulePostData) {
+    private fun onSchedule(dialog: DialogFragment, schedulePostData: SchedulePostData) {
         val blogName = blogName ?: return
         launch {
             postActionExecutor.execute(
@@ -232,14 +234,16 @@ class DraftListFragment(
         removeFromCache(item)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            TAG_NAVIGATOR_DIALOG_REQUEST_CODE -> if (resultCode == Activity.RESULT_OK && data != null) {
-                data.getStringExtra(EXTRA_SELECTED_TAG)?.also { tag ->
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        when (requestKey) {
+            TAG_NAVIGATOR_DIALOG_REQUEST_KEY ->
+                result.getString(EXTRA_SELECTED_TAG)?.also { tag ->
                     recyclerView.scrollItemOnTopByPosition(photoAdapter.findTagIndex(tag))
                 }
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
+            TAG_SCHEDULE_DIALOG_REQUEST_KEY -> onSchedule(
+                parentFragmentManager.getFragment(result, SchedulePostDialog.EXTRA_DIALOG) as DialogFragment,
+                result.getSerializable(SchedulePostDialog.EXTRA_SCHEDULE_DATA) as SchedulePostData
+            )
         }
     }
 
@@ -262,7 +266,8 @@ class DraftListFragment(
     }
 
     companion object {
-        private const val TAG_NAVIGATOR_DIALOG_REQUEST_CODE = EDIT_POST_REQUEST_CODE + 1
+        private const val TAG_NAVIGATOR_DIALOG_REQUEST_KEY = "tagNavigatorRequestKey"
+        private const val TAG_SCHEDULE_DIALOG_REQUEST_KEY = "scheduleRequestKey"
         private const val TAG_SCHEDULE_DIALOG = "scheduleDialog"
 
         const val FRAGMENT_TAG_REFRESH = "refresh"

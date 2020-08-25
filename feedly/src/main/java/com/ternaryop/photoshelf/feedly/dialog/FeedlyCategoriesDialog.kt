@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -73,26 +72,27 @@ class FeedlyCategoriesDialog : DialogFragment() {
     }
 
     private fun update() {
-        (targetFragment as? OnFeedlyCategoriesListener)?.also { listener ->
-            val selectedCategoriesId = categoryAdapter?.checkedItems()?.map { it.item.id }?.toSet()
-                ?: emptySet()
-
-            listener.onSelected(this, selectedCategoriesId)
-        }
+        val selectedCategoriesId = categoryAdapter?.checkedItems()?.map { it.item.id }?.toSet()
+            ?: emptySet()
+        parentFragmentManager.setFragmentResult(
+            checkNotNull(arguments?.getString(EXTRA_REQUEST_KEY)),
+            bundleOf(
+                EXTRA_SELECTED_CATEGORIES_ID to selectedCategoriesId
+            ))
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun fillAdapter(categories: List<Category>): FeedlyCategoryAdapter {
-        val selected = checkNotNull(arguments?.getSerializable(ARG_SELECTED_CATEGORIES_ID)) as Set<String>
+        val selected = checkNotNull(arguments?.getSerializable(EXTRA_SELECTED_CATEGORIES_ID)) as Set<String>
         val checkboxList = categories
             .map { CheckBoxItem(selected.contains(it.id), it) }
-            .sortedWith(Comparator { lhs, rhs ->
+            .sortedWith { lhs, rhs ->
                 if (lhs.checked != rhs.checked) {
                     if (lhs.checked) -1 else 1
                 } else {
                     lhs.item.label.compareTo(rhs.item.label, true)
                 }
-            })
+            }
         return FeedlyCategoryAdapter(requireContext(), checkboxList)
     }
 
@@ -105,19 +105,16 @@ class FeedlyCategoriesDialog : DialogFragment() {
     }
 
     companion object {
-        private const val ARG_SELECTED_CATEGORIES_ID = "selectedCategoriesId"
+        const val EXTRA_SELECTED_CATEGORIES_ID = "selectedCategoriesId"
+        private const val EXTRA_REQUEST_KEY = "requestKey"
 
         fun newInstance(
             selectedCategoriesId: Set<String>,
-            target: Fragment
+            requestKey: String,
         ) = FeedlyCategoriesDialog().apply {
             arguments = bundleOf(
-                ARG_SELECTED_CATEGORIES_ID to selectedCategoriesId)
-            setTargetFragment(target, 0)
+                EXTRA_REQUEST_KEY to requestKey,
+                EXTRA_SELECTED_CATEGORIES_ID to selectedCategoriesId)
         }
     }
-}
-
-interface OnFeedlyCategoriesListener {
-    fun onSelected(dialog: DialogFragment, selectedCategoriesId: Set<String>)
 }

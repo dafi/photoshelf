@@ -1,7 +1,5 @@
 package com.ternaryop.photoshelf.tumblr.ui.core.fragment
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.ActionMode
@@ -22,9 +20,9 @@ import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.tumblr.dialog.EditPostEditorData
+import com.ternaryop.photoshelf.tumblr.dialog.PostEditorActivityResultContracts
 import com.ternaryop.photoshelf.tumblr.dialog.PostEditorResult
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
-import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.ARG_RESULT
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.EXTRA_THUMBNAILS_ITEMS
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
@@ -61,9 +59,15 @@ abstract class AbsPostsListFragment(
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
 
+    protected var returnSelectedPost: Boolean = false
+
     private var recyclerViewLayout: Parcelable? = null
 
     val onConfirm: (PostAction) -> Unit = { postAction -> launch { postActionExecutor.execute(postAction) } }
+
+    private val activityResult = registerForActivityResult(PostEditorActivityResultContracts.Edit(tumblrPostDialog)) {
+        it?.also { onEdit(it) }
+    }
 
     open val singleSelectionMenuIds: IntArray by lazy {
         intArrayOf(R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
@@ -170,8 +174,9 @@ abstract class AbsPostsListFragment(
     }
 
     override fun onTagClick(position: Int, clickedTag: String) {
-        imageViewerActivityStarter.startTagPhotoBrowser(requireContext(),
-            TagPhotoBrowserData(blogName, clickedTag, false))
+        requireContext().startActivity(
+            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
+            TagPhotoBrowserData(blogName, clickedTag, false)))
     }
 
     override fun onThumbnailImageClick(position: Int) {
@@ -204,11 +209,11 @@ abstract class AbsPostsListFragment(
     }
 
     private fun handleClickedThumbnail(position: Int) {
-        if (requireActivity().callingActivity == null) {
+        if (returnSelectedPost) {
+            photoAdapter.getItem(position).finishActivity(requireActivity(), EXTRA_POST)
+        } else {
             return
 //            onThumbnailImageClick(position)
-        } else {
-            photoAdapter.getItem(position).finishActivity(requireActivity(), EXTRA_POST)
         }
     }
 
@@ -338,12 +343,6 @@ abstract class AbsPostsListFragment(
 
     abstract fun removeFromCache(post: PhotoShelfPost)
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == EDIT_POST_REQUEST_CODE) {
-            (data?.extras?.getSerializable(ARG_RESULT) as? PostEditorResult)?.also { onEdit(it) }
-        }
-    }
-
     private fun onEdit(postEditorResult: PostEditorResult) {
         val postId = checkNotNull(postEditorResult.extras?.get(PHOTO_POST_ID) as Long)
         val item = photoAdapter.findItem(postId) ?: return
@@ -362,7 +361,7 @@ abstract class AbsPostsListFragment(
             item.tags,
             mapOf(PHOTO_POST_ID to item.postId,
                 EXTRA_THUMBNAILS_ITEMS to listOf(item.getClosestPhotoByWidth(IMAGE_WIDTH_75)?.url)))
-        tumblrPostDialog.editPostEditor(data, this, EDIT_POST_REQUEST_CODE)
+        activityResult.launch(data)
     }
 
     protected open fun restoreRecyclerViewLayout() {
@@ -379,7 +378,6 @@ abstract class AbsPostsListFragment(
     }
 
     companion object {
-        const val EDIT_POST_REQUEST_CODE = 1
         const val KEY_STATE_RECYCLER_VIEW_LAYOUT = "recyclerViewLayout"
     }
 }

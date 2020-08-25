@@ -1,12 +1,10 @@
 package com.ternaryop.photoshelf.tagnavigator.dialog
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.core.os.bundleOf
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -67,10 +65,9 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     }
 
     override fun onClick(item: TagInfo) {
-        targetFragment?.let { target ->
-            val intent = Intent().putExtra(EXTRA_SELECTED_TAG, item.tag)
-            target.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
-        }
+        parentFragmentManager.setFragmentResult(
+            checkNotNull(arguments?.getString(EXTRA_REQUEST_KEY)),
+            bundleOf(EXTRA_SELECTED_TAG to item.tag))
         dismiss()
     }
 
@@ -88,16 +85,16 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     }
 
     companion object {
+        private const val EXTRA_REQUEST_KEY = "requestKey"
         const val EXTRA_SELECTED_TAG = "selectedTag"
 
-        fun newInstance(tagList: ArrayList<String>, target: Fragment, requestCode: Int): TagNavigatorDialog {
-            val args = Bundle()
-            args.putStringArrayList(ARG_TAG_LIST, tagList)
-
-            val fragment = TagNavigatorDialog()
-            fragment.arguments = args
-            fragment.setTargetFragment(target, requestCode)
-            return fragment
+        fun newInstance(
+            tagList: ArrayList<String>,
+            requestKey: String
+        ) = TagNavigatorDialog().apply {
+            arguments = bundleOf(
+                EXTRA_REQUEST_KEY to requestKey,
+                ARG_TAG_LIST to tagList)
         }
     }
 }

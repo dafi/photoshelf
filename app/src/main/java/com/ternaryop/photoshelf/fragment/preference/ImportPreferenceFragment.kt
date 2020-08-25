@@ -1,9 +1,12 @@
 package com.ternaryop.photoshelf.fragment.preference
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.core.prefs.PREF_EXPORT_DAYS_PERIOD
@@ -17,13 +20,31 @@ import com.ternaryop.utils.dialog.showErrorDialog
 
 private const val KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA = "import_birthdays_from_wikipedia"
 private const val KEY_IMPORT_DOM_SELECTOR_CONFIG = "import_dom_selector_config"
-private const val DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE = 1
 
 /**
  * Created by dave on 17/03/18.
  * Hold Import/Export Preferences
  */
 class ImportPreferenceFragment : AppPreferenceFragment() {
+    private lateinit var activityResult: ActivityResultLauncher<Array<String>>
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        activityResult = registerForActivityResult(object : ActivityResultContracts.OpenDocument() {
+            override fun createIntent(context: Context, input: Array<out String>)
+                = super.createIntent(context, input).apply { addCategory(Intent.CATEGORY_OPENABLE) }
+        }) { uri ->
+            try {
+                uri?.also {
+                    DomSelectorManager.upgradeConfig(requireContext(), uri)
+                }
+            } catch (e: Exception) {
+                e.showErrorDialog(requireContext())
+            }
+        }
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_main, rootKey)
 
@@ -45,35 +66,10 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
             }
             KEY_IMPORT_DOM_SELECTOR_CONFIG -> {
                 // on Oreo and below "application/json" isn't handled so we must add "application/octet-stream", too
-                performPick(
-                    "*/*",
-                    arrayOf("application/json", "application/octet-stream"),
-                    DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE)
+                activityResult.launch(arrayOf("application/json", "application/octet-stream"))
                 true
             }
             else -> super.onPreferenceTreeClick(preference)
-        }
-    }
-
-    private fun performPick(mediaType: String, extraMediaTypes: Array<String>, requestCode: Int) {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = mediaType
-            putExtra(Intent.EXTRA_MIME_TYPES, extraMediaTypes)
-        }
-
-        startActivityForResult(intent, requestCode)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        if (requestCode == DOM_SELECTOR_CONFIG_PICKED_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            resultData?.data?.also { uri ->
-                try {
-                    DomSelectorManager.upgradeConfig(requireContext(), uri)
-                } catch (e: Exception) {
-                    e.showErrorDialog(requireContext())
-                }
-            }
         }
     }
 

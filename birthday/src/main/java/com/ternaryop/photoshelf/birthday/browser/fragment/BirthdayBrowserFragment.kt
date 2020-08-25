@@ -207,7 +207,7 @@ class BirthdayBrowserFragment(
             birthday.birthdate
         }
 
-        DatePickerDialog(requireContext(), DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDay ->
+        DatePickerDialog(requireContext(), { _, pickedYear, pickedMonth, pickedDay ->
             c.year = pickedYear
             c.month = pickedMonth
             c.dayOfMonth = pickedDay
@@ -472,8 +472,9 @@ class BirthdayBrowserFragment(
 
     private fun browsePhotos(position: Int) {
         val tag = adapter.getItem(position).name
-        imageViewerActivityStarter.startTagPhotoBrowser(requireActivity(),
-            TagPhotoBrowserData(requireBlogName, tag, false))
+        requireContext().startActivity(
+            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
+            TagPhotoBrowserData(requireBlogName, tag, false)))
     }
 
     companion object {

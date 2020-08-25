@@ -1,7 +1,8 @@
 package com.ternaryop.photoshelf.tumblr.dialog
 
+import android.content.Context
+import android.content.Intent
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import com.ternaryop.tumblr.TumblrPost
 import java.io.Serializable
 import java.util.Calendar
@@ -50,29 +51,23 @@ class EditPostEditorData(
 data class SchedulePostData(
     val post: TumblrPost,
     val dateTime: Calendar
-)
-
-interface OnSchedulePostListener {
-    fun onSchedule(dialog: DialogFragment, schedulePostData: SchedulePostData)
-}
+) : Serializable
 
 interface TumblrPostDialog {
-    fun newPostEditor(
-        newPostEditorData: NewPostEditorData,
-        fragment: Fragment,
-        requestCode: Int
-    )
+    fun newPostEditorIntent(
+        context: Context,
+        newPostDialogData: NewPostEditorData,
+    ) : Intent
 
-    fun editPostEditor(
-        editPostEditorData: EditPostEditorData,
-        fragment: Fragment,
-        requestCode: Int
-    )
+    fun editPostEditorIntent(
+        context: Context,
+        editPostDialogData: EditPostEditorData,
+    ) : Intent
 
     fun schedulePostDialog(
         post: TumblrPost,
         scheduleDateTime: Calendar,
-        target: Fragment? = null
+        requestKey: String
     ): DialogFragment
 
     companion object {

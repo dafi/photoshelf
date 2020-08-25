@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
-import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagCursorAdapter
@@ -74,7 +73,8 @@ class TagPhotoBrowserFragment(
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val bundle = (context as Activity?)?.intent?.extras ?: arguments
-        val data = bundle?.getSerializable(TagPhotoBrowserActivity.EXTRA_TAG_PHOTO_BROWSER_DATA) as? TagPhotoBrowserData
+        val data = TagPhotoBrowserActivity.tagPhotoBrowserData(bundle)
+        returnSelectedPost = TagPhotoBrowserActivity.returnSelectedPost(bundle, false)
         if (data == null) {
             allowSearch = true
         } else {
