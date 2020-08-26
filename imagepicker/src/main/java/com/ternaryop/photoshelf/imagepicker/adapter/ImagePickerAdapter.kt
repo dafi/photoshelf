@@ -70,9 +70,12 @@ class ImagePickerAdapter(
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal val showImageAction = itemView.findViewById<View>(R.id.ic_show_image_action) as ImageView
-        internal val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
-        internal val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
+        private val showImageAction = itemView.findViewById<View>(R.id.ic_show_image_action) as ImageView
+        private val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
+        private val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
+
+        private val thumbWidth = itemView.context.resources.getDimensionPixelOffset(R.dimen.image_picker_grid_width)
+        private val thumbHeight = itemView.context.resources.getDimensionPixelOffset(R.dimen.image_picker_grid_height)
 
         fun bindModel(imageInfo: ImageInfo, showButtons: Boolean, checked: Boolean) {
             setVisibility(showButtons)
@@ -87,12 +90,14 @@ class ImagePickerAdapter(
         private fun displayImage(imageInfo: ImageInfo, checked: Boolean) {
             // thumbnail urls could be the same than destination images (i.e. very large images) causing
             // a huge memory footprint so we resize the images using fit/centerCrop
+            // On Glide cropping isn't enough so we override the target dimensions
             val thumbnailUrl = imageInfo.thumbnailUrl ?: return
 
             Glide
                 .with(itemView)
                 .load(thumbnailUrl)
                 .fitCenter()
+                .override(thumbWidth, thumbHeight)
                 .into(CheckableImageViewTarget(thumbImage, checked))
         }
 
