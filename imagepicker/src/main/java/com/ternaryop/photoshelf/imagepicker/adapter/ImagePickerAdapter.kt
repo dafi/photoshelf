@@ -1,18 +1,20 @@
 package com.ternaryop.photoshelf.imagepicker.adapter
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import coil.size.Scale
+import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.imagepicker.R
-import com.ternaryop.util.glide.CheckableImageViewTarget
 import com.ternaryop.widget.CheckableImageView
 
 class ImagePickerAdapter(
@@ -90,15 +92,17 @@ class ImagePickerAdapter(
         private fun displayImage(imageInfo: ImageInfo, checked: Boolean) {
             // thumbnail urls could be the same than destination images (i.e. very large images) causing
             // a huge memory footprint so we resize the images using fit/centerCrop
-            // On Glide cropping isn't enough so we override the target dimensions
             val thumbnailUrl = imageInfo.thumbnailUrl ?: return
-
-            Glide
-                .with(itemView)
-                .load(thumbnailUrl)
-                .fitCenter()
-                .override(thumbWidth, thumbHeight)
-                .into(CheckableImageViewTarget(thumbImage, checked))
+            thumbImage.load(thumbnailUrl) {
+                placeholder(R.drawable.stub)
+                scale(Scale.FILL)
+                target(object : ImageViewTarget(thumbImage) {
+                    override fun onSuccess(result: Drawable) {
+                        super.onSuccess(result)
+                        thumbImage.isChecked = checked
+                    }
+                })
+            }
         }
 
         fun setOnClickListeners(listener: View.OnClickListener) {

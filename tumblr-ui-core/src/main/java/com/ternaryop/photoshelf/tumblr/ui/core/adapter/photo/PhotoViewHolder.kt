@@ -8,12 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_CAPTION_TEXT_COLOR
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
+import coil.load
+import com.ternaryop.photoshelf.adapter.*
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.tumblr.TumblrAltSize
@@ -93,10 +89,9 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val altSize = post.getClosestPhotoByWidth(thumbnailWidth) ?: return
         setImageDimension(altSize, thumbnailWidth)
 
-        Glide
-            .with(itemView)
-            .load(altSize.url)
-            .into(thumbImage)
+        thumbImage.load(altSize.url) {
+            placeholder(R.drawable.stub)
+        }
     }
 
     private fun setImageDimension(altSize: TumblrAltSize, thumbnailWidth: Int) {

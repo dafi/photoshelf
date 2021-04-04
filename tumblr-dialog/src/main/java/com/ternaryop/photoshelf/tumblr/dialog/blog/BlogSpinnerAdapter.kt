@@ -8,13 +8,13 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.SpinnerAdapter
 import android.widget.TextView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.tumblr.android.TumblrManager
+import okhttp3.Headers
 
 class BlogSpinnerAdapter(
     context: Context,
@@ -36,27 +36,21 @@ class BlogSpinnerAdapter(
         getItem(position)?.also { blogName ->
             holder.title.text = blogName
 
-            Glide
-                .with(inflatedView)
-                .load(oauthGlideUrl(blogName))
-                .placeholder(R.drawable.stub)
-                .circleCrop()
-                .into(holder.image)
+            val url = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
+            val signedRequest = TumblrManager.getInstance(context)
+                    .consumer
+                    .getSignedGetAuthRequest(url)
+            val oauthHeaders = Headers.Builder().apply {
+                signedRequest.headers.forEach { (k, v) -> this.add(k, v) }
+            }.build()
+            holder.image.load(signedRequest.completeUrl) {
+                headers(oauthHeaders)
+                placeholder(R.drawable.stub)
+                transformations(CircleCropTransformation())
+            }
         }
 
         return inflatedView
-    }
-
-    private fun oauthGlideUrl(blogName: String): GlideUrl {
-        val url = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
-        val signedRequest = TumblrManager.getInstance(context)
-            .consumer
-            .getSignedGetAuthRequest(url)
-
-        val headers = LazyHeaders.Builder().apply {
-            signedRequest.headers.forEach { (k, v) -> this.addHeader(k, v) }
-        }.build()
-        return GlideUrl(signedRequest.completeUrl, headers)
     }
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup) =
