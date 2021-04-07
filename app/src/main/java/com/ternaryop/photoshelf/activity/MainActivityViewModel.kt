@@ -2,7 +2,6 @@ package com.ternaryop.photoshelf.activity
 
 import android.content.SharedPreferences
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
@@ -12,10 +11,13 @@ import com.ternaryop.photoshelf.core.prefs.fetchBlogNames
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.Event
 import com.ternaryop.photoshelf.repository.tumblr.TumblrRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainActivityViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val birthdayRepository: BirthdayRepository,
     private val tumblrRepository: TumblrRepository

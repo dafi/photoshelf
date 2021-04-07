@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.tumblr.ui.schedule.fragment
 
 import android.text.format.DateUtils
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
@@ -12,10 +11,13 @@ import com.ternaryop.photoshelf.util.post.PageFetcher
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.getQueue
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ScheduledListViewModel @ViewModelInject constructor(
+@HiltViewModel
+class ScheduledListViewModel @Inject constructor(
     private val tumblrRepository: TumblrRepository
 ) : PhotoShelfViewModel<ScheduledListResult>() {
     val pageFetcher = PageFetcher<PhotoShelfPost>(Tumblr.MAX_POST_PER_REQUEST)

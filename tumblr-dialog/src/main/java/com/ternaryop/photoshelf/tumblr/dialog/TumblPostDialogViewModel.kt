@@ -1,16 +1,18 @@
 package com.ternaryop.photoshelf.tumblr.dialog
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.parser.TitleComponentsResult
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.photoshelf.misspelled.MisspelledName
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PostViewModel @ViewModelInject constructor(
+@HiltViewModel
+class PostViewModel @Inject constructor(
     private val misspelledName: MisspelledName
 ) : PhotoShelfViewModel<TumblrPostModelResult>() {
 

@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.tumblr.ui.draft.fragment
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
@@ -12,9 +11,12 @@ import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListModelResult.Co
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListModelResult.Companion.PROGRESS_STEP_READ_DRAFT_POSTS
 import com.ternaryop.photoshelf.tumblr.ui.draft.util.DraftPostHelper
 import com.ternaryop.photoshelf.tumblr.ui.draft.util.DraftQueuePosts
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DraftListViewModel @ViewModelInject constructor(
+@HiltViewModel
+class DraftListViewModel @Inject constructor(
     private val tumblrRepository: TumblrRepository,
     private val draftPostHelper: DraftPostHelper
 ) : PhotoShelfViewModel<DraftListModelResult>() {
