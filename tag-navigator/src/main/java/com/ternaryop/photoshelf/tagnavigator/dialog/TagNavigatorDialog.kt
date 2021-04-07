@@ -4,19 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.photoshelf.api.post.toTagInfo
 import com.ternaryop.photoshelf.tagnavigator.R
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorAdapter
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorListener
-import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_count
-import kotlinx.android.synthetic.main.dialog_tag_navigator.distinct_tag_title
-import kotlinx.android.synthetic.main.dialog_tag_navigator.sort_tag
-import kotlinx.android.synthetic.main.dialog_tag_navigator.tag_list
 
 /**
  * Created by dave on 17/05/15.
@@ -43,16 +42,17 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
             arguments?.getStringArrayList(ARG_TAG_LIST)?.toTagInfo() ?: emptyList(),
             "",
             this)
-        tag_list.setHasFixedSize(true)
-        tag_list.layoutManager = LinearLayoutManager(activity)
-        tag_list.adapter = adapter
+        val tagList = view.findViewById<RecyclerView>(R.id.tag_list)
+        tagList.setHasFixedSize(true)
+        tagList.layoutManager = LinearLayoutManager(activity)
+        tagList.adapter = adapter
 
-        distinct_tag_count.text = String.format("%d", adapter.itemCount)
-        distinct_tag_title.text = resources.getString(R.string.tag_navigator_distinct_title)
+        view.findViewById<TextView>(R.id.distinct_tag_count).text = String.format("%d", adapter.itemCount)
+        view.findViewById<TextView>(R.id.distinct_tag_title).text = resources.getString(R.string.tag_navigator_distinct_title)
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(activity)
         changeSortType(preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME))
-        sort_tag.setOnClickListener { v ->
+        view.findViewById<Button>(R.id.sort_tag).setOnClickListener { v ->
             when (v.id) {
                 R.id.sort_tag -> {
                     var sortType = preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME)
@@ -74,11 +74,11 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     private fun changeSortType(sortType: Int) {
         when (sortType) {
             SORT_TAG_NAME -> {
-                sort_tag.setText(R.string.sort_by_count)
+                view?.findViewById<Button>(R.id.sort_tag)?.setText(R.string.sort_by_count)
                 adapter.sortByTagName()
             }
             SORT_TAG_COUNT -> {
-                sort_tag.setText(R.string.sort_by_name)
+                view?.findViewById<Button>(R.id.sort_tag)?.setText(R.string.sort_by_name)
                 adapter.sortByTagCount()
             }
         }

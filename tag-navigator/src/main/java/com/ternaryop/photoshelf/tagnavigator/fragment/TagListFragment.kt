@@ -7,14 +7,13 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.photoshelf.tagnavigator.R
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorAdapter
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorListener
-import kotlinx.android.synthetic.main.fragment_tag_list.searchView1
-import kotlinx.android.synthetic.main.fragment_tag_list.tag_list
 
 class TagListFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
@@ -37,13 +36,15 @@ class TagListFragment(
             blogName,
             this)
 
-        tag_list.adapter = adapter
-        tag_list.setHasFixedSize(true)
-        tag_list.layoutManager = LinearLayoutManager(activity)
+        view.findViewById<RecyclerView>(R.id.tag_list).let {
+            it.adapter = adapter
+            it.setHasFixedSize(true)
+            it.layoutManager = LinearLayoutManager(activity)
+        }
 
         // start with list filled
         adapter.filter.filter("")
-        searchView1
+        view.findViewById<SearchView>(R.id.searchView1)
             .setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
                     return false
