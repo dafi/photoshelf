@@ -8,7 +8,7 @@ import com.ternaryop.photoshelf.tumblr.ui.draft.R
 class DraftRefreshBottomMenuListener(
     private val draftListFragment: DraftListFragment
 ) : BottomMenuListener {
-    override val title: String?
+    override val title: String
         get() = draftListFragment.resources.getString(R.string.refresh)
     override val menuId: Int
         get() = R.menu.draft_refresh

@@ -18,7 +18,7 @@ import com.ternaryop.photoshelf.birthday.R
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.utils.date.yearsBetweenDates
 import com.ternaryop.widget.CheckableImageView
-import java.util.*
+import java.util.Locale
 
 class BirthdayPhotoAdapter(
     private val context: Context
@@ -63,7 +63,7 @@ class BirthdayPhotoAdapter(
         items.addAll(collection)
     }
 
-    fun sort() = items.sortWith({ lhr, rhs -> lhr.name.compareTo(rhs.name) })
+    fun sort() = items.sortWith { lhr, rhs -> lhr.name.compareTo(rhs.name) }
 
     fun updatePost(birthday: Birthday, notifyChange: Boolean) {
         val name = birthday.name

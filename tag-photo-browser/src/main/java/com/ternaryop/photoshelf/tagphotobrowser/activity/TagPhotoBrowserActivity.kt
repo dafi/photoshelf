@@ -28,7 +28,7 @@ class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun createFragment(): Fragment? =
+    override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
             classLoader, TagPhotoBrowserFragment::class.java.name)
 

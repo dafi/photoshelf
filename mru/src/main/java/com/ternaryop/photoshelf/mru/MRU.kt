@@ -17,7 +17,7 @@ class MRU(context: Context, private val key: String, private val maxSize: Int) {
     private val _list: MutableList<String> by lazy {
         val tags = preferences.getString(key, null)
         if (tags == null || tags.isBlank()) {
-            mutableListOf<String>()
+            mutableListOf()
         } else {
             tags.split(ITEM_SEPARATOR).mapTo(mutableListOf()) { it }
         }

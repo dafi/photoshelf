@@ -25,7 +25,7 @@ class PostEditorActivity : AbsPhotoShelfActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun createFragment(): Fragment? =
+    override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
             classLoader, PostEditorFragment::class.java.name).apply {
             arguments = intent.extras
