@@ -7,10 +7,10 @@ dependencies {
 
     implementation "com.dropbox.core:dropbox-core-sdk:${rootProject.ext.dropboxCoreLibVersion}"
 
-    implementation "com.ternaryop:crash-reporter:${rootProject.ext.ternaryOpCrashReporterLibVersion}"
-    implementation "com.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
-    implementation "com.ternaryop.photoshelf:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
-    implementation "com.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
+    implementation "io.github.ternaryop:crash-reporter:${rootProject.ext.ternaryOpCrashReporterLibVersion}"
+    implementation "io.github.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
+    implementation "io.github.ternaryop:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
+    implementation "io.github.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
 
     implementation project(path: ':core')
     implementation project(path: ':db')
@@ -130,6 +130,7 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/*.kotlin_module'
     }
 }
 
@@ -160,5 +161,3 @@ def versionCodeByTask() {
     }
     return versionCode
 }
-
-apply plugin: 'kotlin-android-extensions'

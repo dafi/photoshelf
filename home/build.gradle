@@ -3,7 +3,7 @@ apply from: "$rootProject.projectDir/shared-android-library.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.ternaryop.photoshelf:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
+    implementation "io.github.ternaryop:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
 
     implementation project(path: ':core')
 }

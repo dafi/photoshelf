@@ -7,5 +7,5 @@ dependencies {
 
     implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp3LoggingInterceptorLibVersion}"
 
-    implementation "com.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
+    implementation "io.github.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
 }

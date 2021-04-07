@@ -5,7 +5,7 @@ dependencies {
 
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
 
-    implementation "com.ternaryop.photoshelf:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
+    implementation "io.github.ternaryop:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
 
     implementation project(path: ':core')
     implementation project(path: ':tumblr-dialog')
