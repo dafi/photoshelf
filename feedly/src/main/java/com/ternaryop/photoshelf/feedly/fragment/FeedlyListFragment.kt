@@ -93,6 +93,7 @@ class FeedlyListFragment(
                 is FeedlyModelResult.Content -> onContent(result)
                 is FeedlyModelResult.MarkSaved -> onMarkSaved(result)
                 is FeedlyModelResult.AccessTokenRefresh -> onAccessTokenRefreshed(result)
+                else -> throw AssertionError("No valid $result")
             }
         })
 

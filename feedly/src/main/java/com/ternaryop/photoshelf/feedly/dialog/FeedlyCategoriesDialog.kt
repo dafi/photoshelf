@@ -46,6 +46,7 @@ class FeedlyCategoriesDialog : DialogFragment() {
         viewModel.result.observe(requireActivity(), EventObserver { result ->
             when (result) {
                 is FeedlyModelResult.Categories -> onCategories(result)
+                else -> throw AssertionError("No valid $result")
             }
         })
 

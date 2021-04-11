@@ -338,6 +338,7 @@ abstract class AbsPostsListFragment(
                     removeFromCache(result.post)
                 }
             }
+            else -> throw AssertionError("No valid action $postAction")
         }
     }
 

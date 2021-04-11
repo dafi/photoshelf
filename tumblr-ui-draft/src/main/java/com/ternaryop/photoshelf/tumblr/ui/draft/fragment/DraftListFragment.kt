@@ -221,6 +221,7 @@ class DraftListFragment(
                 is PostAction.Publish,
                 is PostAction.Delete -> completedList.forEach { draftCache.delete(it.post) }
                 is PostAction.Schedule -> onScheduleRefreshUI(postAction)
+                else -> throw AssertionError("No valid action $postAction")
             }
         }
         super.onComplete(postAction, executor, resultList)
