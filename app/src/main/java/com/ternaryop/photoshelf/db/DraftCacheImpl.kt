@@ -2,10 +2,13 @@ package com.ternaryop.photoshelf.db
 
 import com.ternaryop.photoshelf.tumblr.ui.draft.DraftCache
 import com.ternaryop.tumblr.TumblrPost
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val CACHE_TYPE = TumblrPostCache.CACHE_TYPE_DRAFT
 
-class DraftCacheImpl(val dao: TumblrPostCacheDAO) : DraftCache {
+@Singleton
+class DraftCacheImpl @Inject constructor(val dao: TumblrPostCacheDAO) : DraftCache {
     override fun read(blogName: String): List<TumblrPost> = dao.read(blogName, CACHE_TYPE)
 
     override fun clear(blogName: String?) = dao.clearCache(CACHE_TYPE)

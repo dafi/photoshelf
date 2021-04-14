@@ -87,9 +87,12 @@
 
     <!-- ActionMode styles -->
     <!-- The overflow menu shown when action mode is visible -->
-    <style name="Theme.PhotoShelf.ActionMode.PopupMenu" parent="Widget.AppCompat.Light.ActionMode.Inverse">
+    <style name="Theme.PhotoShelf.ActionMode.PopupMenu" parent="@style/ThemeOverlay.AppCompat.Light">
         <item name="android:background">@color/actionmode_popup_bg</item>
         <item name="android:textColor">@color/actionmode_popup_text</item>
+
+        <!-- The menu triangle -->
+        <item name="colorControlNormal">@color/actionmode_popup_text</item>
     </style>
 
     <style name="Theme.PhotoShelf.Toolbar" parent="Widget.AppCompat.Toolbar">

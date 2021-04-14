@@ -1,63 +1,54 @@
 package com.ternaryop.photoshelf.tumblr.dialog.editor.activity
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
+import com.ternaryop.photoshelf.fragment.appFragmentFactory
 import com.ternaryop.photoshelf.tumblr.dialog.EditPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.PostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.ARG_POST_DATA
 import com.ternaryop.photoshelf.tumblr.dialog.editor.fragment.PostEditorFragment
-import org.koin.android.ext.android.inject
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class PostEditorActivity : AbsPhotoShelfActivity() {
-    private val fragmentFactory: FragmentFactory by inject()
-
     override val contentViewLayoutId: Int = R.layout.activity_tumblr_post
     override val contentFrameId: Int = R.id.content_frame
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        supportFragmentManager.fragmentFactory = fragmentFactory
+        supportFragmentManager.fragmentFactory = appFragmentFactory
         super.onCreate(savedInstanceState)
     }
 
-    override fun createFragment(): Fragment? =
+    override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
             classLoader, PostEditorFragment::class.java.name).apply {
             arguments = intent.extras
         }
 
     companion object {
-        fun startNewPostForResult(
+        fun newPostEditorIntent(
+            context: Context,
             newPostDialogData: NewPostEditorData,
-            fragment: Fragment,
-            requestCode: Int
-        ) {
-            startActivity(newPostDialogData, fragment, requestCode)
-        }
+        ) = postEditorIntent(context, newPostDialogData)
 
-        fun startEditPostForResult(
+        fun editPostEditorIntent(
+            context: Context,
             editPostDialogData: EditPostEditorData,
-            fragment: Fragment,
-            requestCode: Int
-        ) {
-            startActivity(editPostDialogData, fragment, requestCode)
-        }
+        ) = postEditorIntent(context, editPostDialogData)
 
-        private fun startActivity(
+        fun postEditorIntent(
+            context: Context,
             postEditorData: PostEditorData,
-            fragment: Fragment,
-            requestCode: Int
-        ) {
-            val intent = Intent(fragment.requireContext(), PostEditorActivity::class.java)
-            intent.action = Intent.ACTION_VIEW
-            intent.putExtras(bundleOf(
+        ) = Intent(context, PostEditorActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            putExtras(bundleOf(
                 ARG_POST_DATA to postEditorData))
-            fragment.startActivityForResult(intent, requestCode)
         }
     }
 }

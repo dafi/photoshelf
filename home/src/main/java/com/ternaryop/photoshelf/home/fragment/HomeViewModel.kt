@@ -1,14 +1,14 @@
 package com.ternaryop.photoshelf.home.fragment
 
-import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.StatsResult
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel(application: Application) : PhotoShelfViewModel<HomeModelResult>(application) {
+class HomeViewModel @Inject constructor() : PhotoShelfViewModel<HomeModelResult>() {
 
     fun loadStats(blogName: String) {
         viewModelScope.launch {

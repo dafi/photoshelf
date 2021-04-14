@@ -9,6 +9,7 @@ import com.ternaryop.photoshelf.domselector.DomSelectorManager
 import com.ternaryop.photoshelf.domselector.util.readImageGallery
 import com.ternaryop.photoshelf.domselector.util.retrieveImageUri
 import com.ternaryop.util.crypto.CryptoUtil.md5
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,10 +18,13 @@ import java.io.FileInputStream
 import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStreamReader
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val GALLERY_EXPIRE_TIMESPAN_MS = 10 * 60 * 1_000L
 
-class ImageGalleryRepository(private val context: Context) {
+@Singleton
+class ImageGalleryRepository @Inject constructor(@ApplicationContext private val context: Context) {
     private val domSelectors = DomSelectorManager.selectors(context)
     private val cacheDir: File
         get() = File(context.cacheDir, "imageGallery").apply { mkdirs() }

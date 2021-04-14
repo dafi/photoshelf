@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.tumblr.dialog.impl
 
+import android.content.Context
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.tumblr.dialog.EditPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostDialog
@@ -9,16 +9,21 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.editor.activity.PostEditorActivity
 import com.ternaryop.tumblr.TumblrPost
 import java.util.Calendar
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TumblrPostDialogImpl : TumblrPostDialog {
-    override fun newPostEditor(newPostEditorData: NewPostEditorData, fragment: Fragment, requestCode: Int) {
-        PostEditorActivity.startNewPostForResult(newPostEditorData, fragment, requestCode)
-    }
+@Singleton
+class TumblrPostDialogImpl @Inject constructor() : TumblrPostDialog {
+    override fun newPostEditorIntent(
+        context: Context,
+        newPostDialogData: NewPostEditorData,
+    ) = PostEditorActivity.newPostEditorIntent(context, newPostDialogData)
 
-    override fun editPostEditor(editPostEditorData: EditPostEditorData, fragment: Fragment, requestCode: Int) {
-        PostEditorActivity.startEditPostForResult(editPostEditorData, fragment, requestCode)
-    }
+    override fun editPostEditorIntent(
+        context: Context,
+        editPostDialogData: EditPostEditorData,
+    ) = PostEditorActivity.editPostEditorIntent(context, editPostDialogData)
 
-    override fun schedulePostDialog(post: TumblrPost, scheduleDateTime: Calendar, target: Fragment?): DialogFragment =
-        SchedulePostDialog.newInstance(post, scheduleDateTime, target)
+    override fun schedulePostDialog(post: TumblrPost, scheduleDateTime: Calendar, requestKey: String): DialogFragment =
+        SchedulePostDialog.newInstance(post, scheduleDateTime, requestKey)
 }

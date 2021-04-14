@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.feedly.fragment
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -8,8 +9,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.feedly.FeedlyRateLimit
@@ -21,8 +22,6 @@ import com.ternaryop.photoshelf.feedly.adapter.OnFeedlyContentClick
 import com.ternaryop.photoshelf.feedly.dialog.FeedlyCategoriesDialog
 import com.ternaryop.photoshelf.feedly.dialog.FeedlySettingsData
 import com.ternaryop.photoshelf.feedly.dialog.FeedlySettingsDialog
-import com.ternaryop.photoshelf.feedly.dialog.OnFeedlyCategoriesListener
-import com.ternaryop.photoshelf.feedly.dialog.OnFeedlySettingsListener
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs
 import com.ternaryop.photoshelf.feedly.prefs.fromSettings
 import com.ternaryop.photoshelf.feedly.prefs.toSettings
@@ -36,7 +35,7 @@ import com.ternaryop.photoshelf.util.post.moveToBottom
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.photoshelf.view.snackbar.SnackbarHolder
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 private const val FRAGMENT_TAG_SORT = "sort"
 private const val FRAGMENT_TAG_CATEGORIES = "categories"
@@ -44,17 +43,20 @@ private const val FRAGMENT_TAG_SETTINGS = "settings"
 
 private const val PICKER_FETCH_ITEM_COUNT = 3
 
+private const val CATEGORIES_DIALOG_REQUEST_KEY = "categoriesRequestKey"
+private const val SETTINGS_DIALOG_REQUEST_KEY = "settingsRequestKey"
+
+@AndroidEntryPoint
 class FeedlyListFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(),
     OnFeedlyContentClick,
-    OnFeedlyCategoriesListener,
-    OnFeedlySettingsListener {
+    FragmentResultListener {
     private lateinit var adapter: FeedlyContentAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var preferences: FeedlyPrefs
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
-    private val viewModel: FeedlyViewModel by viewModel()
+    private val viewModel: FeedlyViewModel by viewModels()
 
     override val snackbarHolder: SnackbarHolder by lazy {
         FeedlySnackbarHolder(
@@ -80,19 +82,7 @@ class FeedlyListFragment(
 
         photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener { refresh() }
-    }
 
-    private fun initRecyclerView(rootView: View) {
-        adapter = FeedlyContentAdapter(requireContext())
-
-        recyclerView = rootView.findViewById(R.id.list)
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         preferences = FeedlyPrefs(requireContext())
 
         adapter.sortSwitcher.setType(preferences.getSortType())
@@ -103,11 +93,24 @@ class FeedlyListFragment(
                 is FeedlyModelResult.Content -> onContent(result)
                 is FeedlyModelResult.MarkSaved -> onMarkSaved(result)
                 is FeedlyModelResult.AccessTokenRefresh -> onAccessTokenRefreshed(result)
+                else -> throw AssertionError("No valid $result")
             }
         })
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
         viewModel.content(requireBlogName, null)
+
+        parentFragmentManager.setFragmentResultListener(CATEGORIES_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
+        parentFragmentManager.setFragmentResultListener(SETTINGS_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
+    }
+
+    private fun initRecyclerView(rootView: View) {
+        adapter = FeedlyContentAdapter(requireContext())
+
+        recyclerView = rootView.findViewById(R.id.list)
+        recyclerView.setHasFixedSize(true)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.adapter = adapter
     }
 
     private fun onContent(result: FeedlyModelResult.Content) {
@@ -196,14 +199,16 @@ class FeedlyListFragment(
             adapter.itemCount)
     }
 
-    override fun onAttachFragment(childFragment: Fragment) {
-        super.onAttachFragment(childFragment)
-        if (childFragment !is BottomMenuSheetDialogFragment) {
-            return
-        }
-        childFragment.menuListener = when (childFragment.tag) {
-            FRAGMENT_TAG_SORT -> FeedlySortBottomMenuListener(this, adapter.sortSwitcher)
-            else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        childFragmentManager.addFragmentOnAttachListener { _, childFragment ->
+            if (childFragment is BottomMenuSheetDialogFragment) {
+                childFragment.menuListener = when (childFragment.tag) {
+                    FRAGMENT_TAG_SORT -> FeedlySortBottomMenuListener(this, adapter.sortSwitcher)
+                    else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
+                }
+            }
         }
     }
 
@@ -229,7 +234,7 @@ class FeedlyListFragment(
             }
             R.id.action_settings -> {
                 FeedlySettingsDialog
-                    .newInstance(preferences.toSettings(), this)
+                    .newInstance(preferences.toSettings(), SETTINGS_DIALOG_REQUEST_KEY)
                     .show(parentFragmentManager, FRAGMENT_TAG_SETTINGS)
                 return true
             }
@@ -268,8 +273,9 @@ class FeedlyListFragment(
 
     override fun onTagClick(position: Int) {
         val tag = adapter.getItem(position).tag ?: return
-        imageViewerActivityStarter.startTagPhotoBrowser(requireContext(),
-            TagPhotoBrowserData(requireBlogName, tag, false))
+        requireContext().startActivity(
+            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
+                TagPhotoBrowserData(requireBlogName, tag, false)))
     }
 
     override fun onToggleClick(position: Int, checked: Boolean) {
@@ -294,18 +300,30 @@ class FeedlyListFragment(
 
     private fun selectCategories() {
         FeedlyCategoriesDialog
-            .newInstance(preferences.selectedCategoriesId, this)
+            .newInstance(preferences.selectedCategoriesId, CATEGORIES_DIALOG_REQUEST_KEY)
             .show(parentFragmentManager, FRAGMENT_TAG_CATEGORIES)
     }
 
-    override fun onSettings(dialog: DialogFragment, settingsData: FeedlySettingsData) {
+    private fun onSettings(settingsData: FeedlySettingsData) {
         preferences.fromSettings(settingsData)
     }
 
-    override fun onSelected(dialog: DialogFragment, selectedCategoriesId: Set<String>) {
+    private fun onSelected(selectedCategoriesId: Set<String>) {
         preferences.selectedCategoriesId = selectedCategoriesId
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
         viewModel.contentList.clear()
         viewModel.content(requireBlogName, getDeleteIdList(false))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        when (requestKey) {
+            CATEGORIES_DIALOG_REQUEST_KEY -> onSelected(
+                result.getSerializable(FeedlyCategoriesDialog.EXTRA_SELECTED_CATEGORIES_ID) as Set<String>
+            )
+            SETTINGS_DIALOG_REQUEST_KEY -> onSettings(
+                result.getSerializable(FeedlySettingsDialog.EXTRA_SETTINGS_DATA) as FeedlySettingsData
+            )
+        }
     }
 }

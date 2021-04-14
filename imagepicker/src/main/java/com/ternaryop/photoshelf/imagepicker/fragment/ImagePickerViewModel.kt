@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.imagepicker.fragment
 
-import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.api.extractor.ImageGalleryResult
@@ -9,16 +8,18 @@ import com.ternaryop.photoshelf.imagepicker.repository.ImageGalleryRepository
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.photoshelf.lifecycle.ProgressData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+import javax.inject.Inject
 
 typealias ImageInfoUriPair = Pair<ImageInfo, Uri>
 
-class ImagePickerViewModel(
-    application: Application,
+@HiltViewModel
+class ImagePickerViewModel @Inject constructor(
     private val imageGalleryRepository: ImageGalleryRepository
-) : PhotoShelfViewModel<ImagePickerModelResult>(application) {
+) : PhotoShelfViewModel<ImagePickerModelResult>() {
 
     fun readImageGallery(url: String) {
         viewModelScope.launch(Dispatchers.IO) {

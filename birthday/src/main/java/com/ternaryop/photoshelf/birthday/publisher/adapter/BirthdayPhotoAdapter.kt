@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import coil.load
 import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
@@ -63,7 +63,7 @@ class BirthdayPhotoAdapter(
         items.addAll(collection)
     }
 
-    fun sort() = items.sortWith(Comparator { lhr, rhs -> lhr.name.compareTo(rhs.name) })
+    fun sort() = items.sortWith { lhr, rhs -> lhr.name.compareTo(rhs.name) }
 
     fun updatePost(birthday: Birthday, notifyChange: Boolean) {
         val name = birthday.name
@@ -129,7 +129,7 @@ class BirthdayPhotoAdapter(
 
         fun setOnClickListeners(listener: View.OnClickListener) {
             showImageAction.setOnClickListener(listener)
-            showImageAction.tag = adapterPosition
+            showImageAction.tag = bindingAdapterPosition
         }
 
         fun setOnClickMultiChoiceListeners(
@@ -137,7 +137,7 @@ class BirthdayPhotoAdapter(
             longClickListener: View.OnLongClickListener
         ) {
             if (listener != null) {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 itemView.setOnClickListener(listener)
                 itemView.setOnLongClickListener(longClickListener)
                 itemView.isLongClickable = true

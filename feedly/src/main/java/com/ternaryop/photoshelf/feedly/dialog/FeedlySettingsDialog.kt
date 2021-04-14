@@ -9,7 +9,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import com.ternaryop.photoshelf.feedly.R
 import java.io.Serializable
 
@@ -41,25 +40,28 @@ class FeedlySettingsDialog : DialogFragment() {
     }
 
     private fun update(view: View) {
-        (targetFragment as? OnFeedlySettingsListener)?.also { listener ->
-            val settingsData = FeedlySettingsData(
-                Integer.parseInt(view.findViewById<EditText>(R.id.max_fetch_items_count).text.toString()),
-                Integer.parseInt(view.findViewById<EditText>(R.id.newer_than_hours).text.toString()),
-                view.findViewById<CheckBox>(R.id.delete_on_refresh).isChecked)
-            listener.onSettings(this, settingsData)
-        }
+        val settingsData = FeedlySettingsData(
+            view.findViewById<EditText>(R.id.max_fetch_items_count).text.toString().toInt(),
+            view.findViewById<EditText>(R.id.newer_than_hours).text.toString().toInt(),
+            view.findViewById<CheckBox>(R.id.delete_on_refresh).isChecked)
+        parentFragmentManager.setFragmentResult(
+            checkNotNull(arguments?.getString(EXTRA_REQUEST_KEY)),
+            bundleOf(EXTRA_SETTINGS_DATA to settingsData)
+        )
     }
 
     companion object {
         private const val ARG_SETTINGS = "settings"
+        private const val EXTRA_REQUEST_KEY = "requestKey"
+        const val EXTRA_SETTINGS_DATA = "settingsData"
 
         fun newInstance(
             settingsData: FeedlySettingsData,
-            target: Fragment
+            requestKey: String,
         ) = FeedlySettingsDialog().apply {
             arguments = bundleOf(
+                EXTRA_REQUEST_KEY to requestKey,
                 ARG_SETTINGS to settingsData)
-            setTargetFragment(target, 0)
         }
     }
 }
@@ -69,7 +71,3 @@ data class FeedlySettingsData(
     val newerThanHours: Int,
     val deleteOnRefresh: Boolean
 ) : Serializable
-
-interface OnFeedlySettingsListener {
-    fun onSettings(dialog: DialogFragment, settingsData: FeedlySettingsData)
-}

@@ -12,6 +12,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.EXTRA_POST
@@ -29,12 +31,11 @@ import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.WaitingResultSwipeRefreshLayout
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 import java.util.Locale
 
-private const val PICK_IMAGE_REQUEST_CODE = 100
-
+@AndroidEntryPoint
 class BirthdayPublisherFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(),
@@ -43,7 +44,11 @@ class BirthdayPublisherFragment(
     private lateinit var birthdayPhotoAdapter: BirthdayPhotoAdapter
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
 
-    private val viewModel: BirthdayPublisherViewModel by viewModel()
+    private val viewModel: BirthdayPublisherViewModel by viewModels()
+
+    private val activityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        handleActivityResult(result.resultCode, result.data)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -166,23 +171,25 @@ class BirthdayPublisherFragment(
         val selection = birthdayPhotoAdapter.selection
         val selectionCount = selection.itemCount
         actionMode?.subtitle = resources.getQuantityString(
-                R.plurals.selected_items_total,
-                selectionCount,
-                selectionCount,
-                birthdayPhotoAdapter.itemCount)
+            R.plurals.selected_items_total,
+            selectionCount,
+            selectionCount,
+            birthdayPhotoAdapter.itemCount)
     }
 
     override fun onThumbnailImageClick(position: Int) {
         val birthdate = birthdayPhotoAdapter.getItem(position)
-        imageViewerActivityStarter.startTagPhotoBrowserForResult(this,
-            PICK_IMAGE_REQUEST_CODE,
-            TagPhotoBrowserData(blogName, birthdate.name, false))
+        val intent = imageViewerActivityStarter.tagPhotoBrowserIntent(
+            requireContext(),
+            TagPhotoBrowserData(blogName, birthdate.name, false),
+            true)
+        activityResult.launch(intent)
     }
 
     override fun onOverflowClick(position: Int, view: View) = Unit
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == PICK_IMAGE_REQUEST_CODE && data != null) {
+    private fun handleActivityResult(resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK && data != null) {
             val post = data.getSerializableExtra(EXTRA_POST) as TumblrPhotoPost
             viewModel.updatePostByTag(post)?.also { birthdayPhotoAdapter.updatePost(it, true) }
         }
@@ -191,13 +198,13 @@ class BirthdayPublisherFragment(
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
         mode.title = getString(R.string.select_images)
         mode.subtitle = resources.getQuantityString(
-                R.plurals.selected_items_total,
-                1,
-                1,
-                birthdayPhotoAdapter.itemCount)
+            R.plurals.selected_items_total,
+            1,
+            1,
+            birthdayPhotoAdapter.itemCount)
         mode.menuInflater.inflate(R.menu.birthday_publisher_context, menu)
         birthdayPhotoAdapter.isShowButtons = true
-        birthdayPhotoAdapter.notifyDataSetChanged()
+        birthdayPhotoAdapter.notifyItemRangeChanged(0, birthdayPhotoAdapter.itemCount)
         return true
     }
 

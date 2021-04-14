@@ -6,8 +6,11 @@ import com.ternaryop.photoshelf.lifecycle.CommandMutableLiveData
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
 import java.util.Calendar
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class BirthdayRepository {
+@Singleton
+class BirthdayRepository @Inject constructor() {
     private val _count = CommandMutableLiveData<Int>()
     val count = _count.asLiveData()
 

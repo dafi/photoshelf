@@ -5,10 +5,8 @@ dependencies {
 
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
 
-    implementation "io.coil-kt:coil:${rootProject.ext.coilLibVersion}"
-
-    implementation "com.ternaryop.photoshelf:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
-    implementation "com.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
+    implementation "io.github.ternaryop:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
+    implementation "io.github.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
 
     implementation project(path: ':core')
 }

@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import coil.load
 import coil.size.Scale
 import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
@@ -72,9 +72,12 @@ class ImagePickerAdapter(
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal val showImageAction = itemView.findViewById<View>(R.id.ic_show_image_action) as ImageView
-        internal val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
-        internal val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
+        private val showImageAction = itemView.findViewById<View>(R.id.ic_show_image_action) as ImageView
+        private val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
+        private val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
+
+        private val thumbWidth = itemView.context.resources.getDimensionPixelOffset(R.dimen.image_picker_grid_width)
+        private val thumbHeight = itemView.context.resources.getDimensionPixelOffset(R.dimen.image_picker_grid_height)
 
         fun bindModel(imageInfo: ImageInfo, showButtons: Boolean, checked: Boolean) {
             setVisibility(showButtons)
@@ -104,7 +107,7 @@ class ImagePickerAdapter(
 
         fun setOnClickListeners(listener: View.OnClickListener) {
             showImageAction.setOnClickListener(listener)
-            showImageAction.tag = adapterPosition
+            showImageAction.tag = bindingAdapterPosition
         }
 
         fun setOnClickMultiChoiceListeners(
@@ -112,7 +115,7 @@ class ImagePickerAdapter(
             longClickListener: View.OnLongClickListener
         ) {
             if (listener != null) {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 itemView.setOnClickListener(listener)
                 itemView.setOnLongClickListener(longClickListener)
                 itemView.isLongClickable = true

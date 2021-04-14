@@ -4,12 +4,15 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.customsearch.GoogleCustomSearchClient
 import com.ternaryop.photoshelf.db.TagMatcherDAO
 import com.ternaryop.photoshelf.misspelled.MisspelledName
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Created by dave on 24/02/18.
  * Search for misspelled names
  */
-class MisspelledNameImpl(private val tagMatcherDAO: TagMatcherDAO) : MisspelledName {
+@Singleton
+class MisspelledNameImpl @Inject constructor(private val tagMatcherDAO: TagMatcherDAO) : MisspelledName {
     override suspend fun getMisspelledInfo(name: String): MisspelledName.Info {
         return getMatchingName(name)
             ?: getMisspelledName(name)

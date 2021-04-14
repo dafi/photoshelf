@@ -3,7 +3,7 @@ package com.ternaryop.photoshelf.tumblr.dialog.editor.adapter
 import android.util.TypedValue
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import coil.load
 import coil.size.Scale
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.widget.CheckableImageView

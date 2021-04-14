@@ -8,12 +8,13 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.SpinnerAdapter
 import android.widget.TextView
-import coil.api.load
+import coil.load
 import coil.transform.CircleCropTransformation
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.TumblrAltSize
-import com.ternaryop.tumblr.android.coil.CoilTumblrOAuth
+import com.ternaryop.tumblr.android.TumblrManager
+import okhttp3.Headers
 
 class BlogSpinnerAdapter(
     context: Context,
@@ -35,9 +36,15 @@ class BlogSpinnerAdapter(
         getItem(position)?.also { blogName ->
             holder.title.text = blogName
 
-            holder.image.load(
-                Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH),
-                CoilTumblrOAuth.get(context)) {
+            val url = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
+            val signedRequest = TumblrManager.getInstance(context)
+                    .consumer
+                    .getSignedGetAuthRequest(url)
+            val oauthHeaders = Headers.Builder().apply {
+                signedRequest.headers.forEach { (k, v) -> this.add(k, v) }
+            }.build()
+            holder.image.load(signedRequest.completeUrl) {
+                headers(oauthHeaders)
                 placeholder(R.drawable.stub)
                 transformations(CircleCropTransformation())
             }
@@ -49,8 +56,8 @@ class BlogSpinnerAdapter(
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup) =
         getView(position, convertView, parent)
 
-    private inner class ViewHolder(vi: View) {
-        internal val title = vi.findViewById<View>(R.id.title1) as TextView
-        internal val image = vi.findViewById<View>(R.id.image1) as ImageView
+    private class ViewHolder(vi: View) {
+        val title = vi.findViewById<View>(R.id.title1) as TextView
+        val image = vi.findViewById<View>(R.id.image1) as ImageView
     }
 }

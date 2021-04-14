@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.activity
 
 import android.content.Context
-import androidx.fragment.app.Fragment
+import android.content.Intent
 import java.io.Serializable
 
 class TagPhotoBrowserData(
@@ -19,7 +19,18 @@ class ImageViewerData(
 interface ImageViewerActivityStarter {
     fun startImagePicker(context: Context, url: String)
     fun startImagePickerPrefetch(urls: List<String>)
-    fun startTagPhotoBrowser(context: Context, data: TagPhotoBrowserData)
-    fun startTagPhotoBrowserForResult(fragment: Fragment, requestCode: Int, data: TagPhotoBrowserData)
+
+    /**
+     * Prepare the intent need to launch the tag photo browser activity
+     * @param context the context
+     * @param tagPhotoBrowserData the data used by activity
+     * @param returnSelectedPost true if selected item must be returned, false otherwise
+     */
+    fun tagPhotoBrowserIntent(
+        context: Context,
+        tagPhotoBrowserData: TagPhotoBrowserData,
+        returnSelectedPost: Boolean = false
+    ): Intent
+
     fun startImageViewer(context: Context, data: ImageViewerData)
 }

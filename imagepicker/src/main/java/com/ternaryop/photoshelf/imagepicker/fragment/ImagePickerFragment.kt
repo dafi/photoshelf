@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.imagepicker.fragment
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -18,6 +17,7 @@ import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -33,21 +33,20 @@ import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.NewPostEditorResult
+import com.ternaryop.photoshelf.tumblr.dialog.PostEditorActivityResultContracts
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
-import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.ARG_RESULT
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.EXTRA_THUMBNAILS_ITEMS
 import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.utils.dialog.DialogUtils
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.widget.ProgressHighlightViewLayout
-import org.koin.androidx.viewmodel.ext.android.viewModel
-
-private const val NEW_POST_REQUEST_CODE = 1
+import dagger.hilt.android.AndroidEntryPoint
 
 // The url can contain extraneous text
 const val EXTRA_URL = "com.ternaryop.photoshelf.extra.URL"
 
+@AndroidEntryPoint
 class ImagePickerFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter,
     private val tumblrPostDialog: TumblrPostDialog,
@@ -62,7 +61,11 @@ class ImagePickerFragment(
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private lateinit var selectedItemsViewContainer: SelectedItemsViewContainer
     private lateinit var imageGallery: ImageGallery
-    private val viewModel: ImagePickerViewModel by viewModel()
+    private val viewModel: ImagePickerViewModel by viewModels()
+
+    private val activityResult = registerForActivityResult(PostEditorActivityResultContracts.New(tumblrPostDialog)) {
+        it?.also { onPublish(it) }
+    }
 
     // Search on fragment arguments
     private val textWithUrl: String?
@@ -112,6 +115,13 @@ class ImagePickerFragment(
 
         setHasOptionsMenu(true)
         setupUI(view, requireContext())
+
+        refreshUI()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireActivity().setTitle(R.string.image_picker_activity_title)
     }
 
     private fun onGalleryModelResult(result: ImagePickerModelResult.Gallery) {
@@ -206,13 +216,6 @@ class ImagePickerFragment(
             })
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        requireActivity().setTitle(R.string.image_picker_activity_title)
-
-        refreshUI()
-    }
-
     override fun refreshUI() = openUrl(textWithUrl)
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -252,7 +255,7 @@ class ImagePickerFragment(
                 imagePickerAdapter.itemCount)
         mode.menuInflater.inflate(R.menu.image_picker_context, menu)
         imagePickerAdapter.showButtons = true
-        imagePickerAdapter.notifyDataSetChanged()
+        imagePickerAdapter.notifyItemRangeChanged(0, imagePickerAdapter.itemCount)
         return true
     }
 
@@ -301,12 +304,6 @@ class ImagePickerFragment(
         progressbar.visibility = VISIBLE
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == NEW_POST_REQUEST_CODE) {
-            (data?.extras?.getSerializable(ARG_RESULT) as? NewPostEditorResult)?.also { onPublish(it) }
-        }
-    }
-
     private fun onRetrievedImageList(imageUriList: List<ImageInfoUriPair>?) {
         progressbar.visibility = GONE
 
@@ -321,7 +318,7 @@ class ImagePickerFragment(
                 mapOf(
                     EXTRA_THUMBNAILS_ITEMS to imageUriList.map { it.first.thumbnailUrl }
                 ))
-            tumblrPostDialog.newPostEditor(data, this, NEW_POST_REQUEST_CODE)
+            activityResult.launch(data)
         } catch (e: Exception) {
             e.showErrorDialog(requireContext())
         }

@@ -24,7 +24,7 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var onClickListeners: View.OnClickListener? = null
         set(value) {
             if (value != null) {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 itemView.setOnClickListener(value)
                 itemView.tag = position
             }
@@ -35,7 +35,7 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             if (value != null) {
                 itemView.setOnLongClickListener(value)
                 itemView.isLongClickable = true
-                itemView.tag = adapterPosition
+                itemView.tag = bindingAdapterPosition
             }
         }
 

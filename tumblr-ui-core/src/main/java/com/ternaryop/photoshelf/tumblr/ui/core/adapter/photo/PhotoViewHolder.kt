@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import coil.load
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_CAPTION_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR
@@ -140,7 +140,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun setOnClickListeners(listener: View.OnClickListener?) {
         if (listener != null) {
             setTagsClickListener(listener)
-            val position = adapterPosition
+            val position = bindingAdapterPosition
             thumbImage.setOnClickListener(listener)
             thumbImage.tag = position
 
@@ -154,7 +154,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             itemView.setOnClickListener(listener)
             itemView.setOnLongClickListener(longClickListener)
             itemView.isLongClickable = true
-            itemView.tag = adapterPosition
+            itemView.tag = bindingAdapterPosition
         }
     }
 
@@ -167,7 +167,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun setTagsClickListener(listener: View.OnClickListener) {
-        tagsContainer.tag = adapterPosition
+        tagsContainer.tag = bindingAdapterPosition
         for (i in 0 until tagsContainer.childCount) {
             tagsContainer.getChildAt(i).setOnClickListener(listener)
         }

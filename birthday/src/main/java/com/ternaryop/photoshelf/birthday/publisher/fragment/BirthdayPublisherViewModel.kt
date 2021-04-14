@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.birthday.publisher.fragment
 
-import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
@@ -11,13 +10,14 @@ import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.month
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import javax.inject.Inject
 
-class BirthdayPublisherViewModel(
-    application: Application
-) : PhotoShelfViewModel<BirthdayPublisherModelResult>(application) {
+@HiltViewModel
+class BirthdayPublisherViewModel @Inject constructor() : PhotoShelfViewModel<BirthdayPublisherModelResult>() {
     private var birthdays: MutableList<Birthday>? = null
 
     fun listByDate(birthday: Calendar, blogName: String) {

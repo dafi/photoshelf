@@ -20,7 +20,7 @@ internal class ScheduleDate(val defaultScheduleMinutesTimeSpan: Int) {
     }
 
     private fun getMostRecent(posts: List<TumblrPost>): Calendar {
-        val maxScheduledTime = posts.maxBy { it.scheduledPublishTime }
+        val maxScheduledTime = posts.maxByOrNull { it.scheduledPublishTime }
             ?.run { scheduledPublishTime * DateUtils.SECOND_IN_MILLIS } ?: System.currentTimeMillis()
 
         // Calendar.MINUTE isn't reset otherwise the calc may be inaccurate

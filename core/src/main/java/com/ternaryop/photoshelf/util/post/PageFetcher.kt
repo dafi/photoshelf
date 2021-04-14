@@ -30,7 +30,7 @@ class PageFetcher<T>(val limitCount: Int) {
                 } ?: 0
                 Command.success(FetchedData(l, count))
             } catch (t: Throwable) {
-                Command.error<FetchedData<T>>(t)
+                Command.error(t)
             } finally {
                 pagingScroll.isScrolling = false
             }

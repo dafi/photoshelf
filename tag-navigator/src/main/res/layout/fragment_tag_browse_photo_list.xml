@@ -25,6 +25,6 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:contentDescription="@string/content_description_empty_list"
-        android:tint="@color/primary"
+        app:tint="@color/primary"
         android:src="@drawable/ic_action_search"/>
 </RelativeLayout>

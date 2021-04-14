@@ -1,7 +1,7 @@
 package com.ternaryop.photoshelf.activity.impl
 
 import android.content.Context
-import androidx.fragment.app.Fragment
+import android.content.Intent
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.ImageViewerData
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
@@ -13,9 +13,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-class ImageViewerActivityStarterImpl(
+@Singleton
+class ImageViewerActivityStarterImpl @Inject constructor(
     private val imageGalleryRepository: ImageGalleryRepository
 ) : ImageViewerActivityStarter, CoroutineScope {
     private var job = Job()
@@ -30,19 +33,11 @@ class ImageViewerActivityStarterImpl(
         }
     }
 
-    override fun startTagPhotoBrowser(
+    override fun tagPhotoBrowserIntent(
         context: Context,
-        data: TagPhotoBrowserData
-    ) = TagPhotoBrowserActivity.startPhotoBrowserActivity(context, data)
-
-    override fun startTagPhotoBrowserForResult(
-        fragment: Fragment,
-        requestCode: Int,
-        data: TagPhotoBrowserData
-    ) = TagPhotoBrowserActivity.startPhotoBrowserActivityForResult(
-        fragment,
-        requestCode,
-        data)
+        tagPhotoBrowserData: TagPhotoBrowserData,
+        returnSelectedPost: Boolean
+    ): Intent = TagPhotoBrowserActivity.createIntent(context, tagPhotoBrowserData, returnSelectedPost)
 
     override fun startImageViewer(
         context: Context,

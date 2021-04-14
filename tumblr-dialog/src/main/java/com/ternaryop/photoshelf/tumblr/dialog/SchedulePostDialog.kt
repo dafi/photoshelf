@@ -13,7 +13,6 @@ import android.widget.TimePicker
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.hourOfDay
@@ -102,9 +101,13 @@ class SchedulePostDialog : DialogFragment(), View.OnClickListener,
 
     private fun schedulePost() {
         scheduleButton.isEnabled = false
-        (targetFragment as? OnSchedulePostListener)?.also {
-            it.onSchedule(this, SchedulePostData(post, scheduleDateTime))
-        }
+        parentFragmentManager.setFragmentResult(
+            checkNotNull(arguments?.getString(EXTRA_REQUEST_KEY)),
+            Bundle().also {
+                parentFragmentManager.putFragment(it, EXTRA_DIALOG, this)
+                it.putSerializable(EXTRA_SCHEDULE_DATA, SchedulePostData(post, scheduleDateTime))
+            }
+        )
     }
 
     override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
@@ -137,17 +140,20 @@ class SchedulePostDialog : DialogFragment(), View.OnClickListener,
     companion object {
         private const val ARG_SCHEDULE_DATE = "scheduleDate"
         private const val ARG_POST = "post"
+        private const val EXTRA_REQUEST_KEY = "requestKey"
+        const val EXTRA_DIALOG = "dialog"
+        const val EXTRA_SCHEDULE_DATA = "scheduleData"
 
         fun newInstance(
             post: TumblrPost,
             scheduleDateTime: Calendar,
-            target: Fragment? = null
+            requestKey: String
         ) = SchedulePostDialog().apply {
             arguments = bundleOf(
+                EXTRA_REQUEST_KEY to requestKey,
                 ARG_SCHEDULE_DATE to scheduleDateTime,
                 ARG_POST to post
             )
-            setTargetFragment(target, 0)
         }
     }
 }

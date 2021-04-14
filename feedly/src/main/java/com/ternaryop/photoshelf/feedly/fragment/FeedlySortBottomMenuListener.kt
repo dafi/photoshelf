@@ -10,7 +10,7 @@ class FeedlySortBottomMenuListener(
     private val feedlyListFragment: FeedlyListFragment,
     private val sortSwitcher: FeedlyContentSortSwitcher
 ) : BottomMenuListener {
-    override val title: String?
+    override val title: String
         get() = feedlyListFragment.resources.getString(R.string.sort_by)
     override val menuId: Int
         get() = R.menu.feedly_sort

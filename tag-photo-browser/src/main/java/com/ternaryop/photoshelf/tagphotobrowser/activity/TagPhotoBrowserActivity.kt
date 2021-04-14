@@ -4,57 +4,56 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
 import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
+import com.ternaryop.photoshelf.fragment.appFragmentFactory
 import com.ternaryop.photoshelf.tagphotobrowser.R
 import com.ternaryop.photoshelf.tagphotobrowser.fragment.TagPhotoBrowserFragment
-import org.koin.android.ext.android.inject
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
     private lateinit var blogName: String
 
     override val contentViewLayoutId: Int = R.layout.activity_tag_photo_browser
     override val contentFrameId: Int = R.id.content_frame
 
-    private val fragmentFactory: FragmentFactory by inject()
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        val data = intent.extras?.getSerializable(EXTRA_TAG_PHOTO_BROWSER_DATA) as? TagPhotoBrowserData
+        val data = tagPhotoBrowserData(intent.extras)
         blogName = data?.blogName ?: checkNotNull(PreferenceManager.getDefaultSharedPreferences(this).selectedBlogName)
-        supportFragmentManager.fragmentFactory = fragmentFactory
+        supportFragmentManager.fragmentFactory = appFragmentFactory
 
         super.onCreate(savedInstanceState)
     }
 
-    override fun createFragment(): Fragment? =
+    override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
             classLoader, TagPhotoBrowserFragment::class.java.name)
 
     companion object {
-        const val EXTRA_TAG_PHOTO_BROWSER_DATA = "com.ternaryop.photoshelf.extra.TAG_PHOTO_BROWSER_DATA"
+        private const val EXTRA_TAG_PHOTO_BROWSER_DATA = "com.ternaryop.photoshelf.extra.TAG_PHOTO_BROWSER_DATA"
+        private const val EXTRA_RETURN_SELECTED_POST = "com.ternaryop.photoshelf.extra.EXTRA_RETURN_SELECTED_POST"
 
-        fun startPhotoBrowserActivity(context: Context, tagPhotoBrowserData: TagPhotoBrowserData) {
-            context.startActivity(createIntent(context, tagPhotoBrowserData))
-        }
-
-        fun startPhotoBrowserActivityForResult(
-            fragment: Fragment,
-            requestCode: Int,
-            tagPhotoBrowserData: TagPhotoBrowserData
-        ) {
-            fragment.startActivityForResult(createIntent(fragment.requireActivity(), tagPhotoBrowserData), requestCode)
-        }
-
-        private fun createIntent(context: Context, tagPhotoBrowserData: TagPhotoBrowserData): Intent {
+        fun createIntent(
+            context: Context,
+            tagPhotoBrowserData: TagPhotoBrowserData,
+            returnSelectedPost: Boolean = false
+        ): Intent {
             val intent = Intent(context, TagPhotoBrowserActivity::class.java)
             val bundle = Bundle()
 
             bundle.putSerializable(EXTRA_TAG_PHOTO_BROWSER_DATA, tagPhotoBrowserData)
+            bundle.putBoolean(EXTRA_RETURN_SELECTED_POST, returnSelectedPost)
             intent.putExtras(bundle)
             return intent
         }
+
+        fun tagPhotoBrowserData(bundle: Bundle?) =
+            bundle?.getSerializable(EXTRA_TAG_PHOTO_BROWSER_DATA) as? TagPhotoBrowserData
+
+        fun returnSelectedPost(bundle: Bundle?, defaultValue: Boolean = false) =
+            bundle?.getBoolean(EXTRA_RETURN_SELECTED_POST, defaultValue) ?: defaultValue
     }
 }

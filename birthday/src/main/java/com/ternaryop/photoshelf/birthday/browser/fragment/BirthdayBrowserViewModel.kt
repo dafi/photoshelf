@@ -1,6 +1,5 @@
 package com.ternaryop.photoshelf.birthday.browser.fragment
 
-import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
@@ -13,12 +12,13 @@ import com.ternaryop.photoshelf.util.post.FetchedData
 import com.ternaryop.photoshelf.util.post.PageFetcher
 import com.ternaryop.photoshelf.util.post.removeItems
 import com.ternaryop.utils.date.toIsoFormat
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class BirthdayBrowserViewModel(
-    application: Application
-) : PhotoShelfViewModel<BirthdayBrowserModelResult>(application) {
+@HiltViewModel
+class BirthdayBrowserViewModel @Inject constructor() : PhotoShelfViewModel<BirthdayBrowserModelResult>() {
     val showFlags = BirthdayShowFlags()
     var month: Int = 0
     val pageFetcher = PageFetcher<Birthday>(MAX_BIRTHDAY_COUNT)

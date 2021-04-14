@@ -6,10 +6,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.navigation.NavigationView
 import com.ternaryop.photoshelf.core.R
-import kotlinx.android.synthetic.main.fragment_bottom_menu.navigation_view
-import kotlinx.android.synthetic.main.fragment_bottom_menu.title
 
 interface BottomMenuListener {
     val title: String?
@@ -29,10 +29,12 @@ class BottomMenuSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         menuListener?.also { listener ->
+            val title = view.findViewById<TextView>(R.id.title)
             title.text = listener.title ?: ""
-            navigation_view.inflateMenu(listener.menuId)
-            listener.setupMenu(navigation_view.menu)
-            navigation_view.setNavigationItemSelectedListener { menu ->
+            val navigationView = view.findViewById<NavigationView>(R.id.navigation_view)
+            navigationView.inflateMenu(listener.menuId)
+            listener.setupMenu(navigationView.menu)
+            navigationView.setNavigationItemSelectedListener { menu ->
                 listener.onItemSelected(menu)
                 dismiss()
             true

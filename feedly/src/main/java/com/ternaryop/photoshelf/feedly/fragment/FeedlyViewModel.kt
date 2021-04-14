@@ -19,13 +19,16 @@ import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.photoshelf.util.post.CachedListFetcher
 import com.ternaryop.photoshelf.util.post.FetchedData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FeedlyViewModel(
+@HiltViewModel
+class FeedlyViewModel @Inject constructor(
     application: Application,
     private val contentReader: StreamContentReader
-) : PhotoShelfViewModel<FeedlyModelResult>(application) {
+) : PhotoShelfViewModel<FeedlyModelResult>() {
     private val preferences = FeedlyPrefs(application)
     private val feedlyClient = FeedlyClient(preferences.accessToken ?: "")
     val contentList = CachedListFetcher<FeedlyContentDelegate>()
