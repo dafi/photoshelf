@@ -6,6 +6,6 @@ interface MisspelledName {
     sealed class Info(val name: String) {
         class AlreadyExists(name: String) : Info(name)
         class NotFound(name: String) : Info(name)
-        class Corrected(name: String) : Info(name)
+        class Corrected(name: String, val misspelledName: String) : Info(name)
     }
 }

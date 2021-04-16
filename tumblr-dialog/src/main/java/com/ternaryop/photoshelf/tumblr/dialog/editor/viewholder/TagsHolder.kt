@@ -3,10 +3,10 @@ package com.ternaryop.photoshelf.tumblr.dialog.editor.viewholder
 import android.content.Context
 import android.graphics.Color
 import android.widget.MultiAutoCompleteTextView
-import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorArrayAdapter
-import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorFilter
 import com.ternaryop.photoshelf.misspelled.MisspelledName
 import com.ternaryop.photoshelf.mru.adapter.OnMRUListener
+import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorArrayAdapter
+import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorFilter
 import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.tumblr.TumblrPost
 
@@ -50,7 +50,10 @@ class TagsHolder(
             is MisspelledName.Info.Corrected -> {
                 textView.setTextColor(Color.RED)
                 textView.setBackgroundColor(Color.YELLOW)
-                textView.setText(misspelledInfo.name)
+                val replaced = toggleTag(misspelledInfo.misspelledName).apply {
+                    add(0, misspelledInfo.name)
+                }.joinToString(", ")
+                textView.setText(replaced)
             }
             is MisspelledName.Info.NotFound -> {
                 textView.setTextColor(Color.WHITE)

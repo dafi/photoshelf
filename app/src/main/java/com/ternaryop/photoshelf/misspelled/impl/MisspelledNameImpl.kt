@@ -26,7 +26,7 @@ class MisspelledNameImpl @Inject constructor(private val tagMatcherDAO: TagMatch
         return if (name.equals(correctedName, ignoreCase = true)) {
             MisspelledName.Info.AlreadyExists(name)
         } else {
-            MisspelledName.Info.Corrected(correctedName)
+            MisspelledName.Info.Corrected(correctedName, name)
         }
     }
 
@@ -40,6 +40,6 @@ class MisspelledNameImpl @Inject constructor(private val tagMatcherDAO: TagMatch
         val result = GoogleCustomSearchClient.getCorrectedQuery(name)
 
         val correctedQuery = result.spelling?.correctedQuery ?: return null
-        return MisspelledName.Info.Corrected(correctedQuery)
+        return MisspelledName.Info.Corrected(correctedQuery, name)
     }
 }
