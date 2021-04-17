@@ -1,14 +1,13 @@
 package com.ternaryop.photoshelf.feedly.reader
 
 import android.content.res.AssetManager
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
 import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.StreamContent
 import com.ternaryop.feedly.StreamContentFindParam
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.InputStreamReader
 
 private const val ONE_HOUR_MILLIS = 60 * 60 * 1000
 
@@ -21,8 +20,9 @@ class AssetManagerStreamContentReader(
     private val fileName: String
 ) : StreamContentReader {
     override suspend fun read(feedlyClient: FeedlyClient): StreamContent = withContext(Dispatchers.IO) {
-        assets.open(fileName).use { stream ->
-            GsonBuilder().create().fromJson(InputStreamReader(stream), StreamContent::class.java)
+        assets.open(fileName).bufferedReader().use { stream ->
+                checkNotNull(Moshi.Builder().build().adapter(StreamContent::class.java)
+                .fromJson(stream.readText()))
         }
     }
 }

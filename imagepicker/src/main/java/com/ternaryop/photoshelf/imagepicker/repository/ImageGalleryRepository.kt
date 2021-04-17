@@ -2,7 +2,7 @@ package com.ternaryop.photoshelf.imagepicker.repository
 
 import android.content.Context
 import android.net.Uri
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
 import com.ternaryop.photoshelf.api.extractor.ImageGalleryResult
 import com.ternaryop.photoshelf.api.extractor.ImageInfo
 import com.ternaryop.photoshelf.domselector.DomSelectorManager
@@ -17,18 +17,21 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileWriter
 import java.io.IOException
-import java.io.InputStreamReader
+import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val GALLERY_EXPIRE_TIMESPAN_MS = 10 * 60 * 1_000L
+
+inline fun <reified T> Moshi.fromJson(input: InputStream) =
+        adapter(T::class.java).fromJson(input.bufferedReader().readText())
 
 @Singleton
 class ImageGalleryRepository @Inject constructor(@ApplicationContext private val context: Context) {
     private val domSelectors = DomSelectorManager.selectors(context)
     private val cacheDir: File
         get() = File(context.cacheDir, "imageGallery").apply { mkdirs() }
-    private val gson = GsonBuilder().create()
+    private val json = Moshi.Builder().build()
 
     suspend fun readImageGallery(url: String, expireTimespan: Long = GALLERY_EXPIRE_TIMESPAN_MS): ImageGalleryResult {
         return loadCache(url, expireTimespan) ?: writeCache(url, domSelectors.readImageGallery(url).response)
@@ -51,7 +54,7 @@ class ImageGalleryRepository @Inject constructor(@ApplicationContext private val
             if (hasExpired(file, currentTimeMillis, expireTimespan)) {
                 null
             } else {
-                FileInputStream(file).use { gson.fromJson(InputStreamReader(it), ImageGalleryResult::class.java) }
+                FileInputStream(file).use { json.fromJson(it) }
             }
         } catch (ignored: Throwable) {
             null
@@ -62,7 +65,7 @@ class ImageGalleryRepository @Inject constructor(@ApplicationContext private val
         try {
             val file = cacheFile(url)
 
-            FileWriter(file).use { it.write(gson.toJson(imageGalleryResult)) }
+            FileWriter(file).use { it.write(json.adapter(ImageGalleryResult::class.java).toJson(imageGalleryResult)) }
         } catch (ignored: Throwable) {
         }
         return imageGalleryResult

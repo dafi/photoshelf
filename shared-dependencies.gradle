@@ -26,6 +26,8 @@ dependencies {
 
     implementation "io.coil-kt:coil:${rootProject.ext.coilLibVersion}"
 
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:${rootProject.ext.moshiKotlinCodegenLibVersion}"
+
     implementation "io.github.ternaryop:common-utils:${rootProject.ext.ternaryOpUtilLibVersion}"
     implementation "io.github.ternaryop:widget:${rootProject.ext.ternaryOpWidgetLibVersion}"
     implementation "io.github.ternaryop:tumblr-coroutines:${rootProject.ext.ternaryOpTumblrCoroutinesLibVersion}"

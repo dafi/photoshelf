@@ -1,10 +1,10 @@
 package com.ternaryop.photoshelf.customsearch
 
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -41,15 +41,15 @@ object GoogleCustomSearchClient {
     private fun service(): GoogleCustomSearchService = builder.create(GoogleCustomSearchService::class.java)
 
     private val builder: Retrofit by lazy {
-        val gson = GsonBuilder()
-            .create()
-        val interceptor = Interceptor { chain: Interceptor.Chain -> {
+        val moshi = Moshi.Builder().build()
+        val interceptor = Interceptor { chain: Interceptor.Chain ->
+            {
                 val original = chain.request()
                 val originalHttpUrl = original.url
                 val url = originalHttpUrl.newBuilder()
-                    .addQueryParameter("key", apiKey)
-                    .addQueryParameter("cx", cx)
-                    .build()
+                        .addQueryParameter("key", apiKey)
+                        .addQueryParameter("cx", cx)
+                        .build()
                 chain.proceed(original.newBuilder().url(url).build())
             }()
         }
@@ -58,9 +58,9 @@ object GoogleCustomSearchClient {
         builder.interceptors().add(interceptor)
 
         Retrofit.Builder()
-            .baseUrl(API_PREFIX)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .client(builder.build())
-            .build()
+                .baseUrl(API_PREFIX)
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .client(builder.build())
+                .build()
     }
 }
