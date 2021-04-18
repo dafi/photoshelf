@@ -34,7 +34,7 @@ buildscript {
         androidXConstraintlayoutLibVersion = '2.1.0-beta01'
         androidXPreferenceLibVersion = '1.1.1'
         androidXSwiperefreshlayoutLibVersion = '1.2.0-alpha01'
-        androidXCoreKtx = '1.6.0-alpha01'
+        androidXCoreKtx = '1.6.0-alpha02'
         androidXLifecycleExtensions = '2.2.0'
         androidXLifecycleViewmodelKtx = '2.4.0-alpha01'
         androidXLifecycleCommonJava8 = '2.4.0-alpha01'
@@ -45,10 +45,8 @@ buildscript {
         kotlinxCoroutinesCore = '1.4.3'
         kotlinxCoroutinesAndroid = '1.4.3'
 
-        hiltAndroidVersion = '2.33-beta'
-        hiltAndroidCompilerVersion = '2.33-beta'
-        hiltLifecycleViewmodelVersion = '1.0.0-alpha03'
-        hiltCompilerVersion = '1.0.0-beta01'
+        hiltAndroidVersion = '2.34.1-beta'
+        hiltAndroidCompilerVersion = '2.34.1-beta'
 
         moshiKotlinCodegenLibVersion = '1.12.0'
 
@@ -56,7 +54,7 @@ buildscript {
         ternaryOpDrawerLibVersion = '1.0.1'
         ternaryOpWidgetLibVersion = '1.0.2'
         ternaryOpCrashReporterLibVersion = '1.0.0'
-        ternaryOpApiCoroutinesLibVersion = '1.1.1'
+        ternaryOpApiCoroutinesLibVersion = '1.1.2'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.6'
         ternaryOpFeedlyCoroutinesLibVersion = '1.0.3'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.7'
@@ -87,7 +85,7 @@ buildscript {
         classpath "com.github.ben-manes:gradle-versions-plugin:0.38.0"
         classpath "gradle.plugin.project:plugin:1.4.0"
 
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.33-beta'
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.34.1-beta'
     }
 }
 

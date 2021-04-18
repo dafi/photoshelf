@@ -17,9 +17,6 @@ dependencies {
     implementation "com.google.dagger:hilt-android:${rootProject.ext.hiltAndroidVersion}"
     kapt "com.google.dagger:hilt-android-compiler:${rootProject.ext.hiltAndroidCompilerVersion}"
 
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:${rootProject.ext.hiltLifecycleViewmodelVersion}"
-    kapt "androidx.hilt:hilt-compiler:${rootProject.ext.hiltCompilerVersion}"
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.kotlinxCoroutinesAndroid}"
