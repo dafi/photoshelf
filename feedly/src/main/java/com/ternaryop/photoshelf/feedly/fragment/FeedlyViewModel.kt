@@ -22,7 +22,6 @@ import com.ternaryop.photoshelf.util.post.FetchedData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,8 +29,8 @@ class FeedlyViewModel @Inject constructor(
     application: Application,
     private val contentReader: StreamContentReader
 ) : PhotoShelfViewModel<FeedlyModelResult>() {
-    private val preferences = WeakReference(FeedlyPrefs(application))
-    private val feedlyClient = FeedlyClient(preferences.get()?.accessToken ?: "")
+    private val preferences = FeedlyPrefs(application)
+    private val feedlyClient = FeedlyClient(preferences.accessToken ?: "")
     val contentList = CachedListFetcher<FeedlyContentDelegate>()
 
     fun content(blogName: String, idListToDelete: List<String>?) {
@@ -55,7 +54,7 @@ class FeedlyViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val command = Command.execute {
                 feedlyClient.refreshAccessToken().also { token ->
-                    preferences.get()?.accessToken = token.accessToken
+                    preferences.accessToken = token.accessToken
                     feedlyClient.accessToken = token.accessToken
                 }
             }
@@ -82,7 +81,7 @@ class FeedlyViewModel @Inject constructor(
     }
 
     private fun filterCategories(streamContent: StreamContent): List<SimpleFeedlyContent> {
-        val selectedCategories = preferences.get()?.selectedCategoriesId ?: return streamContent.items
+        val selectedCategories = preferences.selectedCategoriesId ?: return streamContent.items
 
         if (selectedCategories.isEmpty()) {
             return streamContent.items

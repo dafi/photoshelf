@@ -1,11 +1,10 @@
 package com.ternaryop.photoshelf.feedly.prefs
 
 import android.content.Context
-import android.content.ContextWrapper
 import androidx.preference.PreferenceManager
 import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentSortSwitcher
 
-class FeedlyPrefs(context: Context) : ContextWrapper(context) {
+class FeedlyPrefs(context: Context) {
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     val newerThanHours: Int
