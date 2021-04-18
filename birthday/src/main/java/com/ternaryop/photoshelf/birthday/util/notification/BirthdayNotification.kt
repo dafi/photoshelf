@@ -36,8 +36,10 @@ fun List<Birthday>.notifyTodayBirthdays(context: Context, currYear: Int, activit
     if (size == 1) {
         val birthday = this[0]
         builder.setContentTitle(context.resources.getQuantityString(R.plurals.birthday_title, size))
-        builder.setContentText(
-            context.getString(R.string.birthday_years_old, birthday.name, birthday.birthdate.yearsBetweenDates()))
+        birthday.birthdate?.let { birthdate ->
+            builder.setContentText(
+                context.getString(R.string.birthday_years_old, birthday.name, birthdate.yearsBetweenDates()))
+        }
     } else {
         builder.setStyle(buildBirthdayStyle(context, currYear))
         // The text is shown when there isn't enough space for inboxStyle
@@ -53,8 +55,10 @@ private fun List<Birthday>.buildBirthdayStyle(context: Context, currYear: Int): 
 
     inboxStyle.setBigContentTitle(context.getString(R.string.birthday_notification_title))
     for (birthday in this) {
-        val years = currYear - birthday.birthdate.year
-        inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.name, years))
+        birthday.birthdate?.let { birthdate ->
+            val years = currYear - birthdate.year
+            inboxStyle.addLine(context.getString(R.string.birthday_years_old, birthday.name, years))
+        }
     }
     return inboxStyle
 }

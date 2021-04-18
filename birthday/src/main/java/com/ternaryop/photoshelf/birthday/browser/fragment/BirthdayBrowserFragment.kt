@@ -25,7 +25,6 @@ import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.birthday.R
 import com.ternaryop.photoshelf.birthday.browser.adapter.BirthdayAdapter
 import com.ternaryop.photoshelf.birthday.browser.adapter.BirthdayShowFlags
-import com.ternaryop.photoshelf.birthday.browser.adapter.nullDate
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
@@ -201,11 +200,7 @@ class BirthdayBrowserFragment(
             return
         }
         val birthday = birthdays[0]
-        val c = if (birthday.birthdate == nullDate) {
-            Calendar.getInstance()
-        } else {
-            birthday.birthdate
-        }
+        val c = birthday.birthdate ?: Calendar.getInstance()
 
         DatePickerDialog(requireContext(), { _, pickedYear, pickedMonth, pickedDay ->
             c.year = pickedYear

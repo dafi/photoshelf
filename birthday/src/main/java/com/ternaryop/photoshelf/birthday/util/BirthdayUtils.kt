@@ -74,7 +74,8 @@ private fun createBirthdayBitmap(cake: Bitmap, celebrity: Bitmap): Bitmap {
 }
 
 private fun getBirthdayCaption(birthday: Birthday): String {
-    val age = birthday.birthdate.yearsBetweenDates()
+    val birthdate = birthday.birthdate ?: return "Unknown date for ${birthday.name}"
+    val age = birthdate.yearsBetweenDates()
     // caption must not be localized
     return "Happy ${age}th Birthday, ${birthday.name}!!"
 }
@@ -83,7 +84,9 @@ suspend fun addBirthdate(context: Context, name: String) {
     try {
         val nameResult = ApiManager.birthdayService().getByName(name, true).response
         if (nameResult.isNew) {
-            BirthdayNotificationBroadcastReceiver.notifyBirthdayAdded(context, name, nameResult.birthday.birthdate)
+            nameResult.birthday.birthdate?.let { birthdate ->
+                BirthdayNotificationBroadcastReceiver.notifyBirthdayAdded(context, name, birthdate)
+            }
         }
     } catch (t: Throwable) {
         t.notify(context, name, context.resources.getString(R.string.birthday_add_error_ticker))

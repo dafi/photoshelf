@@ -9,13 +9,6 @@ import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.birthday.R
 import com.ternaryop.utils.date.dayOfMonth
-import java.util.Calendar
-
-val nullDate: Calendar by lazy {
-    val c = Calendar.getInstance()
-    c.timeInMillis = 0
-    c
-}
 
 /**
  * Used by birthday browser
@@ -89,7 +82,7 @@ class BirthdayAdapter(
         return items.indexOfFirst { birthday ->
             val date = birthday.birthdate
 
-            if (date == nullDate) {
+            if (date == null) {
                 false
             } else {
                 // move to bday or closest one

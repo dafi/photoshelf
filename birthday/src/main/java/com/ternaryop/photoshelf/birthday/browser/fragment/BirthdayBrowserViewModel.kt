@@ -5,7 +5,6 @@ import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.birthday.Birthday
 import com.ternaryop.photoshelf.api.birthday.BirthdayService.Companion.MAX_BIRTHDAY_COUNT
 import com.ternaryop.photoshelf.birthday.browser.adapter.BirthdayShowFlags
-import com.ternaryop.photoshelf.birthday.browser.adapter.nullDate
 import com.ternaryop.photoshelf.lifecycle.Command
 import com.ternaryop.photoshelf.lifecycle.PhotoShelfViewModel
 import com.ternaryop.photoshelf.util.post.FetchedData
@@ -36,15 +35,16 @@ class BirthdayBrowserViewModel @Inject constructor() : PhotoShelfViewModel<Birth
         processList(list,
             { birthday ->
                 ApiManager.birthdayService().markAsIgnored(birthday.name)
-                birthday.birthdate = nullDate
+                birthday.birthdate = null
             },
             { command -> postResult(BirthdayBrowserModelResult.MarkAsIgnored(command)) })
     }
 
     fun updateByName(birthday: Birthday) {
+        val birthdate = birthday.birthdate ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val command = Command.execute {
-                ApiManager.birthdayService().updateByName(birthday.name, birthday.birthdate.toIsoFormat())
+                ApiManager.birthdayService().updateByName(birthday.name, birthdate.toIsoFormat())
                 birthday
             }
             postResult(BirthdayBrowserModelResult.UpdateByName(command))

@@ -51,7 +51,7 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private fun updateBackground(birthday: Birthday) {
         val date = birthday.birthdate
 
-        if (date == nullDate) {
+        if (date == null) {
             itemView.setBackgroundResource(R.drawable.list_selector_post_group_even)
             return
         }
@@ -75,7 +75,7 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun updateBirthdate(birthday: Birthday) {
         val date = birthday.birthdate
-        if (date == nullDate) {
+        if (date == null) {
             subtitle.visibility = View.GONE
         } else {
             subtitle.visibility = View.VISIBLE

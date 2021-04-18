@@ -51,7 +51,7 @@ class BirthdayShowFlags {
 
     private fun wrapBirthdayResult(response: Response<ListResult>): Response<BirthdayResult> {
         val listResult = response.response.names
-        return Response(BirthdayResult(0, listResult.map { Birthday(it, nullDate) }))
+        return Response(BirthdayResult(0, listResult.map { Birthday(it) }))
     }
 
     companion object {

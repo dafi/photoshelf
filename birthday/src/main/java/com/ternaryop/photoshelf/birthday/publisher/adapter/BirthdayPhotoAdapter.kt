@@ -107,7 +107,12 @@ class BirthdayPhotoAdapter(
         }
 
         private fun updateTitles(item: Birthday) {
-            caption.text = String.format(Locale.US, "%s, %d", item.name, item.birthdate.yearsBetweenDates())
+            val birthdate = item.birthdate
+            caption.text = if (birthdate == null) {
+                ""
+            } else {
+                String.format(Locale.US, "%s, %d", item.name, birthdate.yearsBetweenDates())
+            }
         }
 
         private fun setVisibility(showButtons: Boolean) {
