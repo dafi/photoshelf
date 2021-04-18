@@ -81,7 +81,7 @@ class FeedlyViewModel @Inject constructor(
     }
 
     private fun filterCategories(streamContent: StreamContent): List<SimpleFeedlyContent> {
-        val selectedCategories = preferences.selectedCategoriesId ?: return streamContent.items
+        val selectedCategories = preferences.selectedCategoriesId
 
         if (selectedCategories.isEmpty()) {
             return streamContent.items
