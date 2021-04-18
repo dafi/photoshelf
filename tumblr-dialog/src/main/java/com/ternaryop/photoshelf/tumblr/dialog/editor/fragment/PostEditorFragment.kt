@@ -147,7 +147,7 @@ class PostEditorFragment : Fragment() {
     private fun setupThumbnails(data: PostEditorData) {
         (data.extras?.get(EXTRA_THUMBNAILS_ITEMS) as? List<String>)?.also { thumbnails ->
             val context = thumbnailsRecyclerView.context
-            val size = (data.extras.get(EXTRA_THUMBNAILS_SIZE) as? Int) ?: DEFAULT_THUMBNAIL_SIZE
+            val size = (data.extras[EXTRA_THUMBNAILS_SIZE] as? Int) ?: DEFAULT_THUMBNAIL_SIZE
             val adapter = ThumbnailAdapter(context, size)
             adapter.addAll(thumbnails)
             thumbnailsRecyclerView.adapter = adapter

@@ -84,8 +84,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
     private fun onChangedExportDaysPeriod(sharedPreferences: SharedPreferences, key: String) {
         val days = sharedPreferences.exportDaysPeriod(requireContext())
         val lastFollowersUpdateTime = sharedPreferences.lastFollowersUpdateTime
-        val remainingMessage: String
-        remainingMessage = if (lastFollowersUpdateTime < 0) {
+        val remainingMessage = if (lastFollowersUpdateTime < 0) {
             resources.getString(R.string.never_run)
         } else {
             val remainingDays = (days - lastFollowersUpdateTime.daysSinceNow()).toInt()

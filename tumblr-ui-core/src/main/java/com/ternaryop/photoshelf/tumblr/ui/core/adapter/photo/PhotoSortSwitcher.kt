@@ -71,8 +71,7 @@ class PhotoSortSwitcher {
         override fun sort(items: MutableList<PhotoShelfPost>) {
             items.sortWith(Comparator { lhs, rhs ->
                 val diff = lhs.timestamp - rhs.timestamp
-                val compare = if (diff < -1) -1 else if (diff > 1) 1 else 0
-                when (compare) {
+                when (val compare = if (diff < -1) -1 else if (diff > 1) 1 else 0) {
                     0 -> lhs.firstTag.compareTo(rhs.firstTag, true)
                     else -> if (isAscending) compare else -compare
                 }
