@@ -64,18 +64,19 @@
             android:layout_height="wrap_content"
             android:textSize="12sp"/>
 
-        <com.google.android.flexbox.FlexboxLayout
+        <com.ternaryop.photoshelf.widget.TagListLayout
             android:id="@+id/tags_container"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="4dp"
 
+            app:tagLayout="@layout/other_tag"
             app:alignItems="flex_start"
             app:alignContent="center"
             app:flexDirection="row"
             app:flexWrap="wrap">
-        </com.google.android.flexbox.FlexboxLayout>
+        </com.ternaryop.photoshelf.widget.TagListLayout>
     </LinearLayout>
 
     <ImageView

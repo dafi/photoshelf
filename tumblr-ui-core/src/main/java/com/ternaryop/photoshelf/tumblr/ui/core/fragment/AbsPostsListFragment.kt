@@ -27,6 +27,7 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.EXTRA_T
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoAdapter
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoListRowAdapter
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.OnPostActionListener
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionColorItemDecoration
@@ -55,7 +56,7 @@ abstract class AbsPostsListFragment(
     SearchView.OnQueryTextListener,
     ActionMode.Callback {
 
-    protected lateinit var photoAdapter: PhotoAdapter
+    protected lateinit var photoAdapter: PhotoAdapter<out RecyclerView.ViewHolder>
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
 
@@ -91,7 +92,7 @@ abstract class AbsPostsListFragment(
         val thumbnailWidth = PreferenceManager.getDefaultSharedPreferences(context)
             .thumbnailWidth(resources.getInteger(R.integer.thumbnail_width_value_default))
 
-        photoAdapter = PhotoAdapter(requireContext(), thumbnailWidth)
+        photoAdapter = PhotoListRowAdapter(requireContext(), thumbnailWidth)
 
         postActionExecutor.onPostActionListener = this
         postActionColorItemDecoration = PostActionColorItemDecoration(requireContext())
@@ -121,6 +122,8 @@ abstract class AbsPostsListFragment(
         mode.subtitle = resources.getQuantityString(R.plurals.selected_items, 1, 1)
         val inflater = mode.menuInflater
         inflater.inflate(actionModeMenuId, menu)
+
+        photoAdapter.isActionModeOn = true
         return true
     }
 
@@ -133,6 +136,7 @@ abstract class AbsPostsListFragment(
     override fun onDestroyActionMode(mode: ActionMode) {
         this.actionMode = null
         photoAdapter.selection.clear()
+        photoAdapter.isActionModeOn = false
     }
 
     private fun updateMenuItems() {

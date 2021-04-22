@@ -12,6 +12,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
@@ -23,23 +24,34 @@ import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostData
 import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoGridAdapter
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoListRowAdapter
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionExecutor
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionResult
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.completedList
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.showConfirmDialog
+import com.ternaryop.photoshelf.tumblr.ui.core.prefs.thumbnailWidth
 import com.ternaryop.photoshelf.tumblr.ui.draft.DraftCache
 import com.ternaryop.photoshelf.tumblr.ui.draft.R
 import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.defaultScheduleMinutesTimeSpan
-import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.loadSortSettings
-import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.saveSortSettings
+import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.loadSettings
+import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.saveSettings
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.dialog.showErrorDialog
+import com.ternaryop.utils.recyclerview.AutofitGridLayoutManager
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val PREF_DRAFT_VIEW_TYPE = "draft_view_type"
+
+enum class ViewType {
+    List,
+    Grid
+}
 
 @AndroidEntryPoint
 class DraftListFragment(
@@ -53,6 +65,7 @@ class DraftListFragment(
     lateinit var draftCache: DraftCache
     private val viewModel: DraftListViewModel by viewModels()
     private lateinit var refreshHolder: RefreshHolder
+    private var viewType = ViewType.List
 
     private val scheduleDate: ScheduleDate by lazy {
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -80,8 +93,10 @@ class DraftListFragment(
             this
         )
 
-        photoAdapter.setOnPhotoBrowseClick(this)
-        photoAdapter.loadSortSettings(PreferenceManager.getDefaultSharedPreferences(requireContext()))
+        val viewType = PreferenceManager
+            .getDefaultSharedPreferences(requireContext())
+            .getInt(PREF_DRAFT_VIEW_TYPE, ViewType.List.ordinal)
+        switchView(ViewType.values()[viewType])
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
@@ -129,6 +144,10 @@ class DraftListFragment(
                     photoAdapter.tagArrayList(),
                     TAG_NAVIGATOR_DIALOG_REQUEST_KEY)
                     .show(parentFragmentManager, FRAGMENT_TAG_NAVIGATOR)
+                return true
+            }
+            R.id.action_switch_view -> {
+                changeView()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -253,7 +272,7 @@ class DraftListFragment(
         photoAdapter.notifyDataSetChanged()
         recyclerView.scrollItemOnTopByPosition(0)
         PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().also {
-            photoAdapter.saveSortSettings(it)
+            photoAdapter.sortSwitcher.saveSettings(it)
         }.apply()
     }
 
@@ -264,6 +283,41 @@ class DraftListFragment(
     override fun updateTitleBar() {
         viewModel.updateCount(photoAdapter.itemCount)
         super.updateTitleBar()
+    }
+
+    private fun changeView() {
+        viewType = if (viewType == ViewType.List) {
+            ViewType.Grid
+        } else {
+            ViewType.List
+        }
+        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().also { editor ->
+            editor.putInt(PREF_DRAFT_VIEW_TYPE, viewType.ordinal)
+        }.apply()
+
+        switchView(viewType)
+    }
+
+    private fun switchView(viewType: ViewType) {
+        val posts = photoAdapter.allPosts
+        when (viewType) {
+            ViewType.List -> {
+                val thumbnailWidth = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .thumbnailWidth(resources.getInteger(com.ternaryop.photoshelf.tumblr.ui.core.R.integer.thumbnail_width_value_default))
+                photoAdapter = PhotoListRowAdapter(requireContext(), thumbnailWidth)
+                photoAdapter.addAll(posts)
+                recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            }
+            ViewType.Grid -> {
+                photoAdapter = PhotoGridAdapter(requireContext())
+                photoAdapter.addAll(posts)
+                recyclerView.layoutManager = AutofitGridLayoutManager(requireContext(),
+                    resources.getDimension(com.ternaryop.photoshelf.tumblr.ui.core.R.dimen.grid_photo_thumb_width).toInt())
+            }
+        }
+        photoAdapter.onPhotoBrowseClick = this
+        photoAdapter.sortSwitcher.loadSettings(PreferenceManager.getDefaultSharedPreferences(requireContext()))
+        recyclerView.adapter = photoAdapter
     }
 
     companion object {
