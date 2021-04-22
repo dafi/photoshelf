@@ -31,7 +31,7 @@ class PhotoGridAdapter(
         val onPhotoBrowseClick = onPhotoBrowseClick ?: return
         when (v.id) {
             R.id.menu -> onPhotoBrowseClick.onOverflowClick(v.tag as Int, v)
-            R.id.grid_photo_item -> if (isActionModeOn) {
+            R.id.thumbnail_image -> if (isActionModeOn) {
                 (onPhotoBrowseClick as OnPhotoBrowseClickMultiChoice).onItemClick(v.tag as Int)
             } else {
                 onPhotoBrowseClick.onThumbnailImageClick(v.tag as Int)

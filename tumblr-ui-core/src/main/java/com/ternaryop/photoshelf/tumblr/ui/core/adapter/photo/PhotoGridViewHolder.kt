@@ -50,9 +50,9 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
         listener: View.OnClickListener,
         longClickListener: View.OnLongClickListener
     ) {
-        itemView.tag = bindingAdapterPosition
-        itemView.setOnClickListener(listener)
-        itemView.setOnLongClickListener(longClickListener)
-        itemView.isLongClickable = true
+        thumbImage.tag = bindingAdapterPosition
+        thumbImage.setOnClickListener(listener)
+        thumbImage.setOnLongClickListener(longClickListener)
+        thumbImage.isLongClickable = true
     }
 }
