@@ -5,6 +5,7 @@
     android:layout_width="@dimen/grid_photo_thumb_width"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:layout_marginBottom="4dp"
     android:elevation="3dp"
     app:cardUseCompatPadding="true">
 
@@ -28,6 +29,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="4dp"
+            android:layout_marginStart="4dp"
 
             app:tagLayout="@layout/other_tag"
             app:alignContent="center"

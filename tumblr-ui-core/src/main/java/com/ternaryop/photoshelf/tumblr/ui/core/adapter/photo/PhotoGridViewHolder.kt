@@ -6,6 +6,9 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.target.ImageViewTarget
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.widget.TagListLayout
@@ -20,8 +23,27 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
 
     fun bindModel(post: PhotoShelfPost, checked: Boolean) {
         this.post = post
-        tagList.addTags(post.tags)
         displayImage(checked)
+        tagList.addTags(post.tags)
+        updateItemColors()
+    }
+
+    private fun setColors(resArray: Int) {
+        val array = itemView.context.resources.obtainTypedArray(resArray)
+        itemView.background = array.getDrawable(POST_STYLE_INDEX_VIEW_BACKGROUND)
+        menu.imageTintList = array.getColorStateList(POST_STYLE_INDEX_MENU_OVERFLOW_COLOR)
+
+        tagList.setTagTextColor(array.getColorStateList(POST_STYLE_INDEX_TITLE_TEXT_COLOR))
+
+        array.recycle()
+    }
+
+    private fun updateItemColors() {
+        when (post.scheduleTimeType) {
+            PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(R.array.post_never)
+            PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(R.array.post_future)
+            else -> setColors(R.array.post_normal)
+        }
     }
 
     private fun displayImage(checked: Boolean) {
