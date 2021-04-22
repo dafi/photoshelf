@@ -24,6 +24,7 @@ import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostData
 import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.ViewType
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoGridAdapter
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoListRowAdapter
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPostsListFragment
@@ -47,11 +48,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val PREF_DRAFT_VIEW_TYPE = "draft_view_type"
-
-enum class ViewType {
-    List,
-    Grid
-}
 
 @AndroidEntryPoint
 class DraftListFragment(
@@ -93,10 +89,10 @@ class DraftListFragment(
             this
         )
 
-        val viewType = PreferenceManager
-            .getDefaultSharedPreferences(requireContext())
-            .getInt(PREF_DRAFT_VIEW_TYPE, ViewType.List.ordinal)
-        switchView(ViewType.values()[viewType])
+        viewType = ViewType.load(
+            PreferenceManager.getDefaultSharedPreferences(requireContext()),
+            PREF_DRAFT_VIEW_TYPE)
+        switchView(viewType)
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
@@ -291,8 +287,8 @@ class DraftListFragment(
         } else {
             ViewType.List
         }
-        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().also { editor ->
-            editor.putInt(PREF_DRAFT_VIEW_TYPE, viewType.ordinal)
+        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().also {
+            viewType.save(it, PREF_DRAFT_VIEW_TYPE)
         }.apply()
 
         switchView(viewType)
