@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.annotation.Dimension
+import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import com.google.android.flexbox.FlexboxLayout
 import com.ternaryop.photoshelf.tumblr.ui.core.R
@@ -15,7 +18,24 @@ class TagListLayout : FlexboxLayout {
     @LayoutRes
     var tagLayout: Int = -1
         set(value) {
-            check(value > 0) { "Tag layout is mandatory"}
+            check(value > 0) { "TagLayout is mandatory" }
+            field = value
+        }
+
+    @Dimension
+    var tagTextSize = 0f
+    set(value) {
+        field = value
+        updateTagTextSize(value)
+    }
+
+    /**
+     * Used to determine the clicked tag
+     */
+    @IdRes
+    var tagTextViewId = -1
+        set(value) {
+            check(value > 0) { "TagTextViewId is mandatory $value ${R.id.tag_text_view}" }
             field = value
         }
 
@@ -36,6 +56,8 @@ class TagListLayout : FlexboxLayout {
             R.styleable.com_ternaryop_photoshelf_widget_TagListLayout, 0, 0)
         try {
             tagLayout = a.getResourceId(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagLayout, -1)
+            tagTextSize = a.getDimensionPixelSize(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagTextSize, 0).toFloat()
+            tagTextViewId = a.getResourceId(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagTextViewId, -1)
         } finally {
             a.recycle()
         }
@@ -55,11 +77,14 @@ class TagListLayout : FlexboxLayout {
             for (i in 0 until delta) {
                 addView(LayoutInflater.from(context).inflate(tagLayout, null))
             }
+            if (tagTextSize > 0) {
+                updateTagTextSize((tagTextSize))
+            }
         }
         for (i in tags.indices) {
             val tag = tags[i]
             val view = getChildAt(i) as TextView
-            view.id = R.id.tag_text_view
+            view.id = tagTextViewId
             view.text = String.format("#%s", tag)
             view.tag = tag
             view.visibility = View.VISIBLE
@@ -76,6 +101,13 @@ class TagListLayout : FlexboxLayout {
         for (i in 0 until childCount) {
             val view = getChildAt(i) as TextView
             view.setTextColor(color)
+        }
+    }
+
+    private fun updateTagTextSize(value: Float) {
+        for (i in 0 until childCount) {
+            val view = getChildAt(i) as TextView
+            view.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
         }
     }
 }

@@ -2,5 +2,7 @@
 <resources>
     <declare-styleable name="com.ternaryop.photoshelf.widget.TagListLayout">
         <attr name="tagLayout" format="reference" />
+        <attr name="tagTextSize" format="dimension" />
+        <attr name="tagTextViewId" format="reference" />
     </declare-styleable>
 </resources>
