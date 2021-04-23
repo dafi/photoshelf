@@ -3,10 +3,12 @@ package com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
+import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
 import com.ternaryop.photoshelf.tumblr.ui.core.R
@@ -17,20 +19,22 @@ import com.ternaryop.widget.CheckableImageView
 
 class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
     private val tagList: TagListLayout = itemView.findViewById(R.id.tags_container)
-    val thumbImage = vi.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
-    val menu = vi.findViewById<View>(R.id.menu) as ImageView
+    private val thumbImage = vi.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
+    private val menu = vi.findViewById<View>(R.id.menu) as ImageView
+    private val timeDesc: TextView = itemView.findViewById(R.id.time_desc)
     private lateinit var post: PhotoShelfPost
 
     fun bindModel(post: PhotoShelfPost, checked: Boolean) {
         this.post = post
         displayImage(checked)
-        tagList.addTags(post.tags)
+        updateTexts()
         updateItemColors()
     }
 
     private fun setColors(resArray: Int) {
         val array = itemView.context.resources.obtainTypedArray(resArray)
         itemView.background = array.getDrawable(POST_STYLE_INDEX_VIEW_BACKGROUND)
+        timeDesc.setTextColor(array.getColorStateList(POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR))
         menu.imageTintList = array.getColorStateList(POST_STYLE_INDEX_MENU_OVERFLOW_COLOR)
 
         tagList.setTagTextColor(array.getColorStateList(POST_STYLE_INDEX_TITLE_TEXT_COLOR))
@@ -44,6 +48,11 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
             PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(R.array.post_future)
             else -> setColors(R.array.post_normal)
         }
+    }
+
+    private fun updateTexts() {
+        tagList.addTags(post.tags)
+        timeDesc.text = post.lastPublishedTimestampAsString
     }
 
     private fun displayImage(checked: Boolean) {

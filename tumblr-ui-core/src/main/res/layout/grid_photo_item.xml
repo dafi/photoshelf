@@ -27,34 +27,43 @@
             android:id="@+id/tags_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="4dp"
             android:layout_marginStart="4dp"
-
-            app:tagLayout="@layout/other_tag"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
             app:alignContent="center"
+
             app:alignItems="flex_start"
             app:flexDirection="row"
             app:flexWrap="wrap"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintEnd_toStartOf="@id/menu"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/thumbnail_image" />
+            app:layout_constraintTop_toBottomOf="@id/thumbnail_image"
+            app:tagLayout="@layout/other_tag"
+            app:tagTextSize="15sp"
+            app:tagTextViewId="@id/tag_text_view" />
 
         <ImageView
             android:id="@+id/menu"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="6dp"
-            android:layout_marginBottom="12dp"
             android:contentDescription="@string/menu_show_image"
             android:src="@drawable/ic_overflow_dark"
+            app:layout_constraintBottom_toBottomOf="@id/tags_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tags_container" />
+
+        <TextView
+            android:id="@+id/time_desc"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:paddingTop="2dp"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tags_container"
-            app:layout_constraintTop_toBottomOf="@id/thumbnail_image" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tags_container" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
