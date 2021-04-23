@@ -13,6 +13,6 @@ enum class ViewType {
         fun load(preferences: SharedPreferences,
                  prefName: String,
                  defaultValue: ViewType = List) =
-            preferences.getInt(prefName, defaultValue.ordinal).let { values()[it] }
+            values()[preferences.getInt(prefName, defaultValue.ordinal)]
     }
 }
