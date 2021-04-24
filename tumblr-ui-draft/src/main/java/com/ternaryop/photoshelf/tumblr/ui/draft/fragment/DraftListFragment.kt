@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
@@ -62,6 +63,7 @@ class DraftListFragment(
     private val viewModel: DraftListViewModel by viewModels()
     private lateinit var refreshHolder: RefreshHolder
     private var viewType = ViewType.List
+    var itemAnimator: RecyclerView.ItemAnimator? = null
 
     private val scheduleDate: ScheduleDate by lazy {
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -80,6 +82,8 @@ class DraftListFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        itemAnimator = recyclerView.itemAnimator
 
         val draftEmptyView = View.inflate(requireContext(), R.layout.draft_empty_list, view as ViewGroup?)
         refreshHolder = RefreshHolder(
@@ -303,12 +307,14 @@ class DraftListFragment(
                 photoAdapter = PhotoListRowAdapter(requireContext(), thumbnailWidth)
                 photoAdapter.addAll(posts)
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                recyclerView.itemAnimator = itemAnimator
             }
             ViewType.Grid -> {
                 photoAdapter = PhotoGridAdapter(requireContext())
                 photoAdapter.addAll(posts)
                 recyclerView.layoutManager = AutofitGridLayoutManager(requireContext(),
                     resources.getDimension(com.ternaryop.photoshelf.tumblr.ui.core.R.dimen.grid_photo_thumb_width).toInt())
+                recyclerView.itemAnimator = null
             }
         }
         photoAdapter.onPhotoBrowseClick = this
