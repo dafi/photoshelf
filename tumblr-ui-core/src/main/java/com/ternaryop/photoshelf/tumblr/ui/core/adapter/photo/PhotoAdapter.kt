@@ -103,6 +103,9 @@ abstract class PhotoAdapter<VH : RecyclerView.ViewHolder>(
         if (position >= 0) {
             visiblePosts.removeAt(position)
             notifyItemRemoved(position)
+            // when itemAnimator is null the positions are not updated
+            // so it's necessary to send an item change event
+            notifyItemRangeChanged(position, itemCount - position)
         }
         return position
     }
@@ -129,6 +132,7 @@ abstract class PhotoAdapter<VH : RecyclerView.ViewHolder>(
         val range = PhotoGroup.getRangeFromPosition(visiblePosts, position, item.groupId)
         if (range != null) {
             notifyItemRangeRemoved(range.lower, range.upper - range.lower)
+            notifyItemRangeChanged(range.lower, itemCount - range.lower)
         }
     }
 
