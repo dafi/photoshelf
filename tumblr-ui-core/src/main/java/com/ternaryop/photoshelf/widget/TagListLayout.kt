@@ -11,10 +11,13 @@ import android.widget.TextView
 import androidx.annotation.Dimension
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
+import androidx.core.view.updateMargins
 import com.google.android.flexbox.FlexboxLayout
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 
 class TagListLayout : FlexboxLayout {
+    var tagMarginBottom = 0
+
     @LayoutRes
     var tagLayout: Int = -1
         set(value) {
@@ -58,6 +61,7 @@ class TagListLayout : FlexboxLayout {
             tagLayout = a.getResourceId(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagLayout, -1)
             tagTextSize = a.getDimensionPixelSize(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagTextSize, 0).toFloat()
             tagTextViewId = a.getResourceId(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagTextViewId, -1)
+            tagMarginBottom = a.getDimensionPixelSize(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagMarginBottom, 0)
         } finally {
             a.recycle()
         }
@@ -75,7 +79,12 @@ class TagListLayout : FlexboxLayout {
             }
         } else if (delta > 0) {
             for (i in 0 until delta) {
-                addView(LayoutInflater.from(context).inflate(tagLayout, null))
+                val view = LayoutInflater.from(context).inflate(tagLayout, null)
+
+                addView(view)
+                // The margin values set on tagLayout are removed by Android so we need to set them programmatically
+                // https://github.com/google/flexbox-layout/issues/493#issuecomment-680086563
+                (view.layoutParams as? MarginLayoutParams)?.updateMargins(bottom = tagMarginBottom)
             }
             if (tagTextSize > 0) {
                 updateTagTextSize((tagTextSize))

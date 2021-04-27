@@ -4,5 +4,6 @@
         <attr name="tagLayout" format="reference" />
         <attr name="tagTextSize" format="dimension" />
         <attr name="tagTextViewId" format="reference" />
+        <attr name="tagMarginBottom" format="dimension" />
     </declare-styleable>
 </resources>
