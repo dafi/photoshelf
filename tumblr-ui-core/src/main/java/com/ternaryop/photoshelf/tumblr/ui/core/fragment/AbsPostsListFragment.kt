@@ -163,11 +163,15 @@ abstract class AbsPostsListFragment(
         // Any method call that might change the structure of the RecyclerView or the adapter contents
         // should be postponed to the next frame.
         recyclerView.post {
-            // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
-            // so we wait for finished animations before call it
             val itemAnimator = recyclerView.itemAnimator
-            if (itemAnimator == null || itemAnimator.isRunning) {
+            if (itemAnimator == null) {
                 photoAdapter.notifyDataSetChanged()
+            } else {
+                // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
+                // so we wait for finished animations before call it
+                itemAnimator.isRunning {
+                    photoAdapter.notifyDataSetChanged()
+                }
             }
             restoreRecyclerViewLayout()
         }
@@ -311,8 +315,12 @@ abstract class AbsPostsListFragment(
                 // so we wait the animation is completed and then call finish()
                 recyclerView.post {
                     val itemAnimator = recyclerView.itemAnimator
-                    if (itemAnimator == null || itemAnimator.isRunning) {
+                    if (itemAnimator == null) {
                         actionMode?.finish()
+                    } else {
+                        itemAnimator.isRunning {
+                            actionMode?.finish()
+                        }
                     }
                 }
             }
