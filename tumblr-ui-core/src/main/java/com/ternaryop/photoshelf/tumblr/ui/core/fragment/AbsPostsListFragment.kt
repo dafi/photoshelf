@@ -165,7 +165,10 @@ abstract class AbsPostsListFragment(
         recyclerView.post {
             // notifyDataSetChanged() can 'hide' the remove item animation started by notifyItemRemoved()
             // so we wait for finished animations before call it
-            recyclerView.itemAnimator?.isRunning { photoAdapter.notifyDataSetChanged() }
+            val itemAnimator = recyclerView.itemAnimator
+            if (itemAnimator == null || itemAnimator.isRunning) {
+                photoAdapter.notifyDataSetChanged()
+            }
             restoreRecyclerViewLayout()
         }
     }
@@ -306,7 +309,12 @@ abstract class AbsPostsListFragment(
                 // when action mode is on the finish() method could be called
                 // while the item animation is running stopping it
                 // so we wait the animation is completed and then call finish()
-                recyclerView.post { recyclerView.itemAnimator?.isRunning { actionMode?.finish() } }
+                recyclerView.post {
+                    val itemAnimator = recyclerView.itemAnimator
+                    if (itemAnimator == null || itemAnimator.isRunning) {
+                        actionMode?.finish()
+                    }
+                }
             }
             return
         }
