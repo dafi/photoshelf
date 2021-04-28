@@ -38,6 +38,7 @@
             app:layout_constraintEnd_toStartOf="@id/menu"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/thumbnail_image"
+            app:tagMarginBottom="4dp"
             app:tagLayout="@layout/other_tag"
             app:tagTextSize="15sp"
             app:tagTextViewId="@id/tag_text_view" />
@@ -63,7 +64,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tags_container" />
+            app:layout_constraintTop_toBottomOf="@id/tags_container"
+            app:layout_constraintVertical_bias="1" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
