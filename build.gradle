@@ -52,7 +52,7 @@ buildscript {
 
         ternaryOpUtilLibVersion = '1.4.9'
         ternaryOpDrawerLibVersion = '1.0.1'
-        ternaryOpWidgetLibVersion = '1.0.3'
+        ternaryOpWidgetLibVersion = '1.0.4'
         ternaryOpCrashReporterLibVersion = '1.0.0'
         ternaryOpApiCoroutinesLibVersion = '1.1.2'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.6'
