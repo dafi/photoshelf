@@ -38,4 +38,5 @@ app/version.properties
 
 # PhotoShelf files
 app/src/main/res/values/tumblr.xml
+app/src/debug/res/values/tokens.xml
 app/src/debug/assets/sample

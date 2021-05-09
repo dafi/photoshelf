@@ -50,5 +50,9 @@ class PhotoShelfApplication : Application() {
             getString(R.string.GOOGLE_CSE_APIKEY),
             getString(R.string.GOOGLE_CSE_CX),
             okHttpClient)
+
+        if (BuildConfig.DEBUG) {
+            PhotoShelfApplicationEnv.debugSetup(this)
+        }
     }
 }
