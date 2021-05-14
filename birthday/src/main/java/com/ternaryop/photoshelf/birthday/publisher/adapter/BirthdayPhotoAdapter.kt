@@ -63,7 +63,7 @@ class BirthdayPhotoAdapter(
         items.addAll(collection)
     }
 
-    fun sort() = items.sortWith { lhr, rhs -> lhr.name.compareTo(rhs.name) }
+    fun sort() = items.sortWith { lhr, rhs -> lhr.name.compareTo(rhs.name, ignoreCase = true) }
 
     fun updatePost(birthday: Birthday, notifyChange: Boolean) {
         val name = birthday.name
