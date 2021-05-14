@@ -161,7 +161,7 @@ def versionCodeByTask() {
 
     // Increment the versionCode only for specific tasks (eg the assemble release tasks)
     def runTasks = gradle.startParameter.taskNames
-    def incrementableTaskNames = ["aR", "assembleRelease"]
+    def incrementableTaskNames = ["aR", "assembleRelease", "bundleRelease"]
     if (incrementableTaskNames.any { name -> name in runTasks }) {
         ++versionCode
         props["versionCode"] = versionCode.toString()
