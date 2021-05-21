@@ -10,8 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
-import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -27,7 +25,7 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.EXTRA_T
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoAdapter
-import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoListRowAdapter
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoAdapterSwitcher
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.OnPostActionListener
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionColorItemDecoration
@@ -35,7 +33,6 @@ import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionExecutor
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionResult
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.errorList
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.showConfirmDialog
-import com.ternaryop.photoshelf.tumblr.ui.core.prefs.thumbnailWidth
 import com.ternaryop.tumblr.TumblrAltSize.Companion.IMAGE_WIDTH_75
 import com.ternaryop.tumblr.TumblrPhotoPost
 import com.ternaryop.tumblr.android.browseImageBySize
@@ -56,7 +53,11 @@ abstract class AbsPostsListFragment(
     SearchView.OnQueryTextListener,
     ActionMode.Callback {
 
-    protected lateinit var photoAdapter: PhotoAdapter<out RecyclerView.ViewHolder>
+    protected val photoAdapter: PhotoAdapter<out RecyclerView.ViewHolder>
+        get() {
+            return photoAdapterSwitcher.photoAdapter
+        }
+    protected lateinit var photoAdapterSwitcher: PhotoAdapterSwitcher
     protected lateinit var recyclerView: RecyclerView
     protected var searchView: SearchView? = null
 
@@ -89,19 +90,19 @@ abstract class AbsPostsListFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val thumbnailWidth = PreferenceManager.getDefaultSharedPreferences(context)
-            .thumbnailWidth(resources.getInteger(R.integer.thumbnail_width_value_default))
-
-        photoAdapter = PhotoListRowAdapter(requireContext(), thumbnailWidth)
-
         postActionExecutor.onPostActionListener = this
         postActionColorItemDecoration = PostActionColorItemDecoration(requireContext())
 
         recyclerView = view.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = photoAdapter
         recyclerView.addItemDecoration(postActionColorItemDecoration)
+
+        photoAdapterSwitcher = PhotoAdapterSwitcher(
+            javaClass.canonicalName ?: "",
+            recyclerView,
+            this
+        )
+        photoAdapterSwitcher.switchView(photoAdapterSwitcher.viewType)
 
         recyclerViewLayout = savedInstanceState?.getParcelable(KEY_STATE_RECYCLER_VIEW_LAYOUT)
 
@@ -395,6 +396,16 @@ abstract class AbsPostsListFragment(
     protected open fun saveRecyclerViewLayout(outState: Bundle) {
         recyclerView.layoutManager?.onSaveInstanceState()?.also {
             outState.putParcelable(KEY_STATE_RECYCLER_VIEW_LAYOUT, it)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_switch_view -> {
+                photoAdapterSwitcher.toggleView()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

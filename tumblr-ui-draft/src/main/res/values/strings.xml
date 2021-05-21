@@ -12,7 +12,6 @@
     <string name="sort_last_published_tag">Last Published Tag</string>
     <string name="sort_upload_time_date_newest">Upload Time (newest first)</string>
     <string name="sort_upload_time_date_oldest">Upload Time (oldest first)</string>
-    <string name="switch_view">Switch View</string>
     <plurals name="posts_read_count">
         <item quantity="one">%1$d post read&#8230;</item>
         <item quantity="other">%1$d posts read&#8230;</item>
