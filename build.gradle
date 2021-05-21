@@ -9,7 +9,7 @@ apply plugin: 'kotlin-kapt'
 apply from: 'https://raw.githubusercontent.com/dafi/gradle-scripts/main/dependencyUpdatesReplacer.gradle'
 
 buildscript {
-    ext.kotlin_version = '1.4.32'
+    ext.kotlin_version = '1.5.0'
     ext {
         minSdkVersion = 26
         targetSdkVersion = 30
@@ -30,23 +30,23 @@ buildscript {
         androidXAppCompatLibVersion = '1.3.0-rc01'
         androidXRecyclerviewLibVersion = '1.2.0'
         androidXAnnotationLibVersion = '1.3.0-alpha01'
-        androidXMaterialLibVersion = '1.4.0-alpha02'
-        androidXConstraintlayoutLibVersion = '2.1.0-beta01'
+        androidXMaterialLibVersion = '1.4.0-beta01'
+        androidXConstraintlayoutLibVersion = '2.1.0-beta02'
         androidXPreferenceLibVersion = '1.1.1'
         androidXSwiperefreshlayoutLibVersion = '1.2.0-alpha01'
-        androidXCoreKtx = '1.6.0-alpha02'
+        androidXCoreKtx = '1.6.0-alpha03'
         androidXLifecycleExtensions = '2.2.0'
         androidXLifecycleViewmodelKtx = '2.4.0-alpha01'
         androidXLifecycleCommonJava8 = '2.4.0-alpha01'
-        androidXWorkLibVersion = '2.7.0-alpha02'
+        androidXWorkLibVersion = '2.7.0-alpha03'
 
         flexboxLibVersion = '2.0.1'
 
-        kotlinxCoroutinesCore = '1.4.3'
-        kotlinxCoroutinesAndroid = '1.4.3'
+        kotlinxCoroutinesCore = '1.5.0'
+        kotlinxCoroutinesAndroid = '1.5.0'
 
-        hiltAndroidVersion = '2.34.1-beta'
-        hiltAndroidCompilerVersion = '2.34.1-beta'
+        hiltAndroidVersion = '2.35.1'
+        hiltAndroidCompilerVersion = '2.35.1'
 
         moshiKotlinCodegenLibVersion = '1.12.0'
 
@@ -54,24 +54,23 @@ buildscript {
         ternaryOpDrawerLibVersion = '1.0.1'
         ternaryOpWidgetLibVersion = '1.0.4'
         ternaryOpCrashReporterLibVersion = '1.0.0'
-        ternaryOpApiCoroutinesLibVersion = '1.1.2'
+        ternaryOpApiCoroutinesLibVersion = '1.1.3'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.6'
         ternaryOpFeedlyCoroutinesLibVersion = '1.0.3'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.7'
 
         dropboxCoreLibVersion = '4.0.0'
 
-        coilLibVersion = '1.2.0'
+        coilLibVersion = '1.2.1'
 
         okhttp3LoggingInterceptorLibVersion = '5.0.0-alpha.2'
 
         junitLibVersion = '4.13'
-        androidXRulesLibVersion = '1.4.0-alpha05'
-        androidXEspressoCoreLibVersion = '3.4.0-alpha05'
-        androidxTestExtJunit = '1.1.3-alpha05'
+        androidXRulesLibVersion = '1.4.0-alpha06'
+        androidXEspressoCoreLibVersion = '3.4.0-alpha06'
+        androidxTestExtJunit = '1.1.3-alpha06'
     }
     repositories {
-        jcenter()
         google()
         mavenCentral()
         maven {
@@ -79,19 +78,21 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.38.0"
         classpath "gradle.plugin.project:plugin:1.4.0"
 
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.34.1-beta'
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.35.1'
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
+        maven {
+            url "https://google.bintray.com/flexbox-layout"
+        }
         mavenCentral()
         // mavenRepo urls: "file:///home/user/.m2/repository"
         mavenLocal()
