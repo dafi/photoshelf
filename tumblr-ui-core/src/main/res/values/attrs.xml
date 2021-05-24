@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="com.ternaryop.photoshelf.widget.TagListLayout">
+        <attr name="tagLayout" format="reference" />
+        <attr name="tagTextSize" format="dimension" />
+        <attr name="tagTextViewId" format="reference" />
+        <attr name="tagMarginBottom" format="dimension" />
+    </declare-styleable>
+</resources>

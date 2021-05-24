@@ -23,6 +23,11 @@
             android:icon="@drawable/ic_action_tag_navigator"
             app:showAsAction="ifRoom"
             android:title="@string/navigate_tags"/>
+        <item
+            android:id="@+id/action_switch_view"
+            android:icon="@drawable/ic_action_list_alt_24"
+            app:showAsAction="ifRoom"
+            android:title="@string/switch_view"/>
     </group>
 
 </menu>

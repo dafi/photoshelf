@@ -3,6 +3,7 @@ apply from: "$rootProject.projectDir/shared-android-library.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
     implementation "com.google.android:flexbox:${rootProject.ext.flexboxLibVersion}"
 
     implementation project(path: ':core')

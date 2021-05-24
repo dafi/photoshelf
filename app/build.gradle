@@ -92,7 +92,7 @@ android {
         debugRealDeviceLocal {
             // use from real devices to access to local network
             initWith debug
-            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.0.2:8080/image/\""
+            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.0.13:8080/image/\""
 
             // Otherwise compilation fails while importing the modules
             matchingFallbacks = ['debug']
@@ -151,9 +151,17 @@ def versionCodeByTask() {
         versionCode = props["versionCode"]?.isInteger() ? props["versionCode"].toInteger() : 1
     }
 
+    def versionCodeIncrementProperty = "versionCode.increment"
+    def incrementVersion = project.hasProperty(versionCodeIncrementProperty)
+            ? "true".equalsIgnoreCase(project.property(versionCodeIncrementProperty)) : true
+    if (!incrementVersion) {
+        println "Version code will not be incremented, current value $versionCode"
+        return versionCode
+    }
+
     // Increment the versionCode only for specific tasks (eg the assemble release tasks)
     def runTasks = gradle.startParameter.taskNames
-    def incrementableTaskNames = ["aR", "assembleRelease"]
+    def incrementableTaskNames = ["aR", "assembleRelease", "bundleRelease"]
     if (incrementableTaskNames.any { name -> name in runTasks }) {
         ++versionCode
         props["versionCode"] = versionCode.toString()

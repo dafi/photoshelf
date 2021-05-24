@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/grid_photo_item"
+    android:layout_width="@dimen/grid_photo_thumb_width"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginBottom="4dp"
+    android:elevation="3dp"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/thumbnail_image_photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.ternaryop.widget.TopCropCheckableImageView
+            android:id="@+id/thumbnail_image"
+            android:layout_width="@dimen/grid_photo_thumb_width"
+            android:layout_height="@dimen/grid_photo_thumb_height"
+            android:src="@drawable/stub"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.ternaryop.photoshelf.widget.TagListLayout
+            android:id="@+id/tags_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
+            app:alignContent="center"
+
+            app:alignItems="flex_start"
+            app:flexDirection="row"
+            app:flexWrap="wrap"
+            app:layout_constraintEnd_toStartOf="@id/menu"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/thumbnail_image"
+            app:tagMarginBottom="4dp"
+            app:tagLayout="@layout/other_tag"
+            app:tagTextSize="15sp"
+            app:tagTextViewId="@id/tag_text_view" />
+
+        <ImageView
+            android:id="@+id/menu"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:contentDescription="@string/menu_show_image"
+            android:src="@drawable/ic_overflow_dark"
+            app:layout_constraintBottom_toBottomOf="@id/tags_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tags_container" />
+
+        <TextView
+            android:id="@+id/time_desc"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:paddingTop="2dp"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tags_container"
+            app:layout_constraintVertical_bias="1" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

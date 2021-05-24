@@ -1,10 +1,7 @@
 package com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo
 
-import android.annotation.SuppressLint
 import android.util.TypedValue
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +13,7 @@ import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.widget.TagListLayout
 import com.ternaryop.tumblr.TumblrAltSize
 import com.ternaryop.utils.date.secondsToLocalDateTime
 import com.ternaryop.utils.text.fromHtml
@@ -35,41 +33,15 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val thumbImage: ImageView = itemView.findViewById(R.id.thumbnail_image)
     private val menu: ImageView = itemView.findViewById(R.id.menu)
     private val noteCountText: TextView = itemView.findViewById(R.id.note_count)
-    private val tagsContainer: ViewGroup = itemView.findViewById(R.id.tags_container)
+    private val tagList: TagListLayout = itemView.findViewById(R.id.tags_container)
     private lateinit var post: PhotoShelfPost
 
     fun bindModel(post: PhotoShelfPost, thumbnailWidth: Int, showUploadTime: Boolean) {
         this.post = post
         updateTitles(showUploadTime)
         displayImage(thumbnailWidth)
-        setupTags()
+        tagList.addTags(post.tags)
         updateItemColors()
-    }
-
-    @SuppressLint("InflateParams")
-    private fun setupTags() {
-        val tags = post.tags
-        val tagsCount = tags.size
-        val viewCount = tagsContainer.childCount
-        val delta = tagsCount - viewCount
-
-        if (delta < 0) {
-            for (i in tagsCount until viewCount) {
-                tagsContainer.getChildAt(i).visibility = View.GONE
-            }
-        } else if (delta > 0) {
-            for (i in 0 until delta) {
-                tagsContainer.addView(LayoutInflater.from(tagsContainer.context).inflate(R.layout.other_tag, null))
-            }
-        }
-        for (i in tags.indices) {
-            val tag = tags[i]
-            val view = tagsContainer.getChildAt(i) as TextView
-            view.id = R.id.tag_text_view
-            view.text = String.format("#%s", tag)
-            view.tag = tag
-            view.visibility = View.VISIBLE
-        }
     }
 
     private fun setColors(resArray: Int) {
@@ -80,11 +52,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         menu.imageTintList = array.getColorStateList(POST_STYLE_INDEX_MENU_OVERFLOW_COLOR)
         noteCountText.setTextColor(array.getColorStateList(POST_STYLE_INDEX_CAPTION_TEXT_COLOR))
 
-        val titleTextColor = array.getColorStateList(POST_STYLE_INDEX_TITLE_TEXT_COLOR)
-        for (i in 0 until tagsContainer.childCount) {
-            val view = tagsContainer.getChildAt(i) as TextView
-            view.setTextColor(titleTextColor)
-        }
+        tagList.setTagTextColor(array.getColorStateList(POST_STYLE_INDEX_TITLE_TEXT_COLOR))
 
         array.recycle()
     }
@@ -167,9 +135,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun setTagsClickListener(listener: View.OnClickListener) {
-        tagsContainer.tag = bindingAdapterPosition
-        for (i in 0 until tagsContainer.childCount) {
-            tagsContainer.getChildAt(i).setOnClickListener(listener)
-        }
+        tagList.tag = bindingAdapterPosition
+        tagList.setOnTagClickListener(listener)
     }
 }

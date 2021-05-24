@@ -27,7 +27,7 @@ abstract class AbsPagingPostsListFragment(
 
         recyclerView.addOnScrollListener(OnPagingScrollListener(this))
 
-        photoAdapter.setOnPhotoBrowseClick(this)
+        photoAdapter.onPhotoBrowseClick = this
     }
 
     protected open fun clearThenReloadPosts() {

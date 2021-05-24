@@ -32,8 +32,6 @@ import com.ternaryop.photoshelf.tumblr.ui.core.postaction.showConfirmDialog
 import com.ternaryop.photoshelf.tumblr.ui.draft.DraftCache
 import com.ternaryop.photoshelf.tumblr.ui.draft.R
 import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.defaultScheduleMinutesTimeSpan
-import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.loadSortSettings
-import com.ternaryop.photoshelf.tumblr.ui.draft.prefs.saveSortSettings
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
@@ -79,9 +77,6 @@ class DraftListFragment(
             view.findViewById(R.id.swipe_container),
             this
         )
-
-        photoAdapter.setOnPhotoBrowseClick(this)
-        photoAdapter.loadSortSettings(PreferenceManager.getDefaultSharedPreferences(requireContext()))
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
@@ -252,9 +247,7 @@ class DraftListFragment(
         photoAdapter.sortBy(sortType, isAscending)
         photoAdapter.notifyDataSetChanged()
         recyclerView.scrollItemOnTopByPosition(0)
-        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().also {
-            photoAdapter.saveSortSettings(it)
-        }.apply()
+        photoAdapterSwitcher.saveSortSwitcher()
     }
 
     override fun removeFromCache(post: PhotoShelfPost) {

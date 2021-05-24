@@ -34,7 +34,7 @@ open class ScheduledListFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        photoAdapter.setOnPhotoBrowseClick(this)
+        photoAdapter.onPhotoBrowseClick = this
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
