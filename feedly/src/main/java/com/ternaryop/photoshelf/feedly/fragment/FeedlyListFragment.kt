@@ -56,6 +56,7 @@ class FeedlyListFragment(
     private lateinit var recyclerView: RecyclerView
     private lateinit var preferences: FeedlyPrefs
     private lateinit var photoShelfSwipe: PhotoShelfSwipe
+    private lateinit var content: Content
     private val viewModel: FeedlyViewModel by viewModels()
 
     override val snackbarHolder: SnackbarHolder by lazy {
@@ -98,7 +99,10 @@ class FeedlyListFragment(
         })
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        viewModel.content(requireBlogName, null)
+
+        content = newContentFrom(arguments?.getSerializable(ARG_CONTENT_TYPE), viewModel)
+
+        content.read(requireBlogName, null)
 
         parentFragmentManager.setFragmentResultListener(CATEGORIES_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
         parentFragmentManager.setFragmentResultListener(SETTINGS_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
@@ -253,7 +257,7 @@ class FeedlyListFragment(
     private fun refresh() {
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
         viewModel.contentList.clear()
-        viewModel.content(requireBlogName, getDeleteIdList(true))
+        content.read(requireBlogName, getDeleteIdList(true))
     }
 
     private fun showAPIUsage() {
@@ -287,7 +291,7 @@ class FeedlyListFragment(
             return
         }
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        viewModel.markSaved(MarkSavedData(listOf(adapter.getItem(position).id), checked, listOf(position)))
+        content.remove(MarkSavedData(listOf(adapter.getItem(position).id), checked, listOf(position)))
     }
 
     fun sortBy(sortType: Int) {
@@ -312,7 +316,7 @@ class FeedlyListFragment(
         preferences.selectedCategoriesId = selectedCategoriesId
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
         viewModel.contentList.clear()
-        viewModel.content(requireBlogName, getDeleteIdList(false))
+        content.read(requireBlogName, getDeleteIdList(false))
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -325,5 +329,9 @@ class FeedlyListFragment(
                 result.getSerializable(FeedlySettingsDialog.EXTRA_SETTINGS_DATA) as FeedlySettingsData
             )
         }
+    }
+
+    companion object {
+        const val ARG_CONTENT_TYPE = "contentType"
     }
 }

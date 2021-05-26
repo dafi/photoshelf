@@ -7,6 +7,9 @@ import com.ternaryop.feedly.Category
 import com.ternaryop.feedly.FeedlyClient
 import com.ternaryop.feedly.SimpleFeedlyContent
 import com.ternaryop.feedly.StreamContent
+import com.ternaryop.feedly.StreamContentFindParam
+import com.ternaryop.feedly.markRead
+import com.ternaryop.feedly.markSaved
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.api.post.LastPublishedTitleHolder
 import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentDelegate
@@ -33,13 +36,23 @@ class FeedlyViewModel @Inject constructor(
     private val feedlyClient = FeedlyClient(preferences.accessToken ?: "")
     val contentList = CachedListFetcher<FeedlyContentDelegate>()
 
-    fun content(blogName: String, idListToDelete: List<String>?) {
+    fun readLater(blogName: String, idListToDelete: List<String>?) {
         viewModelScope.launch(Dispatchers.IO) {
             val command = contentList.fetch(
                 { idListToDelete?.also { feedlyClient.markSaved(it, false) } },
                 { getFeedlyContentDelegate(blogName) }
             )
-            postResult(FeedlyModelResult.Content(command))
+            postResult(FeedlyModelResult.Content(command, FeedlyContentType.ReadLater))
+        }
+    }
+
+    fun unread(blogName: String, idListToDelete: List<String>?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val command = contentList.fetch(
+                { idListToDelete?.also { feedlyClient.markRead(it, true) } },
+                { unreadContentDelegate(blogName) }
+            )
+            postResult(FeedlyModelResult.Content(command, FeedlyContentType.Unread))
         }
     }
 
@@ -90,13 +103,25 @@ class FeedlyViewModel @Inject constructor(
             sc.categories?.any { cat -> selectedCategories.any { cat.id == it } } ?: true
         }
     }
+
+    private suspend fun unreadContentDelegate(blogName: String): List<FeedlyContentDelegate> {
+        val params = StreamContentFindParam(preferences.maxFetchItemCount, unreadOnly = true).toQueryMap()
+        val list = mutableListOf<FeedlyContentDelegate>()
+        preferences.selectedCategoriesId.forEach { category ->
+            list += feedlyClient.getStreamContents(category, params).items.toContentDelegate()
+        }
+        val map = ApiManager.postService().getLastPublishedTag(blogName, LastPublishedTitleHolder(list.titles()))
+        list.updateLastPublishTimestamp(map.response.tags)
+
+        return list
+    }
 }
 
 data class MarkSavedData(val idList: List<String>, val checked: Boolean, val positionList: List<Int>)
 
 sealed class FeedlyModelResult {
     data class AccessTokenRefresh(val command: Command<AccessToken>) : FeedlyModelResult()
-    data class Content(val command: Command<FetchedData<FeedlyContentDelegate>>) : FeedlyModelResult()
+    data class Content(val command: Command<FetchedData<FeedlyContentDelegate>>, val type: FeedlyContentType) : FeedlyModelResult()
     data class MarkSaved(val command: Command<MarkSavedData>) : FeedlyModelResult()
     data class Categories(val command: Command<List<Category>>) : FeedlyModelResult()
 }

@@ -18,9 +18,11 @@ import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.birthday.browser.fragment.BirthdayBrowserFragment
 import com.ternaryop.photoshelf.birthday.publisher.fragment.BirthdayPublisherFragment
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
+import com.ternaryop.photoshelf.feedly.fragment.FeedlyContentType
 import com.ternaryop.photoshelf.feedly.fragment.FeedlyListFragment
 import com.ternaryop.photoshelf.fragment.BestOfFragment
 import com.ternaryop.photoshelf.fragment.FragmentActivityStatus
+import com.ternaryop.photoshelf.fragment.appFragmentFactory
 import com.ternaryop.photoshelf.fragment.preference.MainPreferenceFragment
 import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.home.fragment.HomeFragment
@@ -31,7 +33,6 @@ import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tagnavigator.fragment.TagListFragment
 import com.ternaryop.photoshelf.tagphotobrowser.fragment.TagPhotoBrowserFragment
 import com.ternaryop.photoshelf.tumblr.dialog.blog.BlogSpinnerAdapter
-import com.ternaryop.photoshelf.fragment.appFragmentFactory
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
 import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
@@ -104,7 +105,7 @@ class MainActivity : DrawerActionBarActivity(),
             SHORTCUT_ACTION_DRAFT -> selectClickedItem(DRAWER_ITEM_DRAFT)
             SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
             SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
-            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY)
+            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY_READ_LATER)
             else -> return false
         }
         return true
@@ -136,7 +137,10 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdayBrowserFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdayPublisherFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY, "Feedly", FeedlyListFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_READ_LATER, "Feedly Read Later", FeedlyListFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_UNREAD,
+            "Feedly Unread", FeedlyListFragment::class.java,
+            arguments = bundleOf(FeedlyListFragment.ARG_CONTENT_TYPE to FeedlyContentType.Unread)))
 
         adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
             getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))))
@@ -263,7 +267,8 @@ class MainActivity : DrawerActionBarActivity(),
         private const val DRAWER_ITEM_BEST_OF = 8
         private const val DRAWER_ITEM_TEST_PAGE = 9
         private const val DRAWER_ITEM_SETTINGS = 10
-        private const val DRAWER_ITEM_FEEDLY = 11
+        private const val DRAWER_ITEM_FEEDLY_READ_LATER = 11
+        private const val DRAWER_ITEM_FEEDLY_UNREAD = 12
 
         const val SHORTCUT_ACTION_DRAFT = "com.ternaryop.photoshelf.shortcut.draft"
         const val SHORTCUT_ACTION_SCHEDULED = "com.ternaryop.photoshelf.shortcut.scheduled"
