@@ -104,8 +104,8 @@ class MainActivity : DrawerActionBarActivity(),
         when (intent.action) {
             SHORTCUT_ACTION_DRAFT -> selectClickedItem(DRAWER_ITEM_DRAFT)
             SHORTCUT_ACTION_SCHEDULED -> selectClickedItem(DRAWER_ITEM_SCHEDULE)
-            SHORTCUT_ACTION_PUBLISHED -> selectClickedItem(DRAWER_ITEM_PUBLISHED_POST)
-            SHORTCUT_ACTION_FEEDLY -> selectClickedItem(DRAWER_ITEM_FEEDLY_READ_LATER)
+            SHORTCUT_ACTION_FEEDLY_SAVED -> selectClickedItem(DRAWER_ITEM_FEEDLY_READ_LATER)
+            SHORTCUT_ACTION_FEEDLY_UNREAD -> selectClickedItem(DRAWER_ITEM_FEEDLY_UNREAD)
             else -> return false
         }
         return true
@@ -137,9 +137,9 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_BROWSER, getString(R.string.birthdays_browser_title), BirthdayBrowserFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdayPublisherFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_READ_LATER, "Feedly Read Later", FeedlyListFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_READ_LATER, getString(R.string.feedly_saved_title), FeedlyListFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_UNREAD,
-            "Feedly Unread", FeedlyListFragment::class.java,
+            getString(R.string.feedly_unread_title), FeedlyListFragment::class.java,
             arguments = bundleOf(FeedlyListFragment.ARG_CONTENT_TYPE to FeedlyContentType.Unread)))
 
         adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
@@ -272,7 +272,7 @@ class MainActivity : DrawerActionBarActivity(),
 
         const val SHORTCUT_ACTION_DRAFT = "com.ternaryop.photoshelf.shortcut.draft"
         const val SHORTCUT_ACTION_SCHEDULED = "com.ternaryop.photoshelf.shortcut.scheduled"
-        const val SHORTCUT_ACTION_PUBLISHED = "com.ternaryop.photoshelf.shortcut.published"
-        const val SHORTCUT_ACTION_FEEDLY = "com.ternaryop.photoshelf.shortcut.feedly"
+        const val SHORTCUT_ACTION_FEEDLY_SAVED = "com.ternaryop.photoshelf.shortcut.feedly.saved"
+        const val SHORTCUT_ACTION_FEEDLY_UNREAD = "com.ternaryop.photoshelf.shortcut.feedly.unread"
     }
 }

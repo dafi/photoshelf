@@ -74,7 +74,12 @@
     <string name="schedule_minutes_time_span_default">Default Schedule Span Minutes</string>
     <string name="import_permission_rationale">Import and Export need access to files, do you grant permission?</string>
     <string name="recently_used_tags">Recently Used Tags</string>
-    <string name="feedly_title">Feedly</string>
+    <string name="shortcut_long_feedly_saved">Feedly Saved</string>
+    <string name="shortcut_long_feedly_unread">Feedly Unread</string>
+    <string name="shortcut_short_feedly_saved">Saved</string>
+    <string name="shortcut_short_feedly_unread">Unread</string>
+    <string name="feedly_saved_title">Feedly Saved</string>
+    <string name="feedly_unread_title">Feedly Unread</string>
     <string name="photoshelf_apikey">PhotoShelf Api key</string>
     <string name="pref_image">Image</string>
     <string name="use_hardware_images">Use Hardware Images</string>
