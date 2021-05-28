@@ -20,6 +20,9 @@ class PublishedPostsListFragment(
         get() = R.menu.published_context
     private val viewModel: PublishedPostsListViewModel by viewModels()
 
+    override val photoAdapterSwitcherPrefixName: String
+        get() = "PublishedPostsList"
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

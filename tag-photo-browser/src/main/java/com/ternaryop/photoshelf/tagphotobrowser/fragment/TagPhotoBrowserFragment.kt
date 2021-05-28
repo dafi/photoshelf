@@ -41,6 +41,9 @@ class TagPhotoBrowserFragment(
     override val actionBarGroupMenuId: Int
         get() = -1
 
+    override val photoAdapterSwitcherPrefixName: String
+        get() = "TagPhotoBrowser"
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

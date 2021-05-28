@@ -81,6 +81,8 @@ abstract class AbsPostsListFragment(
     protected abstract val actionModeMenuId: Int
     protected abstract val actionBarGroupMenuId: Int
 
+    abstract val photoAdapterSwitcherPrefixName: String
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -98,7 +100,7 @@ abstract class AbsPostsListFragment(
         recyclerView.addItemDecoration(postActionColorItemDecoration)
 
         photoAdapterSwitcher = PhotoAdapterSwitcher(
-            javaClass.canonicalName ?: "",
+            photoAdapterSwitcherPrefixName,
             recyclerView,
             this
         )

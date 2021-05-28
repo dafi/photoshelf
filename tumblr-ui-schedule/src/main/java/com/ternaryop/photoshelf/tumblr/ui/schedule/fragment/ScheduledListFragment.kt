@@ -31,6 +31,9 @@ open class ScheduledListFragment(
     override val actionBarGroupMenuId: Int
         get() = R.id.menu_photo_action_bar
 
+    override val photoAdapterSwitcherPrefixName: String
+        get() = "ScheduledList"
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

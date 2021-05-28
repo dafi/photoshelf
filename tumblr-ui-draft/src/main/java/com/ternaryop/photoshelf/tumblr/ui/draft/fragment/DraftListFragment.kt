@@ -67,6 +67,9 @@ class DraftListFragment(
         intArrayOf(R.id.post_schedule) + super.singleSelectionMenuIds
     }
 
+    override val photoAdapterSwitcherPrefixName: String
+        get() = "DraftList"
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
