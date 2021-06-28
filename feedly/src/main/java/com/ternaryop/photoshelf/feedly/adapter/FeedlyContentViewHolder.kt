@@ -68,9 +68,18 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     private fun updateTitles(content: FeedlyContentDelegate) {
         title.text = content.title
 
-        subtitle.text = String.format("%s / %s / %s", content.origin.title,
+        if (content.actionTimestamp == 0L) {
+            subtitle.text = String.format(
+                "%s / %s", content.origin.title,
+                content.getLastPublishTimestampAsString(itemView.context)
+            )
+        } else {
+            subtitle.text = String.format(
+                "%s / %s / %s", content.origin.title,
                 content.getActionTimestampAsString(itemView.context),
-                content.getLastPublishTimestampAsString(itemView.context))
+                content.getLastPublishTimestampAsString(itemView.context)
+            )
+        }
     }
 
     private fun updateTag(content: FeedlyContentDelegate) {
