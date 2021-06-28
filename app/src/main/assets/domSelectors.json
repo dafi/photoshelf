@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -21,8 +21,9 @@
     },
     {
       "urlPattern": "imagebam.com",
+      "userAgent": "curl",
       "image": {
-        "css": ".image-container img",
+        "css": ".main-image",
         "regExp": "property=\"og:image\"\\s+content=\"(.*?)\""
       }
     },
@@ -231,10 +232,10 @@
       "image": {
         "css_no_longer_valid": "gallery-1",
         "pageChain": [
-          {
-            "pageSel": "a[href*=wp-content]",
-            "selAttr":"href"
-          }
+            {
+              "pageSel": "a[href*=wp-content]",
+              "selAttr":"href"
+            }
         ]
       },
       "gallery": {
