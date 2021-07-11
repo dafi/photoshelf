@@ -4,6 +4,12 @@
 
 Share photo on Tumblr
 
+
+# Browse app files on device
+
+    run-as com.ternaryop.photoshelf.debug
+    cd /data/data/com.ternaryop.photoshelf.debug
+
 # Publish
 
     ./gradlew bundleRelease
