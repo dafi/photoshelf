@@ -60,6 +60,7 @@ class PhotoAdapterSwitcher(
         val adapter = PhotoListRowAdapter(context, thumbnailWidth)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.itemAnimator = itemAnimator
+        recyclerView.setPadding(0, 0, 0, 0)
 
         return adapter
     }
@@ -71,6 +72,11 @@ class PhotoAdapterSwitcher(
             context.resources.getDimension(R.dimen.grid_photo_thumb_width).toInt()
         )
         recyclerView.itemAnimator = null
+        recyclerView.setPadding(
+            context.resources.getDimension(R.dimen.photo_grid_padding_start).toInt(),
+            context.resources.getDimension(R.dimen.photo_grid_padding_top).toInt(),
+            context.resources.getDimension(R.dimen.photo_grid_padding_end).toInt(),
+            context.resources.getDimension(R.dimen.photo_grid_padding_bottom).toInt())
 
         return adapter
     }

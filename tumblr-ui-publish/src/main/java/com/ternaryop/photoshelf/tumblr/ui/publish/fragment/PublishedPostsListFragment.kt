@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.tumblr.ui.publish.fragment
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.lifecycle.EventObserver
@@ -26,6 +27,7 @@ class PublishedPostsListFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.post_even_background_color))
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is PublishedPostsResult.Published -> onFetchPosts(result)

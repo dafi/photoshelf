@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.lifecycle.EventObserver
@@ -38,6 +39,7 @@ open class ScheduledListFragment(
         super.onViewCreated(view, savedInstanceState)
 
         photoAdapter.onPhotoBrowseClick = this
+        view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.post_future_background_color))
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item type="integer" name="thumbnail_width_value_default">75</item>
+    <dimen name="photo_grid_padding_start">20dp</dimen>
+    <dimen name="photo_grid_padding_end">20dp</dimen>
+    <dimen name="photo_grid_padding_top">10dp</dimen>
+    <dimen name="photo_grid_padding_bottom">0dp</dimen>
 </resources>
