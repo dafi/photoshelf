@@ -75,7 +75,7 @@ class TumblrPostCacheDAO internal constructor(
 
         val list = mutableListOf<TumblrPost>()
         try {
-            db.rawQuery(sqlQuery, arrayOf(blogName.toLowerCase(Locale.US), cacheType.toString())).use { c ->
+            db.rawQuery(sqlQuery, arrayOf(blogName.lowercase(Locale.US), cacheType.toString())).use { c ->
                 while (c.moveToNext()) {
                     list.add(fromBlob(c.getBlob(0)) as TumblrPost)
                 }
@@ -123,7 +123,7 @@ class TumblrPostCacheDAO internal constructor(
         val sqlQuery = "SELECT max(" + TIMESTAMP + ")" +
             " FROM " + TABLE_NAME + " WHERE lower(" + BLOG_NAME + ") = ?" + " AND " + CACHE_TYPE + " =?"
 
-        db.rawQuery(sqlQuery, arrayOf(blogName.toLowerCase(Locale.US), cacheType.toString())).use { c ->
+        db.rawQuery(sqlQuery, arrayOf(blogName.lowercase(Locale.US), cacheType.toString())).use { c ->
             if (c.moveToNext()) {
                 return c.getLong(0)
             }

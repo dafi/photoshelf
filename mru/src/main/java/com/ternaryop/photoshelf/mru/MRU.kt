@@ -36,7 +36,7 @@ class MRU(context: Context, private val key: String, private val maxSize: Int) {
         if (item.trim { it <= ' ' }.isEmpty()) {
             return false
         }
-        val lowerCaseItem = item.toLowerCase(Locale.US)
+        val lowerCaseItem = item.lowercase(Locale.US)
         if (!_list.remove(lowerCaseItem) && list.size == maxSize) {
             _list.removeAt(_list.size - 1)
         }
@@ -46,7 +46,7 @@ class MRU(context: Context, private val key: String, private val maxSize: Int) {
     }
 
     fun remove(item: String): Boolean {
-        return _list.remove(item.toLowerCase(Locale.US))
+        return _list.remove(item.lowercase(Locale.US))
     }
 
     fun save() {

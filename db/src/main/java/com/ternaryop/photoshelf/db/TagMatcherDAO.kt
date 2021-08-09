@@ -67,7 +67,7 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Long>(dbHelper) {
         const val TABLE_NAME = "tag_matcher"
 
         fun cleanTag(tag: String): String {
-            return tag.replace("[-' .]".toRegex(), "").toLowerCase(Locale.US)
+            return tag.replace("[-' .]".toRegex(), "").lowercase(Locale.US)
         }
 
         fun getSelectTagMatcherStatement(db: SQLiteDatabase): SQLiteStatement {

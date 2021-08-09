@@ -38,7 +38,7 @@ data class DraftQueuePosts<T : TumblrPost>(val newerDraftPosts: MutableList<T>, 
     private fun groupPostByTag(posts: List<TumblrPost>): Map<String, List<TumblrPost>> {
         return posts
             .filter { it.tags.isNotEmpty() && it.type == "photo" }
-            .groupBy { it.tags[0].toLowerCase(Locale.US) }
+            .groupBy { it.tags[0].lowercase(Locale.US) }
     }
 
     private suspend fun getLatestTagResult(blogName: String, tags: Set<String>): LatestTagResult {
