@@ -23,6 +23,8 @@ import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostData
 import com.ternaryop.photoshelf.tumblr.dialog.SchedulePostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.saveSettings
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherConfig
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionExecutor
@@ -67,8 +69,8 @@ class DraftListFragment(
         intArrayOf(R.id.post_schedule) + super.singleSelectionMenuIds
     }
 
-    override val photoAdapterSwitcherPrefixName: String
-        get() = "DraftList"
+    override val adapterSwitcherConfig: AdapterSwitcherConfig
+        get() = AdapterSwitcherConfig("DraftList", true)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -250,7 +252,10 @@ class DraftListFragment(
         photoAdapter.sortBy(sortType, isAscending)
         photoAdapter.notifyDataSetChanged()
         recyclerView.scrollItemOnTopByPosition(0)
-        photoAdapterSwitcher.saveSortSwitcher()
+
+        PreferenceManager.getDefaultSharedPreferences(recyclerView.context).edit().also {
+            photoAdapterSwitcher.adapterGroup.adapter.sortSwitcher.saveSettings(adapterSwitcherConfig.prefNamePrefix, it)
+        }.apply()
     }
 
     override fun removeFromCache(post: PhotoShelfPost) {

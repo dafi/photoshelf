@@ -13,6 +13,7 @@ import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherConfig
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPagingPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.showConfirmDialog
@@ -32,8 +33,8 @@ open class ScheduledListFragment(
     override val actionBarGroupMenuId: Int
         get() = R.id.menu_photo_action_bar
 
-    override val photoAdapterSwitcherPrefixName: String
-        get() = "ScheduledList"
+    override val adapterSwitcherConfig: AdapterSwitcherConfig
+        get() = AdapterSwitcherConfig("ScheduledList", false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -19,6 +19,7 @@ import com.ternaryop.photoshelf.tagphotobrowser.R
 import com.ternaryop.photoshelf.tagphotobrowser.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherConfig
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPagingPostsListFragment
 import com.ternaryop.photoshelf.util.post.PageFetcher
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,8 +42,8 @@ class TagPhotoBrowserFragment(
     override val actionBarGroupMenuId: Int
         get() = -1
 
-    override val photoAdapterSwitcherPrefixName: String
-        get() = "TagPhotoBrowser"
+    override val adapterSwitcherConfig: AdapterSwitcherConfig
+        get() = AdapterSwitcherConfig("TagPhotoBrowser", false)
 
     override fun onCreateView(
         inflater: LayoutInflater,

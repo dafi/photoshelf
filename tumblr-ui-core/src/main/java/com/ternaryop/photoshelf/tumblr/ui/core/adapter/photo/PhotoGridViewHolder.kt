@@ -24,11 +24,11 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
     private val timeDesc: TextView = itemView.findViewById(R.id.time_desc)
     private lateinit var post: PhotoShelfPost
 
-    fun bindModel(post: PhotoShelfPost, checked: Boolean) {
+    fun bindModel(post: PhotoShelfPost, checked: Boolean, paintGridCellByScheduleTimeType: Boolean) {
         this.post = post
         displayImage(checked)
         updateTexts()
-        updateItemColors()
+        updateItemColors(paintGridCellByScheduleTimeType)
     }
 
     private fun setColors(resArray: Int) {
@@ -42,8 +42,17 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
         array.recycle()
     }
 
-    private fun updateItemColors() {
-        setColors(R.array.post_normal)
+    private fun updateItemColors(colorCellByScheduleTimeType: Boolean) {
+        if (colorCellByScheduleTimeType) {
+            when (post.scheduleTimeType) {
+                PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(R.array.post_never)
+                PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(R.array.post_future)
+                else -> setColors(R.array.post_normal)
+            }
+        } else {
+            setColors(R.array.post_normal)
+        }
+
     }
 
     private fun updateTexts() {

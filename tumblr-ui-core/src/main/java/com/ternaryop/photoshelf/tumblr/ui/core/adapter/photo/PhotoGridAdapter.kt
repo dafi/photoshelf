@@ -8,7 +8,8 @@ import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 
 class PhotoGridAdapter(
-    context: Context
+    context: Context,
+    private val colorCellByScheduleTimeType: Boolean
 ) : PhotoAdapter<PhotoGridViewHolder>(context) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoGridViewHolder {
         return PhotoGridViewHolder(LayoutInflater.from(context).inflate(R.layout.grid_photo_item, parent, false))
@@ -17,7 +18,7 @@ class PhotoGridAdapter(
     override fun onBindViewHolder(holder: PhotoGridViewHolder, position: Int) {
         val item = getItem(position)
 
-        holder.bindModel(item, selection.isSelected(position))
+        holder.bindModel(item, selection.isSelected(position), colorCellByScheduleTimeType)
 
         if (onPhotoBrowseClick == null) {
             return

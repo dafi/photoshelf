@@ -9,6 +9,7 @@ import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherConfig
 import com.ternaryop.photoshelf.tumblr.ui.publish.R
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
 import com.ternaryop.photoshelf.util.post.PageFetcher
@@ -21,13 +22,18 @@ class PublishedPostsListFragment(
         get() = R.menu.published_context
     private val viewModel: PublishedPostsListViewModel by viewModels()
 
-    override val photoAdapterSwitcherPrefixName: String
-        get() = "PublishedPostsList"
+    override val adapterSwitcherConfig: AdapterSwitcherConfig
+        get() = AdapterSwitcherConfig("PublishedPostsList", false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.post_even_background_color))
+        view.setBackgroundColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.post_even_background_color
+            )
+        )
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
                 is PublishedPostsResult.Published -> onFetchPosts(result)
@@ -44,7 +50,8 @@ class PublishedPostsListFragment(
         val params = mapOf(
             "offset" to pageFetcher.pagingInfo.offset.toString(),
             "type" to "photo",
-            "notes_info" to "true")
+            "notes_info" to "true"
+        )
         viewModel.published(requireBlogName, params, fetchCache)
     }
 

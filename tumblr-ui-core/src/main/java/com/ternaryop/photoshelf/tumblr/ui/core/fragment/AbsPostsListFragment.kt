@@ -24,8 +24,12 @@ import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog.Companion.EXTRA_THUMBNAILS_ITEMS
 import com.ternaryop.photoshelf.tumblr.ui.core.R
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.OnPhotoSwitchView
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoAdapter
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoAdapterGroup
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoAdapterSwitcher
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcher
+import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherConfig
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.OnPostActionListener
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostAction
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.PostActionColorItemDecoration
@@ -55,7 +59,7 @@ abstract class AbsPostsListFragment(
 
     protected val photoAdapter: PhotoAdapter<out RecyclerView.ViewHolder>
         get() {
-            return photoAdapterSwitcher.photoAdapter
+            return photoAdapterSwitcher.adapterGroup.adapter
         }
     protected lateinit var photoAdapterSwitcher: PhotoAdapterSwitcher
     protected lateinit var recyclerView: RecyclerView
@@ -81,7 +85,7 @@ abstract class AbsPostsListFragment(
     protected abstract val actionModeMenuId: Int
     protected abstract val actionBarGroupMenuId: Int
 
-    abstract val photoAdapterSwitcherPrefixName: String
+    abstract val adapterSwitcherConfig: AdapterSwitcherConfig
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -99,10 +103,10 @@ abstract class AbsPostsListFragment(
         recyclerView.setHasFixedSize(true)
         recyclerView.addItemDecoration(postActionColorItemDecoration)
 
-        photoAdapterSwitcher = PhotoAdapterSwitcher(
-            photoAdapterSwitcherPrefixName,
-            recyclerView,
-            this
+        photoAdapterSwitcher = AdapterSwitcher(
+            requireContext(),
+            PhotoAdapterGroup(adapterSwitcherConfig, recyclerView, this),
+            OnPhotoSwitchView()
         )
         photoAdapterSwitcher.switchView(photoAdapterSwitcher.viewType)
 
