@@ -7,13 +7,14 @@
     <string name="feedly_api_calls_count">API Calls count %1$d</string>
     <string name="feedly_api_reset_limit">Reset Limit %1$s</string>
     <string name="token_expired">Token Expired</string>
-    <string name="max_fetch_items_count">Max Fetch Items Count</string>
+    <string name="max_fetch_item_count">Max Fetch Item Count</string>
     <string name="newer_than_hours">Newer Than (hours)</string>
     <string name="delete_on_refresh">Delete on Refresh</string>
     <string name="refresh_token">Refresh Token</string>
     <string name="feedly_filter_categories">Filter Categories</string>
     <string name="saved_time">Saved Time</string>
     <string name="sort_last_published_tag">Last Published Tag</string>
+    <string name="image_picker_fetch_item_count">Image Picker Fetch Item Count</string>
     <plurals name="item_count">
         <item quantity="one">One item</item>
         <item quantity="other">%1$d items</item>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="integer" name="max_fetch_items_count_default">300</item>
+    <item type="integer" name="newer_than_hours_default">24</item>
+    <item type="integer" name="picker_fetch_items_count_default">3</item>
+    <item type="bool" name="delete_on_refresh_default">true</item>
+</resources>

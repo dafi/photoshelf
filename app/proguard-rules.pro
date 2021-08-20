@@ -17,3 +17,5 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+-keep class com.ternaryop.photoshelf.feedly.prefs.FeedlyPreferenceFragment

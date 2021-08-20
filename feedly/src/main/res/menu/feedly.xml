@@ -28,9 +28,4 @@
         android:id="@+id/action_feedly_categories"
         app:showAsAction="never"
         android:title="@string/feedly_filter_categories"/>
-
-    <item
-        android:id="@+id/action_settings"
-        app:showAsAction="never"
-        android:title="@string/settings"/>
 </menu>

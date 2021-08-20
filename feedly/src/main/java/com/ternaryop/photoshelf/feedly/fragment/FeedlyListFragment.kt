@@ -20,11 +20,7 @@ import com.ternaryop.photoshelf.feedly.R
 import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentAdapter
 import com.ternaryop.photoshelf.feedly.adapter.OnFeedlyContentClick
 import com.ternaryop.photoshelf.feedly.dialog.FeedlyCategoriesDialog
-import com.ternaryop.photoshelf.feedly.dialog.FeedlySettingsData
-import com.ternaryop.photoshelf.feedly.dialog.FeedlySettingsDialog
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs
-import com.ternaryop.photoshelf.feedly.prefs.fromSettings
-import com.ternaryop.photoshelf.feedly.prefs.toSettings
 import com.ternaryop.photoshelf.feedly.view.snackbar.FeedlySnackbarHolder
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
@@ -39,12 +35,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 private const val FRAGMENT_TAG_SORT = "sort"
 private const val FRAGMENT_TAG_CATEGORIES = "categories"
-private const val FRAGMENT_TAG_SETTINGS = "settings"
-
-private const val PICKER_FETCH_ITEM_COUNT = 3
 
 private const val CATEGORIES_DIALOG_REQUEST_KEY = "categoriesRequestKey"
-private const val SETTINGS_DIALOG_REQUEST_KEY = "settingsRequestKey"
 
 @AndroidEntryPoint
 class FeedlyListFragment(
@@ -105,7 +97,6 @@ class FeedlyListFragment(
         content.read(requireBlogName, null)
 
         parentFragmentManager.setFragmentResultListener(CATEGORIES_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
-        parentFragmentManager.setFragmentResultListener(SETTINGS_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
     }
 
     private fun initRecyclerView(rootView: View) {
@@ -236,12 +227,6 @@ class FeedlyListFragment(
                 viewModel.refreshToken()
                 return true
             }
-            R.id.action_settings -> {
-                FeedlySettingsDialog
-                    .newInstance(preferences.toSettings(), SETTINGS_DIALOG_REQUEST_KEY)
-                    .show(parentFragmentManager, FRAGMENT_TAG_SETTINGS)
-                return true
-            }
             R.id.action_sort -> {
                 BottomMenuSheetDialogFragment().show(childFragmentManager, FRAGMENT_TAG_SORT)
                 return true
@@ -271,7 +256,7 @@ class FeedlyListFragment(
     override fun onTitleClick(position: Int) {
         val url = adapter.getItem(position).run { canonicalUrl ?: originId }
         imageViewerActivityStarter.startImagePicker(requireContext(), url)
-        val urls = adapter.allContents.near(position, PICKER_FETCH_ITEM_COUNT).map { it.canonicalUrl ?: it.originId }
+        val urls = adapter.allContents.near(position, preferences.pickerFetchItemCount).map { it.canonicalUrl ?: it.originId }
         imageViewerActivityStarter.startImagePickerPrefetch(urls)
     }
 
@@ -308,10 +293,6 @@ class FeedlyListFragment(
             .show(parentFragmentManager, FRAGMENT_TAG_CATEGORIES)
     }
 
-    private fun onSettings(settingsData: FeedlySettingsData) {
-        preferences.fromSettings(settingsData)
-    }
-
     private fun onSelected(selectedCategoriesId: Set<String>) {
         preferences.selectedCategoriesId = selectedCategoriesId
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
@@ -324,9 +305,6 @@ class FeedlyListFragment(
         when (requestKey) {
             CATEGORIES_DIALOG_REQUEST_KEY -> onSelected(
                 result.getSerializable(FeedlyCategoriesDialog.EXTRA_SELECTED_CATEGORIES_ID) as Set<String>
-            )
-            SETTINGS_DIALOG_REQUEST_KEY -> onSettings(
-                result.getSerializable(FeedlySettingsDialog.EXTRA_SETTINGS_DATA) as FeedlySettingsData
             )
         }
     }

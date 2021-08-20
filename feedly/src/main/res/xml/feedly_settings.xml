@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="key_root"
+    android:title="@string/settings">
+
+    <com.ternaryop.preference.IntegerEditTextPreference
+        android:defaultValue="@integer/max_fetch_items_count_default"
+        android:inputType="number"
+        android:key="feedly.MaxFetchItemCount"
+        android:maxLength="6"
+        android:selectAllOnFocus="true"
+        android:title="@string/max_fetch_item_count" />
+
+    <com.ternaryop.preference.IntegerEditTextPreference
+        android:defaultValue="@integer/newer_than_hours_default"
+        android:inputType="number"
+        android:key="feedly.NewerThanHours"
+        android:maxLength="6"
+        android:selectAllOnFocus="true"
+        android:title="@string/newer_than_hours" />
+
+    <com.ternaryop.preference.IntegerEditTextPreference
+        android:defaultValue="@integer/picker_fetch_items_count_default"
+        android:inputType="number"
+        android:key="feedly.PickerFetchItemCount"
+        android:maxLength="6"
+        android:selectAllOnFocus="true"
+        android:title="@string/image_picker_fetch_item_count" />
+
+    <SwitchPreferenceCompat
+        android:key="feedly.DeleteOnRefresh"
+        android:defaultValue="@bool/delete_on_refresh_default"
+        android:title="@string/delete_on_refresh" />
+
+
+</androidx.preference.PreferenceScreen>

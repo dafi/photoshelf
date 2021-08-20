@@ -3,6 +3,8 @@ apply from: "$rootProject.projectDir/shared-android-library.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
+
     implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
 
     implementation "io.github.ternaryop:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"

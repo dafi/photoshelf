@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:key="key_root"
     android:title="@string/settings">
 
@@ -102,6 +103,13 @@
             android:maxLength="2"
             android:selectAllOnFocus="true"
             android:title="@string/pref_edit_post_max_highlighted_tags_mru_items" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_key_feedly"
+        android:title="@string/pref_feedly_title">
+        <Preference
+            android:title="@string/pref_feedy_category"
+            app:fragment="com.ternaryop.photoshelf.feedly.prefs.FeedlyPreferenceFragment" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_notifications"
