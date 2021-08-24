@@ -72,7 +72,7 @@ private fun createPendingIntent(context: Context, activityClass: Class<out Activ
     // Adds the Intent to the top of the stack
     stackBuilder.addNextIntent(resultIntent)
     // Gets a PendingIntent containing the entire back stack
-    return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+    return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 }
 
 @Suppress("MagicNumber")

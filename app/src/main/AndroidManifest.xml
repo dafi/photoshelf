@@ -1,93 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.ternaryop.photoshelf"
-          android:versionName="1.0">
+    package="com.ternaryop.photoshelf"
+    android:versionName="1.0">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.SET_WALLPAPER"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Needed by JobService under pre-O platforms -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".PhotoShelfApplication"
         android:allowBackup="false"
-        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.PhotoShelf">
-        <activity android:name=".tagphotobrowser.activity.TagPhotoBrowserActivity"/>
-        <activity android:name="com.ternaryop.photoshelf.tumblr.dialog.editor.activity.PostEditorActivity"/>
+        android:theme="@style/Theme.PhotoShelf"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".tagphotobrowser.activity.TagPhotoBrowserActivity" />
+        <activity android:name="com.ternaryop.photoshelf.tumblr.dialog.editor.activity.PostEditorActivity" />
         <activity android:name=".imageviewer.activity.ImageViewerActivity">
             <meta-data
                 android:name="com.ternaryop.photoshelf.imagepicker.viewer.fileProviderShareAuthority"
-                android:value="${applicationId}.fileprovider"/>
+                android:value="${applicationId}.fileprovider" />
         </activity>
-        <activity android:name=".imagepicker.activity.ImagePickerActivity">
+        <activity
+            android:name=".imagepicker.activity.ImagePickerActivity"
+            android:exported="true">
             <intent-filter android:label="A Photo Shelf">
-                <action android:name="android.intent.action.SEND"/>
+                <action android:name="android.intent.action.SEND" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.DEFAULT" />
 
-                <data android:mimeType="text/plain"/>
+                <data android:mimeType="text/plain" />
             </intent-filter>
             <intent-filter android:label="@string/app_name_share_label">
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
 
-                <data android:scheme="http"/>
-                <data android:scheme="https"/>
-                <data android:host="*"/>
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="*" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activity.MainActivity"
+            android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="photoshelf"/>
+                <data android:scheme="photoshelf" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts"
-                       android:resource="@xml/shortcuts" />
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
         <activity
             android:name="com.ternaryop.photoshelf.birthday.publisher.activity.BirthdayPublisherActivity"
-            android:parentActivityName=".activity.MainActivity">
-        </activity>
+            android:exported="true"
+            android:parentActivityName=".activity.MainActivity" />
 
-        <service android:name=".service.PhotoShelfJobService"
-                 android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service
+            android:name=".service.PhotoShelfJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <receiver android:name=".service.BootServiceReceiver">
+        <receiver
+            android:name=".service.BootServiceReceiver"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
         <receiver
             android:name="com.ternaryop.photoshelf.birthday.util.notification.BirthdayNotificationBroadcastReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.ternaryop.photoshelf.birthday.clear"/>
+                <action android:name="com.ternaryop.photoshelf.birthday.clear" />
             </intent-filter>
         </receiver>
         <receiver
             android:name=".imagepicker.service.RetryPublishNotificationBroadcastReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.ternaryop.photoshelf.publish.retry"/>
+                <action android:name="com.ternaryop.photoshelf.publish.retry" />
             </intent-filter>
         </receiver>
 
@@ -95,22 +103,23 @@
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
+            android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
-                <data android:scheme="db-k086b8px5h6n7bx"/>
+                <data android:scheme="db-k086b8px5h6n7bx" />
 
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
