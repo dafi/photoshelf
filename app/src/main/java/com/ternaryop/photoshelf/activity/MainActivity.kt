@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.activity
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
@@ -28,6 +29,9 @@ import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.home.fragment.HomeFragment
 import com.ternaryop.photoshelf.imagepicker.fragment.EXTRA_URL
 import com.ternaryop.photoshelf.imagepicker.fragment.ImagePickerFragment
+import com.ternaryop.photoshelf.imagepicker.service.PostPublisherAction
+import com.ternaryop.photoshelf.imagepicker.service.PostPublisherData
+import com.ternaryop.photoshelf.imagepicker.service.RetryPublishNotificationBroadcastReceiver
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tagnavigator.fragment.TagListFragment
@@ -36,12 +40,14 @@ import com.ternaryop.photoshelf.tumblr.dialog.blog.BlogSpinnerAdapter
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
 import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
+import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
 import dagger.hilt.android.AndroidEntryPoint
+import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
 class MainActivity : DrawerActionBarActivity(),
@@ -253,6 +259,17 @@ class MainActivity : DrawerActionBarActivity(),
     override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat?, pref: PreferenceScreen?): Boolean {
         PreferenceCategorySelector.openScreen(caller, pref)
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // when PreferenceScreen opens a new fragment isn't possible to to come back
+        // using the hamburger menu, so we check manually if we are on some settings fragment
+        if (supportFragmentManager.fragments.size > 1 && supportFragmentManager.fragments[0] is MainPreferenceFragment) {
+            supportFragmentManager.popBackStack()
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     companion object {
