@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SearchView
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,7 +34,8 @@ class TagListFragment(
             requireContext(),
             emptyList(),
             blogName,
-            this)
+            this
+        )
 
         view.findViewById<RecyclerView>(R.id.tag_list).let {
             it.adapter = adapter
@@ -59,8 +60,11 @@ class TagListFragment(
 
     override fun onClick(item: TagInfo) {
         requireContext().startActivity(
-            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
-                TagPhotoBrowserData(blogName, item.tag, false)))
+            imageViewerActivityStarter.tagPhotoBrowserIntent(
+                requireContext(),
+                TagPhotoBrowserData(blogName, item.tag, false)
+            )
+        )
     }
 
     companion object {

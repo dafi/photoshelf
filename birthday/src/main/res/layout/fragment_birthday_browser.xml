@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:orientation="vertical"
-              android:paddingLeft="3dip"
-              android:paddingRight="3dip" >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingLeft="3dip"
+    android:paddingRight="3dip">
 
-    <SearchView
+    <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:iconifiedByDefault="false"
         android:queryHint="@string/enter_tag_hint"
-        />
+        app:iconifiedByDefault="false"
+        app:queryHint="@string/enter_tag_hint" />
 
     <!-- use paddingBottom and clipToPadding to leave space between last item and bottom -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:paddingBottom="30dp"
         android:layout_marginBottom="5dp"
         android:clipToPadding="false"
-        android:scrollbars="vertical"/>
+        android:paddingBottom="30dp"
+        android:scrollbars="vertical" />
 
 </LinearLayout>

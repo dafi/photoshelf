@@ -1,6 +1,6 @@
 package com.ternaryop.util.coroutine
 
-import android.widget.SearchView
+import androidx.appcompat.widget.SearchView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
