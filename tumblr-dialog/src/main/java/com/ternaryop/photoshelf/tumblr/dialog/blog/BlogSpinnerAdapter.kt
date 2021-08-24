@@ -46,7 +46,15 @@ class BlogSpinnerAdapter(
             holder.image.load(signedRequest.completeUrl) {
                 headers(oauthHeaders)
                 placeholder(R.drawable.stub)
+                error(R.drawable.stat_notify_error)
                 transformations(CircleCropTransformation())
+                // in case of error coil continues to call the url, the rate call limit is reached
+                // very fast so we stop it adding this listener
+                target(
+                    onStart = { holder.image.setImageDrawable(it) },
+                    onSuccess = { holder.image.setImageDrawable(it) },
+                    onError = { holder.image.setImageDrawable(it) }
+                )
             }
         }
 
