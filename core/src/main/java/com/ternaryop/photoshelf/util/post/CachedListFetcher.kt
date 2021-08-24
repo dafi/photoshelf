@@ -23,7 +23,7 @@ open class CachedListFetcher<T> {
                 init()
                 fetchCached(fetcher)
             } catch (expected: Throwable) {
-                Command.error<FetchedData<T>>(expected)
+                Command.error(expected)
             }
         }
     }
@@ -40,7 +40,7 @@ open class CachedListFetcher<T> {
                 } ?: 0
                 Command.success(FetchedData(l, count))
             } catch (expected: Throwable) {
-                Command.error<FetchedData<T>>(expected)
+                Command.error(expected)
             }
         }
     }

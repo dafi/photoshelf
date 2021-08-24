@@ -53,7 +53,13 @@ class PhotoSortSwitcher {
         isDefaultAscending: Boolean
     ) : PhotoShelfPostSortable(isDefaultAscending, TAG_NAME) {
         override fun sort(items: MutableList<PhotoShelfPost>) {
-            items.sortWith(Comparator { l, r -> LastPublishedTimestampComparator.compareTag(l, r, isAscending) })
+            items.sortWith { l, r ->
+                LastPublishedTimestampComparator.compareTag(
+                    l,
+                    r,
+                    isAscending
+                )
+            }
         }
     }
 
@@ -69,13 +75,13 @@ class PhotoSortSwitcher {
         isDefaultAscending: Boolean
     ) : PhotoShelfPostSortable(isDefaultAscending, UPLOAD_TIME) {
         override fun sort(items: MutableList<PhotoShelfPost>) {
-            items.sortWith(Comparator { lhs, rhs ->
+            items.sortWith { lhs, rhs ->
                 val diff = lhs.timestamp - rhs.timestamp
                 when (val compare = if (diff < -1) -1 else if (diff > 1) 1 else 0) {
                     0 -> lhs.firstTag.compareTo(rhs.firstTag, true)
                     else -> if (isAscending) compare else -compare
                 }
-            })
+            }
         }
     }
 

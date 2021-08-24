@@ -49,16 +49,16 @@ class TagNavigatorAdapter(
     }
 
     fun sortByTagCount() {
-        items.sortWith(Comparator { lhs, rhs ->
+        items.sortWith { lhs, rhs ->
             // sort descending
             val sign = (rhs.postCount - lhs.postCount).toInt()
             if (sign == 0) lhs.compareTagTo(rhs) else sign
-        })
+        }
         notifyDataSetChanged()
     }
 
     fun sortByTagName() {
-        items.sortWith(Comparator { lhs, rhs -> lhs.compareTagTo(rhs) })
+        items.sortWith { lhs, rhs -> lhs.compareTagTo(rhs) }
         notifyDataSetChanged()
     }
 

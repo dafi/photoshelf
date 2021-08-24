@@ -13,21 +13,21 @@ class FeedlyContentSortSwitcher(val context: Context) {
     private val titleNameSortable: FeedContentDelegateSortable by lazy {
         object : FeedContentDelegateSortable(true, TITLE_NAME) {
             override fun sort(items: MutableList<FeedlyContentDelegate>) =
-                items.sortWith(Comparator { c1, c2 -> c1.compareTitle(c2) })
+                items.sortWith { c1, c2 -> c1.compareTitle(c2) }
         }
     }
 
     private val saveTimestampSortable: FeedContentDelegateSortable by lazy {
         object : FeedContentDelegateSortable(true, SAVED_TIMESTAMP) {
             override fun sort(items: MutableList<FeedlyContentDelegate>) =
-                items.sortWith(Comparator { c1, c2 -> c1.compareActionTimestamp(c2) })
+                items.sortWith { c1, c2 -> c1.compareActionTimestamp(c2) }
         }
     }
 
     private val lastPublishTimestampSortable: FeedContentDelegateSortable by lazy {
         object : FeedContentDelegateSortable(true, LAST_PUBLISH_TIMESTAMP) {
             override fun sort(items: MutableList<FeedlyContentDelegate>) {
-                items.sortWith(Comparator { c1, c2 -> c1.compareLastTimestamp(c2) })
+                items.sortWith { c1, c2 -> c1.compareLastTimestamp(c2) }
             }
         }
     }

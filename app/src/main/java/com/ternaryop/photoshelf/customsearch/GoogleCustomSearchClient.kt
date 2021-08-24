@@ -43,15 +43,13 @@ object GoogleCustomSearchClient {
     private val builder: Retrofit by lazy {
         val moshi = Moshi.Builder().build()
         val interceptor = Interceptor { chain: Interceptor.Chain ->
-            {
-                val original = chain.request()
-                val originalHttpUrl = original.url
-                val url = originalHttpUrl.newBuilder()
-                        .addQueryParameter("key", apiKey)
-                        .addQueryParameter("cx", cx)
-                        .build()
-                chain.proceed(original.newBuilder().url(url).build())
-            }()
+            val original = chain.request()
+            val originalHttpUrl = original.url
+            val url = originalHttpUrl.newBuilder()
+                .addQueryParameter("key", apiKey)
+                .addQueryParameter("cx", cx)
+                .build()
+            chain.proceed(original.newBuilder().url(url).build())
         }
 
         val builder = okHttpClient?.newBuilder() ?: OkHttpClient.Builder()
