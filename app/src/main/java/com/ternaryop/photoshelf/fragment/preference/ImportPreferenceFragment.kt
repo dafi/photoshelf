@@ -15,6 +15,7 @@ import com.ternaryop.photoshelf.core.prefs.lastFollowersUpdateTime
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
 import com.ternaryop.photoshelf.domselector.DomSelectorManager
 import com.ternaryop.photoshelf.service.ImportService
+import com.ternaryop.preference.AppPreferenceFragment
 import com.ternaryop.utils.date.daysSinceNow
 import com.ternaryop.utils.dialog.showErrorDialog
 

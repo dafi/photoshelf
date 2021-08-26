@@ -1,4 +1,4 @@
-package com.ternaryop.photoshelf.fragment.preference
+package com.ternaryop.preference
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -11,7 +11,8 @@ import androidx.preference.PreferenceFragmentCompat
  * Base class for preference fragments
  * See {@link https://github.com/madlymad/PreferenceApp}
  */
-abstract class AppPreferenceFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+abstract class AppPreferenceFragment : PreferenceFragmentCompat(),
+    SharedPreferences.OnSharedPreferenceChangeListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Set the default white background in the view so as to avoid transparency

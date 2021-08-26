@@ -5,15 +5,14 @@ package com.ternaryop.photoshelf.feedly.prefs
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
 import com.ternaryop.photoshelf.feedly.R
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs.Companion.PREF_MAX_FETCH_ITEM_COUNT
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs.Companion.PREF_NEWER_THAN_HOURS
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs.Companion.PREF_PICKER_FETCH_ITEM_COUNT
+import com.ternaryop.preference.AppPreferenceFragment
 
 class FeedlyPreferenceFragment
-    : PreferenceFragmentCompat(),
-    SharedPreferences.OnSharedPreferenceChangeListener {
+    : AppPreferenceFragment() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.feedly_settings, rootKey)
@@ -22,16 +21,6 @@ class FeedlyPreferenceFragment
             PREF_NEWER_THAN_HOURS,
             PREF_PICKER_FETCH_ITEM_COUNT,
         ).forEach { onSharedPreferenceChanged(preferenceManager.sharedPreferences, it) }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
-    }
-
-    override fun onPause() {
-        preferenceManager.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
-        super.onPause()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {

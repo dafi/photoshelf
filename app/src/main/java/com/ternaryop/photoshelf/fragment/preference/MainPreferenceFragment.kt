@@ -15,6 +15,7 @@ import androidx.preference.SwitchPreferenceCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.core.prefs.clearBlogList
+import com.ternaryop.preference.AppPreferenceFragment
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.dropbox.DropboxManager

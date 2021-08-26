@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
@@ -29,9 +30,6 @@ import com.ternaryop.photoshelf.fragment.preference.PreferenceCategorySelector
 import com.ternaryop.photoshelf.home.fragment.HomeFragment
 import com.ternaryop.photoshelf.imagepicker.fragment.EXTRA_URL
 import com.ternaryop.photoshelf.imagepicker.fragment.ImagePickerFragment
-import com.ternaryop.photoshelf.imagepicker.service.PostPublisherAction
-import com.ternaryop.photoshelf.imagepicker.service.PostPublisherData
-import com.ternaryop.photoshelf.imagepicker.service.RetryPublishNotificationBroadcastReceiver
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.tagnavigator.fragment.TagListFragment
@@ -40,18 +38,18 @@ import com.ternaryop.photoshelf.tumblr.dialog.blog.BlogSpinnerAdapter
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
 import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
-import com.ternaryop.photoshelf.util.notification.notify
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
 class MainActivity : DrawerActionBarActivity(),
-    FragmentActivityStatus, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
+    FragmentActivityStatus,
+    PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
+    PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     private lateinit var blogList: Spinner
     private lateinit var prefs: SharedPreferences
 
@@ -256,9 +254,25 @@ class MainActivity : DrawerActionBarActivity(),
     override val toolbar: Toolbar
         get() = findViewById<View>(R.id.drawer_toolbar) as Toolbar
 
-    override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat?, pref: PreferenceScreen?): Boolean {
-        PreferenceCategorySelector.openScreen(caller, pref)
-        return true
+    override fun onPreferenceStartScreen(
+        caller: PreferenceFragmentCompat?,
+        pref: PreferenceScreen?
+    ): Boolean {
+        caller ?: return false
+        val fragment =
+            pref?.let { PreferenceCategorySelector.fragmentFromCategory(pref.key) } ?: return false
+        return PreferenceCategorySelector.openScreen(caller, pref, fragment)
+    }
+
+    override fun onPreferenceStartFragment(
+        caller: PreferenceFragmentCompat,
+        pref: Preference
+    ): Boolean {
+        val fragment = supportFragmentManager.fragmentFactory.instantiate(
+            classLoader,
+            pref.fragment
+        )
+        return PreferenceCategorySelector.openScreen(caller, pref, fragment)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -10,6 +10,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.SwitchPreferenceCompat
 import com.ternaryop.photoshelf.R
+import com.ternaryop.preference.AppPreferenceFragment
 
 private const val KEY_THUMBNAIL_WIDTH = "thumbnail_width"
 private const val KEY_CLEAR_IMAGE_CACHE = "clear_image_cache"
