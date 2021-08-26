@@ -13,3 +13,7 @@ Share photo on Tumblr
 # Publish
 
     ./gradlew bundleRelease
+
+Do not increment version code
+
+    ./gradlew bundleRelease -P versionCode.increment=false
