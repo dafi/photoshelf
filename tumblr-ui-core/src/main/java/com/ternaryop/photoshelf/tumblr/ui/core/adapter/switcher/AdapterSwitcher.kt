@@ -1,6 +1,7 @@
 package com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher
 
 import android.content.Context
+import android.os.Parcelable
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.ViewType
@@ -15,6 +16,8 @@ class AdapterSwitcher<T: RecyclerView.Adapter<RecyclerView.ViewHolder>>(
     var viewType: ViewType
         private set
 
+    private val layoutStateMap = HashMap<ViewType, Parcelable?>()
+
     init {
         viewType = loadViewType(context, adapterGroup.config.prefNamePrefix)
         onSwitched(null)
@@ -24,8 +27,10 @@ class AdapterSwitcher<T: RecyclerView.Adapter<RecyclerView.ViewHolder>>(
         if (viewType == this.viewType) {
             return
         }
+        saveState()
         this.viewType = viewType
         onSwitched(adapterGroup.adapter)
+        restoreState()
     }
 
     private fun onSwitched(adapter: T?) {
@@ -45,6 +50,14 @@ class AdapterSwitcher<T: RecyclerView.Adapter<RecyclerView.ViewHolder>>(
         saveViewType(context, adapterGroup.config.prefNamePrefix, viewType)
 
         switchView(viewType)
+    }
+
+    private fun saveState() {
+        layoutStateMap[viewType] = adapterGroup.recyclerView.layoutManager?.onSaveInstanceState()
+    }
+
+    private fun restoreState() {
+        adapterGroup.recyclerView.layoutManager?.onRestoreInstanceState(layoutStateMap[viewType])
     }
 
     companion object {
