@@ -12,6 +12,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
@@ -239,7 +240,7 @@ class DraftListFragment(
         when (requestKey) {
             TAG_NAVIGATOR_DIALOG_REQUEST_KEY ->
                 result.getString(EXTRA_SELECTED_TAG)?.also { tag ->
-                    recyclerView.scrollItemOnTopByPosition(photoAdapter.findTagIndex(tag))
+                    (recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(photoAdapter.findTagIndex(tag), 1)
                 }
             TAG_SCHEDULE_DIALOG_REQUEST_KEY -> onSchedule(
                 parentFragmentManager.getFragment(result, SchedulePostDialog.EXTRA_DIALOG) as DialogFragment,
