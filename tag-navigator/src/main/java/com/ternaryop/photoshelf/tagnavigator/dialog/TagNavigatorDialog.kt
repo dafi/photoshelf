@@ -50,7 +50,7 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
         view.findViewById<TextView>(R.id.distinct_tag_count).text = String.format("%d", adapter.itemCount)
         view.findViewById<TextView>(R.id.distinct_tag_title).text = resources.getString(R.string.tag_navigator_distinct_title)
 
-        val preferences = PreferenceManager.getDefaultSharedPreferences(activity)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         changeSortType(preferences.getInt(PREF_NAME_TAG_SORT, SORT_TAG_NAME))
         view.findViewById<Button>(R.id.sort_tag).setOnClickListener { v ->
             when (v.id) {

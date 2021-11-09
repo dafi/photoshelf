@@ -255,12 +255,10 @@ class MainActivity : DrawerActionBarActivity(),
         get() = findViewById<View>(R.id.drawer_toolbar) as Toolbar
 
     override fun onPreferenceStartScreen(
-        caller: PreferenceFragmentCompat?,
-        pref: PreferenceScreen?
+        caller: PreferenceFragmentCompat,
+        pref: PreferenceScreen
     ): Boolean {
-        caller ?: return false
-        val fragment =
-            pref?.let { PreferenceCategorySelector.fragmentFromCategory(pref.key) } ?: return false
+        val fragment = PreferenceCategorySelector.fragmentFromCategory(pref.key) ?: return false
         return PreferenceCategorySelector.openScreen(caller, pref, fragment)
     }
 
@@ -268,9 +266,10 @@ class MainActivity : DrawerActionBarActivity(),
         caller: PreferenceFragmentCompat,
         pref: Preference
     ): Boolean {
+        val prefFragment = pref.fragment ?: return false
         val fragment = supportFragmentManager.fragmentFactory.instantiate(
             classLoader,
-            pref.fragment
+            prefFragment
         )
         return PreferenceCategorySelector.openScreen(caller, pref, fragment)
     }

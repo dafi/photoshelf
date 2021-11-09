@@ -81,7 +81,7 @@ class PostEditorFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
         viewModel.result.observe(requireActivity(), EventObserver { result ->
             when (result) {

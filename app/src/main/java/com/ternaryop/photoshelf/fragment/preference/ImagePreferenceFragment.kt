@@ -28,8 +28,8 @@ class ImagePreferenceFragment : AppPreferenceFragment() {
         onSharedPreferenceChanged(preferenceManager.sharedPreferences, KEY_USE_HARDWARE_IMAGES)
     }
 
-    override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-        return when (preference?.key) {
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        return when (preference.key) {
             KEY_CLEAR_IMAGE_CACHE -> {
                 clearImageCache()
                 return true

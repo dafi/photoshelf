@@ -51,16 +51,16 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
 
         with(preferenceScreen) {
             findPreference<Preference>(KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA)
-                ?.isEnabled = !sharedPreferences.selectedBlogName.isNullOrEmpty()
+                ?.isEnabled = !sharedPreferences?.selectedBlogName.isNullOrEmpty()
 
             onSharedPreferenceChanged(preferenceManager.sharedPreferences, PREF_EXPORT_DAYS_PERIOD)
         }
     }
 
-    override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-        return when (preference?.key) {
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        return when (preference.key) {
             KEY_IMPORT_BIRTHDAYS_FROM_WIKIPEDIA -> {
-                preferenceScreen.sharedPreferences.selectedBlogName?.also {
+                preferenceScreen.sharedPreferences?.selectedBlogName?.also {
                     ImportService.startImportBirthdaysFromWeb(requireContext(), it)
                 }
                 true

@@ -112,8 +112,8 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
         }
     }
 
-    override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-        when (preference?.key) {
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        when (preference.key) {
             KEY_TUMBLR_LOGIN -> {
                 if (TumblrManager.isLogged(requireContext())) {
                     logout()
@@ -145,7 +145,7 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
     private fun logout() {
         val dialogClickListener = DialogInterface.OnClickListener { _, _ ->
             TumblrManager.logout(requireContext())
-            preferenceScreen.sharedPreferences.clearBlogList()
+            preferenceScreen.sharedPreferences?.clearBlogList()
             toggleTumblrLoginTitle()
         }
 
