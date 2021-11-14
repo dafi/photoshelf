@@ -62,7 +62,7 @@ buildscript {
 
         dropboxCoreLibVersion = '5.0.0'
 
-        coilLibVersion = '2.0.0-alpha02'
+        coilLibVersion = '1.4.0'
 
         okhttp3LoggingInterceptorLibVersion = '5.0.0-alpha.2'
 

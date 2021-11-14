@@ -10,7 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
+import coil.loadAny
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_STYLE
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
@@ -46,7 +46,7 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         setImageDimension(size)
 
         val url = content.domain?.let { "https://www.google.com/s2/favicons?domain_url=$it" } ?: R.drawable.stub
-        faviconImage.load(url) {
+        faviconImage.loadAny(url) {
             placeholder(R.drawable.stub)
         }
     }
