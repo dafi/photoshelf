@@ -3,10 +3,9 @@ package com.ternaryop.photoshelf.repository.tumblr
 import android.app.Application
 import android.net.Uri
 import com.ternaryop.photoshelf.lifecycle.CommandMutableLiveData
+import com.ternaryop.tumblr.Blog
 import com.ternaryop.tumblr.Tumblr
 import com.ternaryop.tumblr.android.TumblrManager
-import com.ternaryop.tumblr.draftCount
-import com.ternaryop.tumblr.queueCount
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,11 +21,8 @@ class TumblrRepository @Inject constructor(private val application: Application)
     private val _authenticate = CommandMutableLiveData<Boolean>()
     val authenticate = _authenticate.asLiveData()
 
-    suspend fun draftCount(blogName: String) =
-        _draftCount.post(true) { tumblr.draftCount(blogName) }
-
-    suspend fun scheduledCount(blogName: String) =
-        _scheduledCount.post(true) { tumblr.queueCount(blogName) }
+    var blogs = emptyList<Blog>()
+        private set
 
     fun updateDraftCount(count: Int) = _draftCount.setLastValue(count, true)
 
@@ -43,4 +39,11 @@ class TumblrRepository @Inject constructor(private val application: Application)
         _draftCount.setLastValue(null, false)
         _scheduledCount.setLastValue(null, false)
     }
+
+    fun fetchBlogs(): List<Blog> {
+        blogs = tumblr.blogList
+        return blogs;
+    }
+
+    fun blogByName(blogName: String): Blog = blogs.first { it.name.equals(blogName, true) }
 }

@@ -24,10 +24,13 @@ val SharedPreferences.blogList: List<String>?
 fun SharedPreferences.clearBlogList() = edit().remove(PREF_BLOG_NAMES).apply()
 
 suspend fun SharedPreferences.fetchBlogNames(tumblr: Tumblr): List<String> = withContext(Dispatchers.IO) {
-    blogList ?: setupBlogs(tumblr.blogList)
+    fetchBlogNames(tumblr.blogList)
 }
 
-private fun SharedPreferences.setupBlogs(blogs: Array<Blog>): List<String> {
+fun SharedPreferences.fetchBlogNames(blogs: List<Blog>): List<String> =
+    blogList ?: setupBlogs(blogs)
+
+private fun SharedPreferences.setupBlogs(blogs: List<Blog>): List<String> {
     val blogNames = HashSet<String>(blogs.size)
     var primaryBlog: String? = null
     for (blog in blogs) {

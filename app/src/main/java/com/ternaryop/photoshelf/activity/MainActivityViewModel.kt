@@ -38,11 +38,11 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun draftCount(blogName: String) {
-        viewModelScope.launch(Dispatchers.IO) { tumblrRepository.draftCount(blogName) }
+        tumblrRepository.updateDraftCount(tumblrRepository.blogByName(blogName).drafts)
     }
 
     fun scheduledCount(blogName: String) {
-        viewModelScope.launch(Dispatchers.IO) { tumblrRepository.scheduledCount(blogName) }
+        tumblrRepository.updateScheduledCount(tumblrRepository.blogByName(blogName).queue)
     }
 
     fun birthdaysCount() {
@@ -50,9 +50,9 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun fetchBlogNames() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val command = Command.execute {
-                sharedPreferences.fetchBlogNames(tumblrRepository.tumblr)
+                sharedPreferences.fetchBlogNames(tumblrRepository.fetchBlogs())
             }
             _result.postValue(Event(MainActivityModelResult.BlogNames(command)))
         }

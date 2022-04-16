@@ -10,16 +10,30 @@ import android.widget.SpinnerAdapter
 import android.widget.TextView
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.ternaryop.photoshelf.repository.tumblr.TumblrRepository
 import com.ternaryop.photoshelf.tumblr.dialog.R
-import com.ternaryop.tumblr.Blog
-import com.ternaryop.tumblr.TumblrAltSize
-import com.ternaryop.tumblr.android.TumblrManager
-import okhttp3.Headers
+import com.ternaryop.tumblr.TumblrAltSize.Companion.IMAGE_AVATAR_WIDTH
+import com.ternaryop.tumblr.getClosestByWidth
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+internal interface TumblrRepositoryEntryPoint {
+    fun instance(): TumblrRepository
+}
 
 class BlogSpinnerAdapter(
     context: Context,
-    blogNames: List<String>
-) : ArrayAdapter<String>(context, 0, blogNames), SpinnerAdapter {
+    blogs: List<String>
+) : ArrayAdapter<String>(context, 0, blogs), SpinnerAdapter {
+    private val tumblrRepository = EntryPointAccessors.fromApplication(
+        context.applicationContext,
+        TumblrRepositoryEntryPoint::class.java
+    ).instance()
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val holder: ViewHolder
         val inflatedView: View
@@ -36,15 +50,9 @@ class BlogSpinnerAdapter(
         getItem(position)?.also { blogName ->
             holder.title.text = blogName
 
-            val url = Blog.getAvatarUrlBySize(blogName, TumblrAltSize.IMAGE_AVATAR_WIDTH)
-            val signedRequest = TumblrManager.getInstance(context)
-                    .consumer
-                    .getSignedGetAuthRequest(url)
-            val oauthHeaders = Headers.Builder().apply {
-                signedRequest.headers.forEach { (k, v) -> this.add(k, v) }
-            }.build()
-            holder.image.load(signedRequest.completeUrl) {
-                headers(oauthHeaders)
+            val blog = tumblrRepository.blogByName(blogName)
+            val url = blog.avatar.getClosestByWidth(IMAGE_AVATAR_WIDTH)?.url ?: blog.avatar.last().url
+            holder.image.load(url) {
                 placeholder(R.drawable.stub)
                 error(R.drawable.stat_notify_error)
                 transformations(CircleCropTransformation())
