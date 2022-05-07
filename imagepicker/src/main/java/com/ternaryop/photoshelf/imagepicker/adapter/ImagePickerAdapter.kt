@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.imagepicker.adapter
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,6 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.size.Scale
-import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
@@ -96,12 +94,9 @@ class ImagePickerAdapter(
             thumbImage.load(thumbnailUrl) {
                 placeholder(R.drawable.stub)
                 scale(Scale.FILL)
-                target(object : ImageViewTarget(thumbImage) {
-                    override fun onSuccess(result: Drawable) {
-                        super.onSuccess(result)
-                        thumbImage.isChecked = checked
-                    }
-                })
+                listener(
+                    onSuccess = { _, _ -> thumbImage.isChecked = checked }
+                )
             }
         }
 

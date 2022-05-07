@@ -58,10 +58,10 @@ class BlogSpinnerAdapter(
                 transformations(CircleCropTransformation())
                 // in case of error coil continues to call the url, the rate call limit is reached
                 // very fast so we stop it adding this listener
-                target(
-                    onStart = { holder.image.setImageDrawable(it) },
-                    onSuccess = { holder.image.setImageDrawable(it) },
-                    onError = { holder.image.setImageDrawable(it) }
+                listener(
+                    onStart = { holder.image.setImageDrawable(it.placeholder) },
+                    onError = { _, result -> holder.image.setImageDrawable(result.drawable) },
+                    onSuccess = { _, result -> holder.image.setImageDrawable(result.drawable) },
                 )
             }
         }

@@ -1,12 +1,10 @@
 package com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo
 
-import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_MENU_OVERFLOW_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TIME_DESC_TEXT_COLOR
 import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
@@ -24,7 +22,11 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
     private val timeDesc: TextView = itemView.findViewById(R.id.time_desc)
     private lateinit var post: PhotoShelfPost
 
-    fun bindModel(post: PhotoShelfPost, checked: Boolean, paintGridCellByScheduleTimeType: Boolean) {
+    fun bindModel(
+        post: PhotoShelfPost,
+        checked: Boolean,
+        paintGridCellByScheduleTimeType: Boolean
+    ) {
         this.post = post
         displayImage(checked)
         updateTexts()
@@ -63,12 +65,9 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
     private fun displayImage(checked: Boolean) {
         thumbImage.load(checkNotNull(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)).url) {
             placeholder(R.drawable.stub)
-            target(object : ImageViewTarget(thumbImage) {
-                override fun onSuccess(result: Drawable) {
-                    super.onSuccess(result)
-                    thumbImage.isChecked = checked
-                }
-            })
+            listener(
+                onSuccess = { _, _ -> thumbImage.isChecked = checked }
+            )
         }
     }
 

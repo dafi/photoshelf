@@ -1,7 +1,6 @@
 package com.ternaryop.photoshelf.birthday.publisher.adapter
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import coil.target.ImageViewTarget
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.api.birthday.Birthday
@@ -123,12 +121,9 @@ class BirthdayPhotoAdapter(
         private fun displayImage(item: Birthday, checked: Boolean) {
             thumbImage.load(checkNotNull(item.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)).url) {
                 placeholder(R.drawable.stub)
-                target(object : ImageViewTarget(thumbImage) {
-                    override fun onSuccess(result: Drawable) {
-                        super.onSuccess(result)
-                        thumbImage.isChecked = checked
-                    }
-                })
+                listener(
+                    onSuccess = { _, _ -> thumbImage.isChecked = checked }
+                )
             }
         }
 
