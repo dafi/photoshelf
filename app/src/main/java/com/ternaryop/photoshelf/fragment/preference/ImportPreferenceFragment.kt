@@ -33,7 +33,7 @@ class ImportPreferenceFragment : AppPreferenceFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         activityResult = registerForActivityResult(object : ActivityResultContracts.OpenDocument() {
-            override fun createIntent(context: Context, input: Array<out String>)
+            override fun createIntent(context: Context, input: Array<String>)
                 = super.createIntent(context, input).apply { addCategory(Intent.CATEGORY_OPENABLE) }
         }) { uri ->
             try {
