@@ -55,8 +55,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // default value for android emulator
         buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.2.2:8080/image/\""
+        resConfigs 'en'
 
-        resConfigs "en"
     }
 
     // see https://developer.android.com/studio/build/optimize-your-build#use_static_build_properties
@@ -66,9 +66,6 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
-    }
     buildTypes {
         release {
             signingConfig signingConfigs.release
@@ -123,15 +120,16 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/*.kotlin_module']
+        }
+    }
 
     // Needed by dropbox
     // see http://stackoverflow.com/questions/31912459/duplicate-lib-file-copied-in-apk-meta-inf-license-txt-error-in-andorid-studio#31912566
-    packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/*.kotlin_module'
+    lint {
+        abortOnError false
     }
 }
 
