@@ -15,12 +15,13 @@
     <string name="saved_time">Saved Time</string>
     <string name="sort_last_published_tag">Last Published Tag</string>
     <string name="image_picker_fetch_item_count">Image Picker Fetch Item Count</string>
+    <string name="unread_other_count">%1$d unread</string>
     <plurals name="item_count">
         <item quantity="one">One item</item>
         <item quantity="other">%1$d items</item>
     </plurals>
     <plurals name="tags_in_posts">
-        <item quantity="one">%1$d tag in %2$d posts</item>
-        <item quantity="other">%1$d tags in %2$d posts</item>
+        <item quantity="one">%1$d tag, %2$d posts</item>
+        <item quantity="other">%1$d tags, %2$d posts</item>
     </plurals>
 </resources>

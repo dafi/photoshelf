@@ -10,18 +10,18 @@
     <item
         android:id="@+id/action_sort"
         android:icon="@drawable/ic_action_sort"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/sort_by">
     </item>
     <item
         android:id="@+id/action_api_usage"
         android:icon="@drawable/ic_action_cloud_upload"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/api_usage"/>
 
     <item
         android:id="@+id/action_refresh_token"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/refresh_token"/>
 
     <item

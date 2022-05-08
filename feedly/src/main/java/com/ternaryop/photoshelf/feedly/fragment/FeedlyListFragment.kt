@@ -181,17 +181,29 @@ class FeedlyListFragment(
         val groupedNotNullTags = adapter.allContents.mapNotNull { it.tag }.groupBy { it }
         val nullTags = adapter.allContents.count { it.tag == null }
 
-        if (nullTags + groupedNotNullTags.size == adapter.itemCount) {
-            return resources.getQuantityString(
+        val text = if (nullTags + groupedNotNullTags.size == adapter.itemCount) {
+            resources.getQuantityString(
                 R.plurals.item_count,
                 adapter.itemCount,
                 adapter.itemCount)
+        } else {
+            resources.getQuantityString(
+                R.plurals.tags_in_posts,
+                groupedNotNullTags.size,
+                groupedNotNullTags.size,
+                adapter.itemCount
+            )
         }
-        return resources.getQuantityString(
-            R.plurals.tags_in_posts,
-            groupedNotNullTags.size,
-            groupedNotNullTags.size,
-            adapter.itemCount)
+        return text + unreadCountText()
+    }
+
+    private fun unreadCountText(): String {
+        val count = adapter.allContents.count { it.isChecked }
+        return if (count < adapter.allContents.size) {
+            ", " + resources.getString(R.string.unread_other_count, count)
+        } else {
+            ""
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -273,6 +285,7 @@ class FeedlyListFragment(
                 adapter.moveToBottom(position)
                 viewModel.contentList.moveToBottom(position)
             }
+            refreshUI()
             return
         }
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
