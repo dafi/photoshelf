@@ -21,7 +21,6 @@
         app:showAsAction="never"
         android:title="@string/menu_show_image"
         tools:ignore="AppCompatResource">
-        <menu />
     </item>
     <item
         android:id="@+id/post_edit"
