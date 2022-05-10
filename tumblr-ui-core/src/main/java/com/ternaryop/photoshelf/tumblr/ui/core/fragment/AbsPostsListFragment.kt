@@ -1,5 +1,6 @@
 package com.ternaryop.photoshelf.tumblr.ui.core.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.ActionMode
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -17,6 +19,7 @@ import com.ternaryop.photoshelf.activity.ImageViewerData
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.adapter.OnPhotoBrowseClickMultiChoice
 import com.ternaryop.photoshelf.fragment.AbsPhotoShelfFragment
+import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.tumblr.dialog.EditPostEditorData
 import com.ternaryop.photoshelf.tumblr.dialog.PostEditorActivityResultContracts
 import com.ternaryop.photoshelf.tumblr.dialog.PostEditorResult
@@ -39,7 +42,6 @@ import com.ternaryop.photoshelf.tumblr.ui.core.postaction.errorList
 import com.ternaryop.photoshelf.tumblr.ui.core.postaction.showConfirmDialog
 import com.ternaryop.tumblr.TumblrAltSize.Companion.IMAGE_WIDTH_75
 import com.ternaryop.tumblr.TumblrPhotoPost
-import com.ternaryop.tumblr.android.browseImageBySize
 import com.ternaryop.tumblr.android.finishActivity
 import com.ternaryop.tumblr.android.viewPost
 import com.ternaryop.utils.dialog.DialogUtils
@@ -115,6 +117,18 @@ abstract class AbsPostsListFragment(
         setHasOptionsMenu(true)
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        childFragmentManager.addFragmentOnAttachListener { _, childFragment ->
+            if (childFragment is BottomMenuSheetDialogFragment) {
+                childFragment.menuListener = when (childFragment.tag) {
+                    FRAGMENT_IMAGE_BROWSER -> ImageBrowserBottomMenuListener(imageViewerActivityStarter)
+                    else -> null
+                }
+            }
+        }
+    }
     override fun onPrepareOptionsMenu(menu: Menu) {
         menu.getItem(0)?.groupId?.also {
             val isMenuVisible = !fragmentActivityStatus.isDrawerMenuOpen
@@ -280,11 +294,13 @@ abstract class AbsPostsListFragment(
     }
 
     private fun browseImageBySize(photo: PhotoShelfPost) {
-        val title = getString(R.string.menu_header_show_image, photo.firstTag) + " (" + photo.postId + ")"
-        photo.browseImageBySize(requireActivity(), title) { url, post ->
-            imageViewerActivityStarter.startImageViewer(requireActivity(),
-                ImageViewerData(url, post.caption, post.firstTag))
-        }
+        val title = getString(R.string.menu_header_show_image, photo.firstTag)
+        BottomMenuSheetDialogFragment()
+            .apply { arguments = bundleOf(
+                BottomMenuSheetDialogFragment.ARG_TITLE to title,
+                BottomMenuSheetDialogFragment.ARG_SUBTITLE to photo.postId.toString(),
+                ImageBrowserBottomMenuListener.ARG_PHOTO_POST to photo) }
+            .show(childFragmentManager, FRAGMENT_IMAGE_BROWSER)
     }
 
     protected open fun setupSearchView(menu: Menu): SearchView? {
@@ -417,5 +433,6 @@ abstract class AbsPostsListFragment(
 
     companion object {
         const val KEY_STATE_RECYCLER_VIEW_LAYOUT = "recyclerViewLayout"
+        const val FRAGMENT_IMAGE_BROWSER = "imageBrowser"
     }
 }

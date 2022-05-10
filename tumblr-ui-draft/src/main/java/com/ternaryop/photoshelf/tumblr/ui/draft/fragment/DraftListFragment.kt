@@ -101,11 +101,11 @@ class DraftListFragment(
 
         childFragmentManager.addFragmentOnAttachListener { _, childFragment ->
             if (childFragment is BottomMenuSheetDialogFragment) {
-                childFragment.menuListener = when (childFragment.tag) {
+                when (childFragment.tag) {
                     FRAGMENT_TAG_SORT -> DraftSortBottomMenuListener(this, photoAdapter.sortSwitcher)
                     FRAGMENT_TAG_REFRESH -> DraftRefreshBottomMenuListener(this)
-                    else -> throw IllegalArgumentException("Invalid tag ${childFragment.tag}")
-                }
+                    else -> null
+                }?.let { childFragment.menuListener = it }
             }
         }
     }
