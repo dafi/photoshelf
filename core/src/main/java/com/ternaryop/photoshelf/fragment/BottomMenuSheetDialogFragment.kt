@@ -14,8 +14,8 @@ import com.ternaryop.photoshelf.core.R
 interface BottomMenuListener {
     val title: String?
     val menuId: Int
-    fun setupMenu(menu: Menu)
-    fun onItemSelected(item: MenuItem)
+    fun setupMenu(menu: Menu, sheet: BottomSheetDialogFragment)
+    fun onItemSelected(item: MenuItem, sheet: BottomSheetDialogFragment)
 }
 
 class BottomMenuSheetDialogFragment : BottomSheetDialogFragment() {
@@ -29,16 +29,48 @@ class BottomMenuSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         menuListener?.also { listener ->
-            val title = view.findViewById<TextView>(R.id.title)
-            title.text = listener.title ?: ""
-            val navigationView = view.findViewById<NavigationView>(R.id.navigation_view)
-            navigationView.inflateMenu(listener.menuId)
-            listener.setupMenu(navigationView.menu)
-            navigationView.setNavigationItemSelectedListener { menu ->
-                listener.onItemSelected(menu)
-                dismiss()
-            true
-            }
+            setupTitle(view, listener)
+            setupSubtitle(view)
+            setupNavigationView(view, listener)
         }
+    }
+
+    private fun setupTitle(
+        view: View,
+        listener: BottomMenuListener
+    ) {
+        val title = view.findViewById<TextView>(R.id.title)
+        title.text = listener.title ?: arguments?.getString(ARG_TITLE) ?: ""
+    }
+
+    private fun setupSubtitle(view: View) {
+        val subtitle = arguments?.getString(ARG_SUBTITLE)
+        val subtitleView = view.findViewById<TextView>(R.id.subtitle)
+
+        if (subtitle == null) {
+            subtitleView.visibility = View.GONE
+        } else {
+            subtitleView.visibility = View.VISIBLE
+            subtitleView.text = subtitle
+        }
+    }
+
+    private fun setupNavigationView(
+        view: View,
+        listener: BottomMenuListener
+    ) {
+        val navigationView = view.findViewById<NavigationView>(R.id.navigation_view)
+        navigationView.inflateMenu(listener.menuId)
+        listener.setupMenu(navigationView.menu, this)
+        navigationView.setNavigationItemSelectedListener { menu ->
+            listener.onItemSelected(menu, this)
+            dismiss()
+            true
+        }
+    }
+
+    companion object {
+        const val ARG_TITLE = "bottom.menu.sheet.title"
+        const val ARG_SUBTITLE = "bottom.menu.sheet.subtitle"
     }
 }

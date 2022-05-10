@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.feedly.fragment
 
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.feedly.R
 import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentSortSwitcher
 import com.ternaryop.photoshelf.fragment.BottomMenuListener
@@ -15,7 +16,7 @@ class FeedlySortBottomMenuListener(
     override val menuId: Int
         get() = R.menu.feedly_sort
 
-    override fun setupMenu(menu: Menu) {
+    override fun setupMenu(menu: Menu, sheet: BottomSheetDialogFragment) {
         when (sortSwitcher.currentSortable.sortId) {
             FeedlyContentSortSwitcher.TITLE_NAME -> menu.findItem(R.id.sort_title_name).isChecked = true
             FeedlyContentSortSwitcher.SAVED_TIMESTAMP -> menu.findItem(R.id.sort_saved_time).isChecked = true
@@ -23,7 +24,7 @@ class FeedlySortBottomMenuListener(
         }
     }
 
-    override fun onItemSelected(item: MenuItem) {
+    override fun onItemSelected(item: MenuItem, sheet: BottomSheetDialogFragment) {
         when (item.itemId) {
             R.id.sort_title_name -> feedlyListFragment.sortBy(FeedlyContentSortSwitcher.TITLE_NAME)
             R.id.sort_saved_time -> feedlyListFragment.sortBy(FeedlyContentSortSwitcher.SAVED_TIMESTAMP)

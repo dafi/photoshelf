@@ -2,6 +2,7 @@ package com.ternaryop.photoshelf.tumblr.ui.draft.fragment
 
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ternaryop.photoshelf.fragment.BottomMenuListener
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.photo.PhotoSortSwitcher
 import com.ternaryop.photoshelf.tumblr.ui.draft.R
@@ -21,7 +22,7 @@ class DraftSortBottomMenuListener(
     private val tagNameId =
         if (sortSwitcher.sortable.isAscending) R.id.sort_tag_name_a_z else R.id.sort_tag_name_z_a
 
-    override fun setupMenu(menu: Menu) {
+    override fun setupMenu(menu: Menu, sheet: BottomSheetDialogFragment) {
         when (sortSwitcher.sortable.sortId) {
             PhotoSortSwitcher.TAG_NAME -> menu.findItem(tagNameId).isChecked = true
             PhotoSortSwitcher.LAST_PUBLISHED_TAG -> menu.findItem(R.id.sort_published_tag).isChecked = true
@@ -29,7 +30,7 @@ class DraftSortBottomMenuListener(
         }
     }
 
-    override fun onItemSelected(item: MenuItem) {
+    override fun onItemSelected(item: MenuItem, sheet: BottomSheetDialogFragment) {
         when (item.itemId) {
             R.id.sort_tag_name_a_z -> draftListFragment.sortBy(PhotoSortSwitcher.TAG_NAME, true)
             R.id.sort_tag_name_z_a -> draftListFragment.sortBy(PhotoSortSwitcher.TAG_NAME, false)
