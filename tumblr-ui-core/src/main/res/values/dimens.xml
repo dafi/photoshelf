@@ -1,4 +1,6 @@
 <resources>
     <dimen name="grid_photo_thumb_width">170dp</dimen>
     <dimen name="grid_photo_thumb_height">170dp</dimen>
+    <dimen name="quick_list_navigator_padding">50dp</dimen>
+    <dimen name="quick_list_navigator_image_size">40dp</dimen>
 </resources>

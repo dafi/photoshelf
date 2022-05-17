@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val PHOTO_POST_ID = "photoPostId"
+private const val QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION = 5000L
 
 abstract class AbsPostsListFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter,
@@ -104,6 +105,12 @@ abstract class AbsPostsListFragment(
         recyclerView = view.findViewById(R.id.list)
         recyclerView.setHasFixedSize(true)
         recyclerView.addItemDecoration(postActionColorItemDecoration)
+        view.findViewById<View>(R.id.scroll_buttons)?.also {
+            val visibilityDuration = arguments?.getLong(
+                ARG_QUICK_LIST_NAVIGATOR_VISIBILITY_DURATION, QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION)
+                ?: QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION
+            recyclerView.addOnScrollListener(QuickListNavigatorScrollListener(it, visibilityDuration))
+        }
 
         photoAdapterSwitcher = AdapterSwitcher(
             requireContext(),
@@ -434,5 +441,6 @@ abstract class AbsPostsListFragment(
     companion object {
         const val KEY_STATE_RECYCLER_VIEW_LAYOUT = "recyclerViewLayout"
         const val FRAGMENT_IMAGE_BROWSER = "imageBrowser"
+        const val ARG_QUICK_LIST_NAVIGATOR_VISIBILITY_DURATION = "quickListNavigatorVisibilityDuration"
     }
 }

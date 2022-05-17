@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll_buttons"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal|bottom"
+    android:layout_marginBottom="40dp"
+    android:visibility="invisible"
+    tools:showIn="@layout/fragment_photo_list">
+
+    <!-- Vector resources cannot have padding so it's necessary to wrap them inside another container -->
+    <FrameLayout
+        android:layout_width="@dimen/quick_list_navigator_padding"
+        android:layout_height="@dimen/quick_list_navigator_padding"
+        android:layout_marginEnd="10dp"
+        android:addStatesFromChildren="true"
+        android:background="@drawable/quick_list_navigator_selector">
+
+        <ImageView
+            android:id="@+id/move_to_top"
+            android:layout_width="@dimen/quick_list_navigator_image_size"
+            android:layout_height="@dimen/quick_list_navigator_image_size"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:contentDescription="@string/move_to_top"
+            android:src="@drawable/quick_list_navigator_icon_up" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="@dimen/quick_list_navigator_padding"
+        android:layout_height="@dimen/quick_list_navigator_padding"
+        android:addStatesFromChildren="true"
+        android:background="@drawable/quick_list_navigator_selector">
+
+        <ImageView
+            android:id="@+id/move_to_bottom"
+            android:layout_width="@dimen/quick_list_navigator_image_size"
+            android:layout_height="@dimen/quick_list_navigator_image_size"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:contentDescription="@string/move_to_bottom"
+            android:src="@drawable/quick_list_navigator_icon_bottom" />
+    </FrameLayout>
+
+</LinearLayout>

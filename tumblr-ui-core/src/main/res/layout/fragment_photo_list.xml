@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
 
     <com.ternaryop.photoshelf.view.PhotoShelfSwipe
         android:id="@+id/swipe_container"
@@ -11,11 +11,18 @@
         android:layout_height="match_parent"
         app:topColorScheme="@array/progress_swipe_colors">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
+        <FrameLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="vertical" />
+            android:layout_height="fill_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="vertical" />
+
+            <include layout="@layout/quick_list_navigator" />
+        </FrameLayout>
 
     </com.ternaryop.photoshelf.view.PhotoShelfSwipe>
 </RelativeLayout>
