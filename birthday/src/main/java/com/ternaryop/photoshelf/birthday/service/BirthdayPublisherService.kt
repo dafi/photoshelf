@@ -77,7 +77,7 @@ class BirthdayPublisherService(appContext: Context, workerParams: WorkerParamete
             if (list.isEmpty()) {
                 return
             }
-            // Worker data is persisted and doens't allow to pass serialized object
+            // Worker data is persisted and doesn't allow to pass serialized object
             // so we write birthdays into file
             val file = File(context.cacheDir, "bdays-${System.currentTimeMillis()}")
             ObjectOutputStream(FileOutputStream(file)).use { it.writeObject(list) }

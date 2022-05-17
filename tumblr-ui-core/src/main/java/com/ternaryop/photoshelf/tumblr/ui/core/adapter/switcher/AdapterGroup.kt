@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
 
 /**
- * Create the adapters used to switch the view from list to grid an viceversa
+ * Create the adapters used to switch the view from list to grid an vice versa
  */
 interface AdapterGroup<A: RecyclerView.Adapter<RecyclerView.ViewHolder>> {
     val config: AdapterSwitcherConfig

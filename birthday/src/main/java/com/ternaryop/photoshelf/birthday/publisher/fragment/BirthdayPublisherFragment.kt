@@ -107,7 +107,7 @@ class BirthdayPublisherFragment(
                 refresh()
                 true
             }
-            R.id.action_selectall -> {
+            R.id.action_select_all -> {
                 selectAll()
                 true
             }

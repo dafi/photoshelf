@@ -141,7 +141,7 @@ abstract class PhotoAdapter<VH : RecyclerView.ViewHolder>(
         sort()
     }
 
-    fun toogleSortBy(sortType: Int) {
+    fun toggleSortBy(sortType: Int) {
         if (sortSwitcher.changeDirection(sortType)) {
             sort()
         }

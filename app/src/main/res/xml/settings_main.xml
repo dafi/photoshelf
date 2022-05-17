@@ -108,7 +108,7 @@
         android:key="pref_key_feedly"
         android:title="@string/pref_feedly_title">
         <Preference
-            android:title="@string/pref_feedy_category"
+            android:title="@string/pref_feedly_category"
             app:fragment="com.ternaryop.photoshelf.feedly.prefs.FeedlyPreferenceFragment" />
     </PreferenceCategory>
     <PreferenceCategory

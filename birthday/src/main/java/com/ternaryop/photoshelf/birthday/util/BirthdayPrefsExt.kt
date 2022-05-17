@@ -7,7 +7,7 @@ private const val SHOW_BIRTHDAYS_NOTIFICATION = "show_birthdays_notification"
 
 var SharedPreferences.lastBirthdayShowTime: Long
     get() = getLong(LAST_BIRTHDAY_SHOW_TIME, 0)
-    set(timems) = edit().putLong(LAST_BIRTHDAY_SHOW_TIME, timems).apply()
+    set(timeMS) = edit().putLong(LAST_BIRTHDAY_SHOW_TIME, timeMS).apply()
 
 var SharedPreferences.showBirthdaysNotification: Boolean
     get() = getBoolean(SHOW_BIRTHDAYS_NOTIFICATION, true)

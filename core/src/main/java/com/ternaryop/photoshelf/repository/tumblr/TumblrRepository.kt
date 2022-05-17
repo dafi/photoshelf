@@ -42,7 +42,7 @@ class TumblrRepository @Inject constructor(private val application: Application)
 
     fun fetchBlogs(): List<Blog> {
         blogs = tumblr.blogList
-        return blogs;
+        return blogs
     }
 
     fun blogByName(blogName: String): Blog = blogs.first { it.name.equals(blogName, true) }
