@@ -18,10 +18,6 @@ class IntegerEditTextPreference : EditTextPreference {
         setupEditListener()
     }
 
-    override fun onSetInitialValue(restoreValue: Boolean, defaultValue: Any?) {
-        text = if (restoreValue) getPersistedString(text) else defaultValue.toString()
-    }
-
     override fun getPersistedString(defaultReturnValue: String?): String {
         return getPersistedInt(-1).toString()
     }

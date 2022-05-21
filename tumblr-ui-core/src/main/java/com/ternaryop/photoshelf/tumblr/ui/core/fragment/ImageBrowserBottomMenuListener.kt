@@ -33,7 +33,7 @@ class ImageBrowserBottomMenuListener(
     }
 
     private fun post(sheet: BottomSheetDialogFragment) =
-        sheet.arguments?.get(ARG_PHOTO_POST) as? TumblrPhotoPost
+        sheet.arguments?.getSerializable(ARG_PHOTO_POST) as? TumblrPhotoPost
 
     companion object {
         const val ARG_PHOTO_POST = "image.browser.photo.post"

@@ -37,7 +37,8 @@
                     android:inputType="number"
                     android:key="exportDaysPeriod"
                     android:maxLength="2"
-                    android:selectAllOnFocus="true" />
+                    android:selectAllOnFocus="true"
+                    app:dependency="automatic_export" />
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/pref_birthdays_title">
                 <Preference
@@ -79,7 +80,8 @@
                 android:entries="@array/list_thumbnail_width_entries_default"
                 android:entryValues="@array/list_thumbnail_width_values_default"
                 android:key="thumbnail_width"
-                android:title="@string/pref_thumbnail_width" />
+                android:title="@string/pref_thumbnail_width"
+                app:useSimpleSummaryProvider="true" />
             <Preference
                 android:key="clear_image_cache"
                 android:persistent="false"
@@ -95,14 +97,16 @@
             android:key="postEditor_maxTagsMruItems"
             android:maxLength="2"
             android:selectAllOnFocus="true"
-            android:title="@string/pref_edit_post_max_tags_mru_items" />
+            android:title="@string/pref_edit_post_max_tags_mru_items"
+            app:useSimpleSummaryProvider="true" />
         <com.ternaryop.preference.IntegerEditTextPreference
             android:defaultValue="@integer/post_editor_max_highlighted_items"
             android:inputType="number"
             android:key="postEditor_maxHighlightedTagsMruItems"
             android:maxLength="2"
             android:selectAllOnFocus="true"
-            android:title="@string/pref_edit_post_max_highlighted_tags_mru_items" />
+            android:title="@string/pref_edit_post_max_highlighted_tags_mru_items"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_feedly"
