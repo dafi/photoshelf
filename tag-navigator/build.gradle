@@ -8,5 +8,4 @@ dependencies {
     implementation "io.github.ternaryop:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
 
     implementation project(path: ':core')
-    implementation project(path: ':imageviewer')
 }
