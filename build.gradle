@@ -30,8 +30,8 @@ buildscript {
             }
             if (targetSdkVersionDevPreview?.trim() && compileSdkVersionDevPreview?.trim()) {
                 println "Using preview SDK: $targetSdkVersionDevPreview"
-                targetSdkPreview = targetSdkVersionDevPreview
-                compileSdkPreview = compileSdkVersionDevPreview
+                targetSdkVersion = targetSdkVersionDevPreview
+                compileSdkVersion = compileSdkVersionDevPreview
             }
         }
 
