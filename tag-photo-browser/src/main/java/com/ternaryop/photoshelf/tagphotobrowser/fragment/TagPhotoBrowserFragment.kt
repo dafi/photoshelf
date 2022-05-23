@@ -2,11 +2,14 @@ package com.ternaryop.photoshelf.tagphotobrowser.fragment
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
@@ -23,6 +26,7 @@ import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherC
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPagingPostsListFragment
 import com.ternaryop.photoshelf.util.post.PageFetcher
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.URLEncoder
 
 private const val KEY_STATE_POST_TAG = "postTag"
 private const val KEY_STATE_ALLOW_SEARCH = "allowSearch"
@@ -37,7 +41,7 @@ class TagPhotoBrowserFragment(
     private val viewModel: TagPhotoBrowserViewModel by viewModels()
 
     override val actionModeMenuId: Int
-        get() = R.menu.tag_browser_context
+        get() = R.menu.tag_photo_browser_context
 
     override val actionBarGroupMenuId: Int
         get() = -1
@@ -94,7 +98,7 @@ class TagPhotoBrowserFragment(
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.tag_browser, menu)
+        inflater.inflate(R.menu.tag_photo_browser, menu)
 
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -103,6 +107,16 @@ class TagPhotoBrowserFragment(
         val isMenuVisible = allowSearch && !fragmentActivityStatus.isDrawerMenuOpen
         menu.findItem(R.id.action_search).isVisible = isMenuVisible
         super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_open_tag_web_browser -> {
+                openTagInWebBrowser()
+                return true;
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun setupSearchView(menu: Menu): SearchView? {
@@ -198,5 +212,12 @@ class TagPhotoBrowserFragment(
             }
             Status.PROGRESS -> { }
         }
+    }
+
+    private fun openTagInWebBrowser() {
+        val tag = postTag ?: return
+        val i = Intent(Intent.ACTION_VIEW)
+        i.data = Uri.parse("https://www.google.com/search?q=" + URLEncoder.encode(tag, "UTF-8"))
+        startActivity(i)
     }
 }

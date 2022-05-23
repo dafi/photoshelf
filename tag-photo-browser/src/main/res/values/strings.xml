@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">tag-photo-browser</string>
+    <string name="open_in_web_browser">Open in Web Browser</string>
 </resources>

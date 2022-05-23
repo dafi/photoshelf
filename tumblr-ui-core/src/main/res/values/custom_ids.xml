@@ -2,4 +2,9 @@
 <resources>
     <item name="tag_text_view" type="id"/>
     <item name="action_switch_view" type="id"/>
+    <item name="group_menu_image_dimension" type="id"/>
+    <item name="post_delete" type="id"/>
+    <item name="post_edit" type="id"/>
+    <item name="show_post" type="id"/>
+    <item name="action_search" type="id"/>
 </resources>

@@ -8,6 +8,11 @@
         app:showAsAction="ifRoom|collapseActionView"
         android:title="@string/search_tag"/>
     <item
+        android:id="@+id/action_open_tag_web_browser"
+        android:icon="@drawable/ic_open_in_browser_white_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/open_in_web_browser"/>
+    <item
         android:id="@+id/action_switch_view"
         android:icon="@drawable/ic_action_list_alt_24"
         app:showAsAction="ifRoom"
