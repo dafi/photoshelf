@@ -106,6 +106,10 @@ class FeedlyListFragment(
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
+        recyclerView.addToggleSwipe { position, isChecked ->
+            onToggleClick(position, isChecked)
+            adapter.notifyItemChanged(position)
+        }
     }
 
     private fun onContent(result: FeedlyModelResult.Content) {
