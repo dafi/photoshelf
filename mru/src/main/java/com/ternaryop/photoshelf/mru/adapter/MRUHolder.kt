@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.mru.MRU
 import com.ternaryop.photoshelf.mru.R
-import com.ternaryop.utils.recyclerview.SwipeToDeleteCallback
+import com.ternaryop.utils.recyclerview.SwipeCallback
 
 /**
  * Created by dave on 17/05/15.
@@ -44,7 +44,7 @@ class MRUHolder(
     }
 
     private fun addSwipeToDelete(recyclerView: RecyclerView) {
-        val swipeHandler = object : SwipeToDeleteCallback(context,
+        val swipeHandler = object : SwipeCallback(
             checkNotNull(ContextCompat.getDrawable(context, R.drawable.ic_action_delete)),
             ColorDrawable(ContextCompat.getColor(context, R.color.animation_delete_bg))) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
