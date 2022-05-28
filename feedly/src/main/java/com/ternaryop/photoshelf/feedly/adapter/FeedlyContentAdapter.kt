@@ -94,14 +94,15 @@ class FeedlyContentAdapter(private val context: Context) :
         }
     }
 
-    fun moveToBottom(position: Int) {
+    fun moveToBottom(position: Int): Boolean {
         if (position == (allContents.size - 1)) {
-            return
+            return false
         }
         allContents.add(allContents.removeAt(position))
         // notifyItemMoved scrolls to bottom so we use the pair notifyItemRemoved/notifyItemInserted
         // to remain on item position
         notifyItemRemoved(position)
         notifyItemInserted(allContents.size - 1)
+        return true
     }
 }

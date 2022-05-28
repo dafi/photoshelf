@@ -285,8 +285,13 @@ class FeedlyListFragment(
 
     override fun onToggleClick(position: Int, checked: Boolean) {
         if (preferences.deleteOnRefresh) {
-            if (!checked) {
-                adapter.moveToBottom(position)
+            if (checked) {
+                adapter.notifyItemChanged(position)
+            } else {
+                if (!adapter.moveToBottom(position)) {
+                    // position doesn't change but item can change its appearance (eg color, background, ...)
+                    adapter.notifyItemChanged(position)
+                }
                 viewModel.contentList.moveToBottom(position)
             }
             refreshUI()

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="feedly_item_never_published_array">
+        <item>@drawable/list_selector_post_never</item>
+        <item>@style/feedly_item_title_never_published_style</item>
+        <item>@style/feedly_item_subtitle_never_published_style</item>
+        <item>@style/feedly_item_tag_never_published_style</item>
+    </array>
+    <array name="feedly_item_published_array">
+        <item>@drawable/list_selector_post_normal</item>
+        <item>@style/feedly_item_title_published_style</item>
+        <item>@style/feedly_item_subtitle_published_style</item>
+        <item>@style/feedly_item_tag_published_style</item>
+    </array>
+
+    <style name="feedly_item_title_style">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="feedly_item_title_published_style" parent="feedly_item_title_style">
+        <item name="android:textColor">@color/title_published</item>
+    </style>
+
+    <style name="feedly_item_title_never_published_style" parent="feedly_item_title_style">
+        <item name="android:textColor">@color/title_never_published</item>
+    </style>
+
+    <style name="feedly_item_subtitle_published_style">
+        <item name="android:textColor">@color/subtitle_published</item>
+    </style>
+
+    <style name="feedly_item_subtitle_never_published_style">
+        <item name="android:textColor">@color/subtitle_never_published</item>
+    </style>
+
+    <style name="feedly_item_tag_published_style">
+        <item name="android:textColor">@color/tag_published</item>
+    </style>
+
+    <style name="feedly_item_tag_never_published_style">
+        <item name="android:textColor">@color/tag_never_published</item>
+    </style>
+</resources>

@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="swipe_toggle">#C5E6B3</color>
+
+    <!-- item list title -->
+    <color name="title_published_selected">#000000</color>
+    <color name="title_published_normal">#AAAAAA</color>
+    <color name="title_never_published_selected">#000000</color>
+    <color name="title_never_published_normal">#A1992B</color>
+
+    <!-- item list subtitle -->
+    <color name="subtitle_published_selected">@color/title_published_selected</color>
+    <color name="subtitle_published_normal">@color/title_published_normal</color>
+    <color name="subtitle_never_published_selected">@color/title_never_published_selected</color>
+    <color name="subtitle_never_published_normal">@color/title_never_published_normal</color>
+
+    <!-- item list tag -->
+    <color name="tag_published_selected">@color/title_published_selected</color>
+    <color name="tag_published_normal">@color/title_published_normal</color>
+    <color name="tag_never_published_selected">@color/title_never_published_selected</color>
+    <color name="tag_never_published_normal">@color/title_never_published_normal</color>
 </resources>

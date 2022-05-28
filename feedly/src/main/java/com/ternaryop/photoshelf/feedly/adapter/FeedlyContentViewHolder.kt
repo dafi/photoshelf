@@ -11,17 +11,18 @@ import android.widget.TextView
 import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_STYLE
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_TITLE_TEXT_COLOR
-import com.ternaryop.photoshelf.adapter.POST_STYLE_INDEX_VIEW_BACKGROUND
 import com.ternaryop.photoshelf.feedly.R
+
+private const val FAVICON_SIZE = 16
+private const val LIST_ITEM_STYLE_INDEX_VIEW_BACKGROUND = 0
+private const val LIST_ITEM_STYLE_INDEX_TITLE = 1
+private const val LIST_ITEM_STYLE_INDEX_SUBTITLE = 2
+private const val LIST_ITEM_STYLE_INDEX_TAG = 3
 
 /**
  * Created by dave on 24/02/17.
  * The ViewHolder used by the Feedly list
  */
-private const val FAVICON_SIZE = 16
-
 @Suppress("MemberVisibilityCanBePrivate")
 class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val title: TextView = itemView.findViewById(android.R.id.text1)
@@ -94,18 +95,23 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
 
     private fun updateItemColors(content: FeedlyContentDelegate) {
         if (content.lastPublishTimestamp < 0) {
-            setColors(R.array.post_never)
+            setAppearance(R.array.feedly_item_never_published_array, content.isChecked)
         } else {
-            setColors(R.array.post_normal)
+            setAppearance(R.array.feedly_item_published_array, content.isChecked)
         }
     }
 
-    private fun setColors(resArray: Int) {
-        val array = itemView.context.resources.obtainTypedArray(resArray)
-        itemView.background = array.getDrawable(POST_STYLE_INDEX_VIEW_BACKGROUND)
+    private fun setAppearance(resArray: Int, checked: Boolean) {
+        title.isSelected = checked
+        subtitle.isSelected = checked
+        tag.isSelected = checked
 
-        TextViewCompat.setTextAppearance(title, array.getResourceId(POST_STYLE_INDEX_TITLE_STYLE, 0))
-        subtitle.setTextColor(array.getColorStateList(POST_STYLE_INDEX_TITLE_TEXT_COLOR))
+        val array = itemView.context.resources.obtainTypedArray(resArray)
+        itemView.background = array.getDrawable(LIST_ITEM_STYLE_INDEX_VIEW_BACKGROUND)
+
+        TextViewCompat.setTextAppearance(title, array.getResourceId(LIST_ITEM_STYLE_INDEX_TITLE, 0))
+        TextViewCompat.setTextAppearance(subtitle, array.getResourceId(LIST_ITEM_STYLE_INDEX_SUBTITLE, 0))
+        TextViewCompat.setTextAppearance(tag, array.getResourceId(LIST_ITEM_STYLE_INDEX_TAG, 0))
         array.recycle()
     }
 
