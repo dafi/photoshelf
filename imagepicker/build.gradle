@@ -10,3 +10,7 @@ dependencies {
     implementation project(path: ':core')
     implementation project(path: ':tumblr-dialog')
 }
+
+android {
+    namespace 'com.ternaryop.photoshelf.imagepicker'
+}

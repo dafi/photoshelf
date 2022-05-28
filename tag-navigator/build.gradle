@@ -9,3 +9,7 @@ dependencies {
 
     implementation project(path: ':core')
 }
+
+android {
+    namespace 'com.ternaryop.photoshelf.tagnavigator'
+}

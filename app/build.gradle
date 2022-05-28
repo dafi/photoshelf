@@ -131,6 +131,7 @@ android {
     lint {
         abortOnError false
     }
+    namespace 'com.ternaryop.photoshelf'
 }
 
 tasks.withType(JavaCompile) {

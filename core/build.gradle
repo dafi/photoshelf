@@ -9,3 +9,7 @@ dependencies {
 
     implementation "io.github.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
 }
+
+android {
+    namespace 'com.ternaryop.photoshelf.core'
+}

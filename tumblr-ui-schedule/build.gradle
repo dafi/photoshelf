@@ -7,3 +7,7 @@ dependencies {
     implementation project(path: ':tumblr-ui-core')
     implementation project(path: ':tumblr-dialog')
 }
+
+android {
+    namespace 'com.ternaryop.photoshelf.tumblr.ui.schedule'
+}

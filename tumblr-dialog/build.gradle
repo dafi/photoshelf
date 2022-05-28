@@ -9,3 +9,7 @@ dependencies {
     implementation project(path: ':mru')
     implementation project(path: ':tag-navigator')
 }
+
+android {
+    namespace 'com.ternaryop.photoshelf.tumblr.dialog'
+}
