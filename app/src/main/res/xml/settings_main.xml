@@ -119,6 +119,7 @@
         android:key="pref_key_notifications"
         android:title="@string/pref_notifications_title">
         <SwitchPreferenceCompat
+            android:defaultValue="@bool/show_birthdays_notification_default"
             android:key="show_birthdays_notification"
             android:title="@string/show_birthdays_notification" />
     </PreferenceCategory>
