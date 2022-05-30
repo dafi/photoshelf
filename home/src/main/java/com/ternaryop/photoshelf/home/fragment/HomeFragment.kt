@@ -17,6 +17,7 @@ import com.ternaryop.photoshelf.home.prefs.saveStats
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
 @AndroidEntryPoint
@@ -31,6 +32,8 @@ class HomeFragment : AbsPhotoShelfFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupLogButton(view)
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
@@ -81,6 +84,17 @@ class HomeFragment : AbsPhotoShelfFragment() {
             }
             Status.PROGRESS -> {
             }
+        }
+    }
+
+    private fun setupLogButton(view: View) {
+        val logButton = view.findViewById<View>(R.id.open_crash_log)
+        val context = requireContext()
+        if (CrashLogViewer.file(context).exists()) {
+            logButton.visibility = View.VISIBLE
+            logButton.setOnClickListener { launch { CrashLogViewer.startView(context) } }
+        } else {
+            logButton.visibility = View.GONE
         }
     }
 

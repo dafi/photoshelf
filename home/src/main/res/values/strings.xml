@@ -6,4 +6,6 @@
     <string name="total_unique_first_tags">Total unique first tags</string>
     <string name="birthdays_count">Birthdays count</string>
     <string name="missing_birthdays_count">Missing birthdays count</string>
+    <string name="crash_log_title">View Crash Log</string>
+    <string name="crash_log_subject">Crash Log</string>
 </resources>

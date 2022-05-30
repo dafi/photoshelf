@@ -1,3 +1,8 @@
 <paths>
-    <cache-path name="images" path="images/"/>
+    <cache-path
+        name="images"
+        path="images/" />
+    <external-files-path
+        name="crash_log"
+        path="crash/" />
 </paths>
