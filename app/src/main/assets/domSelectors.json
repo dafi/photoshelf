@@ -131,7 +131,8 @@
     {
       "urlPattern": "sawfirst.com",
       "image": {
-        "css": ".attachment-"
+        "css": ".post-header h2 a",
+        "selAttr":"href"
       },
       "gallery": {
         "container": "#gallery-1 a img",
