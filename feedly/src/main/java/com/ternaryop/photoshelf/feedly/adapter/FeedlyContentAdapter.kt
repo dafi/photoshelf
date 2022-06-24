@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
-import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.feedly.FeedlyContent
+import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
 import com.ternaryop.photoshelf.feedly.R
 
 class FeedlyContentAdapter(private val context: Context) :
-    RecyclerView.Adapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+    AbsBaseAdapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     val allContents = mutableListOf<FeedlyContentDelegate>()
     val sortSwitcher = FeedlyContentSortSwitcher(context)
 

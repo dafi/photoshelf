@@ -9,6 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +19,7 @@ import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.feedly.R
 import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentAdapter
+import com.ternaryop.photoshelf.feedly.adapter.FeedlyContentViewHolder
 import com.ternaryop.photoshelf.feedly.adapter.OnFeedlyContentClick
 import com.ternaryop.photoshelf.feedly.dialog.FeedlyCategoriesDialog
 import com.ternaryop.photoshelf.feedly.prefs.FeedlyPrefs
@@ -80,6 +82,10 @@ class FeedlyListFragment(
 
         adapter.sortSwitcher.setType(preferences.getSortType())
         adapter.clickListener = this
+
+        adapter.setEmptyView(view.findViewById(android.R.id.empty)) { adapter ->
+            updateApiCounters(view, adapter)
+        }
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
@@ -264,15 +270,16 @@ class FeedlyListFragment(
     private fun showAPIUsage() {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.api_usage)
-            .setMessage(getString(R.string.feedly_api_calls_count, FeedlyRateLimit.apiCallsCount) +
-                "\n" + getString(R.string.feedly_api_reset_limit, FeedlyRateLimit.apiResetLimitAsString))
+            .setMessage(getString(R.string.feedly_api_calls_count) + " " + FeedlyRateLimit.apiCallsCount +
+                "\n" + getString(R.string.feedly_api_reset_limit) + " " + FeedlyRateLimit.apiResetLimitAsString)
             .show()
     }
 
     override fun onTitleClick(position: Int) {
         val url = adapter.getItem(position).run { canonicalUrl ?: originId }
         imageViewerActivityStarter.startImagePicker(requireContext(), url)
-        val urls = adapter.allContents.near(position, preferences.pickerFetchItemCount).map { it.canonicalUrl ?: it.originId }
+        val urls = adapter.allContents.near(position, preferences.pickerFetchItemCount)
+            .map { it.canonicalUrl ?: it.originId }
         imageViewerActivityStarter.startImagePickerPrefetch(urls)
     }
 
@@ -331,6 +338,18 @@ class FeedlyListFragment(
         }
     }
 
+    private fun updateApiCounters(
+        view: View,
+        adapter: RecyclerView.Adapter<FeedlyContentViewHolder>
+    ): Boolean {
+        if (adapter.itemCount == 0) {
+            view.findViewById<TextView>(R.id.api_calls_count).text =
+                FeedlyRateLimit.apiCallsCount.toString()
+            view.findViewById<TextView>(R.id.api_reset_limit).text =
+                FeedlyRateLimit.apiResetLimitAsString
+        }
+        return true
+    }
     companion object {
         const val ARG_CONTENT_TYPE = "contentType"
     }

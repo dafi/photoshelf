@@ -4,8 +4,8 @@
     <string name="never_published">Never Published</string>
     <string name="settings">Settings</string>
     <string name="api_usage">API Usage</string>
-    <string name="feedly_api_calls_count">API Calls count %1$d</string>
-    <string name="feedly_api_reset_limit">Reset Limit %1$s</string>
+    <string name="feedly_api_calls_count">API Calls count</string>
+    <string name="feedly_api_reset_limit">Reset Limit</string>
     <string name="token_expired">Token Expired</string>
     <string name="max_fetch_item_count">Max Fetch Item Count</string>
     <string name="newer_than_hours">Newer Than (hours)</string>
