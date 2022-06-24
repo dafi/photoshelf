@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.RecyclerView
  * Base Adapter
  */
 abstract class AbsBaseAdapter<VH : RecyclerView.ViewHolder> : RecyclerView.Adapter<VH>() {
-    fun setEmptyView(view: View) {
+    fun setEmptyView(view: View, onAdapterChanged: ((RecyclerView.Adapter<VH>) -> Boolean)? = null) {
         registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
                 super.onChanged()
-                view.visibility = if (itemCount == 0) View.VISIBLE else View.GONE
+                if (onAdapterChanged == null || onAdapterChanged(this@AbsBaseAdapter)) {
+                    view.visibility = if (itemCount == 0) View.VISIBLE else View.GONE
+                }
             }
         })
     }
