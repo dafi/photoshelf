@@ -110,12 +110,11 @@ class DraftListFragment(
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.draft, menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_refresh -> {
                 BottomMenuSheetDialogFragment().show(childFragmentManager, FRAGMENT_TAG_REFRESH)
@@ -132,7 +131,7 @@ class DraftListFragment(
                     .show(parentFragmentManager, FRAGMENT_TAG_NAVIGATOR)
                 return true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return super.onMenuItemSelected(item)
         }
     }
 

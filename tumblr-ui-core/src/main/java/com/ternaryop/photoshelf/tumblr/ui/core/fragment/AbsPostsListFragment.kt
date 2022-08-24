@@ -12,6 +12,8 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -58,7 +60,8 @@ abstract class AbsPostsListFragment(
     OnPostActionListener,
     OnPhotoBrowseClickMultiChoice,
     SearchView.OnQueryTextListener,
-    ActionMode.Callback {
+    ActionMode.Callback,
+    MenuProvider {
 
     protected val photoAdapter: PhotoAdapter<out RecyclerView.ViewHolder>
         get() {
@@ -120,8 +123,7 @@ abstract class AbsPostsListFragment(
         photoAdapterSwitcher.switchView(photoAdapterSwitcher.viewType)
 
         recyclerViewLayout = savedInstanceState?.getParcelable(KEY_STATE_RECYCLER_VIEW_LAYOUT)
-
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onAttach(context: Context) {
@@ -136,13 +138,14 @@ abstract class AbsPostsListFragment(
             }
         }
     }
-    override fun onPrepareOptionsMenu(menu: Menu) {
+
+    override fun onPrepareMenu(menu: Menu) {
         menu.getItem(0)?.groupId?.also {
             val isMenuVisible = !fragmentActivityStatus.isDrawerMenuOpen
             menu.setGroupVisible(actionBarGroupMenuId, isMenuVisible)
         }
         setupSearchView(menu)
-        super.onPrepareOptionsMenu(menu)
+        super.onPrepareMenu(menu)
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -428,13 +431,13 @@ abstract class AbsPostsListFragment(
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_switch_view -> {
                 photoAdapterSwitcher.toggleView()
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

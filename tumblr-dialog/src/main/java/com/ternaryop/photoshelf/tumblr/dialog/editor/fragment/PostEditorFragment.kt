@@ -13,8 +13,10 @@ import android.widget.Spinner
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -51,7 +53,9 @@ fun Map<String, Any>?.getInt(preferences: SharedPreferences, key: String, defaul
 }
 
 @AndroidEntryPoint
-class PostEditorFragment : Fragment() {
+class PostEditorFragment :
+    Fragment(),
+    MenuProvider {
 
     private lateinit var tumblrPostAction: AbsTumblrPostEditor
     private lateinit var preferences: SharedPreferences
@@ -109,12 +113,13 @@ class PostEditorFragment : Fragment() {
         val mruHolder = MRUHolder(requireContext(), view.findViewById(R.id.mru_list),
             maxMruItems, maxHighlightedMruItems, tagsHolder)
 
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
         tumblrPostAction = when (data) {
             is EditPostEditorData -> EditTumblrPostEditor(data, titleHolder, tagsHolder, mruHolder)
             is NewPostEditorData -> NewTumblrPostEditor(data, titleHolder, tagsHolder, mruHolder)
                 .apply { lifecycle.addObserver(this) }
-            else -> throw IllegalStateException("Unknown post data")
+            else -> error("Unknown post data")
         }
         showBlogList()
         showThumbnails()
@@ -156,18 +161,18 @@ class PostEditorFragment : Fragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.tumblr_post_edit, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         tumblrPostAction.onPrepareMenu(menu)
         menu.findItem(R.id.toggle_blog_list).isChecked = preferences.getBoolean(BLOG_VISIBLE_PREF_NAME, true)
         menu.findItem(R.id.toggle_thumbnails).isChecked = preferences.getBoolean(THUMBNAIL_VISIBLE_PREF_NAME, true)
         menu.enableAll(isOptionsMenuEnabled)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.parse_title -> {
                 viewModel.parse(tumblrPostAction.titleHolder.plainTitle, false)

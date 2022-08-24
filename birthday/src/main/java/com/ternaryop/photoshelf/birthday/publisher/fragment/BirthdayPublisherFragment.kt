@@ -13,7 +13,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ternaryop.photoshelf.EXTRA_POST
@@ -39,7 +41,10 @@ import java.util.Locale
 class BirthdayPublisherFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(),
-    SwipeRefreshLayout.OnRefreshListener, OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
+    SwipeRefreshLayout.OnRefreshListener,
+    OnPhotoBrowseClickMultiChoice,
+    ActionMode.Callback,
+    MenuProvider {
 
     private lateinit var birthdayPhotoAdapter: BirthdayPhotoAdapter
     private lateinit var swipeLayout: WaitingResultSwipeRefreshLayout
@@ -72,7 +77,7 @@ class BirthdayPublisherFragment(
         swipeLayout.isRefreshing = true
         refresh()
 
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
             when (result) {
@@ -96,11 +101,11 @@ class BirthdayPublisherFragment(
         swipeLayout.setRefreshingAndWaitingResult(true)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.birthday_publisher, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_refresh -> {
                 viewModel.clearBirthdays()
@@ -111,7 +116,7 @@ class BirthdayPublisherFragment(
                 selectAll()
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

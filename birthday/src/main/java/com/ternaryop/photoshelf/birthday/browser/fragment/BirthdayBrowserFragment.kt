@@ -16,7 +16,9 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -46,9 +48,12 @@ private const val DEBOUNCE_TIMEOUT_MILLIS = 600L
 @AndroidEntryPoint
 class BirthdayBrowserFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
-) : AbsPhotoShelfFragment(), ActionMode.Callback,
+) : AbsPhotoShelfFragment(),
     OnPagingScrollListener.OnScrollListener,
-    View.OnClickListener, View.OnLongClickListener {
+    View.OnClickListener,
+    View.OnLongClickListener,
+    ActionMode.Callback,
+    MenuProvider {
     private lateinit var toolbarSpinner: Spinner
     private var currentSelectedItemId = R.id.action_show_all
     private val singleSelectionMenuIds = intArrayOf(R.id.item_edit)
@@ -114,7 +119,7 @@ class BirthdayBrowserFragment(
         })
 
         setupActionBar()
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -279,12 +284,11 @@ class BirthdayBrowserFragment(
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.birthday_browser, menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         // if selected item is already selected don't change anything
         if (currentSelectedItemId == item.itemId) {
             return true
@@ -301,7 +305,7 @@ class BirthdayBrowserFragment(
             R.id.action_show_birthdays_in_same_day -> BirthdayShowFlags.SHOW_IN_SAME_DAY
             R.id.action_show_birthdays_missing -> BirthdayShowFlags.SHOW_MISSING
             R.id.action_show_birthdays_without_posts -> BirthdayShowFlags.SHOW_WITHOUT_POSTS
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
 
         viewModel.showFlags.setFlag(showFlag, isChecked)
@@ -347,7 +351,7 @@ class BirthdayBrowserFragment(
         }
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         if (fragmentActivityStatus.isDrawerMenuOpen) {
             fragmentActivityStatus.drawerToolbar.removeView(toolbarSpinner)
             supportActionBar?.setDisplayShowTitleEnabled(true)
@@ -363,7 +367,7 @@ class BirthdayBrowserFragment(
                 updateSubTitle(this)
             }
         }
-        super.onPrepareOptionsMenu(menu)
+        super.onPrepareMenu(menu)
     }
 
     private fun setupActionBar() {

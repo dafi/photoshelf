@@ -97,25 +97,23 @@ class TagPhotoBrowserFragment(
         outState.putBoolean(KEY_STATE_ALLOW_SEARCH, allowSearch)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.tag_photo_browser, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         val isMenuVisible = allowSearch && !fragmentActivityStatus.isDrawerMenuOpen
         menu.findItem(R.id.action_search).isVisible = isMenuVisible
-        super.onPrepareOptionsMenu(menu)
+        super.onPrepareMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_open_tag_web_browser -> {
                 openTagInWebBrowser()
-                return true;
+                return true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> super.onMenuItemSelected(item)
         }
     }
 

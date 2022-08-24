@@ -17,7 +17,9 @@ import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
@@ -49,10 +51,12 @@ const val EXTRA_URL = "com.ternaryop.photoshelf.extra.URL"
 @AndroidEntryPoint
 class ImagePickerFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter,
-    private val tumblrPostDialog: TumblrPostDialog,
+    tumblrPostDialog: TumblrPostDialog,
     private val publishClassName: Class<out OnPublish>
 ) : AbsPhotoShelfFragment(),
-    OnPhotoBrowseClickMultiChoice, ActionMode.Callback {
+    OnPhotoBrowseClickMultiChoice,
+    ActionMode.Callback,
+    MenuProvider {
     private lateinit var gridView: RecyclerView
     private lateinit var progressHighlightViewLayout: ProgressHighlightViewLayout
     private lateinit var progressbar: ProgressBar
@@ -113,7 +117,7 @@ class ImagePickerFragment(
             }
         })
 
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
         setupUI(view, requireContext())
 
         refreshUI()
@@ -384,18 +388,17 @@ class ImagePickerFragment(
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.image_picker, menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_image_viewer_details -> {
                 showDetails(Snackbar.LENGTH_INDEFINITE)
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

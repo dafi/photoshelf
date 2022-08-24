@@ -10,8 +10,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.feedly.FeedlyRateLimit
@@ -45,7 +47,8 @@ class FeedlyListFragment(
     private val imageViewerActivityStarter: ImageViewerActivityStarter
 ) : AbsPhotoShelfFragment(),
     OnFeedlyContentClick,
-    FragmentResultListener {
+    FragmentResultListener,
+    MenuProvider {
     private lateinit var adapter: FeedlyContentAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var preferences: FeedlyPrefs
@@ -73,7 +76,7 @@ class FeedlyListFragment(
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView(view)
 
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         photoShelfSwipe = view.findViewById(R.id.swipe_container)
         photoShelfSwipe.setOnRefreshListener { refresh() }
@@ -229,12 +232,11 @@ class FeedlyListFragment(
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.feedly, menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_refresh -> {
                 refresh()
@@ -257,7 +259,7 @@ class FeedlyListFragment(
                 selectCategories()
                 return true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
     }
 
