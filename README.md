@@ -17,3 +17,13 @@ Share photo on Tumblr
 Do not increment version code
 
     ./gradlew bundleRelease -P versionCode.increment=false
+
+# Common tasks
+
+Compile with all warnings
+
+    ./gradlew build -Dorg.gradle.warning.mode=all
+    
+Run lint before release
+
+    ./gradlew clean check bundleRelease

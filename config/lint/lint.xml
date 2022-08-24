@@ -4,6 +4,7 @@
     <issue id="InvalidPackage" severity="error">
         <ignore path="**/scribe*.jar" />
         <ignore path="**/dropbox*.jar" />
+        <ignore regexp="kotlinx.coroutines.debug.AgentPremain"/>
     </issue>
 
     <issue id="HardcodedText">
@@ -18,4 +19,8 @@
     <issue id="UnusedResources">
         <ignore path="*.xml" />
     </issue>
+
+    <issue id="InvalidSetHasFixedSize" severity="warning"/>
+
+    <issue id="NotifyDataSetChanged" severity="ignore"/>
 </lint>

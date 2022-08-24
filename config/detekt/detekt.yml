@@ -1,0 +1,67 @@
+# Pass --build-upon-default-config to detekt to inherit default values
+config:
+  validation: true
+  # when writing own rules with new properties, exclude the property path e.g.: "my_rule_set,.*>.*>[my_property]"
+  excludes: "ternaryop"
+
+ternaryop:
+  AndroidStudioLog:
+    # The extra information shown
+    # The declaration order corresponds to the output order
+    show: "id,message"
+
+complexity:
+  TooManyFunctions:
+    active: false
+
+style:
+  ReturnCount:
+    active: true
+    max: 3
+    excludedFunctions: "equals,onOptionsItemSelected,onPreferenceTreeClick,onMenuItemSelected"
+  MaxLineLength:
+    active: false
+  UnusedPrivateMember:
+    active: false
+  SerialVersionUIDInSerializableClass:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  PrintStackTrace:
+    active: false
+
+empty-blocks:
+  EmptyFunctionBlock:
+    active: false
+
+potential-bugs:
+  ImplicitDefaultLocale:
+    active: false
+
+formatting:
+  # this is the ktlint variation of MaxLineLength
+  # it works only at file level so we turn it off
+  MaximumLineLength:
+    active: false
+  NoWildcardImports:
+    active: false
+  Wrapping:
+    active: false
+  Indentation:
+    active: false
+  ImportOrdering:
+    active: false
+  SpacingAroundColon:
+    active: false
+  NoLineBreakBeforeAssignment:
+    active: false
+  FinalNewline:
+    active: false
+  ParameterListWrapping:
+    active: false
+  NoBlankLineBeforeRbrace:
+    active: false

@@ -10,11 +10,11 @@ apply plugin: "io.gitlab.arturbosch.detekt"
 apply from: 'https://raw.githubusercontent.com/dafi/gradle-scripts/main/dependencyUpdatesReplacer.gradle'
 
 buildscript {
-    ext.kotlin_version = '1.6.21'
+    ext.kotlin_version = '1.7.10'
     ext {
         minSdkVersion = 26
-        targetSdkVersion = 31
-        compileSdkVersion = 31
+        targetSdkVersion = 33
+        compileSdkVersion = 33
 
         def runTasks = gradle.startParameter.taskNames
         def releaseTaskNames = ["aR", "assembleRelease", "bundleRelease"]
@@ -35,48 +35,48 @@ buildscript {
             }
         }
 
-        androidXAppCompatLibVersion = '1.6.0-alpha03'
-        androidXRecyclerviewLibVersion = '1.3.0-alpha02'
-        androidXAnnotationLibVersion = '1.4.0-alpha02'
-        androidXMaterialLibVersion = '1.7.0-alpha01'
-        androidXConstraintlayoutLibVersion = '2.1.3'
+        androidXAppCompatLibVersion = '1.6.0-beta01'
+        androidXRecyclerviewLibVersion = '1.3.0-beta02'
+        androidXAnnotationLibVersion = '1.5.0-alpha02'
+        androidXMaterialLibVersion = '1.7.0-beta01'
+        androidXConstraintlayoutLibVersion = '2.2.0-alpha03'
         androidXPreferenceLibVersion = '1.2.0'
         androidXSwiperefreshlayoutLibVersion = '1.2.0-alpha01'
-        androidXCoreKtx = '1.9.0-alpha03'
-        androidXLifecycleExtensions = '2.2.0'
-        androidXLifecycleViewmodelKtx = '2.5.0-rc01'
-        androidXLifecycleCommonJava8 = '2.5.0-rc01'
-        androidXWorkLibVersion = '2.8.0-alpha02'
+        androidXCoreKtx = '1.9.0-beta01'
+        androidXLifecycleVersion = '2.6.0-alpha01'
+        androidXWorkLibVersion = '2.8.0-alpha03'
+        androidXFragmentVersion = '1.6.0-alpha01'
 
         flexboxLibVersion = '3.0.0'
 
-        kotlinxCoroutinesCore = '1.6.1'
-        kotlinxCoroutinesAndroid = '1.6.1'
+        kotlinxCoroutinesCore = '1.6.4'
+        kotlinxCoroutinesAndroid = '1.6.4'
 
-        hiltAndroidVersion = '2.42'
-        hiltAndroidCompilerVersion = '2.42'
+        hiltAndroidVersion = '2.43.2'
 
         moshiKotlinCodegenLibVersion = '1.13.0'
 
-        ternaryOpUtilLibVersion = '1.4.10'
-        ternaryOpDrawerLibVersion = '1.0.1'
-        ternaryOpWidgetLibVersion = '1.0.4'
-        ternaryOpCrashReporterLibVersion = '1.0.0'
-        ternaryOpApiCoroutinesLibVersion = '1.1.3'
-        ternaryOpDomSelectorCoroutinesLibVersion = '1.0.7'
-        ternaryOpFeedlyCoroutinesLibVersion = '1.0.5'
-        ternaryOpTumblrCoroutinesLibVersion = '1.0.8'
+        ternaryOpUtilLibVersion = '1.4.12'
+        ternaryOpDrawerLibVersion = '1.0.2'
+        ternaryOpWidgetLibVersion = '1.0.5'
+        ternaryOpCrashReporterLibVersion = '1.0.2'
+        ternaryOpApiCoroutinesLibVersion = '1.1.4'
+        ternaryOpDomSelectorCoroutinesLibVersion = '1.0.8'
+        ternaryOpFeedlyCoroutinesLibVersion = '1.0.6'
+        ternaryOpTumblrCoroutinesLibVersion = '1.0.9'
 
-        dropboxCoreLibVersion = '5.2.0'
+        dropboxCoreLibVersion = '5.3.0'
 
-        coilLibVersion = '2.1.0'
+        coilLibVersion = '2.2.0'
 
-        okhttp3LoggingInterceptorLibVersion = '5.0.0-alpha.7'
+        okhttp3LoggingInterceptorLibVersion = '5.0.0-alpha.10'
+
+        detektLibVersion = "1.21.0"
 
         junitLibVersion = '4.13'
-        androidXRulesLibVersion = '1.4.1-alpha06'
-        androidXEspressoCoreLibVersion = '3.5.0-alpha06'
-        androidxTestExtJunit = '1.1.4-alpha06'
+        androidXRulesLibVersion = '1.4.1-alpha07'
+        androidXEspressoCoreLibVersion = '3.5.0-alpha07'
+        androidxTestExtJunit = '1.1.4-alpha07'
     }
     repositories {
         google()
@@ -86,15 +86,15 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.42.0"
-        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.20.0"
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detektLibVersion"
 
         classpath "gradle.plugin.project:plugin:1.4.0"
 
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.42'
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.43.2'
     }
 }
 
@@ -118,16 +118,26 @@ allprojects {
 
 subprojects {
     apply plugin: "io.gitlab.arturbosch.detekt"
+
     detekt {
-        config = files("${project.rootDir}/detekt-photoshelf.yml")
+        buildUponDefaultConfig = true
+        config = files("${project.rootDir}/config/detekt/detekt.yml")
         parallel = true
     }
+
+    dependencies {
+        detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:$detektLibVersion"
+    }
+
     if (name == "app") {
         apply plugin: "com.android.application"
     } else {
         apply plugin: "com.android.library"
     }
     android {
+        lint {
+            lintConfig file("${project.rootDir}/config/lint/lint.xml")
+        }
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
