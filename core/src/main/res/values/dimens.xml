@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="loading_progressbar_height">8dp</dimen>
+</resources>

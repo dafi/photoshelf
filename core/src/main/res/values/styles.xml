@@ -3,5 +3,10 @@
     <style name="Theme.PhotoShelf.ProgressBar.Horizontal" parent="android:Widget.ProgressBar.Horizontal">
         <item name="android:indeterminateOnly">false</item>
         <item name="android:progressDrawable">@drawable/progressbar</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">@dimen/loading_progressbar_height</item>
+        <item name="android:maxHeight">@dimen/loading_progressbar_height</item>
+        <item name="android:minHeight">@dimen/loading_progressbar_height</item>
+        <item name="android:visibility">gone</item>
     </style>
 </resources>
