@@ -19,3 +19,8 @@
 }
 
 -keep class com.ternaryop.photoshelf.feedly.prefs.FeedlyPreferenceFragment
+
+-dontwarn jakarta.xml.bind.DatatypeConverter
+-dontwarn java.beans.ConstructorProperties
+-dontwarn java.beans.Transient
+-dontwarn javax.xml.bind.DatatypeConverter
