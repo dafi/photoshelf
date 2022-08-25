@@ -20,6 +20,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        // Resolve the error reported by Android Studio "no build type in module <module_name> matches build type <type>"
+        debugGenymotion {
+        }
+        debugRealDeviceLocal {
+        }
+        debugRealDeviceProd {
+        }
     }
 
 }
