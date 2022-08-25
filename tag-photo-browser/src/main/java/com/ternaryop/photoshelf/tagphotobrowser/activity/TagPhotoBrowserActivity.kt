@@ -30,7 +30,8 @@ class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
 
     override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
-            classLoader, TagPhotoBrowserFragment::class.java.name)
+            classLoader, TagPhotoBrowserFragment::class.java.name
+        )
 
     companion object {
         private const val EXTRA_TAG_PHOTO_BROWSER_DATA = "com.ternaryop.photoshelf.extra.TAG_PHOTO_BROWSER_DATA"

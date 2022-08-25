@@ -10,5 +10,6 @@ class TumblrPostCache(var id: String, post: TumblrPost, var cacheType: Int) : Se
 
     companion object {
         const val CACHE_TYPE_DRAFT = 0
+        const val serialVersionUID = 1L
     }
 }

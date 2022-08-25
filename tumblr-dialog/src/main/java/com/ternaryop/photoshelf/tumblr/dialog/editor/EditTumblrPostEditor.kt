@@ -37,7 +37,8 @@ class EditTumblrPostEditor(
                 postEditorData.blogName,
                 titleHolder.htmlTitle,
                 tagsHolder.tags,
-                postEditorData.extras)
+                postEditorData.extras
+            )
         } else {
             null
         }

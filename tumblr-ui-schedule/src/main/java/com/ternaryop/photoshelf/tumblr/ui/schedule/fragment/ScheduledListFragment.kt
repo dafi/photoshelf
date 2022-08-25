@@ -42,11 +42,14 @@ open class ScheduledListFragment(
         photoAdapter.onPhotoBrowseClick = this
         view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.post_future_background_color))
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is ScheduledListResult.Scheduled -> onFetchPosts(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is ScheduledListResult.Scheduled -> onFetchPosts(result)
+                }
             }
-        })
+        )
 
         if (blogName != null) {
             fetchPosts(true)
@@ -61,7 +64,8 @@ open class ScheduledListFragment(
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
 
         val params = mapOf(
-            "offset" to pageFetcher.pagingInfo.offset.toString())
+            "offset" to pageFetcher.pagingInfo.offset.toString()
+        )
 
         // we assume all returned items are photos, (we handle only photos)
         // if other posts type are returned, the getQueue() list size may be greater than photo list size

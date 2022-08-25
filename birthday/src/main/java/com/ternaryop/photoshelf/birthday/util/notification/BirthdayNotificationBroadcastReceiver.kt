@@ -28,8 +28,10 @@ class BirthdayNotificationBroadcastReceiver : BroadcastReceiver() {
         private fun clearBirthdays(context: Context): PendingIntent {
             val intent = Intent(context, BirthdayNotificationBroadcastReceiver::class.java)
                 .setAction(birthdayClearAction)
-            return PendingIntent.getBroadcast(context.applicationContext, 0, intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            return PendingIntent.getBroadcast(
+                context.applicationContext, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
         }
 
         fun notifyBirthdayAdded(context: Context, name: String, birthdate: Calendar) {

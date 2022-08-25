@@ -50,6 +50,7 @@ class DraftListFragment(
     SwipeRefreshLayout.OnRefreshListener,
     FragmentResultListener {
     private lateinit var queuedPosts: List<TumblrPost>
+
     @Inject
     lateinit var draftCache: DraftCache
     private val viewModel: DraftListViewModel by viewModels()
@@ -84,11 +85,14 @@ class DraftListFragment(
             this
         )
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is DraftListModelResult.FetchPosts -> onFetchPosts(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is DraftListModelResult.FetchPosts -> onFetchPosts(result)
+                }
             }
-        })
+        )
 
         parentFragmentManager.setFragmentResultListener(TAG_NAVIGATOR_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
         parentFragmentManager.setFragmentResultListener(TAG_SCHEDULE_DIALOG_REQUEST_KEY, viewLifecycleOwner, this)
@@ -127,8 +131,8 @@ class DraftListFragment(
             R.id.action_tag_navigator -> {
                 TagNavigatorDialog.newInstance(
                     photoAdapter.tagArrayList(),
-                    TAG_NAVIGATOR_DIALOG_REQUEST_KEY)
-                    .show(parentFragmentManager, FRAGMENT_TAG_NAVIGATOR)
+                    TAG_NAVIGATOR_DIALOG_REQUEST_KEY
+                ).show(parentFragmentManager, FRAGMENT_TAG_NAVIGATOR)
                 return true
             }
             else -> return super.onMenuItemSelected(item)
@@ -170,7 +174,8 @@ class DraftListFragment(
                         refreshHolder.progressIndicator.text = requireContext().resources.getQuantityString(
                             R.plurals.posts_read_count,
                             progressData.itemCount,
-                            progressData.itemCount)
+                            progressData.itemCount
+                        )
                     }
                     refreshHolder.advanceProgressIndicator()
                 }
@@ -187,7 +192,8 @@ class DraftListFragment(
         val blogName = blogName ?: return
         launch {
             postActionExecutor.execute(
-                PostAction.Schedule(blogName, schedulePostData.post, schedulePostData.dateTime))
+                PostAction.Schedule(blogName, schedulePostData.post, schedulePostData.dateTime)
+            )
             dialog.dismiss()
         }
     }

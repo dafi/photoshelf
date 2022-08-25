@@ -27,7 +27,8 @@ class PostPublisherService(appContext: Context, workerParams: WorkerParameters) 
                     this,
                     data.postTags,
                     getString(R.string.upload_error_ticker),
-                    data.url.hashCode())
+                    data.url.hashCode()
+                )
             }
         }
         return Result.success()
@@ -45,7 +46,8 @@ class PostPublisherService(appContext: Context, workerParams: WorkerParameters) 
         } catch (e: Exception) {
             val retryIntent = RetryPublishNotificationBroadcastReceiver.createIntent(
                 applicationContext,
-                data)
+                data
+            )
             with(applicationContext) {
                 e.notify(this, data.postTags, getString(R.string.retry), retryIntent, data.url.hashCode())
             }

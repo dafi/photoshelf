@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+
 package com.ternaryop.photoshelf.di
 
 import android.app.Application
@@ -26,7 +27,8 @@ object TumblrModule {
         PostActionExecutorImpl(
             tumblr,
             tumblrPostCacheDAO,
-            ApiManager.postService())
+            ApiManager.postService()
+        )
 
     @Singleton
     @Provides

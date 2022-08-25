@@ -28,7 +28,8 @@ class NewTumblrPostEditor(
     tagsHolder: TagsHolder,
     mruHolder: MRUHolder
 ) : DefaultLifecycleObserver,
-    AbsTumblrPostEditor(titleHolder, tagsHolder, mruHolder), CoroutineScope {
+    AbsTumblrPostEditor(titleHolder, tagsHolder, mruHolder),
+    CoroutineScope {
     private val job = Job()
     private lateinit var blogList: BlogList
     private var menuItems: Array<MenuItem>? = null
@@ -36,19 +37,23 @@ class NewTumblrPostEditor(
         get() = job + Dispatchers.Main
 
     override fun setupUI(actionBar: ActionBar?, view: View) {
-        blogList = BlogList(view.context, view.findViewById(R.id.blog),
+        blogList = BlogList(
+            view.context,
+            view.findViewById(R.id.blog),
             object : BlogList.OnBlogItemSelectedListener() {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                     tagsHolder.updateBlogName(blogList.selectedBlogName)
                     actionBar?.subtitle = blogList.selectedBlogName
                 }
-            })
+            }
+        )
 
         val size = newPostDialogData.imageUrls.size
         actionBar?.title = view.context.resources.getQuantityString(
             R.plurals.post_image,
             size,
-            size)
+            size
+        )
 
         val fetchBlogsListener = object : OnFetchBlogsListener {
             override fun onStartFetchBlog(blogList: BlogList) = enableMenuItems(false)
@@ -90,7 +95,8 @@ class NewTumblrPostEditor(
             newPostDialogData.imageUrls,
             blogList.selectedBlogName,
             titleHolder.htmlTitle,
-            tagsHolder.tags)
+            tagsHolder.tags
+        )
     }
 
     private fun enableMenuItems(enable: Boolean) {

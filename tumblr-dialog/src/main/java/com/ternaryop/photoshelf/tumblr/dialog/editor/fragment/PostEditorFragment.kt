@@ -87,12 +87,15 @@ class PostEditorFragment :
 
         preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        viewModel.result.observe(requireActivity(), EventObserver { result ->
-            when (result) {
-                is TumblrPostModelResult.TitleParsed -> onTitleParsed(result)
-                is TumblrPostModelResult.MisspelledInfo -> onMisspelledInfo(result)
+        viewModel.result.observe(
+            requireActivity(),
+            EventObserver { result ->
+                when (result) {
+                    is TumblrPostModelResult.TitleParsed -> onTitleParsed(result)
+                    is TumblrPostModelResult.MisspelledInfo -> onMisspelledInfo(result)
+                }
             }
-        })
+        )
 
         blogSpinner = view.findViewById(R.id.blog)
         refreshBlogButton = view.findViewById(R.id.refreshBlogList)
@@ -104,14 +107,21 @@ class PostEditorFragment :
         val maxMruItems = data.extras.getInt(
             preferences,
             EXTRA_MAX_TAGS_MRU_ITEMS,
-            resources.getInteger(R.integer.post_editor_max_mru_items))
+            resources.getInteger(R.integer.post_editor_max_mru_items)
+        )
         val maxHighlightedMruItems = data.extras.getInt(
             preferences,
             EXTRA_MAX_HIGHLIGHTED_TAGS_MRU_ITEMS,
-            resources.getInteger(R.integer.post_editor_max_highlighted_items))
+            resources.getInteger(R.integer.post_editor_max_highlighted_items)
+        )
 
-        val mruHolder = MRUHolder(requireContext(), view.findViewById(R.id.mru_list),
-            maxMruItems, maxHighlightedMruItems, tagsHolder)
+        val mruHolder = MRUHolder(
+            requireContext(),
+            view.findViewById(R.id.mru_list),
+            maxMruItems,
+            maxHighlightedMruItems,
+            tagsHolder
+        )
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
@@ -218,7 +228,7 @@ class PostEditorFragment :
                     .setMessage(error.localizedMessage)
                     .show()
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -226,8 +236,8 @@ class PostEditorFragment :
         isOptionsMenuEnabled = true
         when (result.command.status) {
             Status.SUCCESS -> result.command.data?.also { tumblrPostAction.tagsHolder.highlightTagName(it) }
-            Status.ERROR -> { }
-            Status.PROGRESS -> { }
+            Status.ERROR -> {}
+            Status.PROGRESS -> {}
         }
     }
 

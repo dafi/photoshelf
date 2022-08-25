@@ -152,7 +152,7 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
                 val versionName = packageInfo.versionName
                 val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
                 "$versionName build $versionCode"
-            } catch (e: Exception) {
+            } catch (ignored: Exception) {
                 "N/A"
             }
         }

@@ -56,9 +56,9 @@ object GoogleCustomSearchClient {
         builder.interceptors().add(interceptor)
 
         Retrofit.Builder()
-                .baseUrl(API_PREFIX)
-                .addConverterFactory(MoshiConverterFactory.create(moshi))
-                .client(builder.build())
-                .build()
+            .baseUrl(API_PREFIX)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(builder.build())
+            .build()
     }
 }

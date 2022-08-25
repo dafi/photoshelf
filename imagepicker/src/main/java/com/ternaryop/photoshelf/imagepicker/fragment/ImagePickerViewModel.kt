@@ -37,8 +37,11 @@ class ImagePickerViewModel @Inject constructor(
                     imageGalleryRepository.retrieveImageUri(imageInfo, destDirectory)?.let {
                         uriList.add(Pair(imageInfo, it))
                     }
-                    postResult(ImagePickerModelResult.ImageList(
-                        Command.progress(ProgressData(index, imageInfoList.size))))
+                    postResult(
+                        ImagePickerModelResult.ImageList(
+                            Command.progress(ProgressData(index, imageInfoList.size))
+                        )
+                    )
                 }
                 uriList
             }

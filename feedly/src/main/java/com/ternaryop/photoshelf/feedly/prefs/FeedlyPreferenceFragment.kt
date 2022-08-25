@@ -7,8 +7,8 @@ import android.os.Bundle
 import com.ternaryop.photoshelf.feedly.R
 import com.ternaryop.preference.AppPreferenceFragment
 
-class FeedlyPreferenceFragment
-    : AppPreferenceFragment() {
+class FeedlyPreferenceFragment :
+    AppPreferenceFragment() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.feedly_settings, rootKey)

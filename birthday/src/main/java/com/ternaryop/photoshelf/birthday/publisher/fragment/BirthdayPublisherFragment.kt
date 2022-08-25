@@ -65,8 +65,10 @@ class BirthdayPublisherFragment(
         birthdayPhotoAdapter = BirthdayPhotoAdapter(requireContext())
         birthdayPhotoAdapter.onPhotoBrowseClick = this
 
-        val layout = AutofitGridLayoutManager(requireContext(),
-            resources.getDimension(R.dimen.grid_layout_thumb_width).toInt())
+        val layout = AutofitGridLayoutManager(
+            requireContext(),
+            resources.getDimension(R.dimen.grid_layout_thumb_width).toInt()
+        )
         val gridView = rootView.findViewById<RecyclerView>(R.id.gridview)
         gridView.adapter = birthdayPhotoAdapter
         gridView.setHasFixedSize(true)
@@ -79,11 +81,14 @@ class BirthdayPublisherFragment(
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is BirthdayPublisherModelResult.ListByDate -> onBirthdayList(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is BirthdayPublisherModelResult.ListByDate -> onBirthdayList(result)
+                }
             }
-        })
+        )
 
         return rootView
     }
@@ -138,10 +143,13 @@ class BirthdayPublisherFragment(
         }
 
         BirthdayPublisherService.startPublish(
-            requireContext(), selectedBirthdays, requireBlogName, publishAsDraft)
-        Toast.makeText(requireContext(),
+            requireContext(), selectedBirthdays, requireBlogName, publishAsDraft
+        )
+        Toast.makeText(
+            requireContext(),
             getString(R.string.sending_cake_title, TextUtils.join(", ", names)),
-            Toast.LENGTH_LONG).show()
+            Toast.LENGTH_LONG
+        ).show()
         mode.finish()
     }
 
@@ -179,7 +187,8 @@ class BirthdayPublisherFragment(
             R.plurals.selected_items_total,
             selectionCount,
             selectionCount,
-            birthdayPhotoAdapter.itemCount)
+            birthdayPhotoAdapter.itemCount
+        )
     }
 
     override fun onThumbnailImageClick(position: Int) {
@@ -187,7 +196,8 @@ class BirthdayPublisherFragment(
         val intent = imageViewerActivityStarter.tagPhotoBrowserIntent(
             requireContext(),
             TagPhotoBrowserData(blogName, birthdate.name, false),
-            true)
+            true
+        )
         activityResult.launch(intent)
     }
 
@@ -206,7 +216,8 @@ class BirthdayPublisherFragment(
             R.plurals.selected_items_total,
             1,
             1,
-            birthdayPhotoAdapter.itemCount)
+            birthdayPhotoAdapter.itemCount
+        )
         mode.menuInflater.inflate(R.menu.birthday_publisher_context, menu)
         birthdayPhotoAdapter.isShowButtons = true
         birthdayPhotoAdapter.notifyItemRangeChanged(0, birthdayPhotoAdapter.itemCount)

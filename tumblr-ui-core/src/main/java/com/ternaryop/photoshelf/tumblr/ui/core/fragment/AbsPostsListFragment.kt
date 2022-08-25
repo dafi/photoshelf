@@ -85,7 +85,8 @@ abstract class AbsPostsListFragment(
         intArrayOf(R.id.post_edit, R.id.group_menu_image_dimension, R.id.show_post)
     }
 
-    @Inject lateinit var postActionExecutor: PostActionExecutor
+    @Inject
+    lateinit var postActionExecutor: PostActionExecutor
     private lateinit var postActionColorItemDecoration: PostActionColorItemDecoration
 
     protected abstract val actionModeMenuId: Int
@@ -110,8 +111,8 @@ abstract class AbsPostsListFragment(
         recyclerView.addItemDecoration(postActionColorItemDecoration)
         view.findViewById<View>(R.id.scroll_buttons)?.also {
             val visibilityDuration = arguments?.getLong(
-                ARG_QUICK_LIST_NAVIGATOR_VISIBILITY_DURATION, QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION)
-                ?: QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION
+                ARG_QUICK_LIST_NAVIGATOR_VISIBILITY_DURATION, QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION
+            ) ?: QUICK_LIST_NAVIGATOR_DEFAULT_VISIBILITY_DURATION
             recyclerView.addOnScrollListener(QuickListNavigatorScrollListener(it, visibilityDuration))
         }
 
@@ -212,20 +213,26 @@ abstract class AbsPostsListFragment(
         supportActionBar?.subtitle = resources.getQuantityString(
             R.plurals.posts_count,
             photoAdapter.itemCount,
-            photoAdapter.itemCount)
+            photoAdapter.itemCount
+        )
     }
 
     override fun onTagClick(position: Int, clickedTag: String) {
         requireContext().startActivity(
-            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
-            TagPhotoBrowserData(blogName, clickedTag, false)))
+            imageViewerActivityStarter.tagPhotoBrowserIntent(
+                requireContext(),
+                TagPhotoBrowserData(blogName, clickedTag, false)
+            )
+        )
     }
 
     override fun onThumbnailImageClick(position: Int) {
         val post = photoAdapter.getItem(position)
         val altSize = checkNotNull(post.firstPhotoAltSize)
-        imageViewerActivityStarter.startImageViewer(requireContext(),
-            ImageViewerData(altSize[0].url, post.caption, post.firstTag))
+        imageViewerActivityStarter.startImageViewer(
+            requireContext(),
+            ImageViewerData(altSize[0].url, post.caption, post.firstTag)
+        )
     }
 
     override fun onOverflowClick(position: Int, view: View) {
@@ -268,9 +275,10 @@ abstract class AbsPostsListFragment(
             updateMenuItems()
             val selectionCount = selection.itemCount
             actionMode?.subtitle = resources.getQuantityString(
-                    R.plurals.selected_items,
-                    selectionCount,
-                    selectionCount)
+                R.plurals.selected_items,
+                selectionCount,
+                selectionCount
+            )
         }
     }
 
@@ -306,10 +314,13 @@ abstract class AbsPostsListFragment(
     private fun browseImageBySize(photo: PhotoShelfPost) {
         val title = getString(R.string.menu_header_show_image, photo.firstTag)
         BottomMenuSheetDialogFragment()
-            .apply { arguments = bundleOf(
-                BottomMenuSheetDialogFragment.ARG_TITLE to title,
-                BottomMenuSheetDialogFragment.ARG_SUBTITLE to photo.postId.toString(),
-                ImageBrowserBottomMenuListener.ARG_PHOTO_POST to photo) }
+            .apply {
+                arguments = bundleOf(
+                    BottomMenuSheetDialogFragment.ARG_TITLE to title,
+                    BottomMenuSheetDialogFragment.ARG_SUBTITLE to photo.postId.toString(),
+                    ImageBrowserBottomMenuListener.ARG_PHOTO_POST to photo
+                )
+            }
             .show(childFragmentManager, FRAGMENT_IMAGE_BROWSER)
     }
 
@@ -360,13 +371,16 @@ abstract class AbsPostsListFragment(
             return
         }
         selectPosts(errorList)
-        DialogUtils.showSimpleMessageDialog(requireContext(),
+        DialogUtils.showSimpleMessageDialog(
+            requireContext(),
             R.string.generic_error,
             requireContext().resources.getQuantityString(
                 R.plurals.general_posts_error,
                 errorList.size,
                 errorList[errorList.size - 1].error?.message,
-                errorList.size))
+                errorList.size
+            )
+        )
     }
 
     private fun selectPosts(results: List<PostActionResult>) {
@@ -413,8 +427,11 @@ abstract class AbsPostsListFragment(
             item.caption,
             item.caption,
             item.tags,
-            mapOf(PHOTO_POST_ID to item.postId,
-                EXTRA_THUMBNAILS_ITEMS to listOf(item.getClosestPhotoByWidth(IMAGE_WIDTH_75)?.url)))
+            mapOf(
+                PHOTO_POST_ID to item.postId,
+                EXTRA_THUMBNAILS_ITEMS to listOf(item.getClosestPhotoByWidth(IMAGE_WIDTH_75)?.url)
+            )
+        )
         activityResult.launch(data)
     }
 

@@ -91,14 +91,16 @@ class BirthdayBrowserFragment(
         val searchView = view.findViewById<SearchView>(R.id.searchView1)
 
         // Set up the query listener that executes the search
-        searchView.setOnQueryTextListener(DebouncingQueryTextListener(DEBOUNCE_TIMEOUT_MILLIS) { pattern ->
-            // this is called after rotation so we ensure the find runs only when the pattern changes
-            if (adapter.pattern != pattern) {
-                adapter.pattern = pattern
-                viewModel.pageFetcher.clear()
-                viewModel.find(BirthdayBrowserModelResult.ActionId.QUERY_BY_TYPING, adapter.pattern, false)
+        searchView.setOnQueryTextListener(
+            DebouncingQueryTextListener(DEBOUNCE_TIMEOUT_MILLIS) { pattern ->
+                // this is called after rotation so we ensure the find runs only when the pattern changes
+                if (adapter.pattern != pattern) {
+                    adapter.pattern = pattern
+                    viewModel.pageFetcher.clear()
+                    viewModel.find(BirthdayBrowserModelResult.ActionId.QUERY_BY_TYPING, adapter.pattern, false)
+                }
             }
-        })
+        )
 
         savedInstanceState?.apply {
             getString(PARAM_LAST_PATTERN)?.also { adapter.pattern = it }
@@ -106,17 +108,20 @@ class BirthdayBrowserFragment(
             viewModel.find(BirthdayBrowserModelResult.ActionId.RESUBMIT_QUERY, adapter.pattern, true)
         }
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is BirthdayBrowserModelResult.Find -> when (result.actionId) {
-                    BirthdayBrowserModelResult.ActionId.QUERY_BY_TYPING -> onQueryByTyping(result)
-                    BirthdayBrowserModelResult.ActionId.RESUBMIT_QUERY -> onResubmitQuery(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is BirthdayBrowserModelResult.Find -> when (result.actionId) {
+                        BirthdayBrowserModelResult.ActionId.QUERY_BY_TYPING -> onQueryByTyping(result)
+                        BirthdayBrowserModelResult.ActionId.RESUBMIT_QUERY -> onResubmitQuery(result)
+                    }
+                    is BirthdayBrowserModelResult.MarkAsIgnored -> onMarkAsIgnored(result)
+                    is BirthdayBrowserModelResult.UpdateByName -> onUpdateByName(result)
+                    is BirthdayBrowserModelResult.DeleteBirthday -> onDeleteBirthdays(result)
                 }
-                is BirthdayBrowserModelResult.MarkAsIgnored -> onMarkAsIgnored(result)
-                is BirthdayBrowserModelResult.UpdateByName -> onUpdateByName(result)
-                is BirthdayBrowserModelResult.DeleteBirthday -> onDeleteBirthdays(result)
             }
-        })
+        )
 
         setupActionBar()
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -147,7 +152,7 @@ class BirthdayBrowserFragment(
                 }
             }
             Status.ERROR -> result.command.error?.also { it.showErrorDialog(requireContext()) }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -159,8 +164,8 @@ class BirthdayBrowserFragment(
                     scrollToFirstTodayBirthday()
                 }
             }
-            Status.ERROR -> { }
-            Status.PROGRESS -> { }
+            Status.ERROR -> {}
+            Status.PROGRESS -> {}
         }
     }
 
@@ -230,14 +235,18 @@ class BirthdayBrowserFragment(
             }
         }
         val message = when (postAction) {
-            ItemAction.DELETE -> resources.getQuantityString(R.plurals.delete_items_confirm,
+            ItemAction.DELETE -> resources.getQuantityString(
+                R.plurals.delete_items_confirm,
                 birthdays.size,
                 birthdays.size,
-                birthdays[0].name)
-            ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(R.plurals.update_items_confirm,
+                birthdays[0].name
+            )
+            ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(
+                R.plurals.update_items_confirm,
                 birthdays.size,
                 birthdays.size,
-                birthdays[0].name)
+                birthdays[0].name
+            )
         }
 
         AlertDialog.Builder(requireContext())
@@ -256,7 +265,7 @@ class BirthdayBrowserFragment(
         when (result.command.status) {
             Status.SUCCESS -> result.command.data?.also { adapter.updateItems(it) }
             Status.ERROR -> result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -264,7 +273,7 @@ class BirthdayBrowserFragment(
         when (result.command.status) {
             Status.SUCCESS -> result.command.data?.also { adapter.updateItems(listOf(it)) }
             Status.ERROR -> result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -280,7 +289,7 @@ class BirthdayBrowserFragment(
                 result.command.data?.also { adapter.removeItems(it) }
                 result.command.error?.also { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -358,7 +367,8 @@ class BirthdayBrowserFragment(
         } else {
             // check if view is already added (eg when the overflow menu is opened)
             if (viewModel.showFlags.isOn(BirthdayShowFlags.SHOW_ALL) &&
-                fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1) {
+                fragmentActivityStatus.drawerToolbar.indexOfChild(toolbarSpinner) == -1
+            ) {
                 fragmentActivityStatus.drawerToolbar.addView(toolbarSpinner)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
             }
@@ -379,14 +389,17 @@ class BirthdayBrowserFragment(
         val monthAdapter = ArrayAdapter<String>(
             supportActionBar.themedContext,
             android.R.layout.simple_spinner_item,
-            months)
+            months
+        )
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         toolbarSpinner = LayoutInflater
             .from(supportActionBar.themedContext)
-            .inflate(R.layout.toolbar_spinner,
+            .inflate(
+                R.layout.toolbar_spinner,
                 fragmentActivityStatus.drawerToolbar,
-                false) as Spinner
+                false
+            ) as Spinner
         toolbarSpinner.adapter = monthAdapter
         toolbarSpinner.setSelection(Calendar.getInstance().month + 1)
         toolbarSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -447,7 +460,8 @@ class BirthdayBrowserFragment(
             actionMode?.subtitle = resources.getQuantityString(
                 R.plurals.selected_items,
                 selectionCount,
-                selectionCount)
+                selectionCount
+            )
         }
     }
 
@@ -472,8 +486,11 @@ class BirthdayBrowserFragment(
     private fun browsePhotos(position: Int) {
         val tag = adapter.getItem(position).name
         requireContext().startActivity(
-            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
-            TagPhotoBrowserData(requireBlogName, tag, false)))
+            imageViewerActivityStarter.tagPhotoBrowserIntent(
+                requireContext(),
+                TagPhotoBrowserData(requireBlogName, tag, false)
+            )
+        )
     }
 
     companion object {

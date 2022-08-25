@@ -21,8 +21,9 @@ class AssetManagerStreamContentReader(
 ) : StreamContentReader {
     override suspend fun read(feedlyClient: FeedlyClient): StreamContent = withContext(Dispatchers.IO) {
         assets.open(fileName).bufferedReader().use { stream ->
-                checkNotNull(Moshi.Builder().build().adapter(StreamContent::class.java)
-                .fromJson(stream.readText()))
+            checkNotNull(
+                Moshi.Builder().build().adapter(StreamContent::class.java).fromJson(stream.readText())
+            )
         }
     }
 }

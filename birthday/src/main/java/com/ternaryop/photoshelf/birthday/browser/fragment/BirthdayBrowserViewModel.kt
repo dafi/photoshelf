@@ -32,12 +32,14 @@ class BirthdayBrowserViewModel @Inject constructor() : PhotoShelfViewModel<Birth
     }
 
     fun markAsIgnored(list: List<Birthday>) {
-        processList(list,
+        processList(
+            list,
             { birthday ->
                 ApiManager.birthdayService().markAsIgnored(birthday.name)
                 birthday.birthdate = null
             },
-            { command -> postResult(BirthdayBrowserModelResult.MarkAsIgnored(command)) })
+            { command -> postResult(BirthdayBrowserModelResult.MarkAsIgnored(command)) }
+        )
     }
 
     fun updateByName(birthday: Birthday) {
@@ -52,14 +54,16 @@ class BirthdayBrowserViewModel @Inject constructor() : PhotoShelfViewModel<Birth
     }
 
     fun deleteBirthdays(list: List<Birthday>) {
-        processList(list,
+        processList(
+            list,
             { birthday -> ApiManager.birthdayService().deleteByName(birthday.name) },
             { command ->
                 // data contains all successful processed items
                 // no matter if the command is Error or Success
                 command.data?.also { pageFetcher.removeItems(it) }
                 postResult(BirthdayBrowserModelResult.DeleteBirthday(command))
-            })
+            }
+        )
     }
 
     private fun processList(

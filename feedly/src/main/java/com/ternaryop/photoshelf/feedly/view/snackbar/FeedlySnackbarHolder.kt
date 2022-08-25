@@ -23,12 +23,14 @@ class FeedlySnackbarHolder(
                 view,
                 view.context.getString(R.string.token_expired),
                 view.context.getString(R.string.refresh),
-                expiredTokenAction)
+                expiredTokenAction
+            )
         } else {
             build(
                 view,
                 t?.localizedMessage,
                 view.context.getString(R.string.refresh),
-                refreshAction)
+                refreshAction
+            )
         }
 }

@@ -11,7 +11,8 @@ import androidx.preference.PreferenceFragmentCompat
  * Base class for preference fragments
  * See {@link https://github.com/madlymad/PreferenceApp}
  */
-abstract class AppPreferenceFragment : PreferenceFragmentCompat(),
+abstract class AppPreferenceFragment :
+    PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -12,6 +12,7 @@ import com.ternaryop.photoshelf.api.post.TagInfo
 import com.ternaryop.photoshelf.tagnavigator.R
 import com.ternaryop.utils.text.fromHtml
 import com.ternaryop.utils.text.htmlHighlightPattern
+import java.util.Locale
 
 /**
  * Used with spinners because the RecyclerView version isn't compatible with ListView
@@ -46,7 +47,7 @@ class TagNavigatorArrayAdapter(context: Context, val resource: Int, var blogName
         } else {
             tagInfo.tag.htmlHighlightPattern(pattern.toString()).fromHtml()
         }
-        countView.text = String.format("%3d", tagInfo.postCount)
+        countView.text = String.format(Locale.US, "%3d", tagInfo.postCount)
         return inflatedView
     }
 

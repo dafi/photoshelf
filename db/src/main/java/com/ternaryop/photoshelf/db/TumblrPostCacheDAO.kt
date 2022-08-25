@@ -16,15 +16,20 @@ class TumblrPostCacheDAO internal constructor(
 
     override fun onCreate(db: SQLiteDatabase) {
         val sql = "CREATE TABLE tumblr_post_cache(" +
-                "_id                    TEXT NOT NULL," +
-                "blog_name              TEXT NOT NULL," +
-                "cache_type             INTEGER NOT NULL," +
-                "post_timestamp         INT UNSIGNED NOT NULL," +
-                "post_object            BLOB NOT NULL," +
-                "PRIMARY KEY(_id))"
+            "_id                    TEXT NOT NULL," +
+            "blog_name              TEXT NOT NULL," +
+            "cache_type             INTEGER NOT NULL," +
+            "post_timestamp         INT UNSIGNED NOT NULL," +
+            "post_object            BLOB NOT NULL," +
+            "PRIMARY KEY(_id))"
         db.execSQL(sql)
-        db.execSQL(String.format("CREATE INDEX %1\$s_%2\$s_%3\$s_IDX ON %1\$s(%2\$s, %3\$s);",
-            TABLE_NAME, BLOG_NAME, CACHE_TYPE))
+        db.execSQL(
+            String.format(
+                Locale.US,
+                "CREATE INDEX %1\$s_%2\$s_%3\$s_IDX ON %1\$s(%2\$s, %3\$s);",
+                TABLE_NAME, BLOG_NAME, CACHE_TYPE
+            )
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

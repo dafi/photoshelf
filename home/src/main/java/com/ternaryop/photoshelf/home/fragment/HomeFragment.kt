@@ -35,11 +35,14 @@ class HomeFragment : AbsPhotoShelfFragment() {
 
         setupLogButton(view)
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is HomeModelResult.Stats -> onStats(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is HomeModelResult.Stats -> onStats(result)
+                }
             }
-        })
+        )
         refresh()
     }
 

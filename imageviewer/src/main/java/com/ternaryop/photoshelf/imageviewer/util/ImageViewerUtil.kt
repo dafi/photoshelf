@@ -110,9 +110,10 @@ object ImageViewerUtil {
     }
 
     private fun getPicturesDirectory(relativePath: File): File {
-        val fullDirPath = File(Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES),
-            relativePath.path)
+        val fullDirPath = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            relativePath.path
+        )
         if (!fullDirPath.exists()) {
             fullDirPath.mkdirs()
         }

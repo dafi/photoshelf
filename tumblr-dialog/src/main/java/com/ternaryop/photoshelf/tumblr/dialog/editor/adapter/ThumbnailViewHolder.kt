@@ -27,9 +27,15 @@ class ThumbnailViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun setImageDimension(width: Int, height: Int) {
         // convert from pixel to DIP
-        thumbImage.layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            width.toFloat(), itemView.context.resources.displayMetrics).toInt()
-        thumbImage.layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            height.toFloat(), itemView.context.resources.displayMetrics).toInt()
+        thumbImage.layoutParams.width = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            width.toFloat(),
+            itemView.context.resources.displayMetrics
+        ).toInt()
+        thumbImage.layoutParams.height = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            height.toFloat(),
+            itemView.context.resources.displayMetrics
+        ).toInt()
     }
 }

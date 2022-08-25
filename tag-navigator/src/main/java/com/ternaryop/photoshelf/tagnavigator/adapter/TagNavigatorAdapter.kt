@@ -29,8 +29,9 @@ class TagNavigatorAdapter(
     private var tagFilter: TagNavigatorFilter? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagNavigatorViewHolder {
-        return TagNavigatorViewHolder(LayoutInflater.from(context)
-            .inflate(R.layout.tag_navigator_row, parent, false))
+        return TagNavigatorViewHolder(
+            LayoutInflater.from(context).inflate(R.layout.tag_navigator_row, parent, false)
+        )
     }
 
     override fun getItemCount(): Int {

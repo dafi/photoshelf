@@ -15,6 +15,7 @@ object ImageLoader {
             ImageLoader.Builder(context)
                 .error(R.drawable.ic_sync_problem_black_24dp)
                 .allowHardware(prefs.getBoolean(PREF_USE_HARDWARE_IMAGES, true))
-                .build())
+                .build()
+        )
     }
 }

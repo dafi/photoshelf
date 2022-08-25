@@ -41,11 +41,11 @@ class BirthdayShowFlags {
     suspend fun find(pattern: String, month: Int, offset: Int, limit: Int): Response<BirthdayResult> {
         val params = FindParams(name = pattern, month = month + 1, offset = offset, limit = limit).toQueryMap()
         return when {
-                isShowIgnored -> wrapBirthdayResult(birthdayService.findIgnored(params))
-                isShowInSameDay -> birthdayService.findSameDay(params)
-                isShowMissing -> wrapBirthdayResult((birthdayService.findMissingNames(params)))
-                isWithoutPost -> birthdayService.findOrphans(params)
-                else -> birthdayService.findByDate(params)
+            isShowIgnored -> wrapBirthdayResult(birthdayService.findIgnored(params))
+            isShowInSameDay -> birthdayService.findSameDay(params)
+            isShowMissing -> wrapBirthdayResult((birthdayService.findMissingNames(params)))
+            isWithoutPost -> birthdayService.findOrphans(params)
+            else -> birthdayService.findByDate(params)
         }
     }
 

@@ -32,7 +32,9 @@ class BirthdayPublisherViewModel @Inject constructor() : PhotoShelfViewModel<Bir
                         month = birthday.month + 1,
                         dayOfMonth = birthday.dayOfMonth,
                         pickImages = true,
-                        blogName = blogName).toQueryMap())
+                        blogName = blogName
+                    ).toQueryMap()
+                )
                     .response
                     .birthdays?.toMutableList()
                 birthdays
@@ -54,7 +56,8 @@ class BirthdayPublisherViewModel @Inject constructor() : PhotoShelfViewModel<Bir
         items[index] = Birthday(
             birthdayInfo.name,
             birthdayInfo.birthdate,
-            newPost.firstPhotoAltSize?.map { ImageSize(it.width, it.height, it.url) })
+            newPost.firstPhotoAltSize?.map { ImageSize(it.width, it.height, it.url) }
+        )
 
         return items[index]
     }

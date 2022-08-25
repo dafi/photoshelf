@@ -20,8 +20,9 @@ class MRUAdapter(
     var onMRUListener: OnMRUListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MRUViewHolder {
-        return MRUViewHolder(LayoutInflater.from(context)
-            .inflate(R.layout.mru_list_row, parent, false))
+        return MRUViewHolder(
+            LayoutInflater.from(context).inflate(R.layout.mru_list_row, parent, false)
+        )
     }
 
     override fun onBindViewHolder(holder: MRUViewHolder, position: Int) {

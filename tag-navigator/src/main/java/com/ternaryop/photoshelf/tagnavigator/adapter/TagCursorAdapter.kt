@@ -21,8 +21,10 @@ class TagCursorAdapter(
     private val context: Context,
     resId: Int,
     var blogName: String
-) : SimpleCursorAdapter(context, resId, null, arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1),
-    intArrayOf(android.R.id.text1), 0), SimpleCursorAdapter.ViewBinder {
+) : SimpleCursorAdapter(
+    context, resId, null, arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1), intArrayOf(android.R.id.text1), 0
+),
+    SimpleCursorAdapter.ViewBinder {
 
     private var pattern = ""
 
@@ -40,8 +42,10 @@ class TagCursorAdapter(
         val countColumnIndex = cursor.getColumnIndexOrThrow(SearchManager.SUGGEST_COLUMN_INTENT_DATA)
         val postCount = cursor.getInt(countColumnIndex)
         (view as TextView).text = when {
-            pattern.isEmpty() -> context.getString(R.string.tag_with_post_count,
-                cursor.getString(columnIndex), postCount)
+            pattern.isEmpty() -> context.getString(
+                R.string.tag_with_post_count,
+                cursor.getString(columnIndex), postCount
+            )
             else -> {
                 val htmlHighlightPattern = cursor.getString(columnIndex).htmlHighlightPattern(pattern)
                 context.getString(R.string.tag_with_post_count, htmlHighlightPattern, postCount).fromHtml()
@@ -64,6 +68,7 @@ class TagCursorAdapter(
         private val COLUMNS = arrayOf(
             BaseColumns._ID,
             SearchManager.SUGGEST_COLUMN_TEXT_1,
-            SearchManager.SUGGEST_COLUMN_INTENT_DATA)
+            SearchManager.SUGGEST_COLUMN_INTENT_DATA
+        )
     }
 }

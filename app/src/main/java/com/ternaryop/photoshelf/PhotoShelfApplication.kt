@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+
 package com.ternaryop.photoshelf
 
 import android.app.Application
@@ -33,23 +34,32 @@ class PhotoShelfApplication : Application() {
         TumblrManager.setup(
             getString(R.string.TUMBLR_CONSUMER_KEY),
             getString(R.string.TUMBLR_CONSUMER_SECRET),
-            getString(R.string.TUMBLR_CALLBACK_URL))
+            getString(R.string.TUMBLR_CALLBACK_URL)
+        )
         DropboxManager.setup(
             getString(R.string.DROPBOX_APP_KEY),
-            resources.getString(R.string.dropbox_client_identifier))
+            resources.getString(R.string.dropbox_client_identifier)
+        )
         val okHttpClient = if (BuildConfig.DEBUG) OkHttpUtil.debugHttpClient() else null
         ApiManager
-            .setup(PreferenceManager.getDefaultSharedPreferences(this)
-            .photoShelfApikey, BuildConfig.PHOTOSHELF_API_PREFIX, okHttpClient)
-        FeedlyClient.setup(FeedlyClientInfo(
-            getString(R.string.FEEDLY_USER_ID),
-            getString(R.string.FEEDLY_REFRESH_TOKEN),
-            getString(R.string.FEEDLY_CLIENT_ID),
-            getString(R.string.FEEDLY_CLIENT_SECRET)), okHttpClient)
+            .setup(
+                PreferenceManager.getDefaultSharedPreferences(this).photoShelfApikey,
+                BuildConfig.PHOTOSHELF_API_PREFIX, okHttpClient
+            )
+        FeedlyClient.setup(
+            FeedlyClientInfo(
+                getString(R.string.FEEDLY_USER_ID),
+                getString(R.string.FEEDLY_REFRESH_TOKEN),
+                getString(R.string.FEEDLY_CLIENT_ID),
+                getString(R.string.FEEDLY_CLIENT_SECRET)
+            ),
+            okHttpClient
+        )
         GoogleCustomSearchClient.setup(
             getString(R.string.GOOGLE_CSE_APIKEY),
             getString(R.string.GOOGLE_CSE_CX),
-            okHttpClient)
+            okHttpClient
+        )
 
         if (BuildConfig.DEBUG) {
             PhotoShelfApplicationEnv.debugSetup(this)

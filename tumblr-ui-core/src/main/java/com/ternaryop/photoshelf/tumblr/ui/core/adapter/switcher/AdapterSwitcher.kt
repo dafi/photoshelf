@@ -8,7 +8,7 @@ import com.ternaryop.photoshelf.tumblr.ui.core.adapter.ViewType
 
 private const val PREF_VIEW_TYPE = "photo_adapter_view_type"
 
-class AdapterSwitcher<T: RecyclerView.Adapter<RecyclerView.ViewHolder>>(
+class AdapterSwitcher<T : RecyclerView.Adapter<RecyclerView.ViewHolder>>(
     val context: Context,
     val adapterGroup: AdapterGroup<T>,
     val onSwitchView: OnSwitchView<T>?

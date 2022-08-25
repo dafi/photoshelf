@@ -27,7 +27,8 @@ class ImageBrowserBottomMenuListener(
         val post = post(sheet) ?: return
         val list = post.firstPhotoAltSize ?: return
         val altSize = list[item.itemId]
-        imageViewerActivityStarter.startImageViewer(sheet.requireContext(),
+        imageViewerActivityStarter.startImageViewer(
+            sheet.requireContext(),
             ImageViewerData(altSize.url, post.caption, post.firstTag)
         )
     }

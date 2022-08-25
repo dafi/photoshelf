@@ -15,11 +15,13 @@ private const val NOTIFICATION_ID_IMPORT_BIRTHDAY = 2
 suspend fun Importer.notifyImportBirthdaysFromWeb() {
     // ensure channel exists
     com.ternaryop.photoshelf.birthday.util.notification.createBirthdayChannel(context)
-    val progressNotification = ProgressNotification(context,
+    val progressNotification = ProgressNotification(
+        context,
         R.string.import_missing_birthdays_from_web_title,
         com.ternaryop.photoshelf.birthday.util.notification.BIRTHDAY_CHANNEL_ID,
         NOTIFICATION_ID_IMPORT_BIRTHDAY,
-        R.drawable.stat_notify_import_export)
+        R.drawable.stat_notify_import_export
+    )
 
     try {
         val info = importMissingBirthdaysFromWeb { info ->

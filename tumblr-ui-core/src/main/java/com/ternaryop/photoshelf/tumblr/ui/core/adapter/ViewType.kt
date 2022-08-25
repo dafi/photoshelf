@@ -10,9 +10,10 @@ enum class ViewType {
         editor.putInt(prefName, ordinal)
 
     companion object {
-        fun load(preferences: SharedPreferences,
-                 prefName: String,
-                 defaultValue: ViewType = List) =
-            values()[preferences.getInt(prefName, defaultValue.ordinal)]
+        fun load(
+            preferences: SharedPreferences,
+            prefName: String,
+            defaultValue: ViewType = List
+        ) = values()[preferences.getInt(prefName, defaultValue.ordinal)]
     }
 }

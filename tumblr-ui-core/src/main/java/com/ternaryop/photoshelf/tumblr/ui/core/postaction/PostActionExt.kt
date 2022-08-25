@@ -16,10 +16,12 @@ fun PostAction.getConfirmStringId(): Int {
 }
 
 fun PostAction.showConfirmDialog(context: Context, onOkCallback: (PostAction) -> Unit) {
-    val message = context.resources.getQuantityString(getConfirmStringId(),
+    val message = context.resources.getQuantityString(
+        getConfirmStringId(),
         postList.size,
         postList.size,
-        postList[0].firstTag)
+        postList[0].firstTag
+    )
     AlertDialog.Builder(context)
         .setMessage(message)
         .setPositiveButton(android.R.string.ok) { _, _ -> onOkCallback(this) }

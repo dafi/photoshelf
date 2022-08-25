@@ -32,7 +32,7 @@ abstract class AbsDAO<in Pojo>(val dbHelper: SQLiteOpenHelper) {
         val inClause = StringBuilder()
         var firstTime = true
 
-        for (i in 0 until parametersCount) {
+        for (ignored in 0 until parametersCount) {
             if (firstTime) {
                 firstTime = false
             } else {

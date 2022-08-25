@@ -109,13 +109,16 @@ class ImagePickerFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is ImagePickerModelResult.Gallery -> onGalleryModelResult(result)
-                is ImagePickerModelResult.ImageList -> onImageListModelResult(result)
-                is ImagePickerModelResult.Image -> onImageModelResult(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is ImagePickerModelResult.Gallery -> onGalleryModelResult(result)
+                    is ImagePickerModelResult.ImageList -> onImageListModelResult(result)
+                    is ImagePickerModelResult.Image -> onImageModelResult(result)
+                }
             }
-        })
+        )
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
         setupUI(view, requireContext())
@@ -132,7 +135,7 @@ class ImagePickerFragment(
         when (result.command.status) {
             Status.SUCCESS -> onGalleryRetrieved(result.command.data?.gallery)
             Status.ERROR -> showError(result.command.error, false)
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -158,7 +161,11 @@ class ImagePickerFragment(
         photoShelfSwipe.setRefreshingAndWaitingResult(false)
 
         if (showAlert) {
-            DialogUtils.showSimpleMessageDialog(requireContext(), R.string.url_not_found, error?.localizedMessage ?: "")
+            DialogUtils.showSimpleMessageDialog(
+                requireContext(),
+                R.string.url_not_found,
+                error?.localizedMessage ?: ""
+            )
         } else {
             snackbarHolder.show(gridView, error, resources.getString(R.string.refresh)) { refreshUI() }
         }
@@ -174,8 +181,10 @@ class ImagePickerFragment(
     }
 
     private fun setupUI(view: View, context: Context) {
-        val layoutManager = AutofitGridLayoutManager(context,
-            resources.getDimension(R.dimen.image_picker_grid_width).toInt())
+        val layoutManager = AutofitGridLayoutManager(
+            context,
+            resources.getDimension(R.dimen.image_picker_grid_width).toInt()
+        )
 
         // setup selectedItemsViewContainer before any other view to be sure the constraintLayout isn't modified
         // (e.g. if progressHighlightViewLayout.visibility is changed before its setup the new value is used)
@@ -205,7 +214,8 @@ class ImagePickerFragment(
         selectedItemsViewContainer = SelectedItemsViewContainer(
             context,
             view.findViewById(R.id.constraintlayout),
-            view.findViewById(R.id.selectedItems))
+            view.findViewById(R.id.selectedItems)
+        )
         selectedItemsViewContainer.adapter
             .setOnPhotoBrowseClick(object : OnPhotoBrowseClickMultiChoice {
                 override fun onItemClick(position: Int) {
@@ -253,10 +263,11 @@ class ImagePickerFragment(
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
         mode.title = getString(R.string.select_images)
         mode.subtitle = resources.getQuantityString(
-                R.plurals.selected_items_total,
-                1,
-                1,
-                imagePickerAdapter.itemCount)
+            R.plurals.selected_items_total,
+            1,
+            1,
+            imagePickerAdapter.itemCount
+        )
         mode.menuInflater.inflate(R.menu.image_picker_context, menu)
         imagePickerAdapter.showButtons = true
         imagePickerAdapter.notifyItemRangeChanged(0, imagePickerAdapter.itemCount)
@@ -321,7 +332,8 @@ class ImagePickerFragment(
                 imageGallery.titleParsed.tags,
                 mapOf(
                     EXTRA_THUMBNAILS_ITEMS to imageUriList.map { it.first.thumbnailUrl }
-                ))
+                )
+            )
             activityResult.launch(data)
         } catch (e: Exception) {
             e.showErrorDialog(requireContext())
@@ -337,8 +349,9 @@ class ImagePickerFragment(
         this.imageGallery = imageGallery
         showDetails(Snackbar.LENGTH_LONG)
         val imageInfoList = imageGallery.imageInfoList
-        supportActionBar?.subtitle = resources.getQuantityString(R.plurals.image_found,
-            imageInfoList.size, imageInfoList.size)
+        supportActionBar?.subtitle = resources.getQuantityString(
+            R.plurals.image_found, imageInfoList.size, imageInfoList.size
+        )
         imagePickerAdapter.addAll(imageInfoList)
     }
 
@@ -381,10 +394,11 @@ class ImagePickerFragment(
         } else {
             val selectionCount = selection.itemCount
             actionMode?.subtitle = resources.getQuantityString(
-                    R.plurals.selected_items_total,
-                    selectionCount,
-                    selectionCount,
-                    imagePickerAdapter.itemCount)
+                R.plurals.selected_items_total,
+                selectionCount,
+                selectionCount,
+                imagePickerAdapter.itemCount
+            )
         }
     }
 
@@ -420,7 +434,8 @@ class ImagePickerFragment(
             .forEach { url ->
                 PostPublisherService.startPublish(
                     requireContext(),
-                    resultData.toPostPublisherData(url, publishClassName.name))
+                    resultData.toPostPublisherData(url, publishClassName.name)
+                )
             }
     }
 }

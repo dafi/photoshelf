@@ -74,9 +74,6 @@ class ImagePickerAdapter(
         private val thumbImage = itemView.findViewById<View>(R.id.thumbnail_image) as CheckableImageView
         private val bgAction = itemView.findViewById<View>(R.id.bg_actions) as ImageView
 
-        private val thumbWidth = itemView.context.resources.getDimensionPixelOffset(R.dimen.image_picker_grid_width)
-        private val thumbHeight = itemView.context.resources.getDimensionPixelOffset(R.dimen.image_picker_grid_height)
-
         fun bindModel(imageInfo: ImageInfo, showButtons: Boolean, checked: Boolean) {
             setVisibility(showButtons)
             displayImage(imageInfo, checked)

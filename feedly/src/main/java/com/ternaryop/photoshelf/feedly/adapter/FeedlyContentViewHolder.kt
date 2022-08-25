@@ -12,6 +12,7 @@ import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.ternaryop.photoshelf.feedly.R
+import java.util.Locale
 
 private const val FAVICON_SIZE = 16
 private const val LIST_ITEM_STYLE_INDEX_VIEW_BACKGROUND = 0
@@ -55,10 +56,12 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
 
     private fun setImageDimension(size: Int) {
         // convert from pixel to DIP
-        faviconImage.layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            size.toFloat(), itemView.context.resources.displayMetrics).toInt()
-        faviconImage.layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            size.toFloat(), itemView.context.resources.displayMetrics).toInt()
+        faviconImage.layoutParams.width = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, size.toFloat(), itemView.context.resources.displayMetrics
+        ).toInt()
+        faviconImage.layoutParams.height = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, size.toFloat(), itemView.context.resources.displayMetrics
+        ).toInt()
     }
 
     private fun updateCheckbox(content: FeedlyContentDelegate) {
@@ -72,11 +75,13 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
 
         if (content.actionTimestamp == 0L) {
             subtitle.text = String.format(
+                Locale.US,
                 "%s / %s", content.origin.title,
                 content.getLastPublishTimestampAsString(itemView.context)
             )
         } else {
             subtitle.text = String.format(
+                Locale.US,
                 "%s / %s / %s", content.origin.title,
                 content.getActionTimestampAsString(itemView.context),
                 content.getLastPublishTimestampAsString(itemView.context)
@@ -89,7 +94,7 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
             tag.visibility = GONE
         } else {
             tag.visibility = VISIBLE
-            tag.text = String.format("#%s", content.tag)
+            tag.text = String.format(Locale.US, "#%s", content.tag)
         }
     }
 

@@ -27,7 +27,8 @@ class PostEditorActivity : AbsPhotoShelfActivity() {
 
     override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
-            classLoader, PostEditorFragment::class.java.name).apply {
+            classLoader, PostEditorFragment::class.java.name
+        ).apply {
             arguments = intent.extras
         }
 
@@ -47,8 +48,11 @@ class PostEditorActivity : AbsPhotoShelfActivity() {
             postEditorData: PostEditorData,
         ) = Intent(context, PostEditorActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            putExtras(bundleOf(
-                ARG_POST_DATA to postEditorData))
+            putExtras(
+                bundleOf(
+                    ARG_POST_DATA to postEditorData
+                )
+            )
         }
     }
 }

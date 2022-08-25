@@ -16,6 +16,7 @@ import com.ternaryop.photoshelf.api.post.toTagInfo
 import com.ternaryop.photoshelf.tagnavigator.R
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorAdapter
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorListener
+import java.util.Locale
 
 /**
  * Created by dave on 17/05/15.
@@ -38,16 +39,20 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = TagNavigatorAdapter(requireContext(),
+        adapter = TagNavigatorAdapter(
+            requireContext(),
             arguments?.getStringArrayList(ARG_TAG_LIST)?.toTagInfo() ?: emptyList(),
             "",
-            this)
+            this
+        )
         val tagList = view.findViewById<RecyclerView>(R.id.tag_list)
         tagList.setHasFixedSize(true)
         tagList.layoutManager = LinearLayoutManager(activity)
         tagList.adapter = adapter
 
-        view.findViewById<TextView>(R.id.distinct_tag_count).text = String.format("%d", adapter.itemCount)
+        view.findViewById<TextView>(R.id.distinct_tag_count).text = String.format(
+            Locale.US, "%d", adapter.itemCount
+        )
         view.findViewById<TextView>(R.id.distinct_tag_title).text = resources.getString(R.string.tag_navigator_distinct_title)
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -67,7 +72,8 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
     override fun onClick(item: TagInfo) {
         parentFragmentManager.setFragmentResult(
             checkNotNull(arguments?.getString(EXTRA_REQUEST_KEY)),
-            bundleOf(EXTRA_SELECTED_TAG to item.tag))
+            bundleOf(EXTRA_SELECTED_TAG to item.tag)
+        )
         dismiss()
     }
 
@@ -94,7 +100,8 @@ class TagNavigatorDialog : BottomSheetDialogFragment(), TagNavigatorListener {
         ) = TagNavigatorDialog().apply {
             arguments = bundleOf(
                 EXTRA_REQUEST_KEY to requestKey,
-                ARG_TAG_LIST to tagList)
+                ARG_TAG_LIST to tagList
+            )
         }
     }
 }

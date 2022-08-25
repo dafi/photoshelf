@@ -65,7 +65,8 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val isEven = date.dayOfMonth and 1 == 0
             itemView.setBackgroundResource(
                 if (isEven) R.drawable.list_selector_post_group_even
-                else R.drawable.list_selector_post_group_odd)
+                else R.drawable.list_selector_post_group_odd
+            )
         }
     }
 

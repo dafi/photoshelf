@@ -62,12 +62,15 @@ class TagPhotoBrowserFragment(
 
         photoShelfSwipe.setOnRefreshListener(null)
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is TagPhotoBrowserResult.FindTags -> onFindTagsModelResult(result)
-                is TagPhotoBrowserResult.Photos -> onPhotosModelResult(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is TagPhotoBrowserResult.FindTags -> onFindTagsModelResult(result)
+                    is TagPhotoBrowserResult.Photos -> onPhotosModelResult(result)
+                }
             }
-        })
+        )
 
         savedInstanceState?.also {
             postTag = it.getString(KEY_STATE_POST_TAG)
@@ -124,7 +127,8 @@ class TagPhotoBrowserFragment(
         val adapter = TagCursorAdapter(
             checkNotNull(supportActionBar).themedContext,
             R.layout.ab_simple_dropdown_item_1line,
-            requireBlogName)
+            requireBlogName
+        )
         searchView?.suggestionsAdapter = adapter
         return searchView
     }
@@ -190,8 +194,8 @@ class TagPhotoBrowserFragment(
                     }
                 }
             }
-            Status.ERROR -> { }
-            Status.PROGRESS -> { }
+            Status.ERROR -> {}
+            Status.PROGRESS -> {}
         }
     }
 
@@ -208,7 +212,7 @@ class TagPhotoBrowserFragment(
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
                 snackbarHolder.show(recyclerView, result.command.error)
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 

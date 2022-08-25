@@ -62,8 +62,8 @@ class FeedlyListFragment(
                 photoShelfSwipe.setRefreshingAndWaitingResult(true)
                 viewModel.refreshToken()
             },
-            { refresh() })
-            .apply { lifecycle.addObserver(this) }
+            { refresh() }
+        ).apply { lifecycle.addObserver(this) }
     }
 
     override fun onCreateView(
@@ -90,14 +90,17 @@ class FeedlyListFragment(
             updateApiCounters(view, adapter)
         }
 
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is FeedlyModelResult.Content -> onContent(result)
-                is FeedlyModelResult.MarkSaved -> onMarkSaved(result)
-                is FeedlyModelResult.AccessTokenRefresh -> onAccessTokenRefreshed(result)
-                else -> throw AssertionError("No valid $result")
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is FeedlyModelResult.Content -> onContent(result)
+                    is FeedlyModelResult.MarkSaved -> onMarkSaved(result)
+                    is FeedlyModelResult.AccessTokenRefresh -> onAccessTokenRefreshed(result)
+                    else -> throw AssertionError("No valid $result")
+                }
             }
-        })
+        )
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
 
@@ -131,7 +134,7 @@ class FeedlyListFragment(
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
                 snackbarHolder.show(recyclerView, result.command.error)
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -145,7 +148,7 @@ class FeedlyListFragment(
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
                 snackbarHolder.show(recyclerView, result.command.error)
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -164,7 +167,7 @@ class FeedlyListFragment(
                 photoShelfSwipe.setRefreshingAndWaitingResult(false)
                 snackbarHolder.show(recyclerView, result.command.error)
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -198,7 +201,8 @@ class FeedlyListFragment(
             resources.getQuantityString(
                 R.plurals.item_count,
                 adapter.itemCount,
-                adapter.itemCount)
+                adapter.itemCount
+            )
         } else {
             resources.getQuantityString(
                 R.plurals.tags_in_posts,
@@ -272,9 +276,10 @@ class FeedlyListFragment(
     private fun showAPIUsage() {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.api_usage)
-            .setMessage(getString(R.string.feedly_api_calls_count) + " " + FeedlyRateLimit.apiCallsCount +
-                "\n" + getString(R.string.feedly_api_reset_limit) + " " + FeedlyRateLimit.apiResetLimitAsString)
-            .show()
+            .setMessage(
+                getString(R.string.feedly_api_calls_count) + " " + FeedlyRateLimit.apiCallsCount +
+                    "\n" + getString(R.string.feedly_api_reset_limit) + " " + FeedlyRateLimit.apiResetLimitAsString
+            ).show()
     }
 
     override fun onTitleClick(position: Int) {
@@ -288,8 +293,11 @@ class FeedlyListFragment(
     override fun onTagClick(position: Int) {
         val tag = adapter.getItem(position).tag ?: return
         requireContext().startActivity(
-            imageViewerActivityStarter.tagPhotoBrowserIntent(requireContext(),
-                TagPhotoBrowserData(requireBlogName, tag, false)))
+            imageViewerActivityStarter.tagPhotoBrowserIntent(
+                requireContext(),
+                TagPhotoBrowserData(requireBlogName, tag, false)
+            )
+        )
     }
 
     override fun onToggleClick(position: Int, checked: Boolean) {
@@ -314,8 +322,10 @@ class FeedlyListFragment(
         adapter.sortBy(sortType)
         adapter.notifyDataSetChanged()
         recyclerView.scrollItemOnTopByPosition(0)
-        preferences.saveSortSettings(adapter.sortSwitcher.currentSortable.sortId,
-            adapter.sortSwitcher.currentSortable.isAscending)
+        preferences.saveSortSettings(
+            adapter.sortSwitcher.currentSortable.sortId,
+            adapter.sortSwitcher.currentSortable.isAscending
+        )
     }
 
     private fun selectCategories() {
@@ -352,6 +362,7 @@ class FeedlyListFragment(
         }
         return true
     }
+
     companion object {
         const val ARG_CONTENT_TYPE = "contentType"
     }

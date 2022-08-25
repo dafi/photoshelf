@@ -36,8 +36,13 @@ class DraftListViewModel @Inject constructor(
     private suspend fun fetchDraftQueuePosts(): DraftQueuePosts<PhotoShelfPost> {
         val latestTimestampResult = draftPostHelper.getLastPublishedTimestamp()
         draftPostHelper.refreshCache(latestTimestampResult)
-        postResult(DraftListModelResult.FetchPosts(Command.progress(
-            ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount))))
+        postResult(
+            DraftListModelResult.FetchPosts(
+                Command.progress(
+                    ProgressData(PROGRESS_STEP_IMPORTED_POSTS, latestTimestampResult.importCount)
+                )
+            )
+        )
 
         val draftQueuePosts = draftPostHelper.getDraftQueuePosts()
 

@@ -14,6 +14,7 @@ import androidx.annotation.LayoutRes
 import androidx.core.view.updateMargins
 import com.google.android.flexbox.FlexboxLayout
 import com.ternaryop.photoshelf.tumblr.ui.core.R
+import java.util.Locale
 
 class TagListLayout : FlexboxLayout {
     var tagMarginBottom = 0
@@ -27,10 +28,10 @@ class TagListLayout : FlexboxLayout {
 
     @Dimension
     var tagTextSize = 0f
-    set(value) {
-        field = value
-        updateTagTextSize(value)
-    }
+        set(value) {
+            field = value
+            updateTagTextSize(value)
+        }
 
     /**
      * Used to determine the clicked tag
@@ -55,8 +56,10 @@ class TagListLayout : FlexboxLayout {
     }
 
     private fun setup(attrs: AttributeSet?) {
-        val a = context.theme.obtainStyledAttributes(attrs,
-            R.styleable.com_ternaryop_photoshelf_widget_TagListLayout, 0, 0)
+        val a = context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.com_ternaryop_photoshelf_widget_TagListLayout, 0, 0
+        )
         try {
             tagLayout = a.getResourceId(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagLayout, -1)
             tagTextSize = a.getDimensionPixelSize(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagTextSize, 0).toFloat()
@@ -94,7 +97,7 @@ class TagListLayout : FlexboxLayout {
             val tag = tags[i]
             val view = getChildAt(i) as TextView
             view.id = tagTextViewId
-            view.text = String.format("#%s", tag)
+            view.text = String.format(Locale.US, "#%s", tag)
             view.tag = tag
             view.visibility = View.VISIBLE
         }

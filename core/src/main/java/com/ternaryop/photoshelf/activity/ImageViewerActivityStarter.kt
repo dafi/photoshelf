@@ -8,13 +8,21 @@ class TagPhotoBrowserData(
     val blogName: String?,
     val tag: String,
     val allowSearch: Boolean
-) : Serializable
+) : Serializable {
+    companion object {
+        const val serialVersionUID = 1L
+    }
+}
 
 class ImageViewerData(
     val imageUrl: String,
     val title: String? = null,
     val tag: String? = null
-) : Serializable
+) : Serializable {
+    companion object {
+        const val serialVersionUID = 1L
+    }
+}
 
 interface ImageViewerActivityStarter {
     fun startImagePicker(context: Context, url: String)

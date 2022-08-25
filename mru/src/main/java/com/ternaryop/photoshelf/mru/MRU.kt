@@ -51,8 +51,8 @@ class MRU(context: Context, private val key: String, private val maxSize: Int) {
 
     fun save() {
         preferences
-                .edit()
-                .putString(key, _list.joinToString(ITEM_SEPARATOR))
-                .apply()
+            .edit()
+            .putString(key, _list.joinToString(ITEM_SEPARATOR))
+            .apply()
     }
 }

@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+
 package com.ternaryop.photoshelf.di
 
 import androidx.fragment.app.FragmentFactory
@@ -19,22 +20,22 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class SingletonModule {
+interface SingletonModule {
     @Singleton
     @Binds
-    abstract fun bindImageViewerActivityStarter(
+    fun bindImageViewerActivityStarter(
         imageViewerActivityStarter: ImageViewerActivityStarterImpl
     ): ImageViewerActivityStarter
 
     @Singleton
     @Binds
-    abstract fun bindMisspelledName(
+    fun bindMisspelledName(
         misspelledName: MisspelledNameImpl
     ): MisspelledName
 
     @Singleton
     @Binds
-    abstract fun bindDraftCache(
+    fun bindDraftCache(
         draftCache: DraftCacheImpl
     ): DraftCache
 
@@ -42,13 +43,13 @@ abstract class SingletonModule {
      * This is a factory object, don't try to use it with @Singleton otherwise the app may crash
      */
     @Binds
-    abstract fun bindTumblrPostDialogModule(
+    fun bindTumblrPostDialogModule(
         tumblrPostDialog: TumblrPostDialogImpl
     ): TumblrPostDialog
 
     @Singleton
     @Binds
-    abstract fun bindAppFragmentFactory(
+    fun bindAppFragmentFactory(
         appFragmentFactory: AppFragmentFactory
     ): FragmentFactory
 }

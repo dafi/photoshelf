@@ -19,7 +19,8 @@ object BirthdayJob : Job {
         val blogName = PreferenceManager.getDefaultSharedPreferences(jobService).selectedBlogName ?: return false
 
         if (!PreferenceManager.getDefaultSharedPreferences(jobService).showBirthdaysNotification ||
-            hasAlreadyNotifiedToday(jobService)) {
+            hasAlreadyNotifiedToday(jobService)
+        ) {
             return false
         }
         notifyBirthday(jobService, blogName, params)

@@ -23,8 +23,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class SchedulePostDialog : DialogFragment(), View.OnClickListener,
-    TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
+class SchedulePostDialog :
+    DialogFragment(),
+    View.OnClickListener,
+    TimePickerDialog.OnTimeSetListener,
+    DatePickerDialog.OnDateSetListener {
 
     private lateinit var post: TumblrPost
     private lateinit var scheduleDateTime: Calendar
@@ -72,15 +75,20 @@ class SchedulePostDialog : DialogFragment(), View.OnClickListener,
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.choose_time_button -> TimePickerDialog(context, this,
+            R.id.choose_time_button -> TimePickerDialog(
+                context,
+                this,
                 scheduleDateTime.hourOfDay,
-                scheduleDateTime.minute, true)
-                .show()
+                scheduleDateTime.minute, true
+            ).show()
             R.id.choose_date_button -> {
-                val dialog = DatePickerDialog(requireContext(), this,
+                val dialog = DatePickerDialog(
+                    requireContext(),
+                    this,
                     scheduleDateTime.year,
                     scheduleDateTime.month,
-                    scheduleDateTime.dayOfMonth)
+                    scheduleDateTime.dayOfMonth
+                )
                 dialog.datePicker.minDate = System.currentTimeMillis()
                 dialog.show()
             }
@@ -128,7 +136,8 @@ class SchedulePostDialog : DialogFragment(), View.OnClickListener,
             scheduleDateTime.timeInMillis,
             System.currentTimeMillis(),
             DateUtils.DAY_IN_MILLIS,
-            DateUtils.FORMAT_SHOW_DATE)
+            DateUtils.FORMAT_SHOW_DATE
+        )
 
         chooseDateButton.text = timeString
     }

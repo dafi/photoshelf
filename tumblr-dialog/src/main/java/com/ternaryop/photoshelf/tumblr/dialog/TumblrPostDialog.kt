@@ -13,14 +13,22 @@ open class PostEditorData(
     val htmlSourceTitle: String,
     val tags: List<String>,
     val extras: Map<String, Any>? = null
-) : Serializable
+) : Serializable {
+    companion object {
+        const val serialVersionUID = 1L
+    }
+}
 
 open class PostEditorResult(
     val blogName: String,
     val htmlTitle: String,
     val tags: String,
     val extras: Map<String, Any>? = null
-) : Serializable
+) : Serializable {
+    companion object {
+        const val serialVersionUID = 1L
+    }
+}
 
 class NewPostEditorData(
     val imageUrls: List<String>,
@@ -51,18 +59,22 @@ class EditPostEditorData(
 data class SchedulePostData(
     val post: TumblrPost,
     val dateTime: Calendar
-) : Serializable
+) : Serializable {
+    companion object {
+        const val serialVersionUID = 1L
+    }
+}
 
 interface TumblrPostDialog {
     fun newPostEditorIntent(
         context: Context,
         newPostDialogData: NewPostEditorData,
-    ) : Intent
+    ): Intent
 
     fun editPostEditorIntent(
         context: Context,
         editPostDialogData: EditPostEditorData,
-    ) : Intent
+    ): Intent
 
     fun schedulePostDialog(
         post: TumblrPost,

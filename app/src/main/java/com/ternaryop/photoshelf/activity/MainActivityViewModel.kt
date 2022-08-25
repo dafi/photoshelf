@@ -28,13 +28,17 @@ class MainActivityViewModel @Inject constructor(
 
     init {
         _result.addSource(tumblrRepository.draftCount) {
-            _result.value = Event(MainActivityModelResult.DraftCount(it)) }
+            _result.value = Event(MainActivityModelResult.DraftCount(it))
+        }
         _result.addSource(tumblrRepository.scheduledCount) {
-            _result.value = Event(MainActivityModelResult.ScheduledCount(it)) }
+            _result.value = Event(MainActivityModelResult.ScheduledCount(it))
+        }
         _result.addSource(tumblrRepository.authenticate) {
-            _result.value = Event(MainActivityModelResult.TumblrAuthenticated(it)) }
+            _result.value = Event(MainActivityModelResult.TumblrAuthenticated(it))
+        }
         _result.addSource(birthdayRepository.count) {
-            _result.value = Event(MainActivityModelResult.BirthdaysCount(it)) }
+            _result.value = Event(MainActivityModelResult.BirthdaysCount(it))
+        }
     }
 
     fun draftCount(blogName: String) {

@@ -45,7 +45,7 @@ class ImagePreferenceFragment : AppPreferenceFragment() {
         intent.data = Uri.parse("package:" + requireContext().packageName)
         try {
             startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
+        } catch (ignored: ActivityNotFoundException) {
             // open all apps view
             startActivity(Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS))
         }

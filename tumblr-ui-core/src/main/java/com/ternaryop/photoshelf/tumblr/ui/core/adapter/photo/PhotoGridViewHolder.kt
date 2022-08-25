@@ -54,7 +54,6 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
         } else {
             setColors(R.array.post_normal)
         }
-
     }
 
     private fun updateTexts() {

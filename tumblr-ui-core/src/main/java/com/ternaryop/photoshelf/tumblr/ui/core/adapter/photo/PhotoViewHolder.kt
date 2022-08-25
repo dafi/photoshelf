@@ -69,10 +69,16 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private fun setImageDimension(altSize: TumblrAltSize, thumbnailWidth: Int) {
         val minThumbnailWidth = max(thumbnailWidth, altSize.width)
         // convert from pixel to DIP
-        thumbImage.layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            minThumbnailWidth.toFloat(), itemView.context.resources.displayMetrics).toInt()
-        thumbImage.layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            altSize.height.toFloat(), itemView.context.resources.displayMetrics).toInt()
+        thumbImage.layoutParams.width = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            minThumbnailWidth.toFloat(),
+            itemView.context.resources.displayMetrics
+        ).toInt()
+        thumbImage.layoutParams.height = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            altSize.height.toFloat(),
+            itemView.context.resources.displayMetrics
+        ).toInt()
     }
 
     private fun updateTitles(showUploadTime: Boolean) {
@@ -88,8 +94,10 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun showUploadTime() {
         noteCountText.visibility = View.VISIBLE
-        noteCountText.text = itemView.resources.getString(R.string.uploaded_at_time,
-            DATE_FORMATTER_FULL.format(post.timestamp.secondsToLocalDateTime()))
+        noteCountText.text = itemView.resources.getString(
+            R.string.uploaded_at_time,
+            DATE_FORMATTER_FULL.format(post.timestamp.secondsToLocalDateTime())
+        )
     }
 
     private fun updateNote() {
@@ -97,9 +105,10 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         if (noteCount > 0) {
             noteCountText.visibility = View.VISIBLE
             noteCountText.text = itemView.context.resources.getQuantityString(
-                    R.plurals.note_title,
-                    noteCount,
-                    noteCount)
+                R.plurals.note_title,
+                noteCount,
+                noteCount
+            )
         } else {
             noteCountText.visibility = View.GONE
         }

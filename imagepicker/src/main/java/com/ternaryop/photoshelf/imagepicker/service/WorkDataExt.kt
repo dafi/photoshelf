@@ -25,4 +25,5 @@ fun PostPublisherData.toWorkData() = workDataOf(
     PARAM_POST_TITLE to postTitle,
     PARAM_POST_TAGS to postTags,
     PARAM_PUBLISH_ACTION to action.ordinal,
-    PARAM_PUBLISH_CLASS_NAME to publishClassName)
+    PARAM_PUBLISH_CLASS_NAME to publishClassName
+)

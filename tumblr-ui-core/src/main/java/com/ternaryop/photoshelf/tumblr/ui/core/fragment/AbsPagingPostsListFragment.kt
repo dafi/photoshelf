@@ -49,9 +49,11 @@ abstract class AbsPagingPostsListFragment(
 
     override fun updateTitleBar() {
         if (pageFetcher.pagingInfo.hasMoreItems) {
-            supportActionBar?.subtitle = getString(R.string.post_count_1_of_x,
+            supportActionBar?.subtitle = getString(
+                R.string.post_count_1_of_x,
                 photoAdapter.itemCount,
-                pageFetcher.pagingInfo.totalItems)
+                pageFetcher.pagingInfo.totalItems
+            )
         } else {
             super.updateTitleBar()
         }

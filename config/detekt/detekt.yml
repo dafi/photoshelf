@@ -2,13 +2,6 @@
 config:
   validation: true
   # when writing own rules with new properties, exclude the property path e.g.: "my_rule_set,.*>.*>[my_property]"
-  excludes: "ternaryop"
-
-ternaryop:
-  AndroidStudioLog:
-    # The extra information shown
-    # The declaration order corresponds to the output order
-    show: "id,message"
 
 complexity:
   TooManyFunctions:
@@ -21,12 +14,8 @@ style:
     excludedFunctions: "equals,onOptionsItemSelected,onPreferenceTreeClick,onMenuItemSelected"
   MaxLineLength:
     active: false
-  UnusedPrivateMember:
-    active: false
-  SerialVersionUIDInSerializableClass:
-    active: false
-  NewLineAtEndOfFile:
-    active: false
+  SpacingBetweenPackageAndImports:
+    active: true
 
 exceptions:
   TooGenericExceptionCaught:
@@ -36,11 +25,8 @@ exceptions:
 
 empty-blocks:
   EmptyFunctionBlock:
-    active: false
-
-potential-bugs:
-  ImplicitDefaultLocale:
-    active: false
+    ignoreOverridden: true
+    active: true
 
 formatting:
   # this is the ktlint variation of MaxLineLength
@@ -49,19 +35,6 @@ formatting:
     active: false
   NoWildcardImports:
     active: false
-  Wrapping:
-    active: false
-  Indentation:
-    active: false
-  ImportOrdering:
-    active: false
-  SpacingAroundColon:
-    active: false
-  NoLineBreakBeforeAssignment:
-    active: false
+  # This rules overlaps with style>NewLineAtEndOfFile so is turned off
   FinalNewline:
-    active: false
-  ParameterListWrapping:
-    active: false
-  NoBlankLineBeforeRbrace:
     active: false

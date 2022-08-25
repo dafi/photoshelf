@@ -19,8 +19,8 @@ class BirthdayRepository @Inject constructor() {
     private suspend fun birthdayCount(): Int {
         val now = Calendar.getInstance()
         return ApiManager.birthdayService().findByDate(
-            FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap())
-            .response.total.toInt()
+            FindParams(onlyTotal = true, month = now.month + 1, dayOfMonth = now.dayOfMonth).toQueryMap()
+        ).response.total.toInt()
     }
 
     fun clearCount() {

@@ -23,7 +23,8 @@ class ImagePickerActivity : AbsPhotoShelfActivity() {
 
     override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
-            classLoader, ImagePickerFragment::class.java.name)
+            classLoader, ImagePickerFragment::class.java.name
+        )
 
     companion object {
 

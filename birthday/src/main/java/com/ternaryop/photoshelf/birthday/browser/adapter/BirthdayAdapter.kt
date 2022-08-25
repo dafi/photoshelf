@@ -20,9 +20,9 @@ class BirthdayAdapter(
 ) : RecyclerView.Adapter<BirthdayViewHolder>() {
 
     var pattern = ""
-    set(value) {
-        field = value.trim()
-    }
+        set(value) {
+            field = value.trim()
+        }
 
     private val items = mutableListOf<Birthday>()
     val selection = SelectionArrayViewHolder(this)

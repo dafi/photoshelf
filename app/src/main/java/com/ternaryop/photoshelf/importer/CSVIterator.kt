@@ -29,8 +29,8 @@ constructor(fis: FileInputStream, private val builder: CSVBuilder<T>) : Iterator
             val result = builder.parseCSVFields(fields)
             line = bufferedReader.readLine()
             return result
-        } catch (e: Exception) {
-            throw NoSuchElementException(e.message)
+        } catch (ignored: Exception) {
+            throw NoSuchElementException(ignored.message)
         }
     }
 

@@ -43,12 +43,15 @@ class FeedlyCategoriesDialog : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.result.observe(requireActivity(), EventObserver { result ->
-            when (result) {
-                is FeedlyModelResult.Categories -> onCategories(result)
-                else -> throw AssertionError("No valid $result")
+        viewModel.result.observe(
+            requireActivity(),
+            EventObserver { result ->
+                when (result) {
+                    is FeedlyModelResult.Categories -> onCategories(result)
+                    else -> throw AssertionError("No valid $result")
+                }
             }
-        })
+        )
 
         viewModel.loadCategories()
     }
@@ -68,7 +71,7 @@ class FeedlyCategoriesDialog : DialogFragment() {
             Status.ERROR -> {
                 result.command.error?.also { it.showErrorDialog(requireContext()) }
             }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -79,7 +82,8 @@ class FeedlyCategoriesDialog : DialogFragment() {
             checkNotNull(arguments?.getString(EXTRA_REQUEST_KEY)),
             bundleOf(
                 EXTRA_SELECTED_CATEGORIES_ID to selectedCategoriesId
-            ))
+            )
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -115,7 +119,8 @@ class FeedlyCategoriesDialog : DialogFragment() {
         ) = FeedlyCategoriesDialog().apply {
             arguments = bundleOf(
                 EXTRA_REQUEST_KEY to requestKey,
-                EXTRA_SELECTED_CATEGORIES_ID to selectedCategoriesId)
+                EXTRA_SELECTED_CATEGORIES_ID to selectedCategoriesId
+            )
         }
     }
 }

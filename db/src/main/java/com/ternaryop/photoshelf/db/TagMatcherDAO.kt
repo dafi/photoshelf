@@ -1,4 +1,5 @@
 @file:Suppress("MaxLineLength")
+
 package com.ternaryop.photoshelf.db
 
 import android.content.ContentValues
@@ -20,10 +21,14 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Long>(dbHelper) {
 
     override fun onCreate(db: SQLiteDatabase) {
         val sql = "CREATE VIRTUAL TABLE %1\$s USING fts4(%2\$s, %3\$s)"
-        db.execSQL(String.format(sql,
+        db.execSQL(
+            String.format(
+                sql,
                 TABLE_NAME,
                 MATCH_TAG,
-                STRIPPED_TAG))
+                STRIPPED_TAG
+            )
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
@@ -37,7 +42,7 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Long>(dbHelper) {
 
         return try {
             stmt.simpleQueryForString()
-        } catch (ex: SQLiteDoneException) {
+        } catch (ignored: SQLiteDoneException) {
             // zero rows
             null
         }
@@ -71,17 +76,27 @@ class TagMatcherDAO(dbHelper: DBHelper) : AbsDAO<Long>(dbHelper) {
         }
 
         fun getSelectTagMatcherStatement(db: SQLiteDatabase): SQLiteStatement {
-            return db.compileStatement(String.format("SELECT %2\$s FROM %1\$s WHERE %3\$s match ?",
+            return db.compileStatement(
+                String.format(
+                    Locale.US,
+                    "SELECT %2\$s FROM %1\$s WHERE %3\$s match ?",
                     TABLE_NAME,
                     MATCH_TAG,
-                    STRIPPED_TAG))
+                    STRIPPED_TAG
+                )
+            )
         }
 
         fun getInsertTagMatcherStatement(db: SQLiteDatabase): SQLiteStatement {
-            return db.compileStatement(String.format("insert into %1\$s (%2\$s, %3\$s) values (?, ?)",
+            return db.compileStatement(
+                String.format(
+                    Locale.US,
+                    "insert into %1\$s (%2\$s, %3\$s) values (?, ?)",
                     TABLE_NAME,
                     MATCH_TAG,
-                    STRIPPED_TAG))
+                    STRIPPED_TAG
+                )
+            )
         }
     }
 }

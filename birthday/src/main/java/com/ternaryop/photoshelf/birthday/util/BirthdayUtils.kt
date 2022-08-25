@@ -33,7 +33,8 @@ suspend fun notifyBirthday(context: Context, blogName: String? = null) {
     try {
         val now = Calendar.getInstance(Locale.US)
         val birthdayResult = ApiManager.birthdayService().findByDate(
-            FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth, blogName = blogName).toQueryMap()).response
+            FindParams(month = now.month + 1, dayOfMonth = now.dayOfMonth, blogName = blogName).toQueryMap()
+        ).response
         birthdayResult.birthdays?.notifyTodayBirthdays(context, now.year, BirthdayPublisherActivity::class.java)
     } catch (t: Throwable) {
         t.notify(context, "Error")

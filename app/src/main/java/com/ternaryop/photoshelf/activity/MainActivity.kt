@@ -1,4 +1,5 @@
 @file:Suppress("MaxLineLength")
+
 package com.ternaryop.photoshelf.activity
 
 import android.content.SharedPreferences
@@ -46,7 +47,8 @@ import com.ternaryop.utils.drawer.adapter.DrawerItem
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : DrawerActionBarActivity(),
+class MainActivity :
+    DrawerActionBarActivity(),
     FragmentActivityStatus,
     PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
     PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
@@ -66,18 +68,21 @@ class MainActivity : DrawerActionBarActivity(),
         blogList = findViewById(R.id.blogs_spinner)
         blogList.onItemSelectedListener = BlogItemSelectedListener()
 
-        viewModel.result.observe(this, EventObserver { result ->
-            when (result) {
-                is MainActivityModelResult.BirthdaysCount ->
-                    onUpdateCount(DRAWER_ITEM_BIRTHDAYS_TODAY, result.command.data ?: 0)
-                is MainActivityModelResult.DraftCount ->
-                    onUpdateCount(DRAWER_ITEM_DRAFT, result.command.data ?: 0)
-                is MainActivityModelResult.ScheduledCount ->
-                    onUpdateCount(DRAWER_ITEM_SCHEDULE, result.command.data ?: 0)
-                is MainActivityModelResult.BlogNames -> onBlogNames(result)
-                is MainActivityModelResult.TumblrAuthenticated -> onTumblrAuthenticated(result)
+        viewModel.result.observe(
+            this,
+            EventObserver { result ->
+                when (result) {
+                    is MainActivityModelResult.BirthdaysCount ->
+                        onUpdateCount(DRAWER_ITEM_BIRTHDAYS_TODAY, result.command.data ?: 0)
+                    is MainActivityModelResult.DraftCount ->
+                        onUpdateCount(DRAWER_ITEM_DRAFT, result.command.data ?: 0)
+                    is MainActivityModelResult.ScheduledCount ->
+                        onUpdateCount(DRAWER_ITEM_SCHEDULE, result.command.data ?: 0)
+                    is MainActivityModelResult.BlogNames -> onBlogNames(result)
+                    is MainActivityModelResult.TumblrAuthenticated -> onTumblrAuthenticated(result)
+                }
             }
-        })
+        )
 
         val logged = TumblrManager.isLogged(this)
         if (savedInstanceState == null) {
@@ -131,10 +136,14 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_IMAGES_BY_TAGS, getString(R.string.browse_images_by_tags_title), TagPhotoBrowserFragment::class.java))
 
-        adapter.add(DrawerItem(DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
-            argumentsBuilder = {
-                prefs.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }
-            }))
+        adapter.add(
+            DrawerItem(
+                DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
+                argumentsBuilder = {
+                    prefs.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }
+                }
+            )
+        )
 
         // Extras
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
@@ -142,12 +151,20 @@ class MainActivity : DrawerActionBarActivity(),
         adapter.add(DrawerItem(DRAWER_ITEM_BIRTHDAYS_TODAY, getString(R.string.birthdays_today_title), BirthdayPublisherFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_BEST_OF, getString(R.string.best_of), BestOfFragment::class.java))
         adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_READ_LATER, getString(R.string.feedly_saved_title), FeedlyListFragment::class.java))
-        adapter.add(DrawerItem(DRAWER_ITEM_FEEDLY_UNREAD,
-            getString(R.string.feedly_unread_title), FeedlyListFragment::class.java,
-            arguments = bundleOf(FeedlyListFragment.ARG_CONTENT_TYPE to FeedlyContentType.Unread)))
+        adapter.add(
+            DrawerItem(
+                DRAWER_ITEM_FEEDLY_UNREAD,
+                getString(R.string.feedly_unread_title), FeedlyListFragment::class.java,
+                arguments = bundleOf(FeedlyListFragment.ARG_CONTENT_TYPE to FeedlyContentType.Unread)
+            )
+        )
 
-        adapter.add(DrawerItem(DRAWER_ITEM_TEST_PAGE,
-            getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))))
+        adapter.add(
+            DrawerItem(
+                DRAWER_ITEM_TEST_PAGE,
+                getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))
+            )
+        )
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
         adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))
@@ -185,7 +202,7 @@ class MainActivity : DrawerActionBarActivity(),
         when (result.command.status) {
             Status.SUCCESS -> result.command.data?.also { blogNames -> fillBlogList(blogNames) }
             Status.ERROR -> result.command.error?.also { it.showErrorDialog(this) }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -200,7 +217,7 @@ class MainActivity : DrawerActionBarActivity(),
                 }
             }
             Status.ERROR -> result.command.error?.also { it.showErrorDialog(this) }
-            Status.PROGRESS -> { }
+            Status.PROGRESS -> {}
         }
     }
 
@@ -214,10 +231,11 @@ class MainActivity : DrawerActionBarActivity(),
     }
 
     private fun tumblrAuthenticated() {
-        Toast.makeText(this,
+        Toast.makeText(
+            this,
             getString(R.string.authentication_success_title),
-            Toast.LENGTH_LONG)
-            .show()
+            Toast.LENGTH_LONG
+        ).show()
         enableUI(true)
     }
 

@@ -22,7 +22,8 @@ class TagsHolder(
     private val tagAdapter = TagNavigatorArrayAdapter(
         context,
         R.layout.tag_navigator_row,
-        blogName)
+        blogName
+    )
 
     init {
         textView.setAdapter(tagAdapter)

@@ -38,7 +38,8 @@ fun List<Birthday>.notifyTodayBirthdays(context: Context, currYear: Int, activit
         builder.setContentTitle(context.resources.getQuantityString(R.plurals.birthday_title, size))
         birthday.birthdate?.let { birthdate ->
             builder.setContentText(
-                context.getString(R.string.birthday_years_old, birthday.name, birthdate.yearsBetweenDates()))
+                context.getString(R.string.birthday_years_old, birthday.name, birthdate.yearsBetweenDates())
+            )
         }
     } else {
         builder.setStyle(buildBirthdayStyle(context, currYear))

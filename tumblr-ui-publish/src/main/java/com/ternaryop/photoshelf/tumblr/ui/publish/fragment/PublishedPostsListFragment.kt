@@ -34,11 +34,14 @@ class PublishedPostsListFragment(
                 R.color.post_even_background_color
             )
         )
-        viewModel.result.observe(viewLifecycleOwner, EventObserver { result ->
-            when (result) {
-                is PublishedPostsResult.Published -> onFetchPosts(result)
+        viewModel.result.observe(
+            viewLifecycleOwner,
+            EventObserver { result ->
+                when (result) {
+                    is PublishedPostsResult.Published -> onFetchPosts(result)
+                }
             }
-        })
+        )
     }
 
     override val pageFetcher: PageFetcher<PhotoShelfPost>

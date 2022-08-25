@@ -24,7 +24,7 @@ import javax.inject.Singleton
 private const val GALLERY_EXPIRE_TIMESPAN_MS = 10 * 60 * 1_000L
 
 inline fun <reified T> Moshi.fromJson(input: InputStream) =
-        adapter(T::class.java).fromJson(input.bufferedReader().readText())
+    adapter(T::class.java).fromJson(input.bufferedReader().readText())
 
 @Singleton
 class ImageGalleryRepository @Inject constructor(@ApplicationContext private val context: Context) {
@@ -34,7 +34,8 @@ class ImageGalleryRepository @Inject constructor(@ApplicationContext private val
     private val json = Moshi.Builder().build()
 
     suspend fun readImageGallery(url: String, expireTimespan: Long = GALLERY_EXPIRE_TIMESPAN_MS): ImageGalleryResult {
-        return loadCache(url, expireTimespan) ?: writeCache(url, domSelectors.readImageGallery(url).response)
+        return loadCache(url, expireTimespan)
+            ?: writeCache(url, domSelectors.readImageGallery(url).response)
     }
 
     suspend fun retrieveImageUri(imageInfo: ImageInfo, destDirectory: File? = null): Uri? {

@@ -149,8 +149,10 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
                 return true
             }
             R.id.action_image_viewer_copy_url -> {
-                ImageViewerUtil.copyToClipboard(this, imageViewerData.imageUrl,
-                    getString(R.string.image_url_description), R.string.url_copied_to_clipboard_title)
+                ImageViewerUtil.copyToClipboard(
+                    this, imageViewerData.imageUrl,
+                    getString(R.string.image_url_description), R.string.url_copied_to_clipboard_title
+                )
                 return true
             }
             R.id.action_image_viewer_details -> {
@@ -179,7 +181,8 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
             val shareChooserParams = ShareChooserParams(
                 FileProvider.getUriForFile(this, getFileProvider(), destFile),
                 getString(R.string.share_image_title),
-                imageViewerData.title?.fromHtml()?.toString() ?: "")
+                imageViewerData.title?.fromHtml()?.toString() ?: ""
+            )
             launch(Dispatchers.IO) {
                 ImageViewerUtil.shareImage(this@ImageViewerActivity, URL(imageViewerData.imageUrl), shareChooserParams)
             }
@@ -215,8 +218,11 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
             bundle.putSerializable(EXTRA_IMAGE_VIEWER_DATA, imageViewerData)
             intent.putExtras(bundle)
 
-            val animBundle = ActivityOptions.makeCustomAnimation(context,
-                    R.anim.slide_in_left, R.anim.slide_out_left).toBundle()
+            val animBundle = ActivityOptions.makeCustomAnimation(
+                context,
+                R.anim.slide_in_left,
+                R.anim.slide_out_left
+            ).toBundle()
             context.startActivity(intent, animBundle)
         }
     }
