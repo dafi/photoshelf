@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -24,7 +24,8 @@
       "userAgent": "curl",
       "image": {
         "css": ".main-image",
-        "regExp": "property=\"og:image\"\\s+content=\"(.*?)\""
+        "regExp": "property=\"og:image\"\\s+content=\"(.*?)\"",
+        "cookie": "nsfw_inter=1;domain=www.imagebam.com;path=/;expires=%cookie_date%"
       }
     },
     {
