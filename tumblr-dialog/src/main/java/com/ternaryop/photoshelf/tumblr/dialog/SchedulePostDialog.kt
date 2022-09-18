@@ -13,6 +13,7 @@ import android.widget.TimePicker
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.tumblr.TumblrPost
 import com.ternaryop.utils.date.dayOfMonth
 import com.ternaryop.utils.date.hourOfDay
@@ -40,8 +41,8 @@ class SchedulePostDialog :
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val view = requireActivity().layoutInflater.inflate(R.layout.dialog_schedule_post, null)
 
-        post = checkNotNull(arguments?.getSerializable(ARG_POST) as? TumblrPost)
-        scheduleDateTime = checkNotNull(arguments?.getSerializable(ARG_SCHEDULE_DATE) as? Calendar)
+        post = checkNotNull(arguments?.getSerializableCompat(ARG_POST, TumblrPost::class.java))
+        scheduleDateTime = checkNotNull(arguments?.getSerializableCompat(ARG_SCHEDULE_DATE, Calendar::class.java))
 
         setupUI(view)
 

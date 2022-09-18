@@ -14,6 +14,7 @@ import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.fragment.BottomMenuSheetDialogFragment
 import com.ternaryop.photoshelf.lifecycle.EventObserver
@@ -247,10 +248,15 @@ class DraftListFragment(
                 result.getString(EXTRA_SELECTED_TAG)?.also { tag ->
                     (recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(photoAdapter.findTagIndex(tag), 1)
                 }
-            TAG_SCHEDULE_DIALOG_REQUEST_KEY -> onSchedule(
-                parentFragmentManager.getFragment(result, SchedulePostDialog.EXTRA_DIALOG) as DialogFragment,
-                result.getSerializable(SchedulePostDialog.EXTRA_SCHEDULE_DATA) as SchedulePostData
-            )
+            TAG_SCHEDULE_DIALOG_REQUEST_KEY -> result.getSerializableCompat(
+                SchedulePostDialog.EXTRA_SCHEDULE_DATA,
+                SchedulePostData::class.java
+            )?.also { schedulePostData ->
+                onSchedule(
+                    parentFragmentManager.getFragment(result, SchedulePostDialog.EXTRA_DIALOG) as DialogFragment,
+                    schedulePostData
+                )
+            }
         }
     }
 

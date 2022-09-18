@@ -15,6 +15,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.compat.os.getParcelableCompat
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.ImageViewerData
@@ -123,7 +124,7 @@ abstract class AbsPostsListFragment(
         )
         photoAdapterSwitcher.switchView(photoAdapterSwitcher.viewType)
 
-        recyclerViewLayout = savedInstanceState?.getParcelable(KEY_STATE_RECYCLER_VIEW_LAYOUT)
+        recyclerViewLayout = savedInstanceState?.getParcelableCompat(KEY_STATE_RECYCLER_VIEW_LAYOUT, Parcelable::class.java)
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 

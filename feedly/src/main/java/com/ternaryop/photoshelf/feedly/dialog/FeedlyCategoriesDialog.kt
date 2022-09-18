@@ -10,6 +10,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.feedly.Category
 import com.ternaryop.photoshelf.adapter.CheckBoxItem
 import com.ternaryop.photoshelf.feedly.R
@@ -20,6 +21,7 @@ import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.utils.dialog.showErrorDialog
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
 
 @AndroidEntryPoint
 class FeedlyCategoriesDialog : DialogFragment() {
@@ -88,7 +90,9 @@ class FeedlyCategoriesDialog : DialogFragment() {
 
     @Suppress("UNCHECKED_CAST")
     private fun fillAdapter(categories: List<Category>): FeedlyCategoryAdapter {
-        val selected = checkNotNull(arguments?.getSerializable(EXTRA_SELECTED_CATEGORIES_ID)) as Set<String>
+        val selected = checkNotNull(
+            arguments?.getSerializableCompat(EXTRA_SELECTED_CATEGORIES_ID, Serializable::class.java)
+        ) as Set<String>
         val checkboxList = categories
             .map { CheckBoxItem(selected.contains(it.id), it) }
             .sortedWith { lhs, rhs ->

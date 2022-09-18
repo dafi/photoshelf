@@ -12,6 +12,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
+import com.ternaryop.compat.content.getPackageInfoCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
 import com.ternaryop.photoshelf.core.prefs.clearBlogList
@@ -148,7 +149,7 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
         preferenceScreen.findPreference<Preference>(KEY_VERSION)?.apply {
             title = getString(R.string.version_title, getString(R.string.app_name))
             summary = try {
-                val packageInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
+                val packageInfo = requireContext().packageManager.getPackageInfoCompat(requireContext().packageName, 0)
                 val versionName = packageInfo.versionName
                 val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
                 "$versionName build $versionCode"

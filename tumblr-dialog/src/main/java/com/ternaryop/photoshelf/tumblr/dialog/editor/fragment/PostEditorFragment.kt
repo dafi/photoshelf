@@ -20,6 +20,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.photoshelf.lifecycle.EventObserver
 import com.ternaryop.photoshelf.lifecycle.Status
 import com.ternaryop.photoshelf.mru.adapter.MRUHolder
@@ -101,7 +102,7 @@ class PostEditorFragment :
         refreshBlogButton = view.findViewById(R.id.refreshBlogList)
         thumbnailsRecyclerView = view.findViewById(R.id.thumbnail)
 
-        val data = checkNotNull(arguments?.getSerializable(ARG_POST_DATA) as? PostEditorData)
+        val data = checkNotNull(arguments?.getSerializableCompat(ARG_POST_DATA, PostEditorData::class.java))
         val tagsHolder = TagsHolder(requireContext(), view.findViewById(R.id.post_tags), data.blogName)
         val titleHolder = TitleHolder(view.findViewById(R.id.post_title), data.sourceTitle, data.htmlSourceTitle)
         val maxMruItems = data.extras.getInt(

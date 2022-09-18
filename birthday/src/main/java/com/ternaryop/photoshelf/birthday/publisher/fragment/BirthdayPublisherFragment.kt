@@ -18,6 +18,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.ternaryop.compat.content.getSerializableExtraCompat
 import com.ternaryop.photoshelf.EXTRA_POST
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
@@ -205,8 +206,9 @@ class BirthdayPublisherFragment(
 
     private fun handleActivityResult(resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK && data != null) {
-            val post = data.getSerializableExtra(EXTRA_POST) as TumblrPhotoPost
-            viewModel.updatePostByTag(post)?.also { birthdayPhotoAdapter.updatePost(it, true) }
+            data.getSerializableExtraCompat(EXTRA_POST, TumblrPhotoPost::class.java)?.also { post ->
+                viewModel.updatePostByTag(post)?.also { birthdayPhotoAdapter.updatePost(it, true) }
+            }
         }
     }
 

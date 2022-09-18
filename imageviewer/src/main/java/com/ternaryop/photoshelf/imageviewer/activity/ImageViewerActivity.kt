@@ -22,6 +22,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import com.ternaryop.compat.content.getActivityInfoCompat
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.activity.ImageViewerData
 import com.ternaryop.photoshelf.imageviewer.R
@@ -64,7 +66,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
         val progressBar = findViewById<View>(R.id.webview_progressbar) as ProgressBar
         detailsText = findViewById<View>(R.id.details_text) as TextView
 
-        imageViewerData = intent.extras?.getSerializable(EXTRA_IMAGE_VIEWER_DATA) as? ImageViewerData
+        imageViewerData = intent.extras?.getSerializableCompat(EXTRA_IMAGE_VIEWER_DATA, ImageViewerData::class.java)
             ?: return
 
         val data = "<body><img src=\"${imageViewerData.imageUrl}\"/></body>"
@@ -202,7 +204,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
 
     private fun getFileProvider(): String {
         val componentName = ComponentName(this, javaClass)
-        val data = packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA).metaData
+        val data = packageManager.getActivityInfoCompat(componentName, PackageManager.GET_META_DATA.toLong()).metaData
         return checkNotNull(data.getString(FILE_PROVIDER_SHARE_AUTHORITY)) {
             "Unable to find $FILE_PROVIDER_SHARE_AUTHORITY"
         }

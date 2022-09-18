@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
@@ -52,7 +53,7 @@ class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
         }
 
         fun tagPhotoBrowserData(bundle: Bundle?) =
-            bundle?.getSerializable(EXTRA_TAG_PHOTO_BROWSER_DATA) as? TagPhotoBrowserData
+            bundle?.getSerializableCompat(EXTRA_TAG_PHOTO_BROWSER_DATA, TagPhotoBrowserData::class.java)
 
         fun returnSelectedPost(bundle: Bundle?, defaultValue: Boolean = false) =
             bundle?.getBoolean(EXTRA_RETURN_SELECTED_POST, defaultValue) ?: defaultValue

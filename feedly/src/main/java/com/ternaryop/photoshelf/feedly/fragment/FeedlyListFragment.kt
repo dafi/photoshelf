@@ -16,6 +16,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.feedly.FeedlyRateLimit
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
@@ -36,6 +37,7 @@ import com.ternaryop.photoshelf.view.PhotoShelfSwipe
 import com.ternaryop.photoshelf.view.snackbar.SnackbarHolder
 import com.ternaryop.utils.recyclerview.scrollItemOnTopByPosition
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
 
 private const val FRAGMENT_TAG_SORT = "sort"
 private const val FRAGMENT_TAG_CATEGORIES = "categories"
@@ -104,7 +106,7 @@ class FeedlyListFragment(
 
         photoShelfSwipe.setRefreshingAndWaitingResult(true)
 
-        content = newContentFrom(arguments?.getSerializable(ARG_CONTENT_TYPE), viewModel)
+        content = newContentFrom(arguments?.getSerializableCompat(ARG_CONTENT_TYPE, Serializable::class.java), viewModel)
 
         content.read(requireBlogName, null)
 
@@ -345,7 +347,7 @@ class FeedlyListFragment(
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when (requestKey) {
             CATEGORIES_DIALOG_REQUEST_KEY -> onSelected(
-                result.getSerializable(FeedlyCategoriesDialog.EXTRA_SELECTED_CATEGORIES_ID) as Set<String>
+                result.getSerializableCompat(FeedlyCategoriesDialog.EXTRA_SELECTED_CATEGORIES_ID, Serializable::class.java) as Set<String>
             )
         }
     }

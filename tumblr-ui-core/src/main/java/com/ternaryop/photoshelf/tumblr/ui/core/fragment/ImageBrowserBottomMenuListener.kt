@@ -3,6 +3,7 @@ package com.ternaryop.photoshelf.tumblr.ui.core.fragment
 import android.view.Menu
 import android.view.MenuItem
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.ternaryop.compat.os.getSerializableCompat
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.activity.ImageViewerData
 import com.ternaryop.photoshelf.fragment.BottomMenuListener
@@ -34,7 +35,7 @@ class ImageBrowserBottomMenuListener(
     }
 
     private fun post(sheet: BottomSheetDialogFragment) =
-        sheet.arguments?.getSerializable(ARG_PHOTO_POST) as? TumblrPhotoPost
+        sheet.arguments?.getSerializableCompat(ARG_PHOTO_POST, TumblrPhotoPost::class.java)
 
     companion object {
         const val ARG_PHOTO_POST = "image.browser.photo.post"
