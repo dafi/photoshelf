@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: "io.gitlab.arturbosch.detekt"
 apply from: "$rootProject.projectDir/shared-dependencies.gradle"
+apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -56,7 +57,6 @@ android {
         // default value for android emulator
         buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.2.2:8080/image/\""
         resConfigs 'en'
-
     }
 
     // see https://developer.android.com/studio/build/optimize-your-build#use_static_build_properties

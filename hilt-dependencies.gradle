@@ -1,0 +1,12 @@
+/**
+ * This file is included only from modules using Dagger/Hilt annotations because modules not using them generate the following warning
+ * The following options were not recognized by any processor: '[dagger.fastInit, dagger.hilt.android.internal.disableAndroidSuperclassValidation, dagger.hilt.internal.useAggregatingRootProcessor, kapt.kotlin.generated]'
+ */
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
+dependencies {
+    implementation "com.google.dagger:hilt-android:${rootProject.ext.hiltAndroidVersion}"
+    kapt "com.google.dagger:hilt-android-compiler:${rootProject.ext.hiltAndroidVersion}"
+}

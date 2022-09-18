@@ -1,4 +1,5 @@
 apply from: "$rootProject.projectDir/shared-android-library.gradle"
+apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
