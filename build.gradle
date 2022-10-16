@@ -60,7 +60,7 @@ buildscript {
         ternaryOpCrashReporterLibVersion = '1.0.2'
         ternaryOpApiCoroutinesLibVersion = '1.1.4'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.9'
-        ternaryOpFeedlyCoroutinesLibVersion = '1.0.6'
+        ternaryOpFeedlyCoroutinesLibVersion = '1.0.7'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.9'
 
         dropboxCoreLibVersion = '5.3.0'
