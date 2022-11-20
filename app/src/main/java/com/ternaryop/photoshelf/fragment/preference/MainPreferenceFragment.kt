@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf.fragment.preference
 import android.Manifest
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.ActionBar
@@ -35,7 +34,6 @@ private const val KEY_VERSION = "version"
 private const val KEY_DROPBOX_VERSION = "dropbox_version"
 private const val KEY_SCHEDULE_MINUTES_TIME_SPAN = "schedule_minutes_time_span"
 private const val KEY_PHOTOSHELF_APIKEY = "photoshelfApikey"
-private const val DROPBOX_RESULT = 2
 private const val REQUEST_FILE_PERMISSION = 1
 
 class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
@@ -90,15 +88,14 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == DROPBOX_RESULT) {
-            findPreference<Preference>(KEY_DROPBOX_LOGIN)?.title =
-                if (dropboxManager.finishAuthentication() == null) {
-                    getString(R.string.login_title, DROPBOX_SERVICE_NAME)
-                } else {
-                    getString(R.string.logout_title, DROPBOX_SERVICE_NAME)
-                }
-        }
+    override fun onResume() {
+        super.onResume()
+        findPreference<Preference>(KEY_DROPBOX_LOGIN)?.title =
+            if (dropboxManager.finishAuthentication() == null) {
+                getString(R.string.login_title, DROPBOX_SERVICE_NAME)
+            } else {
+                getString(R.string.logout_title, DROPBOX_SERVICE_NAME)
+            }
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
@@ -123,7 +120,7 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
                     preference.title = getString(R.string.login_title, DROPBOX_SERVICE_NAME)
                 } else {
                     DropboxManager.getInstance(requireContext())
-                        .startOAuth2AuthenticationForResult(this, DROPBOX_RESULT)
+                        .startOAuth2Authentication(this)
                 }
                 return true
             }

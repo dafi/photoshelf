@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.DbxSdkVersion
 import com.dropbox.core.android.Auth
-import com.dropbox.core.android.AuthActivity
 import com.dropbox.core.v2.DbxClientV2
 
 /**
@@ -63,13 +62,8 @@ class DropboxManager private constructor(context: Context, val clientIdentifier:
         clearKeys()
     }
 
-    fun startOAuth2AuthenticationForResult(fragment: Fragment, requestCode: Int) {
-        if (!/*alertUser*/AuthActivity.checkAppBeforeAuth(fragment.activity, appKey, true)) {
-            return
-        }
-
-        val intent = AuthActivity.makeIntent(fragment.activity, appKey, null, null)
-        fragment.startActivityForResult(intent, requestCode)
+    fun startOAuth2Authentication(fragment: Fragment) {
+        Auth.startOAuth2Authentication(fragment.requireActivity(), appKey)
     }
 
     companion object {
