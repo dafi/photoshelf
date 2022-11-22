@@ -37,8 +37,7 @@ class TagsHolder(
 
     var tags: String
         get() {
-            // remove the empty string at the end, if present
-            return textView.text.toString().replace(",\\s*$".toRegex(), "")
+            return cleanSeparators(textView.text)
         }
         set(value) = textView.setText(value)
 
@@ -82,4 +81,9 @@ class TagsHolder(
     }
 
     override fun onItemDelete(item: String) = Unit
+
+    companion object {
+        fun cleanSeparators(text: CharSequence, sep: String = ","): String =
+            text.replace("$sep+".toRegex(), sep).replace("$sep\\s*$".toRegex(), "")
+    }
 }

@@ -3,7 +3,6 @@ package com.ternaryop.photoshelf.tagphotobrowser.fragment
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +11,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.SearchView
+import android.widget.MultiAutoCompleteTextView
+import androidx.appcompat.widget.AppCompatImageButton
+import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.viewModels
 import com.ternaryop.photoshelf.activity.ImageViewerActivityStarter
 import com.ternaryop.photoshelf.lifecycle.EventObserver
@@ -21,6 +22,7 @@ import com.ternaryop.photoshelf.tagnavigator.adapter.TagCursorAdapter
 import com.ternaryop.photoshelf.tagphotobrowser.R
 import com.ternaryop.photoshelf.tagphotobrowser.activity.TagPhotoBrowserActivity
 import com.ternaryop.photoshelf.tumblr.dialog.TumblrPostDialog
+import com.ternaryop.photoshelf.tumblr.dialog.editor.viewholder.TagsHolder
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.PhotoShelfPost
 import com.ternaryop.photoshelf.tumblr.ui.core.adapter.switcher.AdapterSwitcherConfig
 import com.ternaryop.photoshelf.tumblr.ui.core.fragment.AbsPagingPostsListFragment
@@ -35,7 +37,7 @@ private const val KEY_STATE_ALLOW_SEARCH = "allowSearch"
 class TagPhotoBrowserFragment(
     iav: ImageViewerActivityStarter,
     pd: TumblrPostDialog
-) : AbsPagingPostsListFragment(iav, pd), SearchView.OnSuggestionListener {
+) : AbsPagingPostsListFragment(iav, pd) {
     private var postTag: String? = null
     private var allowSearch: Boolean = false
     private val viewModel: TagPhotoBrowserViewModel by viewModels()
@@ -76,8 +78,28 @@ class TagPhotoBrowserFragment(
             postTag = it.getString(KEY_STATE_POST_TAG)
             allowSearch = it.getBoolean(KEY_STATE_ALLOW_SEARCH)
         }
-        if (blogName != null) {
-            postTag?.trim()?.let { tag -> if (tag.isNotEmpty()) fetchPosts(true) }
+        blogName?.also { blogName ->
+            postTag?.trim()?.let { tag ->
+                if (tag.isNotEmpty()) {
+                    fetchPosts(true)
+                }
+            }
+            if (allowSearch) {
+                setupSearch(view, blogName)
+            }
+        }
+    }
+
+    private fun setupSearch(view: View, blogName: String) {
+        val textView = view.findViewById<MultiAutoCompleteTextView>(R.id.search_tags)
+        view.findViewById<Group>(R.id.search_group).visibility = View.VISIBLE
+        textView.setText(postTag)
+        TagsHolder(requireContext(), textView, blogName)
+        view.findViewById<AppCompatImageButton>(R.id.search_button).setOnClickListener {
+            val tags = TagsHolder.cleanSeparators(textView.text)
+            if (tags.isNotEmpty()) {
+                onSearchTags(tags)
+            }
         }
     }
 
@@ -104,12 +126,6 @@ class TagPhotoBrowserFragment(
         inflater.inflate(R.menu.tag_photo_browser, menu)
     }
 
-    override fun onPrepareMenu(menu: Menu) {
-        val isMenuVisible = allowSearch && !fragmentActivityStatus.isDrawerMenuOpen
-        menu.findItem(R.id.action_search).isVisible = isMenuVisible
-        super.onPrepareMenu(menu)
-    }
-
     override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_open_tag_web_browser -> {
@@ -120,19 +136,6 @@ class TagPhotoBrowserFragment(
         }
     }
 
-    override fun setupSearchView(menu: Menu): SearchView? {
-        super.setupSearchView(menu)
-
-        searchView?.setOnSuggestionListener(this)
-        val adapter = TagCursorAdapter(
-            checkNotNull(supportActionBar).themedContext,
-            R.layout.ab_simple_dropdown_item_1line,
-            requireBlogName
-        )
-        searchView?.suggestionsAdapter = adapter
-        return searchView
-    }
-
     override val pageFetcher: PageFetcher<PhotoShelfPost>
         get() = viewModel.pageFetcher
 
@@ -140,7 +143,9 @@ class TagPhotoBrowserFragment(
         refreshUI()
 
         val params = HashMap<String, String>()
-        params["tag"] = checkNotNull(postTag)
+        checkNotNull(postTag).split(",").forEachIndexed { index, tag ->
+            params["tag[$index]"] = tag
+        }
         params["notes_info"] = "true"
         params["offset"] = pageFetcher.pagingInfo.offset.toString()
 
@@ -148,33 +153,12 @@ class TagPhotoBrowserFragment(
         viewModel.photos(requireBlogName, params, fetchCache)
     }
 
-    override fun onQueryTextChange(newText: String): Boolean {
-        val pattern = newText.trim()
-
-        if (pattern.isEmpty()) {
-            return true
-        }
-
-        viewModel.findTags(requireBlogName, pattern)
-        return true
-    }
-
-    override fun onQueryTextSubmit(query: String): Boolean {
-        postTag = query
+    private fun onSearchTags(tags: String) {
+        postTag = tags
         pageFetcher.clear()
         photoAdapter.clear()
         photoAdapter.notifyDataSetChanged()
         fetchPosts(false)
-        return false
-    }
-
-    override fun onSuggestionClick(position: Int): Boolean {
-        searchView?.apply { setQuery((suggestionsAdapter.getItem(position) as Cursor).getString(1), true) }
-        return true
-    }
-
-    override fun onSuggestionSelect(position: Int): Boolean {
-        return true
     }
 
     override fun onTagClick(position: Int, clickedTag: String) {

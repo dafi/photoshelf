@@ -2,12 +2,6 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_search"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:icon="@drawable/ic_action_search"
-        app:showAsAction="ifRoom|collapseActionView"
-        android:title="@string/search_tag"/>
-    <item
         android:id="@+id/action_open_tag_web_browser"
         android:icon="@drawable/ic_open_in_browser_white_24dp"
         app:showAsAction="ifRoom"
