@@ -14,6 +14,9 @@ dependencies {
     implementation "io.github.ternaryop:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
     implementation "io.github.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
 
+    implementation "com.squareup.moshi:moshi:${rootProject.ext.moshiLibVersion}"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:${rootProject.ext.moshiLibVersion}"
+
     implementation project(path: ':core')
     implementation project(path: ':db')
     implementation project(path: ':home')

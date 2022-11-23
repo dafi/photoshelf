@@ -54,6 +54,8 @@ buildscript {
 
         hiltAndroidVersion = '2.43.2'
 
+        moshiLibVersion = '1.13.0'
+
         ternaryOpUtilLibVersion = '1.4.12'
         ternaryOpDrawerLibVersion = '1.0.2'
         ternaryOpWidgetLibVersion = '1.0.5'
