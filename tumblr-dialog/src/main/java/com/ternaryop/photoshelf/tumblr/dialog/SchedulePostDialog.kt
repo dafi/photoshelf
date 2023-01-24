@@ -9,6 +9,7 @@ import android.text.format.DateUtils
 import android.view.View
 import android.widget.Button
 import android.widget.DatePicker
+import android.widget.TextView
 import android.widget.TimePicker
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
@@ -72,6 +73,9 @@ class SchedulePostDialog :
         timeFormat = SimpleDateFormat("HH:mm", Locale.US)
         updateTimeButton(scheduleDateTime)
         chooseTimeButton.setOnClickListener(this)
+
+        val title: TextView = view.findViewById(R.id.title)
+        title.text = post.firstTag
     }
 
     override fun onClick(v: View) {
