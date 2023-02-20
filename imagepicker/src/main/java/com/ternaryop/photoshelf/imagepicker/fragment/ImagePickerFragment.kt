@@ -67,6 +67,10 @@ class ImagePickerFragment(
     private lateinit var imageGallery: ImageGallery
     private val viewModel: ImagePickerViewModel by viewModels()
 
+    // contains the last edited data (title, tags), so it's not necessary to edit the title again
+    // if the publish dialog is reopen
+    var lastEditorResult: NewPostEditorResult? = null
+
     private val activityResult = registerForActivityResult(PostEditorActivityResultContracts.New(tumblrPostDialog)) {
         it?.also { onPublish(it) }
     }
@@ -324,12 +328,13 @@ class ImagePickerFragment(
 
         imageUriList ?: return
         try {
+            val firstTag = lastEditorResult?.tags?.replace(",.*$".toRegex(), "")?.let { listOf(it) }
             val data = NewPostEditorData(
                 imageUriList.map { it.second.toString() },
                 requireBlogName,
                 imageGallery.parsableTitle,
-                imageGallery.titleParsed.html,
-                imageGallery.titleParsed.tags,
+                lastEditorResult?.htmlTitle ?: imageGallery.titleParsed.html,
+                firstTag ?: imageGallery.titleParsed.tags,
                 mapOf(
                     EXTRA_THUMBNAILS_ITEMS to imageUriList.map { it.first.thumbnailUrl }
                 )
@@ -429,6 +434,7 @@ class ImagePickerFragment(
     }
 
     private fun onPublish(resultData: NewPostEditorResult) {
+        lastEditorResult = resultData
         resultData
             .urls
             .forEach { url ->
