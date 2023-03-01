@@ -39,12 +39,15 @@ import com.ternaryop.photoshelf.tumblr.dialog.blog.BlogSpinnerAdapter
 import com.ternaryop.photoshelf.tumblr.ui.draft.fragment.DraftListFragment
 import com.ternaryop.photoshelf.tumblr.ui.publish.fragment.PublishedPostsListFragment
 import com.ternaryop.photoshelf.tumblr.ui.schedule.fragment.ScheduledListFragment
+import com.ternaryop.photoshelf.util.askNotificationsPermission
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
 import com.ternaryop.utils.drawer.activity.DrawerActionBarActivity
 import com.ternaryop.utils.drawer.adapter.DrawerAdapter
 import com.ternaryop.utils.drawer.adapter.DrawerItem
 import dagger.hilt.android.AndroidEntryPoint
+
+private const val ASK_NOTIFICATION_PERMISSION = 2
 
 @AndroidEntryPoint
 class MainActivity :
@@ -89,6 +92,8 @@ class MainActivity :
             onAppStarted(logged)
         }
         enableUI(logged)
+
+        askNotificationsPermission(this, R.string.notification_permission_rationale, ASK_NOTIFICATION_PERMISSION)
     }
 
     private fun onAppStarted(logged: Boolean) {

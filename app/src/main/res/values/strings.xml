@@ -73,6 +73,7 @@
     <string name="close">Close</string>
     <string name="schedule_minutes_time_span_default">Default Schedule Span Minutes</string>
     <string name="import_permission_rationale">Import and Export need access to files, do you grant permission?</string>
+    <string name="notification_permission_rationale">I need to send notifications, do you grant permission?</string>
     <string name="recently_used_tags">Recently Used Tags</string>
     <string name="shortcut_long_feedly_saved">Feedly Saved</string>
     <string name="shortcut_long_feedly_unread">Feedly Unread</string>
