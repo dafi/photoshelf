@@ -10,6 +10,16 @@ Share photo on Tumblr
     run-as com.ternaryop.photoshelf.debug
     cd /data/data/com.ternaryop.photoshelf.debug
 
+# adb shell useful commands
+
+### List activities
+
+    adb shell dumpsys activity | grep photoshelf
+
+### Run activity for debug
+
+    adb shell am start -n com.ternaryop.photoshelf.debug/com.ternaryop.photoshelf.imagepicker.activity.ImagePickerActivity                   
+
 # Publish
 
     ./gradlew bundleRelease
