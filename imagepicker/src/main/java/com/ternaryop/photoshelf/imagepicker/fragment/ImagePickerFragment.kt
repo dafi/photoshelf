@@ -64,7 +64,7 @@ class ImagePickerFragment(
 
     private lateinit var imagePickerAdapter: ImagePickerAdapter
     private lateinit var selectedItemsViewContainer: SelectedItemsViewContainer
-    private lateinit var imageGallery: ImageGallery
+    private var imageGallery: ImageGallery? = null
     private val viewModel: ImagePickerViewModel by viewModels()
 
     // contains the last edited data (title, tags), so it's not necessary to edit the title again
@@ -245,13 +245,6 @@ class ImagePickerFragment(
         if (textWithUrl == null) {
             return
         }
-        progressHighlightViewLayout.startProgress()
-        progressHighlightViewLayout.visibility = VISIBLE
-        photoShelfSwipe.setRefreshingAndWaitingResult(true)
-        imagePickerAdapter.clear()
-
-        val message = resources.getQuantityString(R.plurals.download_url_with_count, 1, 0)
-        currentTextView.text = message
         val url = "(https?:.*)".toRegex().find(textWithUrl)?.value
 
         if (url == null) {
@@ -259,9 +252,18 @@ class ImagePickerFragment(
                 .setTitle(R.string.url_not_found)
                 .setMessage(getString(R.string.url_not_found_description, textWithUrl))
                 .show()
-        } else {
-            viewModel.readImageGallery(url)
+            return
         }
+
+        progressHighlightViewLayout.startProgress()
+        progressHighlightViewLayout.visibility = VISIBLE
+        photoShelfSwipe.setRefreshingAndWaitingResult(true)
+        imagePickerAdapter.clear()
+
+        val message = resources.getQuantityString(R.plurals.download_url_with_count, 1, 0)
+        currentTextView.text = message
+
+        viewModel.readImageGallery(url)
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -327,6 +329,8 @@ class ImagePickerFragment(
         progressbar.visibility = GONE
 
         imageUriList ?: return
+        val imageGallery = imageGallery ?: return
+
         try {
             val firstTag = lastEditorResult?.tags?.replace(",.*$".toRegex(), "")?.let { listOf(it) }
             val data = NewPostEditorData(
@@ -355,9 +359,13 @@ class ImagePickerFragment(
         showDetails(Snackbar.LENGTH_LONG)
         val imageInfoList = imageGallery.imageInfoList
         supportActionBar?.subtitle = resources.getQuantityString(
-            R.plurals.image_found, imageInfoList.size, imageInfoList.size
+            R.plurals.image_found,
+            imageInfoList.size,
+            imageInfoList.size
         )
         imagePickerAdapter.addAll(imageInfoList)
+
+        requireActivity().invalidateOptionsMenu()
     }
 
     override fun onTagClick(position: Int, clickedTag: String) = Unit
@@ -411,6 +419,10 @@ class ImagePickerFragment(
         inflater.inflate(R.menu.image_picker, menu)
     }
 
+    override fun onPrepareMenu(menu: Menu) {
+        menu.findItem(R.id.action_image_viewer_details).isVisible = imageGallery != null
+    }
+
     override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_image_viewer_details -> {
@@ -424,7 +436,7 @@ class ImagePickerFragment(
     private fun showDetails(duration: Int) {
         snackbarHolder.backgroundColor = ContextCompat.getColor(requireContext(), R.color.image_picker_detail_text_bg)
         snackbarHolder.textColor = ContextCompat.getColor(requireContext(), R.color.image_picker_detail_text_text)
-        snackbarHolder.show(Snackbar.make(gridView, imageGallery.title ?: "No title", duration))
+        snackbarHolder.show(Snackbar.make(gridView, imageGallery?.title ?: "No title", duration))
     }
 
     private fun showProgressbar(max: Int) {
