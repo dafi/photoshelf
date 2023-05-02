@@ -18,6 +18,11 @@
         <EditTextPreference
             android:key="photoshelfApikey"
             android:title="@string/photoshelf_apikey" />
+        <SwitchPreferenceCompat
+            android:defaultValue="@bool/show_picker_share"
+            android:key="show_picker_share_menu"
+            android:summary="@string/pref_show_picker_share_summary"
+            android:title="@string/pref_show_picker_share_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_import_export_key"

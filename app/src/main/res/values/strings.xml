@@ -89,5 +89,7 @@
     <string name="show_birthdays_notification">Birthdays</string>
     <string name="pref_feedly_category">Item count, refresh on delete</string>
     <string name="pref_feedly_title">Feedly</string>
+    <string name="pref_show_picker_share_title">Share Image Picker</string>
+    <string name="pref_show_picker_share_summary">Show Picker on Share Menu</string>
 
 </resources>

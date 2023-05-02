@@ -17,4 +17,5 @@
         <item>500</item>
         <item>1200</item>
     </string-array>
+    <bool name="show_picker_share">true</bool>
 </resources>

@@ -14,7 +14,11 @@ import androidx.preference.PreferenceScreen
 import com.ternaryop.compat.content.getPackageInfoCompat
 import com.ternaryop.photoshelf.R
 import com.ternaryop.photoshelf.api.ApiManager
+import com.ternaryop.photoshelf.core.prefs.PREF_KEY_SHOW_PICKER_SHARE_MENU
+import com.ternaryop.photoshelf.core.prefs.PREF_PHOTOSHELF_APIKEY
 import com.ternaryop.photoshelf.core.prefs.clearBlogList
+import com.ternaryop.photoshelf.core.prefs.showPickerShareMenu
+import com.ternaryop.photoshelf.util.app.showImagePickerOnShareMenu
 import com.ternaryop.preference.AppPreferenceFragment
 import com.ternaryop.tumblr.android.TumblrManager
 import com.ternaryop.utils.dialog.showErrorDialog
@@ -33,7 +37,6 @@ private const val KEY_DROPBOX_LOGIN = "dropbox_login"
 private const val KEY_VERSION = "version"
 private const val KEY_DROPBOX_VERSION = "dropbox_version"
 private const val KEY_SCHEDULE_MINUTES_TIME_SPAN = "schedule_minutes_time_span"
-private const val KEY_PHOTOSHELF_APIKEY = "photoshelfApikey"
 private const val REQUEST_FILE_PERMISSION = 1
 
 class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
@@ -82,8 +85,12 @@ class MainPreferenceFragment : AppPreferenceFragment(), CoroutineScope {
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         sharedPreferences ?: return
         when (key) {
-            KEY_PHOTOSHELF_APIKEY -> ApiManager.updateToken(
+            PREF_PHOTOSHELF_APIKEY -> ApiManager.updateToken(
                 sharedPreferences.getString(key, null) ?: ""
+            )
+            PREF_KEY_SHOW_PICKER_SHARE_MENU -> requireContext().packageManager.showImagePickerOnShareMenu(
+                requireContext().packageName,
+                sharedPreferences.showPickerShareMenu
             )
         }
     }
