@@ -62,7 +62,7 @@ buildscript {
         ternaryOpCrashReporterLibVersion = '1.0.2'
         ternaryOpApiCoroutinesLibVersion = '1.1.4'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.9'
-        ternaryOpFeedlyCoroutinesLibVersion = '1.0.7'
+        ternaryOpFeedlyCoroutinesLibVersion = '1.0.8'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.9'
 
         dropboxCoreLibVersion = '5.4.4'
@@ -86,7 +86,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.0'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.44.0"
