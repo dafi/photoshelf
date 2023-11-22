@@ -94,7 +94,7 @@ android {
         debugRealDeviceLocal {
             // use from real devices to access to local network
             initWith debug
-            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.0.13:8080/image/\""
+            buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://192.168.178.20:8080/image/\""
 
             // Otherwise compilation fails while importing the modules
             matchingFallbacks = ['debug']
