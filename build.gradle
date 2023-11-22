@@ -60,7 +60,7 @@ buildscript {
         ternaryOpDrawerLibVersion = '1.0.2'
         ternaryOpWidgetLibVersion = '1.0.5'
         ternaryOpCrashReporterLibVersion = '1.0.2'
-        ternaryOpApiCoroutinesLibVersion = '1.1.4'
+        ternaryOpApiCoroutinesLibVersion = '1.1.5'
         ternaryOpDomSelectorCoroutinesLibVersion = '1.0.9'
         ternaryOpFeedlyCoroutinesLibVersion = '1.0.8'
         ternaryOpTumblrCoroutinesLibVersion = '1.0.9'
