@@ -164,7 +164,9 @@ class BirthdayBrowserFragment(
                     scrollToFirstTodayBirthday()
                 }
             }
-            Status.ERROR -> {}
+            Status.ERROR -> {
+                result.command.error?.showErrorDialog(requireContext())
+            }
             Status.PROGRESS -> {}
         }
     }
