@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "selectors": [
     {
       "urlPattern": "images.bangtidy.net\/.*\/attachment",
@@ -67,11 +67,11 @@
     {
       "urlPattern": "hotcelebshome.com",
       "gallery": {
-        "container": ".entry-content",
-        "isImageDirectUrl": true,
-        "regExp": "<noscript><img(?:.*?)data-url=\"(.*?)\"(?:.*?)src=\"(.*?)\"(?:.*?)\/><\/noscript>",
-        "regExpImageUrlIndex": 2,
-        "regExpThumbUrlIndex": 1
+        "container": ".tiled-gallery__item a img"
+      },
+      "image": {
+        "css": ".full-size-link a",
+        "selAttr":"href"
       }
     },
     {
