@@ -53,8 +53,8 @@ class BlogSpinnerAdapter(
             val blog = tumblrRepository.blogByName(blogName)
             val url = blog.avatar.getClosestByWidth(IMAGE_AVATAR_WIDTH)?.url ?: blog.avatar.last().url
             holder.image.load(url) {
-                placeholder(R.drawable.stub)
-                error(R.drawable.stat_notify_error)
+                placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
+                error(com.ternaryop.photoshelf.core.R.drawable.stat_notify_error)
                 transformations(CircleCropTransformation())
                 // in case of error coil continues to call the url, the rate call limit is reached
                 // very fast so we stop it adding this listener

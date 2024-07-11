@@ -185,7 +185,7 @@ class BirthdayPublisherFragment(
         val selection = birthdayPhotoAdapter.selection
         val selectionCount = selection.itemCount
         actionMode?.subtitle = resources.getQuantityString(
-            R.plurals.selected_items_total,
+            com.ternaryop.photoshelf.core.R.plurals.selected_items_total,
             selectionCount,
             selectionCount,
             birthdayPhotoAdapter.itemCount
@@ -213,9 +213,9 @@ class BirthdayPublisherFragment(
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-        mode.title = getString(R.string.select_images)
+        mode.title = getString(com.ternaryop.photoshelf.core.R.string.select_images)
         mode.subtitle = resources.getQuantityString(
-            R.plurals.selected_items_total,
+            com.ternaryop.photoshelf.core.R.plurals.selected_items_total,
             1,
             1,
             birthdayPhotoAdapter.itemCount

@@ -18,7 +18,7 @@ class EditTumblrPostEditor(
     mruHolder: MRUHolder
 ) : AbsTumblrPostEditor(titleHolder, tagsHolder, mruHolder) {
     override fun setupUI(actionBar: ActionBar?, view: View) {
-        actionBar?.setTitle(R.string.edit_post_title)
+        actionBar?.setTitle(com.ternaryop.photoshelf.core.R.string.edit_post_title)
 
         view.findViewById<View>(R.id.blog).visibility = View.GONE
         view.findViewById<View>(R.id.refreshBlogList).visibility = View.GONE

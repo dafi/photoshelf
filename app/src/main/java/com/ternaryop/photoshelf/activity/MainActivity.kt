@@ -134,7 +134,7 @@ class MainActivity :
 
         adapter.add(DrawerItem(DRAWER_ITEM_HOME, getString(R.string.home), HomeFragment::class.java))
 
-        adapter.add(DrawerItem(DRAWER_ITEM_DRAFT, getString(R.string.draft_title), DraftListFragment::class.java, true))
+        adapter.add(DrawerItem(DRAWER_ITEM_DRAFT, getString(com.ternaryop.photoshelf.tumblr.dialog.R.string.draft_title), DraftListFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_SCHEDULE, getString(R.string.schedule_title), ScheduledListFragment::class.java, true))
         adapter.add(DrawerItem(DRAWER_ITEM_PUBLISHED_POST, getString(R.string.published_post), PublishedPostsListFragment::class.java))
         // Tags
@@ -172,7 +172,7 @@ class MainActivity :
         )
         // Settings
         adapter.add(DrawerItem.DRAWER_ITEM_DIVIDER)
-        adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(R.string.settings), MainPreferenceFragment::class.java))
+        adapter.add(DrawerItem(DRAWER_ITEM_SETTINGS, getString(com.ternaryop.photoshelf.feedly.R.string.settings), MainPreferenceFragment::class.java))
 
         return adapter
     }
@@ -275,7 +275,7 @@ class MainActivity :
         get() = toolbar
 
     override val toolbar: Toolbar
-        get() = findViewById<View>(R.id.drawer_toolbar) as Toolbar
+        get() = findViewById<View>(com.ternaryop.photoshelf.imageviewer.R.id.drawer_toolbar) as Toolbar
 
     override fun onPreferenceStartScreen(
         caller: PreferenceFragmentCompat,

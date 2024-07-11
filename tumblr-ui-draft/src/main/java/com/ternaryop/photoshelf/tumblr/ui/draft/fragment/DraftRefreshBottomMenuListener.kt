@@ -10,7 +10,7 @@ class DraftRefreshBottomMenuListener(
     private val draftListFragment: DraftListFragment
 ) : BottomMenuListener {
     override val title: String
-        get() = draftListFragment.resources.getString(R.string.refresh)
+        get() = draftListFragment.resources.getString(com.ternaryop.photoshelf.core.R.string.refresh)
     override val menuId: Int
         get() = R.menu.draft_refresh
 

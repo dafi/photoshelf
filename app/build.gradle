@@ -50,6 +50,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId "com.ternaryop.photoshelf"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -83,10 +87,18 @@ android {
             applicationIdSuffix ".debug"
             shrinkResources false
         }
-        debugGenymotion {
+        debugEmulatorLocal {
             initWith debug
-            // used with genymotion
+            // used with emulator
             buildConfigField "String", "PHOTOSHELF_API_PREFIX", "\"http://10.0.3.2:8080/image/\""
+
+            // Otherwise compilation fails while importing the modules
+            matchingFallbacks = ['debug']
+        }
+        debugEmulatorProd {
+            initWith debug
+            // used with emulator
+            buildConfigField "String" , "PHOTOSHELF_API_PREFIX" , "\"https://visualdiffer.com/image/\""
 
             // Otherwise compilation fails while importing the modules
             matchingFallbacks = ['debug']
@@ -110,7 +122,10 @@ android {
     }
 
     sourceSets {
-        debugGenymotion {
+        debugEmulatorLocal {
+            root = "src/debug"
+        }
+        debugEmulatorProd {
             root = "src/debug"
         }
         debugRealDeviceLocal {

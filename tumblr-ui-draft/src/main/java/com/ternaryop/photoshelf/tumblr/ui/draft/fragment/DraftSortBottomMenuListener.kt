@@ -12,7 +12,7 @@ class DraftSortBottomMenuListener(
     private val sortSwitcher: PhotoSortSwitcher
 ) : BottomMenuListener {
     override val title: String
-        get() = draftListFragment.resources.getString(R.string.sort_by)
+        get() = draftListFragment.resources.getString(com.ternaryop.photoshelf.core.R.string.sort_by)
     override val menuId: Int
         get() = R.menu.draft_sort
 

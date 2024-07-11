@@ -62,7 +62,7 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         setImageDimension(altSize, thumbnailWidth)
 
         thumbImage.load(altSize.url) {
-            placeholder(R.drawable.stub)
+            placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
         }
     }
 
@@ -137,9 +137,9 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun updateItemColors() {
         when (post.scheduleTimeType) {
-            PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(R.array.post_never)
-            PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(R.array.post_future)
-            else -> setColors(if (post.groupId % 2 == 0) R.array.post_even else R.array.post_odd)
+            PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(com.ternaryop.photoshelf.core.R.array.post_never)
+            PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(com.ternaryop.photoshelf.core.R.array.post_future)
+            else -> setColors(if (post.groupId % 2 == 0) com.ternaryop.photoshelf.core.R.array.post_even else com.ternaryop.photoshelf.core.R.array.post_odd)
         }
     }
 

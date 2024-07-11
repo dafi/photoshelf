@@ -55,7 +55,7 @@ class TagPhotoBrowserFragment(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_tag_browse_photo_list, container, false)
+    ): View? = inflater.inflate(com.ternaryop.photoshelf.tagnavigator.R.layout.fragment_tag_browse_photo_list, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -91,11 +91,11 @@ class TagPhotoBrowserFragment(
     }
 
     private fun setupSearch(view: View, blogName: String) {
-        val textView = view.findViewById<MultiAutoCompleteTextView>(R.id.search_tags)
-        view.findViewById<Group>(R.id.search_group).visibility = View.VISIBLE
+        val textView = view.findViewById<MultiAutoCompleteTextView>(com.ternaryop.photoshelf.tagnavigator.R.id.search_tags)
+        view.findViewById<Group>(com.ternaryop.photoshelf.tagnavigator.R.id.search_group).visibility = View.VISIBLE
         textView.setText(postTag)
         TagsHolder(requireContext(), textView, blogName)
-        view.findViewById<AppCompatImageButton>(R.id.search_button).setOnClickListener {
+        view.findViewById<AppCompatImageButton>(com.ternaryop.photoshelf.tagnavigator.R.id.search_button).setOnClickListener {
             val tags = TagsHolder.cleanSeparators(textView.text)
             if (tags.isNotEmpty()) {
                 onSearchTags(tags)

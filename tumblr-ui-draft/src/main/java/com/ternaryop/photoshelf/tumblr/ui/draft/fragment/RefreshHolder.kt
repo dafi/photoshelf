@@ -22,8 +22,8 @@ internal class RefreshHolder(
         get() = progressHighlightViewLayout.currentView as TextView
 
     init {
-        progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context, R.anim.fade_loop)
-        swipeLayout.setColorScheme(R.array.progress_swipe_colors)
+        progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context, com.ternaryop.photoshelf.core.R.anim.fade_loop)
+        swipeLayout.setColorScheme(com.ternaryop.photoshelf.core.R.array.progress_swipe_colors)
         swipeLayout.setOnRefreshListener(listener)
     }
 

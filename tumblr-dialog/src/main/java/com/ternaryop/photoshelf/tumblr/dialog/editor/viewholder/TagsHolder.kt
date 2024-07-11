@@ -21,7 +21,7 @@ class TagsHolder(
 
     private val tagAdapter = TagNavigatorArrayAdapter(
         context,
-        R.layout.tag_navigator_row,
+        com.ternaryop.photoshelf.tagnavigator.R.layout.tag_navigator_row,
         blogName
     )
 

@@ -152,7 +152,7 @@ abstract class AbsPostsListFragment(
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
         mode.setTitle(R.string.select_posts)
-        mode.subtitle = resources.getQuantityString(R.plurals.selected_items, 1, 1)
+        mode.subtitle = resources.getQuantityString(com.ternaryop.photoshelf.core.R.plurals.selected_items, 1, 1)
         val inflater = mode.menuInflater
         inflater.inflate(actionModeMenuId, menu)
 
@@ -276,7 +276,7 @@ abstract class AbsPostsListFragment(
             updateMenuItems()
             val selectionCount = selection.itemCount
             actionMode?.subtitle = resources.getQuantityString(
-                R.plurals.selected_items,
+                com.ternaryop.photoshelf.core.R.plurals.selected_items,
                 selectionCount,
                 selectionCount
             )
@@ -329,7 +329,7 @@ abstract class AbsPostsListFragment(
         val searchMenu = menu.findItem(R.id.action_search)
         if (searchMenu != null) {
             searchView = (searchMenu.actionView as SearchView).also {
-                it.queryHint = getString(R.string.enter_tag_hint)
+                it.queryHint = getString(com.ternaryop.photoshelf.core.R.string.enter_tag_hint)
                 it.setOnQueryTextListener(this)
             }
         }
@@ -374,7 +374,7 @@ abstract class AbsPostsListFragment(
         selectPosts(errorList)
         DialogUtils.showSimpleMessageDialog(
             requireContext(),
-            R.string.generic_error,
+            com.ternaryop.photoshelf.core.R.string.generic_error,
             requireContext().resources.getQuantityString(
                 R.plurals.general_posts_error,
                 errorList.size,

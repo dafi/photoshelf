@@ -40,7 +40,7 @@ open class ScheduledListFragment(
         super.onViewCreated(view, savedInstanceState)
 
         photoAdapter.onPhotoBrowseClick = this
-        view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.post_future_background_color))
+        view.setBackgroundColor(ContextCompat.getColor(requireContext(), com.ternaryop.photoshelf.core.R.color.post_future_background_color))
 
         viewModel.result.observe(
             viewLifecycleOwner,

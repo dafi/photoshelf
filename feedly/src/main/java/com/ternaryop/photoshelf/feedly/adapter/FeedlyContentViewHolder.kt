@@ -29,9 +29,9 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     val title: TextView = itemView.findViewById(android.R.id.text1)
     val subtitle: TextView = itemView.findViewById(android.R.id.text2)
     val checkbox: CheckBox = itemView.findViewById(android.R.id.checkbox)
-    val faviconImage: ImageView = itemView.findViewById(R.id.thumbnail_image)
-    val sidebar: View = itemView.findViewById(R.id.sidebar)
-    val tag: TextView = itemView.findViewById(R.id.tag)
+    val faviconImage: ImageView = itemView.findViewById(com.ternaryop.photoshelf.core.R.id.thumbnail_image)
+    val sidebar: View = itemView.findViewById(com.ternaryop.photoshelf.core.R.id.sidebar)
+    val tag: TextView = itemView.findViewById(com.ternaryop.photoshelf.core.R.id.tag)
 
     fun bindModel(content: FeedlyContentDelegate) {
         // setting listener to null resolved the lost of unchecked state
@@ -47,10 +47,10 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     private fun displayImage(content: FeedlyContentDelegate, size: Int) {
         setImageDimension(size)
 
-        val url = content.domain?.let { "https://www.google.com/s2/favicons?domain_url=$it" } ?: R.drawable.stub
+        val url = content.domain?.let { "https://www.google.com/s2/favicons?domain_url=$it" } ?: com.ternaryop.photoshelf.core.R.drawable.stub
         faviconImage.load(url) {
-            placeholder(R.drawable.stub)
-            error(R.drawable.stat_notify_error)
+            placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
+            error(com.ternaryop.photoshelf.core.R.drawable.stat_notify_error)
         }
     }
 

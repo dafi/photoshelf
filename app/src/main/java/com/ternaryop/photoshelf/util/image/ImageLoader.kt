@@ -13,7 +13,7 @@ object ImageLoader {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         Coil.setImageLoader(
             ImageLoader.Builder(context)
-                .error(R.drawable.ic_sync_problem_black_24dp)
+                .error(com.ternaryop.photoshelf.core.R.drawable.ic_sync_problem_black_24dp)
                 .allowHardware(prefs.getBoolean(PREF_USE_HARDWARE_IMAGES, true))
                 .build()
         )

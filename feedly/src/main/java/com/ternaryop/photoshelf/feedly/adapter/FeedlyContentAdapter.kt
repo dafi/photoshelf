@@ -20,7 +20,7 @@ class FeedlyContentAdapter(private val context: Context) :
         get() = allContents.filterNot { it.isChecked }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedlyContentViewHolder {
-        return FeedlyContentViewHolder(LayoutInflater.from(context).inflate(R.layout.list_row_2, parent, false))
+        return FeedlyContentViewHolder(LayoutInflater.from(context).inflate(com.ternaryop.photoshelf.core.R.layout.list_row_2, parent, false))
     }
 
     override fun onBindViewHolder(holder: FeedlyContentViewHolder, position: Int) {
@@ -75,8 +75,8 @@ class FeedlyContentAdapter(private val context: Context) :
         }
 
         when (v.id) {
-            R.id.list_row2 -> clickListener?.onTitleClick(position)
-            R.id.tag -> clickListener?.onTagClick(position)
+            com.ternaryop.photoshelf.core.R.id.list_row2 -> clickListener?.onTitleClick(position)
+            com.ternaryop.photoshelf.core.R.id.tag -> clickListener?.onTagClick(position)
         }
     }
 

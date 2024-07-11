@@ -31,7 +31,7 @@ class PublishedPostsListFragment(
         view.setBackgroundColor(
             ContextCompat.getColor(
                 requireContext(),
-                R.color.post_even_background_color
+                com.ternaryop.photoshelf.core.R.color.post_even_background_color
             )
         )
         viewModel.result.observe(

@@ -13,7 +13,7 @@ buildscript {
     ext.kotlin_version = '1.8.0'
     ext {
         minSdkVersion = 26
-        targetSdkVersion = 33
+        targetSdkVersion = 35
         compileSdkVersion = 33
 
         def runTasks = gradle.startParameter.taskNames
@@ -86,7 +86,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.5.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.github.ben-manes:gradle-versions-plugin:0.44.0"

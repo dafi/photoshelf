@@ -82,7 +82,7 @@ class DraftListFragment(
         refreshHolder = RefreshHolder(
             requireContext(),
             draftEmptyView.findViewById(android.R.id.empty),
-            view.findViewById(R.id.swipe_container),
+            view.findViewById(com.ternaryop.photoshelf.tumblr.ui.core.R.id.swipe_container),
             this
         )
 

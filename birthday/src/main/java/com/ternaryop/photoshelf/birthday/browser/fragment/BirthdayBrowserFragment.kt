@@ -172,8 +172,8 @@ class BirthdayBrowserFragment(
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-        mode.setTitle(R.string.select_items)
-        mode.subtitle = resources.getQuantityString(R.plurals.selected_items, 1, 1)
+        mode.setTitle(com.ternaryop.photoshelf.core.R.string.select_items)
+        mode.subtitle = resources.getQuantityString(com.ternaryop.photoshelf.core.R.plurals.selected_items, 1, 1)
         val inflater = mode.menuInflater
         inflater.inflate(actionModeMenuId, menu)
         return true
@@ -238,13 +238,13 @@ class BirthdayBrowserFragment(
         }
         val message = when (postAction) {
             ItemAction.DELETE -> resources.getQuantityString(
-                R.plurals.delete_items_confirm,
+                com.ternaryop.photoshelf.core.R.plurals.delete_items_confirm,
                 birthdays.size,
                 birthdays.size,
                 birthdays[0].name
             )
             ItemAction.MARK_AS_IGNORED -> resources.getQuantityString(
-                R.plurals.update_items_confirm,
+                com.ternaryop.photoshelf.core.R.plurals.update_items_confirm,
                 birthdays.size,
                 birthdays.size,
                 birthdays[0].name
@@ -386,7 +386,7 @@ class BirthdayBrowserFragment(
         val supportActionBar = supportActionBar ?: return
         supportActionBar.setDisplayShowTitleEnabled(false)
         val months = arrayOfNulls<String>(MONTH_COUNT + 1)
-        months[0] = getString(R.string.all)
+        months[0] = getString(com.ternaryop.photoshelf.core.R.string.all)
         System.arraycopy(DateFormatSymbols().months, 0, months, 1, MONTH_COUNT)
         val monthAdapter = ArrayAdapter<String>(
             supportActionBar.themedContext,
@@ -398,7 +398,7 @@ class BirthdayBrowserFragment(
         toolbarSpinner = LayoutInflater
             .from(supportActionBar.themedContext)
             .inflate(
-                R.layout.toolbar_spinner,
+                com.ternaryop.photoshelf.core.R.layout.toolbar_spinner,
                 fragmentActivityStatus.drawerToolbar,
                 false
             ) as Spinner
@@ -460,7 +460,7 @@ class BirthdayBrowserFragment(
             updateMenuItems()
             val selectionCount = selection.itemCount
             actionMode?.subtitle = resources.getQuantityString(
-                R.plurals.selected_items,
+                com.ternaryop.photoshelf.core.R.plurals.selected_items,
                 selectionCount,
                 selectionCount
             )

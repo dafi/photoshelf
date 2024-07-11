@@ -52,20 +52,20 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val date = birthday.birthdate
 
         if (date == null) {
-            itemView.setBackgroundResource(R.drawable.list_selector_post_group_even)
+            itemView.setBackgroundResource(com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_even)
             return
         }
 
         val now = Calendar.getInstance()
 
         if (date.dayOfMonth == now.dayOfMonth && date.month == now.month) {
-            itemView.setBackgroundResource(R.drawable.list_selector_post_never)
+            itemView.setBackgroundResource(com.ternaryop.photoshelf.core.R.drawable.list_selector_post_never)
         } else {
             // group by day, not perfect by better than nothing
             val isEven = date.dayOfMonth and 1 == 0
             itemView.setBackgroundResource(
-                if (isEven) R.drawable.list_selector_post_group_even
-                else R.drawable.list_selector_post_group_odd
+                if (isEven) com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_even
+                else com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_odd
             )
         }
     }

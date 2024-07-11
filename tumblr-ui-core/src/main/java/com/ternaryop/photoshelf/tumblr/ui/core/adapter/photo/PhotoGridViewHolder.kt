@@ -47,12 +47,12 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
     private fun updateItemColors(colorCellByScheduleTimeType: Boolean) {
         if (colorCellByScheduleTimeType) {
             when (post.scheduleTimeType) {
-                PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(R.array.post_never)
-                PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(R.array.post_future)
-                else -> setColors(R.array.post_normal)
+                PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(com.ternaryop.photoshelf.core.R.array.post_never)
+                PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(com.ternaryop.photoshelf.core.R.array.post_future)
+                else -> setColors(com.ternaryop.photoshelf.core.R.array.post_normal)
             }
         } else {
-            setColors(R.array.post_normal)
+            setColors(com.ternaryop.photoshelf.core.R.array.post_normal)
         }
     }
 
@@ -63,7 +63,7 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
 
     private fun displayImage(checked: Boolean) {
         thumbImage.load(checkNotNull(post.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)).url) {
-            placeholder(R.drawable.stub)
+            placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
             listener(
                 onSuccess = { _, _ -> thumbImage.isChecked = checked }
             )

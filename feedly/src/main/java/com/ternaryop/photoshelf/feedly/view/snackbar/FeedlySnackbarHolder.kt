@@ -22,14 +22,14 @@ class FeedlySnackbarHolder(
             build(
                 view,
                 view.context.getString(R.string.token_expired),
-                view.context.getString(R.string.refresh),
+                view.context.getString(com.ternaryop.photoshelf.core.R.string.refresh),
                 expiredTokenAction
             )
         } else {
             build(
                 view,
                 t?.localizedMessage,
-                view.context.getString(R.string.refresh),
+                view.context.getString(com.ternaryop.photoshelf.core.R.string.refresh),
                 refreshAction
             )
         }

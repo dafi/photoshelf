@@ -55,7 +55,7 @@ class HomeFragment : AbsPhotoShelfFragment() {
                 val textView = it.findViewById<TextView>(viewIdColumnMap.keyAt(i))
                 val count = statsMap[viewIdColumnMap.valueAt(i)]
                 textView.text = format.format(count)
-                textView.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.fade))
+                textView.startAnimation(AnimationUtils.loadAnimation(activity, com.ternaryop.photoshelf.core.R.anim.fade))
             }
         }
     }

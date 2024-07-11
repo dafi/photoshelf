@@ -171,7 +171,7 @@ class ImagePickerFragment(
                 error?.localizedMessage ?: ""
             )
         } else {
-            snackbarHolder.show(gridView, error, resources.getString(R.string.refresh)) { refreshUI() }
+            snackbarHolder.show(gridView, error, resources.getString(com.ternaryop.photoshelf.core.R.string.refresh)) { refreshUI() }
         }
     }
 
@@ -195,7 +195,7 @@ class ImagePickerFragment(
         setupSelectedItemsViewContainer(view, context, layoutManager)
 
         progressHighlightViewLayout = view.findViewById(android.R.id.empty)
-        progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context, R.anim.fade_loop)
+        progressHighlightViewLayout.progressAnimation = AnimationUtils.loadAnimation(context, com.ternaryop.photoshelf.core.R.anim.fade_loop)
 
         imagePickerAdapter = ImagePickerAdapter(context)
         imagePickerAdapter.setOnPhotoBrowseClick(this)
@@ -267,9 +267,9 @@ class ImagePickerFragment(
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-        mode.title = getString(R.string.select_images)
+        mode.title = getString(com.ternaryop.photoshelf.core.R.string.select_images)
         mode.subtitle = resources.getQuantityString(
-            R.plurals.selected_items_total,
+            com.ternaryop.photoshelf.core.R.plurals.selected_items_total,
             1,
             1,
             imagePickerAdapter.itemCount
@@ -407,7 +407,7 @@ class ImagePickerFragment(
         } else {
             val selectionCount = selection.itemCount
             actionMode?.subtitle = resources.getQuantityString(
-                R.plurals.selected_items_total,
+                com.ternaryop.photoshelf.core.R.plurals.selected_items_total,
                 selectionCount,
                 selectionCount,
                 imagePickerAdapter.itemCount

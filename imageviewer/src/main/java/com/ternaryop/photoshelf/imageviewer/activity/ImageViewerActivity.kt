@@ -199,7 +199,7 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right)
+        overridePendingTransition(com.ternaryop.photoshelf.core.R.anim.slide_in_right, com.ternaryop.photoshelf.core.R.anim.slide_out_right)
     }
 
     private fun getFileProvider(): String {
@@ -222,8 +222,8 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
 
             val animBundle = ActivityOptions.makeCustomAnimation(
                 context,
-                R.anim.slide_in_left,
-                R.anim.slide_out_left
+                com.ternaryop.photoshelf.core.R.anim.slide_in_left,
+                com.ternaryop.photoshelf.core.R.anim.slide_out_left
             ).toBundle()
             context.startActivity(intent, animBundle)
         }

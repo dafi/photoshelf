@@ -12,7 +12,7 @@ class PostActionColorItemDecoration(private val context: Context) : ColorItemDec
             is PostAction.Delete -> R.color.photo_item_animation_delete_bg
             is PostAction.Publish -> R.color.photo_item_animation_publish_bg
             is PostAction.Schedule -> R.color.photo_item_animation_schedule_bg
-            else -> R.color.post_normal_background_color
+            else -> com.ternaryop.photoshelf.core.R.color.post_normal_background_color
         }
         setColor(ContextCompat.getColor(context, color))
     }

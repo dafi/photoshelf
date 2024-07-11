@@ -18,8 +18,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
     private lateinit var blogName: String
 
-    override val contentViewLayoutId: Int = R.layout.activity_tag_photo_browser
-    override val contentFrameId: Int = R.id.content_frame
+    override val contentViewLayoutId: Int = com.ternaryop.photoshelf.tagnavigator.R.layout.activity_tag_photo_browser
+    override val contentFrameId: Int = com.ternaryop.photoshelf.tumblr.dialog.R.id.content_frame
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val data = tagPhotoBrowserData(intent.extras)

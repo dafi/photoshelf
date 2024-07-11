@@ -20,7 +20,7 @@ class ThumbnailViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         // thumbnail urls could be the same than destination images (i.e. very large images) causing
         // a huge memory footprint so we resize the images using fit/centerCrop
         thumbImage.load(url) {
-            placeholder(R.drawable.stub)
+            placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
             scale(Scale.FILL)
         }
     }

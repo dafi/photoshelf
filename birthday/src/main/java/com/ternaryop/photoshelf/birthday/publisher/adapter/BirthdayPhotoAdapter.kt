@@ -120,7 +120,7 @@ class BirthdayPhotoAdapter(
 
         private fun displayImage(item: Birthday, checked: Boolean) {
             thumbImage.load(checkNotNull(item.getClosestPhotoByWidth(TumblrAltSize.IMAGE_WIDTH_250)).url) {
-                placeholder(R.drawable.stub)
+                placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
                 listener(
                     onSuccess = { _, _ -> thumbImage.isChecked = checked }
                 )

@@ -89,7 +89,7 @@ class ImagePickerAdapter(
             // a huge memory footprint so we resize the images using fit/centerCrop
             val thumbnailUrl = imageInfo.thumbnailUrl ?: return
             thumbImage.load(thumbnailUrl) {
-                placeholder(R.drawable.stub)
+                placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
                 scale(Scale.FILL)
                 listener(
                     onSuccess = { _, _ -> thumbImage.isChecked = checked }

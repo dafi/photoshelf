@@ -45,8 +45,8 @@ class MRUHolder(
 
     private fun addSwipeToDelete(recyclerView: RecyclerView) {
         val swipeHandler = object : SwipeCallback(
-            checkNotNull(ContextCompat.getDrawable(context, R.drawable.ic_action_delete)),
-            ColorDrawable(ContextCompat.getColor(context, R.color.animation_delete_bg))
+            checkNotNull(ContextCompat.getDrawable(context, com.ternaryop.photoshelf.core.R.drawable.ic_action_delete)),
+            ColorDrawable(ContextCompat.getColor(context, com.ternaryop.photoshelf.core.R.color.animation_delete_bg))
         ) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 adapter.removeAt(viewHolder.bindingAdapterPosition)
