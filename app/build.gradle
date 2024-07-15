@@ -34,7 +34,7 @@ dependencies {
 }
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
 
     signingConfigs {
         release {
@@ -56,8 +56,8 @@ android {
 
     defaultConfig {
         applicationId "com.ternaryop.photoshelf"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
         multiDexEnabled true
         versionCode 1
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -67,7 +67,7 @@ android {
     }
 
     // see https://developer.android.com/studio/build/optimize-your-build#use_static_build_properties
-    applicationVariants.all { variant ->
+    applicationVariants.configureEach { variant ->
         if (variant.buildType.name == "release") {
             variant.outputs.each { output -> output.versionCodeOverride = versionCodeByTask() }
         }
@@ -153,7 +153,7 @@ android {
     namespace 'com.ternaryop.photoshelf'
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     compileTask ->
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
