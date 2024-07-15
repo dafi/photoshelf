@@ -1,30 +1,25 @@
 dependencies {
-    implementation "androidx.appcompat:appcompat:${rootProject.ext.androidXAppCompatLibVersion}"
-    implementation "androidx.core:core-ktx:${rootProject.ext.androidXCoreKtx}"
-    implementation "androidx.recyclerview:recyclerview:${rootProject.ext.androidXRecyclerviewLibVersion}"
-    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.androidXConstraintlayoutLibVersion}"
-    implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:${rootProject.ext.androidXSwiperefreshlayoutLibVersion}"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.androidXLifecycleVersion}"
-    implementation "androidx.lifecycle:lifecycle-common-java8:${rootProject.ext.androidXLifecycleVersion}"
-    implementation "androidx.lifecycle:lifecycle-livedata:${rootProject.ext.androidXLifecycleVersion}"
-    implementation "androidx.work:work-runtime-ktx:${rootProject.ext.androidXWorkLibVersion}"
-    implementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
-    implementation "androidx.fragment:fragment-ktx:${rootProject.ext.androidXFragmentVersion}"
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.preference.ktx)
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata)
+    implementation(libs.androidx.work.runtime.ktx)
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.kotlinxCoroutinesCore}"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.kotlinxCoroutinesAndroid}"
+    implementation(libs.androidx.fragment.ktx)
 
-    implementation "io.coil-kt:coil:${rootProject.ext.coilLibVersion}"
+    implementation(libs.coroutines.core)
 
-    implementation "io.github.ternaryop:common-utils:${rootProject.ext.ternaryOpUtilLibVersion}"
-    implementation "io.github.ternaryop:widget:${rootProject.ext.ternaryOpWidgetLibVersion}"
-    implementation "io.github.ternaryop:tumblr-coroutines:${rootProject.ext.ternaryOpTumblrCoroutinesLibVersion}"
+    implementation(libs.coil)
 
-    testImplementation "junit:junit:${rootProject.ext.junitLibVersion}"
-    androidTestImplementation "androidx.annotation:annotation:${rootProject.ext.androidXAnnotationLibVersion}"
-    androidTestImplementation "androidx.test:rules:${rootProject.ext.androidXRulesLibVersion}"
-    androidTestImplementation "androidx.test.ext:junit:${rootProject.ext.androidxTestExtJunit}"
-    androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.androidXEspressoCoreLibVersion}"
+    implementation(libs.ternaryop.common.util)
+    implementation(libs.ternaryop.widget)
+    implementation(libs.ternaryop.tumblr)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

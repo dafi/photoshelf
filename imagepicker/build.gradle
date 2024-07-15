@@ -4,12 +4,11 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
+    implementation(libs.androidx.material)
+    implementation(libs.ternaryop.domselector)
 
-    implementation "io.github.ternaryop:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
-
-    implementation project(path: ':core')
-    implementation project(path: ':tumblr-dialog')
+    implementation(project(path: ':core'))
+    implementation(project(path: ':tumblr-dialog'))
 }
 
 android {

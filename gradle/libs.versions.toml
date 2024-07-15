@@ -1,0 +1,102 @@
+[versions]
+agp = "8.5.1"
+gradle = "8.5.1"
+gradle-plugin = "1.4.0"
+kotlin = "1.8.0"
+ksp = "1.9.0-1.0.13"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.0-alpha01"
+material = "1.9.0-alpha01"
+okhttp3-logging-interceptor = "5.0.0-alpha.11"
+hilt-android = '2.44.2'
+
+androidXRecyclerview = '1.3.0-rc01'
+androidXAnnotation = '1.6.0-alpha01'
+androidXConstraintlayout = '2.2.0-alpha05'
+androidXPreference = '1.2.1'
+androidXSwiperefreshlayout = '1.2.0-alpha01'
+androidXCoreKtx = '1.10.0-alpha01'
+androidXLifecycleVersion = '2.6.0-alpha04'
+androidXWork = '2.8.0-rc01'
+androidXFragmentVersion = '1.6.0-alpha04'
+
+flexbox = '3.0.0'
+
+kotlinxCoroutinesCore = '1.6.4'
+kotlinxCoroutinesAndroid = '1.6.4'
+
+moshi = '1.14.0'
+
+ternaryop-util = '1.4.12'
+ternaryop-drawer = '1.0.2'
+ternaryop-widget = '1.0.5'
+ternaryop-crash-reporter = '1.0.2'
+ternaryop-api = '1.1.5'
+ternaryop-domselector = '1.0.9'
+ternaryop-feedly = '1.0.8'
+ternaryop-tumblr = "1.0.9"
+ternaryop-utils-drawer = "1.0.2"
+
+dropboxCore = '5.4.4'
+coil = '2.2.2'
+
+detekt = "1.22.0"
+benmanes = "0.44.0"
+
+androidXRules = '1.5.0'
+androidXEspressoCore = '3.5.1'
+androidxTestExtJunit = '1.1.5'
+
+[libraries]
+androidx-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidXCoreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidXRecyclerview" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidXConstraintlayout" }
+androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "androidXPreference" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "androidXSwiperefreshlayout" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidXLifecycleVersion" }
+androidx-lifecycle-common-java8 = { group = "androidx.lifecycle", name = "lifecycle-common-java8", version.ref = "androidXLifecycleVersion" }
+androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "androidXLifecycleVersion" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidXWork" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidXAnnotation" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidXFragmentVersion" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+android-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
+hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt-android" }
+moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
+moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+okhttp3-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp3-logging-interceptor" }
+coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
+coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+dropbox = { group = "com.dropbox.core", name = "dropbox-core-sdk", version.ref = "dropboxCore" }
+
+ternaryop-utils-drawer = { group = "io.github.ternaryop", name = "utils-drawer", version.ref = "ternaryop-utils-drawer" }
+ternaryop-tumblr = { group = "io.github.ternaryop", name = "tumblr-coroutines", version.ref = "ternaryop-tumblr" }
+ternaryop-common-util = { group = "io.github.ternaryop", name = "common-utils", version.ref = "ternaryop-util" }
+ternaryop-widget = { group = "io.github.ternaryop", name = "widget", version.ref = "ternaryop-widget" }
+ternaryop-api = { group = "io.github.ternaryop", name = "api-coroutines", version.ref = "ternaryop-api" }
+ternaryop-feedly = { group = "io.github.ternaryop", name = "feedly-coroutines", version.ref = "ternaryop-feedly" }
+ternaryop-domselector = { group = "io.github.ternaryop", name = "domselector-coroutines", version.ref = "ternaryop-domselector" }
+ternaryop-crash-reporter = { group = "io.github.ternaryop", name = "crash-reporter", version.ref = "ternaryop-crash-reporter" }
+
+gradle-plugin = { group = "gradle.plugin.project", name = "plugin", version.ref = "gradle-plugin" }
+benmanes-version-deps = { group = "com.github.ben-manes", name = "gradle-versions-plugin", version.ref = "benmanes" }
+kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+detekt-plugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+detekt-plugin-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

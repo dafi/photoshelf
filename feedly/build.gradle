@@ -4,14 +4,14 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "androidx.preference:preference-ktx:${rootProject.ext.androidXPreferenceLibVersion}"
+    implementation(libs.androidx.preference.ktx)
 
-    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
+    implementation(libs.androidx.material)
 
-    implementation "io.github.ternaryop:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
-    implementation "io.github.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
+    implementation(libs.ternaryop.api)
+    implementation(libs.ternaryop.feedly)
 
-    implementation project(path: ':core')
+    implementation(project(path: ':core'))
 }
 
 android {

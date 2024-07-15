@@ -11,7 +11,7 @@ style:
   ReturnCount:
     active: true
     max: 3
-    excludedFunctions: "equals,onOptionsItemSelected,onPreferenceTreeClick,onMenuItemSelected"
+    excludedFunctions: [ "equals", "onOptionsItemSelected", "onPreferenceTreeClick", "onMenuItemSelected" ]
   MaxLineLength:
     active: false
   SpacingBetweenPackageAndImports:

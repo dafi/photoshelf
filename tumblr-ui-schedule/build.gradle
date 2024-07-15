@@ -4,9 +4,9 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation project(path: ':core')
-    implementation project(path: ':tumblr-ui-core')
-    implementation project(path: ':tumblr-dialog')
+    implementation(project(path: ':core'))
+    implementation(project(path: ':tumblr-ui-core'))
+    implementation(project(path: ':tumblr-dialog'))
 }
 
 android {

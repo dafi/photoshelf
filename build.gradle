@@ -8,9 +8,10 @@ apply plugin: "org.jetbrains.kotlin.jvm"
 apply plugin: 'kotlin-kapt'
 apply plugin: "io.gitlab.arturbosch.detekt"
 apply from: 'https://raw.githubusercontent.com/dafi/gradle-scripts/main/dependencyUpdatesReplacer.gradle'
+apply plugin: "com.jraska.module.graph.assertion"
 
 buildscript {
-    ext.kotlin_version = '1.8.0'
+    ext.kotlin_version = libs.kotlin
     ext {
         minSdkVersion = 26
         targetSdkVersion = 35
@@ -34,49 +35,6 @@ buildscript {
                 compileSdkVersion = compileSdkVersionDevPreview
             }
         }
-
-        androidXAppCompatLibVersion = '1.7.0-alpha01'
-        androidXRecyclerviewLibVersion = '1.3.0-rc01'
-        androidXAnnotationLibVersion = '1.6.0-alpha01'
-        androidXMaterialLibVersion = '1.9.0-alpha01'
-        androidXConstraintlayoutLibVersion = '2.2.0-alpha05'
-        androidXPreferenceLibVersion = '1.2.0'
-        androidXSwiperefreshlayoutLibVersion = '1.2.0-alpha01'
-        androidXCoreKtx = '1.10.0-alpha01'
-        androidXLifecycleVersion = '2.6.0-alpha04'
-        androidXWorkLibVersion = '2.8.0-rc01'
-        androidXFragmentVersion = '1.6.0-alpha04'
-
-        flexboxLibVersion = '3.0.0'
-
-        kotlinxCoroutinesCore = '1.6.4'
-        kotlinxCoroutinesAndroid = '1.6.4'
-
-        hiltAndroidVersion = '2.44.2'
-
-        moshiLibVersion = '1.14.0'
-
-        ternaryOpUtilLibVersion = '1.4.12'
-        ternaryOpDrawerLibVersion = '1.0.2'
-        ternaryOpWidgetLibVersion = '1.0.5'
-        ternaryOpCrashReporterLibVersion = '1.0.2'
-        ternaryOpApiCoroutinesLibVersion = '1.1.5'
-        ternaryOpDomSelectorCoroutinesLibVersion = '1.0.9'
-        ternaryOpFeedlyCoroutinesLibVersion = '1.0.8'
-        ternaryOpTumblrCoroutinesLibVersion = '1.0.9'
-
-        dropboxCoreLibVersion = '5.4.4'
-
-        coilLibVersion = '2.2.2'
-
-        okhttp3LoggingInterceptorLibVersion = '5.0.0-alpha.11'
-
-        detektLibVersion = "1.22.0"
-
-        junitLibVersion = '4.13.2'
-        androidXRulesLibVersion = '1.5.0'
-        androidXEspressoCoreLibVersion = '3.5.1'
-        androidxTestExtJunit = '1.1.5'
     }
     repositories {
         google()
@@ -86,15 +44,15 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath(libs.gradle)
+        classpath(libs.kotlin.plugin)
 
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.44.0"
-        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detektLibVersion"
+        classpath(libs.benmanes.version.deps)
+        classpath(libs.detekt.plugin)
 
-        classpath "gradle.plugin.project:plugin:1.4.0"
+        classpath(libs.gradle.plugin)
 
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltAndroidVersion"
+        classpath(libs.hilt.android.gradle.plugin)
     }
 }
 
@@ -107,12 +65,10 @@ allprojects {
     }
 }
 
-apply plugin: "com.jraska.module.graph.assertion"
-
 allprojects {
     // JUnit 4.13 causes "Unresolved reference" so it's necessary to change resolution strategy
     configurations.all {
-        resolutionStrategy.force "junit:junit:$junitLibVersion"
+        resolutionStrategy.force(libs.junit)
     }
 }
 
@@ -126,7 +82,7 @@ subprojects {
     }
 
     dependencies {
-        detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:$detektLibVersion"
+        detektPlugins(libs.detekt.plugin.formatting)
     }
 
     if (name == "app") {

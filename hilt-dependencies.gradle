@@ -7,6 +7,6 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
 dependencies {
-    implementation "com.google.dagger:hilt-android:${rootProject.ext.hiltAndroidVersion}"
-    kapt "com.google.dagger:hilt-android-compiler:${rootProject.ext.hiltAndroidVersion}"
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
 }

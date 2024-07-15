@@ -4,15 +4,15 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
-    implementation "com.google.android.flexbox:flexbox:${rootProject.ext.flexboxLibVersion}"
+    implementation(libs.androidx.material)
+    implementation(libs.android.flexbox)
 
-    implementation "io.github.ternaryop:api-coroutines:${rootProject.ext.ternaryOpApiCoroutinesLibVersion}"
+    implementation(libs.ternaryop.api)
 
-    implementation project(path: ':core')
-    implementation project(path: ':tumblr-ui-core')
-    implementation project(path: ':tag-navigator')
-    implementation project(path: ':tumblr-dialog')
+    implementation(project(path: ':core'))
+    implementation(project(path: ':tumblr-ui-core'))
+    implementation(project(path: ':tag-navigator'))
+    implementation(project(path: ':tumblr-dialog'))
 }
 
 android {

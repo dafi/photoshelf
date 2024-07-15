@@ -7,30 +7,30 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.dropbox.core:dropbox-core-sdk:${rootProject.ext.dropboxCoreLibVersion}"
+    implementation(libs.dropbox)
+    implementation(libs.ternaryop.crash.reporter)
 
-    implementation "io.github.ternaryop:crash-reporter:${rootProject.ext.ternaryOpCrashReporterLibVersion}"
-    implementation "io.github.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
-    implementation "io.github.ternaryop:domselector-coroutines:${rootProject.ext.ternaryOpDomSelectorCoroutinesLibVersion}"
-    implementation "io.github.ternaryop:feedly-coroutines:${rootProject.ext.ternaryOpFeedlyCoroutinesLibVersion}"
+    implementation(libs.ternaryop.utils.drawer)
+    implementation(libs.ternaryop.domselector)
+    implementation(libs.ternaryop.feedly)
 
-    implementation "com.squareup.moshi:moshi:${rootProject.ext.moshiLibVersion}"
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:${rootProject.ext.moshiLibVersion}"
+    implementation(libs.moshi)
+    kapt(libs.moshi.kotlin.codegen)
 
-    implementation project(path: ':core')
-    implementation project(path: ':db')
-    implementation project(path: ':home')
-    implementation project(path: ':birthday')
-    implementation project(path: ':tumblr-dialog')
-    implementation project(path: ':tag-navigator')
-    implementation project(path: ':tag-photo-browser')
-    implementation project(path: ':imageviewer')
-    implementation project(path: ':imagepicker')
-    implementation project(path: ':feedly')
-    implementation project(path: ':tumblr-ui-core')
-    implementation project(path: ':tumblr-ui-draft')
-    implementation project(path: ':tumblr-ui-schedule')
-    implementation project(path: ':tumblr-ui-publish')
+    implementation(project(path: ':core'))
+    implementation(project(path: ':db'))
+    implementation(project(path: ':home'))
+    implementation(project(path: ':birthday'))
+    implementation(project(path: ':tumblr-dialog'))
+    implementation(project(path: ':tag-navigator'))
+    implementation(project(path: ':tag-photo-browser'))
+    implementation(project(path: ':imageviewer'))
+    implementation(project(path: ':imagepicker'))
+    implementation(project(path: ':feedly'))
+    implementation(project(path: ':tumblr-ui-core'))
+    implementation(project(path: ':tumblr-ui-draft'))
+    implementation(project(path: ':tumblr-ui-schedule'))
+    implementation(project(path: ':tumblr-ui-publish'))
 }
 
 android {

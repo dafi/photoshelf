@@ -4,11 +4,11 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
-    implementation "com.google.android.flexbox:flexbox:${rootProject.ext.flexboxLibVersion}"
+    implementation(libs.androidx.material)
+    implementation(libs.android.flexbox)
 
-    implementation project(path: ':core')
-    implementation project(path: ':tumblr-dialog')
+    implementation(project(path: ':core'))
+    implementation(project(path: ':tumblr-dialog'))
 }
 
 android {

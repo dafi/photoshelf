@@ -4,11 +4,9 @@ apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.google.android.material:material:${rootProject.ext.androidXMaterialLibVersion}"
-
-    implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp3LoggingInterceptorLibVersion}"
-
-    implementation "io.github.ternaryop:utils-drawer:${rootProject.ext.ternaryOpDrawerLibVersion}"
+    implementation(libs.androidx.material)
+    implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.ternaryop.utils.drawer)
 }
 
 android {

@@ -37,3 +37,11 @@ Compile with all warnings
 Run lint before release
 
     ./gradlew clean check bundleRelease
+
+# Generate dependencies graph
+
+    gradlegraphviz all_modules all.png
+
+# Run detekt
+
+    ./gradlew detekt
