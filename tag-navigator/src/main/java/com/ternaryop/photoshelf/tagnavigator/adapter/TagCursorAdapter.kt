@@ -22,7 +22,12 @@ class TagCursorAdapter(
     resId: Int,
     var blogName: String
 ) : SimpleCursorAdapter(
-    context, resId, null, arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1), intArrayOf(android.R.id.text1), 0
+    context,
+    resId,
+    null,
+    arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1),
+    intArrayOf(android.R.id.text1),
+    0
 ),
     SimpleCursorAdapter.ViewBinder {
 

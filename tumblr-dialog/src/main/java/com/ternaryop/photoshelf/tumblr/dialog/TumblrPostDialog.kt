@@ -15,7 +15,7 @@ open class PostEditorData(
     val extras: Map<String, Any>? = null
 ) : Serializable {
     companion object {
-        const val serialVersionUID = 1L
+        private const val serialVersionUID = 1L
     }
 }
 
@@ -26,7 +26,7 @@ open class PostEditorResult(
     val extras: Map<String, Any>? = null
 ) : Serializable {
     companion object {
-        const val serialVersionUID = 1L
+        private const val serialVersionUID = 1L
     }
 }
 
@@ -61,7 +61,7 @@ data class SchedulePostData(
     val dateTime: Calendar
 ) : Serializable {
     companion object {
-        const val serialVersionUID = 1L
+        private const val serialVersionUID = 1L
     }
 }
 

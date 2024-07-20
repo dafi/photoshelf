@@ -13,6 +13,7 @@ interface PhotoShelfApplicationEnv {
             }
             val appEnv = Class
                 .forName("com.ternaryop.photoshelf.debug.DebugApplicationEnv")
+                .getDeclaredConstructor()
                 .newInstance() as PhotoShelfApplicationEnv
             appEnv.setup(context)
         }

@@ -144,7 +144,10 @@ class BirthdayPublisherFragment(
         }
 
         BirthdayPublisherService.startPublish(
-            requireContext(), selectedBirthdays, requireBlogName, publishAsDraft
+            requireContext(),
+            selectedBirthdays,
+            requireBlogName,
+            publishAsDraft
         )
         Toast.makeText(
             requireContext(),

@@ -58,7 +58,9 @@ class TagListLayout : FlexboxLayout {
     private fun setup(attrs: AttributeSet?) {
         val a = context.theme.obtainStyledAttributes(
             attrs,
-            R.styleable.com_ternaryop_photoshelf_widget_TagListLayout, 0, 0
+            R.styleable.com_ternaryop_photoshelf_widget_TagListLayout,
+            0,
+            0
         )
         try {
             tagLayout = a.getResourceId(R.styleable.com_ternaryop_photoshelf_widget_TagListLayout_tagLayout, -1)

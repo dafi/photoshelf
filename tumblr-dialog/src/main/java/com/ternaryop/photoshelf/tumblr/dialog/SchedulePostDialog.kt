@@ -84,7 +84,8 @@ class SchedulePostDialog :
                 context,
                 this,
                 scheduleDateTime.hourOfDay,
-                scheduleDateTime.minute, true
+                scheduleDateTime.minute,
+                true
             ).show()
             R.id.choose_date_button -> {
                 val dialog = DatePickerDialog(

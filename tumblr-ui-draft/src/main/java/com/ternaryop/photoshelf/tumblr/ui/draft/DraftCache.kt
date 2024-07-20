@@ -4,6 +4,7 @@ import com.ternaryop.tumblr.TumblrPost
 
 interface DraftCache {
     fun read(blogName: String): List<TumblrPost>
+
     /**
      * clear the entire cache, if [blogName] is not null just clear its cache
      */

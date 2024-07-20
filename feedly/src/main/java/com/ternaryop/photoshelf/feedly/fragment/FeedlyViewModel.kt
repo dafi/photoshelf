@@ -121,7 +121,10 @@ data class MarkSavedData(val idList: List<String>, val checked: Boolean, val pos
 
 sealed class FeedlyModelResult {
     data class AccessTokenRefresh(val command: Command<AccessToken>) : FeedlyModelResult()
-    data class Content(val command: Command<FetchedData<FeedlyContentDelegate>>, val type: FeedlyContentType) : FeedlyModelResult()
+    data class Content(
+        val command: Command<FetchedData<FeedlyContentDelegate>>,
+        val type: FeedlyContentType
+    ) : FeedlyModelResult()
     data class MarkSaved(val command: Command<MarkSavedData>) : FeedlyModelResult()
     data class Categories(val command: Command<List<Category>>) : FeedlyModelResult()
 }

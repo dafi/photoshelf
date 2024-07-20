@@ -64,8 +64,11 @@ class BirthdayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             // group by day, not perfect by better than nothing
             val isEven = date.dayOfMonth and 1 == 0
             itemView.setBackgroundResource(
-                if (isEven) com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_even
-                else com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_odd
+                if (isEven) {
+                    com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_even
+                } else {
+                    com.ternaryop.photoshelf.core.R.drawable.list_selector_post_group_odd
+                }
             )
         }
     }

@@ -47,7 +47,9 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     private fun displayImage(content: FeedlyContentDelegate, size: Int) {
         setImageDimension(size)
 
-        val url = content.domain?.let { "https://www.google.com/s2/favicons?domain_url=$it" } ?: com.ternaryop.photoshelf.core.R.drawable.stub
+        val url = content.domain?.let {
+            "https://www.google.com/s2/favicons?domain_url=$it"
+        } ?: com.ternaryop.photoshelf.core.R.drawable.stub
         faviconImage.load(url) {
             placeholder(com.ternaryop.photoshelf.core.R.drawable.stub)
             error(com.ternaryop.photoshelf.core.R.drawable.stat_notify_error)

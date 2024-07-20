@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+
 package com.ternaryop.photoshelf.di
 
 import android.app.Application

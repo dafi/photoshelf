@@ -31,7 +31,8 @@ class TagPhotoBrowserActivity : AbsPhotoShelfActivity() {
 
     override fun createFragment(): Fragment =
         supportFragmentManager.fragmentFactory.instantiate(
-            classLoader, TagPhotoBrowserFragment::class.java.name
+            classLoader,
+            TagPhotoBrowserFragment::class.java.name
         )
 
     companion object {

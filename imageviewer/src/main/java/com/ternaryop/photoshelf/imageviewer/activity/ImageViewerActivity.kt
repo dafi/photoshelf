@@ -152,8 +152,10 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
             }
             R.id.action_image_viewer_copy_url -> {
                 ImageViewerUtil.copyToClipboard(
-                    this, imageViewerData.imageUrl,
-                    getString(R.string.image_url_description), R.string.url_copied_to_clipboard_title
+                    this,
+                    imageViewerData.imageUrl,
+                    getString(R.string.image_url_description),
+                    R.string.url_copied_to_clipboard_title
                 )
                 return true
             }
@@ -199,7 +201,10 @@ class ImageViewerActivity : AbsPhotoShelfActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(com.ternaryop.photoshelf.core.R.anim.slide_in_right, com.ternaryop.photoshelf.core.R.anim.slide_out_right)
+        overridePendingTransition(
+            com.ternaryop.photoshelf.core.R.anim.slide_in_right,
+            com.ternaryop.photoshelf.core.R.anim.slide_out_right
+        )
     }
 
     private fun getFileProvider(): String {

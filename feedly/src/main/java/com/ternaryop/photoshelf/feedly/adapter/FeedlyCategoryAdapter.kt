@@ -36,7 +36,9 @@ class FeedlyCategoryAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedlyCategoryViewHolder {
         return FeedlyCategoryViewHolder(
             LayoutInflater.from(context).inflate(
-                R.layout.list_row_checkbox, parent, false
+                R.layout.list_row_checkbox,
+                parent,
+                false
             )
         )
     }

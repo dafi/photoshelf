@@ -29,7 +29,9 @@ class BirthdayNotificationBroadcastReceiver : BroadcastReceiver() {
             val intent = Intent(context, BirthdayNotificationBroadcastReceiver::class.java)
                 .setAction(birthdayClearAction)
             return PendingIntent.getBroadcast(
-                context.applicationContext, 0, intent,
+                context.applicationContext,
+                0,
+                intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         }

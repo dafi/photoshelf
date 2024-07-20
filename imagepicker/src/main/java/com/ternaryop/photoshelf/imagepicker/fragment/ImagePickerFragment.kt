@@ -171,7 +171,9 @@ class ImagePickerFragment(
                 error?.localizedMessage ?: ""
             )
         } else {
-            snackbarHolder.show(gridView, error, resources.getString(com.ternaryop.photoshelf.core.R.string.refresh)) { refreshUI() }
+            snackbarHolder.show(gridView, error, resources.getString(com.ternaryop.photoshelf.core.R.string.refresh)) {
+                refreshUI()
+            }
         }
     }
 
@@ -293,16 +295,19 @@ class ImagePickerFragment(
                 finish(mode)
                 true
             }
+
             R.id.create_from_file -> {
                 showProgressbar(imagePickerAdapter.selectedItems.size)
                 viewModel.imageList(imagePickerAdapter.selectedItems, requireContext().cacheDir)
                 finish(mode)
                 true
             }
+
             R.id.show_selected_items -> {
                 selectedItemsViewContainer.toggleVisibility()
                 true
             }
+
             else -> false
         }
     }
@@ -429,6 +434,7 @@ class ImagePickerFragment(
                 showDetails(Snackbar.LENGTH_INDEFINITE)
                 true
             }
+
             else -> false
         }
     }

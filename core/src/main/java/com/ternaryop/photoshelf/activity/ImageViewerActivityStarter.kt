@@ -10,7 +10,7 @@ class TagPhotoBrowserData(
     val allowSearch: Boolean
 ) : Serializable {
     companion object {
-        const val serialVersionUID = 1L
+        private const val serialVersionUID = 1L
     }
 }
 
@@ -20,7 +20,7 @@ class ImageViewerData(
     val tag: String? = null
 ) : Serializable {
     companion object {
-        const val serialVersionUID = 1L
+        private const val serialVersionUID = 1L
     }
 }
 

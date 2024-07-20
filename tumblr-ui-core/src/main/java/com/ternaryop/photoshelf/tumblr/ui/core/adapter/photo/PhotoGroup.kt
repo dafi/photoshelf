@@ -51,6 +51,8 @@ object PhotoGroup {
         // group is empty
         return if (min == max) {
             null
-        } else Range.create(min, max)
+        } else {
+            Range.create(min, max)
+        }
     }
 }

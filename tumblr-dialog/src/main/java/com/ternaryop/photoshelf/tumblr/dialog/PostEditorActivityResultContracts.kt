@@ -16,7 +16,10 @@ object PostEditorActivityResultContracts {
 
         override fun parseResult(resultCode: Int, intent: Intent?): NewPostEditorResult? {
             if (resultCode == Activity.RESULT_OK) {
-                return intent?.extras?.getSerializableCompat(TumblrPostDialog.ARG_RESULT, NewPostEditorResult::class.java)
+                return intent?.extras?.getSerializableCompat(
+                    TumblrPostDialog.ARG_RESULT,
+                    NewPostEditorResult::class.java
+                )
             }
             return null
         }

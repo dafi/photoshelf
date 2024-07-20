@@ -44,7 +44,8 @@ class PhotoShelfApplication : Application() {
         ApiManager
             .setup(
                 PreferenceManager.getDefaultSharedPreferences(this).photoShelfApikey,
-                BuildConfig.PHOTOSHELF_API_PREFIX, okHttpClient
+                BuildConfig.PHOTOSHELF_API_PREFIX,
+                okHttpClient
             )
         FeedlyClient.setup(
             FeedlyClientInfo(

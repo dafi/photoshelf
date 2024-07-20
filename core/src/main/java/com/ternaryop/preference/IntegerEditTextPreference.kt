@@ -19,7 +19,8 @@ class IntegerEditTextPreference : EditTextPreference {
         setupEditListener()
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) :
+        super(context, attrs, defStyleAttr, defStyleRes) {
         setupEditListener()
     }
 

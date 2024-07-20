@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength", "ArgumentListWrapping")
+
 package com.ternaryop.photoshelf.feedly.prefs
 
 import android.content.Context

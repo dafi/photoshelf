@@ -31,7 +31,9 @@ class BirthdayAdapter(
     var onLongClickListener: View.OnLongClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BirthdayViewHolder {
-        return BirthdayViewHolder(LayoutInflater.from(context).inflate(com.ternaryop.photoshelf.core.R.layout.list_row_2, parent, false))
+        return BirthdayViewHolder(
+            LayoutInflater.from(context).inflate(com.ternaryop.photoshelf.core.R.layout.list_row_2, parent, false)
+        )
     }
 
     override fun onBindViewHolder(holder: BirthdayViewHolder, position: Int) {

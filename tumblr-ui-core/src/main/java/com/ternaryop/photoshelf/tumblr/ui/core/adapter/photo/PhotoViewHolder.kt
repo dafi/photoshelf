@@ -137,9 +137,18 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private fun updateItemColors() {
         when (post.scheduleTimeType) {
-            PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(com.ternaryop.photoshelf.core.R.array.post_never)
-            PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(com.ternaryop.photoshelf.core.R.array.post_future)
-            else -> setColors(if (post.groupId % 2 == 0) com.ternaryop.photoshelf.core.R.array.post_even else com.ternaryop.photoshelf.core.R.array.post_odd)
+            PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER ->
+                setColors(com.ternaryop.photoshelf.core.R.array.post_never)
+            PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE ->
+                setColors(com.ternaryop.photoshelf.core.R.array.post_future)
+            else ->
+                setColors(
+                    if (post.groupId % 2 == 0) {
+                        com.ternaryop.photoshelf.core.R.array.post_even
+                    } else {
+                        com.ternaryop.photoshelf.core.R.array.post_odd
+                    }
+                )
         }
     }
 

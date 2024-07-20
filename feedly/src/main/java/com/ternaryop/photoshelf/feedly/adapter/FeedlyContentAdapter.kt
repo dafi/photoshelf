@@ -20,7 +20,9 @@ class FeedlyContentAdapter(private val context: Context) :
         get() = allContents.filterNot { it.isChecked }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedlyContentViewHolder {
-        return FeedlyContentViewHolder(LayoutInflater.from(context).inflate(com.ternaryop.photoshelf.core.R.layout.list_row_2, parent, false))
+        return FeedlyContentViewHolder(
+            LayoutInflater.from(context).inflate(com.ternaryop.photoshelf.core.R.layout.list_row_2, parent, false)
+        )
     }
 
     override fun onBindViewHolder(holder: FeedlyContentViewHolder, position: Int) {

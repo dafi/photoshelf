@@ -47,9 +47,12 @@ class PhotoGridViewHolder(vi: View) : RecyclerView.ViewHolder(vi) {
     private fun updateItemColors(colorCellByScheduleTimeType: Boolean) {
         if (colorCellByScheduleTimeType) {
             when (post.scheduleTimeType) {
-                PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER -> setColors(com.ternaryop.photoshelf.core.R.array.post_never)
-                PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE -> setColors(com.ternaryop.photoshelf.core.R.array.post_future)
-                else -> setColors(com.ternaryop.photoshelf.core.R.array.post_normal)
+                PhotoShelfPost.ScheduleTime.POST_PUBLISH_NEVER ->
+                    setColors(com.ternaryop.photoshelf.core.R.array.post_never)
+                PhotoShelfPost.ScheduleTime.POST_PUBLISH_FUTURE ->
+                    setColors(com.ternaryop.photoshelf.core.R.array.post_future)
+                else ->
+                    setColors(com.ternaryop.photoshelf.core.R.array.post_normal)
             }
         } else {
             setColors(com.ternaryop.photoshelf.core.R.array.post_normal)

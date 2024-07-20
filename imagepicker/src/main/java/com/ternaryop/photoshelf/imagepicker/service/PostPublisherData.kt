@@ -22,7 +22,7 @@ class PostPublisherData(
 ) {
     fun newPublishClassInstance(): OnPublish? {
         return try {
-            publishClassName?.let { Class.forName(it).newInstance() as OnPublish }
+            publishClassName?.let { Class.forName(it).getDeclaredConstructor().newInstance() as OnPublish }
         } catch (t: Throwable) {
             t.printStackTrace()
             null

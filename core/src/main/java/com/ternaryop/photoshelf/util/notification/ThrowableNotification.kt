@@ -19,7 +19,12 @@ private const val NOTIFICATION_TAG = "com.ternaryop.notification.error"
 fun Throwable.notify(context: Context, title: String, actionTitle: String, intent: Intent, offsetId: Int) {
     intent.putExtra(EXTRA_NOTIFICATION_TAG, NOTIFICATION_TAG)
     // use offsetId to preserve extras for different notifications
-    val pendingIntent = PendingIntent.getBroadcast(context, offsetId, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT)
+    val pendingIntent = PendingIntent.getBroadcast(
+        context,
+        offsetId,
+        intent,
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+    )
 
     val builder = NotificationCompat.Builder(context, THROWABLE_CHANNEL_ID)
         .setSmallIcon(R.drawable.stat_notify_error)

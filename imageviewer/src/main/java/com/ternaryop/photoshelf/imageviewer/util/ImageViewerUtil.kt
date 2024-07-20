@@ -106,7 +106,9 @@ object ImageViewerUtil {
         // append extension with "."
         return if (index != -1) {
             fileName + imageUrl.substring(index)
-        } else fileName
+        } else {
+            fileName
+        }
     }
 
     private fun getPicturesDirectory(relativePath: File): File {

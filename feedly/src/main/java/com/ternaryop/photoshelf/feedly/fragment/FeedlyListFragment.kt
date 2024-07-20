@@ -347,7 +347,10 @@ class FeedlyListFragment(
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when (requestKey) {
             CATEGORIES_DIALOG_REQUEST_KEY -> onSelected(
-                result.getSerializableCompat(FeedlyCategoriesDialog.EXTRA_SELECTED_CATEGORIES_ID, Serializable::class.java) as Set<String>
+                result.getSerializableCompat(
+                    FeedlyCategoriesDialog.EXTRA_SELECTED_CATEGORIES_ID,
+                    Serializable::class.java
+                ) as Set<String>
             )
         }
     }

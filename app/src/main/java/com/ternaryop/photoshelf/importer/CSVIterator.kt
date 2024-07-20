@@ -6,7 +6,8 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.text.ParseException
 
-class CSVIterator<T> @Throws(IOException::class)
+class CSVIterator<T>
+@Throws(IOException::class)
 constructor(fis: FileInputStream, private val builder: CSVBuilder<T>) : Iterator<T> {
     private val bufferedReader = BufferedReader(InputStreamReader(fis))
     private var line: String? = null

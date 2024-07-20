@@ -64,7 +64,9 @@ class FeedlyContentDelegate(private val delegated: FeedlyContent) : FeedlyConten
     fun getLastPublishTimestampAsString(context: Context): String {
         return if (lastPublishTimestamp <= 0) {
             context.getString(R.string.never_published)
-        } else (lastPublishTimestamp * SECOND_IN_MILLIS).formatPublishDaysAgo(APPEND_DATE_FOR_PAST_AND_PRESENT)
+        } else {
+            (lastPublishTimestamp * SECOND_IN_MILLIS).formatPublishDaysAgo(APPEND_DATE_FOR_PAST_AND_PRESENT)
+        }
     }
 
     fun getActionTimestampAsString(context: Context): String {

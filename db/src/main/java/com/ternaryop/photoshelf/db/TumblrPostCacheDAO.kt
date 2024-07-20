@@ -19,7 +19,7 @@ class TumblrPostCacheDAO internal constructor(
             "_id                    TEXT NOT NULL," +
             "blog_name              TEXT NOT NULL," +
             "cache_type             INTEGER NOT NULL," +
-            "post_timestamp         INT UNSIGNED NOT NULL," +
+            "post_timestamp         INT NOT NULL," +
             "post_object            BLOB NOT NULL," +
             "PRIMARY KEY(_id))"
         db.execSQL(sql)
@@ -27,7 +27,9 @@ class TumblrPostCacheDAO internal constructor(
             String.format(
                 Locale.US,
                 "CREATE INDEX %1\$s_%2\$s_%3\$s_IDX ON %1\$s(%2\$s, %3\$s);",
-                TABLE_NAME, BLOG_NAME, CACHE_TYPE
+                TABLE_NAME,
+                BLOG_NAME,
+                CACHE_TYPE
             )
         )
     }

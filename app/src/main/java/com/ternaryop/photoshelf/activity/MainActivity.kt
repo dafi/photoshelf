@@ -1,4 +1,4 @@
-@file:Suppress("MaxLineLength")
+@file:Suppress("MaxLineLength", "ArgumentListWrapping")
 
 package com.ternaryop.photoshelf.activity
 
@@ -143,7 +143,9 @@ class MainActivity :
 
         adapter.add(
             DrawerItem(
-                DRAWER_ITEM_BROWSE_TAGS, getString(R.string.browse_tags_title), TagListFragment::class.java,
+                DRAWER_ITEM_BROWSE_TAGS,
+                getString(R.string.browse_tags_title),
+                TagListFragment::class.java,
                 argumentsBuilder = {
                     prefs.selectedBlogName?.let { bundleOf(TagListFragment.ARG_BLOG_NAME to it) }
                 }
@@ -159,7 +161,8 @@ class MainActivity :
         adapter.add(
             DrawerItem(
                 DRAWER_ITEM_FEEDLY_UNREAD,
-                getString(R.string.feedly_unread_title), FeedlyListFragment::class.java,
+                getString(R.string.feedly_unread_title),
+                FeedlyListFragment::class.java,
                 arguments = bundleOf(FeedlyListFragment.ARG_CONTENT_TYPE to FeedlyContentType.Unread)
             )
         )
@@ -167,7 +170,9 @@ class MainActivity :
         adapter.add(
             DrawerItem(
                 DRAWER_ITEM_TEST_PAGE,
-                getString(R.string.test_page_title), ImagePickerFragment::class.java, arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))
+                getString(R.string.test_page_title),
+                ImagePickerFragment::class.java,
+                arguments = bundleOf(EXTRA_URL to getString(R.string.test_page_url))
             )
         )
         // Settings

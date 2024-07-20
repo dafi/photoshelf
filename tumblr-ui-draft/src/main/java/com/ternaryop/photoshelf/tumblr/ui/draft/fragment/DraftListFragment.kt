@@ -246,7 +246,8 @@ class DraftListFragment(
         when (requestKey) {
             TAG_NAVIGATOR_DIALOG_REQUEST_KEY ->
                 result.getString(EXTRA_SELECTED_TAG)?.also { tag ->
-                    (recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(photoAdapter.findTagIndex(tag), 1)
+                    (recyclerView.layoutManager as LinearLayoutManager)
+                        .scrollToPositionWithOffset(photoAdapter.findTagIndex(tag), 1)
                 }
             TAG_SCHEDULE_DIALOG_REQUEST_KEY -> result.getSerializableCompat(
                 SchedulePostDialog.EXTRA_SCHEDULE_DATA,
@@ -266,7 +267,10 @@ class DraftListFragment(
         recyclerView.scrollItemOnTopByPosition(0)
 
         PreferenceManager.getDefaultSharedPreferences(recyclerView.context).edit().also {
-            photoAdapterSwitcher.adapterGroup.adapter.sortSwitcher.saveSettings(adapterSwitcherConfig.prefNamePrefix, it)
+            photoAdapterSwitcher.adapterGroup.adapter.sortSwitcher.saveSettings(
+                adapterSwitcherConfig.prefNamePrefix,
+                it
+            )
         }.apply()
     }
 
