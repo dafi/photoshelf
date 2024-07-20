@@ -6,8 +6,8 @@ import androidx.lifecycle.Observer
  * Used as a wrapper for data that is exposed via a LiveData that represents an event.
  */
 class EventObserver<T>(private val onEventUnhandledContent: (T) -> Unit) : Observer<Event<T>> {
-    override fun onChanged(event: Event<T>?) {
-        event?.getContentIfNotHandled()?.let(onEventUnhandledContent)
+    override fun onChanged(value: Event<T>) {
+        value.getContentIfNotHandled()?.let(onEventUnhandledContent)
     }
 }
 

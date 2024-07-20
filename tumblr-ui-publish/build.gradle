@@ -1,3 +1,10 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
+}
+
 apply from: "$rootProject.projectDir/shared-android-library.gradle"
 apply from: "$rootProject.projectDir/hilt-dependencies.gradle"
 

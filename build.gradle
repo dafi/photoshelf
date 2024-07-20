@@ -3,22 +3,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-// https://github.com/ben-manes/gradle-versions-plugin
-
-// run ./gradlew dependencyUpdates
-apply plugin: "com.github.ben-manes.versions"
-apply plugin: "org.jetbrains.kotlin.jvm"
-apply plugin: 'kotlin-kapt'
-apply plugin: "io.gitlab.arturbosch.detekt"
-apply from: 'https://raw.githubusercontent.com/dafi/gradle-scripts/main/dependencyUpdatesReplacer.gradle'
-apply plugin: "com.jraska.module.graph.assertion"
-
 buildscript {
-    ext.kotlin_version = libs.kotlin
     ext {
         minSdkVersion = 26
-        targetSdkVersion = 35
-        compileSdkVersion = 33
+        targetSdkVersion = 34
+        compileSdkVersion = 34
 
         def runTasks = gradle.startParameter.taskNames
         def releaseTaskNames = ["aR", "assembleRelease", "bundleRelease"]
@@ -39,40 +28,17 @@ buildscript {
             }
         }
     }
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath(libs.gradle)
-        classpath(libs.kotlin.plugin)
-
-        classpath(libs.benmanes.version.deps)
-        classpath(libs.detekt.plugin)
-
-        classpath(libs.gradle.plugin)
-
-        classpath(libs.hilt.android.gradle.plugin)
-    }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        // mavenRepo urls: "file:///home/user/.m2/repository"
-        mavenLocal()
-        google()
-    }
-}
-
-allprojects {
-    // JUnit 4.13 causes "Unresolved reference" so it's necessary to change resolution strategy
-    configurations.configureEach {
-        resolutionStrategy.force(libs.junit)
-    }
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.hilt.android) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.versiondependency)
+    alias(libs.plugins.graphviz)
 }
 
 subprojects {
