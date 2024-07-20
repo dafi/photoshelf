@@ -42,6 +42,23 @@ Run lint before release
 
     gradlegraphviz all_modules all.png
 
+where `gradlegraphviz` is the shell function
+
+    gradlegraphviz() {
+    if [ $# -lt 1 ]
+    then echo "Syntax <graphviz path> <png path>\nExample: gradlegraphviz all_modules all.png"
+    else ./gradlew generateModulesGraphvizText -Pmodules.graph.output.gv="$1" && dot -Tpng "$1" -O && open "$1.png"
+    fi
+    }
+
 # Run detekt
 
     ./gradlew detekt
+
+only on specific module
+
+    ./gradlew :home:detekt
+
+# Run dependency checker
+
+    ./gradlew dependencyUpdates
