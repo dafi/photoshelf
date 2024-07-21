@@ -219,7 +219,7 @@ class FeedlyListFragment(
     private fun unreadCountText(): String {
         val count = adapter.allContents.count { it.isChecked }
         return if (count < adapter.allContents.size) {
-            ", " + resources.getString(R.string.unread_other_count, count)
+            ", " + resources.getQuantityString(R.plurals.unread_other_count, count, count)
         } else {
             ""
         }
