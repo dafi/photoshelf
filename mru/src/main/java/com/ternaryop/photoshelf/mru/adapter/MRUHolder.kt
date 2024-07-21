@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.mru.MRU
-import com.ternaryop.photoshelf.mru.R
 import com.ternaryop.utils.recyclerview.SwipeCallback
 
 /**

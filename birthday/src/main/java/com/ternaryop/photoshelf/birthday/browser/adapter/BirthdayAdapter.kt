@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.ternaryop.photoshelf.adapter.SelectionArrayViewHolder
 import com.ternaryop.photoshelf.api.birthday.Birthday
-import com.ternaryop.photoshelf.birthday.R
 import com.ternaryop.utils.date.dayOfMonth
 
 /**

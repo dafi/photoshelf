@@ -10,7 +10,6 @@ import com.ternaryop.photoshelf.activity.AbsPhotoShelfActivity
 import com.ternaryop.photoshelf.activity.TagPhotoBrowserData
 import com.ternaryop.photoshelf.core.prefs.selectedBlogName
 import com.ternaryop.photoshelf.fragment.appFragmentFactory
-import com.ternaryop.photoshelf.tagphotobrowser.R
 import com.ternaryop.photoshelf.tagphotobrowser.fragment.TagPhotoBrowserFragment
 import dagger.hilt.android.AndroidEntryPoint
 

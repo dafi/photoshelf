@@ -7,7 +7,6 @@ import com.ternaryop.photoshelf.misspelled.MisspelledName
 import com.ternaryop.photoshelf.mru.adapter.OnMRUListener
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorArrayAdapter
 import com.ternaryop.photoshelf.tagnavigator.adapter.TagNavigatorFilter
-import com.ternaryop.photoshelf.tumblr.dialog.R
 import com.ternaryop.tumblr.TumblrPost
 
 class TagsHolder(

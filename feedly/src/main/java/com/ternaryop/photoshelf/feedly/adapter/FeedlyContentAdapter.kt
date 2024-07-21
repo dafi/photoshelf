@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.CompoundButton
 import com.ternaryop.feedly.FeedlyContent
 import com.ternaryop.photoshelf.adapter.AbsBaseAdapter
-import com.ternaryop.photoshelf.feedly.R
 
 class FeedlyContentAdapter(private val context: Context) :
     AbsBaseAdapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
