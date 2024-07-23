@@ -53,6 +53,7 @@ class FeedlyContentDelegate(private val delegated: FeedlyContent) : FeedlyConten
     var domain: String? = null
         private set
     var tag: String? = null
+    var isSelected = false
 
     init {
         try {

@@ -12,6 +12,7 @@ class FeedlyContentAdapter(private val context: Context) :
     AbsBaseAdapter<FeedlyContentViewHolder>(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     val allContents = mutableListOf<FeedlyContentDelegate>()
     val sortSwitcher = FeedlyContentSortSwitcher(context)
+    private val selectedItem = SelectedItem(this)
 
     var clickListener: OnFeedlyContentClick? = null
 
@@ -74,6 +75,9 @@ class FeedlyContentAdapter(private val context: Context) :
         if (position == -1) {
             return
         }
+
+        selectedItem.clear()
+        selectedItem.setSelected(v.tag as String)
 
         when (v.id) {
             com.ternaryop.photoshelf.core.R.id.list_row2 -> clickListener?.onTitleClick(position)

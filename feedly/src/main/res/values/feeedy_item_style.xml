@@ -5,12 +5,14 @@
         <item>@style/feedly_item_title_never_published_style</item>
         <item>@style/feedly_item_subtitle_never_published_style</item>
         <item>@style/feedly_item_tag_never_published_style</item>
+        <item>@drawable/feedly_list_selector_item_selected</item>
     </array>
     <array name="feedly_item_published_array">
         <item>@drawable/list_selector_post_normal</item>
         <item>@style/feedly_item_title_published_style</item>
         <item>@style/feedly_item_subtitle_published_style</item>
         <item>@style/feedly_item_tag_published_style</item>
+        <item>@drawable/feedly_list_selector_item_selected</item>
     </array>
 
     <style name="feedly_item_title_style">

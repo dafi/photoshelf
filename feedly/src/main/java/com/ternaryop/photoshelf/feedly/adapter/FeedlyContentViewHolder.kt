@@ -19,6 +19,7 @@ private const val LIST_ITEM_STYLE_INDEX_VIEW_BACKGROUND = 0
 private const val LIST_ITEM_STYLE_INDEX_TITLE = 1
 private const val LIST_ITEM_STYLE_INDEX_SUBTITLE = 2
 private const val LIST_ITEM_STYLE_INDEX_TAG = 3
+private const val LIST_ITEM_STYLE_INDEX_SELECTED = 4
 
 /**
  * Created by dave on 24/02/17.
@@ -102,19 +103,26 @@ class FeedlyContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
 
     private fun updateItemColors(content: FeedlyContentDelegate) {
         if (content.lastPublishTimestamp < 0) {
-            setAppearance(R.array.feedly_item_never_published_array, content.isChecked)
+            setAppearance(R.array.feedly_item_never_published_array, content)
         } else {
-            setAppearance(R.array.feedly_item_published_array, content.isChecked)
+            setAppearance(R.array.feedly_item_published_array, content)
         }
     }
 
-    private fun setAppearance(resArray: Int, checked: Boolean) {
+    private fun setAppearance(resArray: Int, content: FeedlyContentDelegate) {
+        val checked = content.isChecked
         title.isSelected = checked
         subtitle.isSelected = checked
         tag.isSelected = checked
 
+        val indexStyle = if (content.isSelected) {
+            LIST_ITEM_STYLE_INDEX_SELECTED
+        } else {
+            LIST_ITEM_STYLE_INDEX_VIEW_BACKGROUND
+        }
         val array = itemView.context.resources.obtainTypedArray(resArray)
-        itemView.background = array.getDrawable(LIST_ITEM_STYLE_INDEX_VIEW_BACKGROUND)
+
+        itemView.background = array.getDrawable(indexStyle)
 
         TextViewCompat.setTextAppearance(title, array.getResourceId(LIST_ITEM_STYLE_INDEX_TITLE, 0))
         TextViewCompat.setTextAppearance(subtitle, array.getResourceId(LIST_ITEM_STYLE_INDEX_SUBTITLE, 0))
