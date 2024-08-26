@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- NOTE: This file is duplicated in any build type because I was unable
+    to distinguish targetPackage application IDs -->
+    <shortcut
+        android:icon="@drawable/feedly_launcher_shortcut_icon"
+        android:shortcutId="FeedlySaved"
+        android:shortcutLongLabel="@string/shortcut_long_feedly_saved"
+        android:shortcutShortLabel="@string/shortcut_short_feedly_saved">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.feedly.saved"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"
+            android:targetPackage="com.ternaryop.photoshelf.debug" />
+    </shortcut>
+
+    <shortcut
+        android:icon="@drawable/feedly_unread_launcher_shortcut_icon"
+        android:shortcutId="FeedlyUnread"
+        android:shortcutLongLabel="@string/shortcut_long_feedly_unread"
+        android:shortcutShortLabel="@string/shortcut_short_feedly_unread">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.feedly.unread"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"
+            android:targetPackage="com.ternaryop.photoshelf.debug" />
+    </shortcut>
+
+    <shortcut
+        android:icon="@drawable/scheduled_launcher_shortcut_icon"
+        android:shortcutId="Scheduled"
+        android:shortcutShortLabel="@string/schedule_title">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.scheduled"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"
+            android:targetPackage="com.ternaryop.photoshelf.debug" />
+    </shortcut>
+
+    <shortcut
+        android:icon="@drawable/draft_launcher_shortcut_icon"
+        android:shortcutId="Draft"
+        android:shortcutShortLabel="@string/draft_title">
+        <intent
+            android:action="com.ternaryop.photoshelf.shortcut.draft"
+            android:targetClass="com.ternaryop.photoshelf.activity.MainActivity"
+            android:targetPackage="com.ternaryop.photoshelf.debug" />
+    </shortcut>
+</shortcuts>
