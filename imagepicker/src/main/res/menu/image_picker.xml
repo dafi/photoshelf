@@ -1,6 +1,11 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_image_viewer_back"
+        android:title="@string/back"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_image_viewer_details"
-        android:title="@string/details"/>
+        android:title="@string/details" />
 </menu>

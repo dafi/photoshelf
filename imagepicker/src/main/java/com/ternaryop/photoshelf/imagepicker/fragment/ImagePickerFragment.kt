@@ -426,12 +426,17 @@ class ImagePickerFragment(
 
     override fun onPrepareMenu(menu: Menu) {
         menu.findItem(R.id.action_image_viewer_details).isVisible = imageGallery != null
+        menu.findItem(R.id.action_image_viewer_back).isVisible = activity != null
     }
 
     override fun onMenuItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_image_viewer_details -> {
                 showDetails(Snackbar.LENGTH_INDEFINITE)
+                true
+            }
+            R.id.action_image_viewer_back -> {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
                 true
             }
 

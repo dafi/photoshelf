@@ -8,6 +8,7 @@
     <string name="retry">Retry</string>
     <string name="create_from_file_title">Create from File</string>
     <string name="go_title">go</string>
+    <string name="back">Back</string>
     <plurals name="download_url_with_count">
         <item quantity="one">Download URL</item>
         <item quantity="other">Download URL, bytes read %1$d</item>
